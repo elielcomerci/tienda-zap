@@ -3,7 +3,8 @@ import { auth } from '@/auth'
 import PublicHeader from '@/components/public/PublicHeader'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth()
+  let session = null
+  try { session = await auth() } catch {}
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <PublicHeader session={session} />
