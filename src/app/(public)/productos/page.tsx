@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { getProducts } from '@/lib/actions/products'
 import { getCategories } from '@/lib/actions/categories'
 import AddToCartButton from '@/components/public/AddToCartButton'
@@ -22,7 +21,7 @@ export default async function ProductsPage({
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar filtros */}
         <aside className="w-full md:w-48 shrink-0">
-          <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">CategorÃ­as</h3>
+          <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Categorías</h3>
           <div className="space-y-1">
             <Link href="/productos"
               className={`block px-3 py-2 rounded-xl text-sm transition-all ${!cat ? 'bg-orange-500 text-white font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -46,7 +45,7 @@ export default async function ProductsPage({
 
           {products.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
-              <p className="text-4xl mb-3">ðŸ”</p>
+              <p className="text-4xl mb-3">🔍</p>
               <p>No encontramos productos con esos filtros.</p>
             </div>
           ) : (
@@ -59,7 +58,7 @@ export default async function ProductsPage({
                         <Image src={product.images[0]} alt={product.name} width={400} height={400}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl">ðŸ–¨ï¸</div>
+                        <div className="w-full h-full flex items-center justify-center text-5xl">🖨️</div>
                       )}
                     </div>
                   </Link>

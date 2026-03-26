@@ -42,11 +42,7 @@ export default function PublicHeader({ session }: { session: Session | null }) {
           {session ? (
             session?.user?.role === 'ADMIN' ? (
               <Link href="/admin" className="btn-secondary !py-2 !px-3 !text-xs">Panel admin</Link>
-            ) : (
-              <Link href="/perfil" className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-                <User size={20} className="text-gray-600" />
-              </Link>
-            )
+            ) : null
           ) : (
             <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-orange-500 transition-colors">
               Ingresar
