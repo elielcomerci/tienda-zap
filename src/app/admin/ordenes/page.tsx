@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions/orders'
 import { Eye, Clock, CheckCircle2, PackageIcon, AlertCircle, RefreshCcw, Banknote, CreditCard, Smartphone } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Órdenes | ZAP Admin',
 }

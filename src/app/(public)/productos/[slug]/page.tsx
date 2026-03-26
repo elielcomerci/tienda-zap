@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getProduct, getProducts } from '@/lib/actions/products'
@@ -6,6 +5,7 @@ import AddToCartButton from '@/components/public/AddToCartButton'
 import { Package } from 'lucide-react'
 
 
+export const dynamic = 'force-dynamic'
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const product = await getProduct(slug)

@@ -1,8 +1,8 @@
-﻿export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { getOrder } from '@/lib/actions/orders'
 import { CheckCircle2, Copy } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {

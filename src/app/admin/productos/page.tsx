@@ -1,10 +1,10 @@
-export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 import { getAllProductsAdmin, deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { Plus, Edit2, Copy, Trash2, Tag, Search, Check, X } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Productos | ZAP Admin' }
 
 export default async function AdminProductsPage() {

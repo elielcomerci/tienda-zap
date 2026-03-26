@@ -1,10 +1,10 @@
-export const dynamic = 'force-dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getProducts } from '@/lib/actions/products'
 import { getCategories } from '@/lib/actions/categories'
 import AddToCartButton from '@/components/public/AddToCartButton'
 
+export const dynamic = 'force-dynamic'
 export default async function ProductsPage({
   searchParams,
 }: {

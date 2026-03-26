@@ -1,8 +1,8 @@
-﻿export const dynamic = 'force-dynamic'
 import { getDashboardStats } from '@/lib/actions/orders'
 import { DollarSign, PackageOpen, ShoppingBag, Truck } from 'lucide-react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Dashboard | ZAP Admin',
 }
