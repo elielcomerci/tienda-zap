@@ -40,7 +40,7 @@ export default function PublicHeader({ session }: { session: Session | null }) {
         {/* Actions */}
         <div className="flex items-center gap-2">
           {session ? (
-            session.user.role === 'ADMIN' ? (
+            session?.user?.role === 'ADMIN' ? (
               <Link href="/admin" className="btn-secondary !py-2 !px-3 !text-xs">Panel admin</Link>
             ) : (
               <Link href="/perfil" className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
