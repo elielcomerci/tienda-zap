@@ -1,6 +1,7 @@
 import { registerUser } from '@/lib/actions/auth'
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
+import PasswordInput from '@/components/ui/PasswordInput'
 
 export const metadata = { title: 'Crear cuenta — ZAP Tienda' }
 
@@ -46,15 +47,19 @@ export default async function RegistroPage({
             <input name="phone" type="tel" className="input" placeholder="1134567890" />
           </div>
 
-          <div>
-            <label className="label">Contraseña</label>
-            <input name="password" type="password" required className="input" placeholder="Mínimo 6 caracteres" />
-          </div>
+          <PasswordInput
+            name="password"
+            label="Contraseña"
+            placeholder="Mínimo 6 caracteres"
+            required
+          />
 
-          <div>
-            <label className="label">Confirmar contraseña</label>
-            <input name="confirmPassword" type="password" required className="input" placeholder="Repetí la contraseña" />
-          </div>
+          <PasswordInput
+            name="confirmPassword"
+            label="Confirmar contraseña"
+            placeholder="Repetí la contraseña"
+            required
+          />
 
           <div className="pt-2">
             <button type="submit" className="btn-primary w-full justify-center !py-3">

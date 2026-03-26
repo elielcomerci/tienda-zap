@@ -50,8 +50,22 @@ export const updateProfileSchema = z.object({
   newPassword: z.string().optional(),
 })
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Email inválido'),
+})
+
+export const resetPasswordSchema = z.object({
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  confirmPassword: z.string(),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: 'Las contraseñas no coinciden',
+  path: ['confirmPassword'],
+})
+
 export type ProductFormData = z.infer<typeof productSchema>
 export type OrderCheckoutData = z.infer<typeof orderCheckoutSchema>
 export type LoginData = z.infer<typeof loginSchema>
 export type RegisterData = z.infer<typeof registerSchema>
 export type UpdateProfileData = z.infer<typeof updateProfileSchema>
+export type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>
+export type ResetPasswordData = z.infer<typeof resetPasswordSchema>

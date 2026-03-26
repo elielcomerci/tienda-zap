@@ -8,12 +8,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, LoginData } from '@/lib/validations'
 import { Zap, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import PasswordInput from '@/components/ui/PasswordInput'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const registered = searchParams.get('registered')
-  const [error, setError] = useState('')
+  const passwordReset = searchParams.get('passwordReset')
+  const queryError = searchParams.get('error')
+  const [error, setError] = useState(queryError ? decodeURIComponent(queryError) : '')
   const [loading, setLoading] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginData>({
@@ -46,6 +49,11 @@ function LoginForm() {
           ✓ ¡Cuenta creada! Ya podés ingresar.
         </div>
       )}
+      {passwordReset && (
+        <div className="p-3 bg-green-50 text-green-700 text-sm rounded-xl text-center font-medium">
+          ✓ Contraseña actualizada con éxito.
+        </div>
+      )}
 
       <div>
         <label className="label">Email</label>
@@ -53,10 +61,18 @@ function LoginForm() {
         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
       </div>
 
-      <div>
-        <label className="label">Contraseña</label>
-        <input type="password" {...register('password')} className="input !bg-gray-50 focus:!bg-white" placeholder="••••••••" />
-        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+      <PasswordInput
+        name="password"
+        label="Contraseña"
+        placeholder="••••••••"
+        registerParams={register('password')}
+        error={errors.password?.message}
+      />
+
+      <div className="text-right -mt-2">
+        <Link href="/recuperar" className="text-xs font-semibold text-gray-500 hover:text-orange-500 transition-colors">
+          ¿Olvidaste tu contraseña?
+        </Link>
       </div>
 
       {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center">{error}</p>}
