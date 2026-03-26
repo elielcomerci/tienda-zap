@@ -10,8 +10,8 @@ import { CreditCard, Banknote, ArrowLeft, Smartphone } from 'lucide-react'
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(8, 'Teléfono inválido'),
+  email: z.string().email('Email invÃ¡lido'),
+  phone: z.string().min(8, 'TelÃ©fono invÃ¡lido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH']),
   notes: z.string().optional(),
 })
@@ -19,8 +19,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const paymentOptions = [
-  { value: 'MERCADOPAGO', label: 'MercadoPago', desc: 'Tarjeta de crédito, débito o MP', icon: CreditCard },
-  { value: 'TRANSFER', label: 'Transferencia', desc: 'CBU/CVU — subí tu comprobante', icon: Smartphone },
+  { value: 'MERCADOPAGO', label: 'MercadoPago', desc: 'Tarjeta de crÃ©dito, dÃ©bito o MP', icon: CreditCard },
+  { value: 'TRANSFER', label: 'Transferencia', desc: 'CBU/CVU â€” subÃ­ tu comprobante', icon: Smartphone },
   { value: 'CASH', label: 'Efectivo', desc: 'Retiro y pago en local', icon: Banknote },
 ] as const
 
@@ -80,7 +80,7 @@ export default function CheckoutPage() {
         router.push(`/checkout/success?orderId=${result.orderId}`)
       }
     } catch (e: any) {
-      setError(e.message || 'Ocurrió un error, intentá de nuevo.')
+      setError(e.message || 'OcurriÃ³ un error, intentÃ¡ de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -100,11 +100,11 @@ export default function CheckoutPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Nombre completo</label>
-                  <input {...register('name')} className="input" placeholder="Juan García" />
+                  <input {...register('name')} className="input" placeholder="Juan GarcÃ­a" />
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                 </div>
                 <div>
-                  <label className="label">Teléfono / WhatsApp</label>
+                  <label className="label">TelÃ©fono / WhatsApp</label>
                   <input {...register('phone')} className="input" placeholder="1134567890" />
                   {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                 </div>
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
 
             {/* Pago */}
             <div className="card p-6">
-              <h2 className="font-bold text-gray-900 mb-4">Método de pago</h2>
+              <h2 className="font-bold text-gray-900 mb-4">MÃ©todo de pago</h2>
               <div className="space-y-3">
                 {paymentOptions.map((opt) => (
                   <label key={opt.value}
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
                 {items.map((item) => (
                   <div key={item.productId} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate mr-2">{item.name} ×{item.quantity}</span>
+                    <span className="text-gray-600 truncate mr-2">{item.name} Ã—{item.quantity}</span>
                     <span className="font-medium shrink-0">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
                   </div>
                 ))}

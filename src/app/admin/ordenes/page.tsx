@@ -1,9 +1,10 @@
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions/orders'
 import { Eye, Clock, CheckCircle2, PackageIcon, AlertCircle, RefreshCcw, Banknote, CreditCard, Smartphone } from 'lucide-react'
 
 export const metadata = {
-  title: 'Órdenes | ZAP Admin',
+  title: 'Ã“rdenes | ZAP Admin',
 }
 
 const statusThemes = {
@@ -32,7 +33,7 @@ export default async function AdminOrdersPage({
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Órdenes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Ã“rdenes</h1>
 
         {/* Filters */}
         <div className="flex gap-2">
@@ -67,7 +68,7 @@ export default async function AdminOrdersPage({
           </thead>
           <tbody className="divide-y divide-gray-100">
             {orders.length === 0 ? (
-               <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">No hay órdenes para mostrar</td></tr>
+               <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">No hay Ã³rdenes para mostrar</td></tr>
             ) : (
               orders.map((order) => {
                 const StatusIcon = statusThemes[order.status].icon

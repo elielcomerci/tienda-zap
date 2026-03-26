@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getCategories } from '@/lib/actions/categories'
@@ -5,14 +6,14 @@ import { getProducts } from '@/lib/actions/products'
 import { ArrowRight, Star, Truck, Shield, Zap } from 'lucide-react'
 
 export const metadata = {
-  title: 'ZAP Tienda — Impresión y Gráfica',
+  title: 'ZAP Tienda â€” ImpresiÃ³n y GrÃ¡fica',
 }
 
 const features = [
-  { icon: Zap, title: 'Entrega rápida', desc: 'Producción express disponible' },
+  { icon: Zap, title: 'Entrega rÃ¡pida', desc: 'ProducciÃ³n express disponible' },
   { icon: Shield, title: 'Calidad garantizada', desc: 'Colores vibrantes y materiales premium' },
-  { icon: Truck, title: 'Envíos a todo el país', desc: 'Retiro en local o envío por correo' },
-  { icon: Star, title: 'Atención personalizada', desc: 'Te asesoramos en tu diseño' },
+  { icon: Truck, title: 'EnvÃ­os a todo el paÃ­s', desc: 'Retiro en local o envÃ­o por correo' },
+  { icon: Star, title: 'AtenciÃ³n personalizada', desc: 'Te asesoramos en tu diseÃ±o' },
 ]
 
 export default async function HomePage() {
@@ -31,15 +32,15 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 py-24 md:py-32 relative z-10">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-300 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest mb-6">
-              <Zap size={12} /> Impresión digital profesional
+              <Zap size={12} /> ImpresiÃ³n digital profesional
             </div>
             <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
               Tu imagen,
               <br />
-              <span className="text-orange-400">impresa a la perfección.</span>
+              <span className="text-orange-400">impresa a la perfecciÃ³n.</span>
             </h1>
             <p className="text-gray-300 text-lg md:text-xl mb-10 leading-relaxed">
-              Cartelería, tarjetas, banners, stickers y más. Diseños que comunican, colores que impactan.
+              CartelerÃ­a, tarjetas, banners, stickers y mÃ¡s. DiseÃ±os que comunican, colores que impactan.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/productos" className="btn-primary !text-base !px-7 !py-3.5">
@@ -72,10 +73,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CATEGORÍAS */}
+      {/* CATEGORÃAS */}
       <section className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Explorá por categoría</h2>
-        <p className="text-gray-500 mb-8">Encontrá todo lo que necesitás para tu negocio</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">ExplorÃ¡ por categorÃ­a</h2>
+        <p className="text-gray-500 mb-8">EncontrÃ¡ todo lo que necesitÃ¡s para tu negocio</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {categories.map((cat) => (
             <Link
@@ -84,7 +85,7 @@ export default async function HomePage() {
               className="card p-4 text-center hover:border-orange-200 hover:shadow-orange-100 hover:shadow-md transition-all group"
             >
               <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-100 transition-colors">
-                <span className="text-2xl">🖨️</span>
+                <span className="text-2xl">ðŸ–¨ï¸</span>
               </div>
               <p className="text-sm font-semibold text-gray-800">{cat.name}</p>
             </Link>
@@ -97,7 +98,7 @@ export default async function HomePage() {
         <section className="max-w-6xl mx-auto px-4 pb-16">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Más vendidos</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">MÃ¡s vendidos</h2>
               <p className="text-gray-500">Los favoritos de nuestros clientes</p>
             </div>
             <Link href="/productos" className="btn-secondary !py-2">
@@ -112,7 +113,7 @@ export default async function HomePage() {
                     <Image src={product.images[0]} alt={product.name} width={400} height={400}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">🖨️</div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl">ðŸ–¨ï¸</div>
                   )}
                 </div>
                 <div className="p-4">

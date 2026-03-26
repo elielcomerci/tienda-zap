@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import { getDashboardStats } from '@/lib/actions/orders'
 import { DollarSign, PackageOpen, ShoppingBag, Truck } from 'lucide-react'
 import Link from 'next/link'
@@ -35,12 +36,12 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Últimas órdenes */}
+      {/* Ãšltimas Ã³rdenes */}
       <div className="card max-w-4xl">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Últimas 10 órdenes</h2>
+          <h2 className="text-lg font-bold text-gray-900">Ãšltimas 10 Ã³rdenes</h2>
           <Link href="/admin/ordenes" className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors">
-            Ver todas →
+            Ver todas â†’
           </Link>
         </div>
         <div className="overflow-x-auto">
@@ -58,7 +59,7 @@ export default async function AdminDashboardPage() {
               {stats.recentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-gray-400">
-                    No hay órdenes recientes
+                    No hay Ã³rdenes recientes
                   </td>
                 </tr>
               ) : (

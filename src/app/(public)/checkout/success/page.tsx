@@ -1,3 +1,4 @@
+﻿export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { getOrder } from '@/lib/actions/orders'
 import { CheckCircle2, Copy } from 'lucide-react'
@@ -13,7 +14,7 @@ export default async function CheckoutSuccessPage({
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-bold mb-4 text-red-500">Error</h1>
-        <p className="mb-8">No se encontró el número de orden.</p>
+        <p className="mb-8">No se encontrÃ³ el nÃºmero de orden.</p>
         <Link href="/" className="btn-primary">Volver al inicio</Link>
       </div>
     )
@@ -27,7 +28,7 @@ export default async function CheckoutSuccessPage({
         <CheckCircle2 size={40} className="text-green-500" />
       </div>
 
-      <h1 className="text-3xl font-black text-gray-900 mb-2">¡Pedido confirmado!</h1>
+      <h1 className="text-3xl font-black text-gray-900 mb-2">Â¡Pedido confirmado!</h1>
       <p className="text-gray-500 mb-8">
         Tu orden ha sido registrada correctamente.
         <br />
@@ -37,7 +38,7 @@ export default async function CheckoutSuccessPage({
       <div className="card p-6 text-left mb-8">
         <div className="flex justify-between items-center mb-6 pb-6 border-b border-gray-100">
           <div>
-            <p className="text-sm text-gray-500 mb-1">Número de orden</p>
+            <p className="text-sm text-gray-500 mb-1">NÃºmero de orden</p>
             <p className="font-mono font-bold text-lg text-gray-900 flex items-center gap-2">
               #{orderId.slice(-8).toUpperCase()}
             </p>
@@ -51,11 +52,11 @@ export default async function CheckoutSuccessPage({
         {order?.paymentType === 'TRANSFER' && order.status === 'PENDING' && !order.receiptUrl ? (
           <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
             <h3 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
-              ⚠️ Falta el comprobante de pago
+              âš ï¸ Falta el comprobante de pago
             </h3>
             <p className="text-sm text-orange-800 mb-4">
-              Realizá la transferencia al CVU <strong>00000031000123456789</strong> y envianos el comprobante por WhatsApp
-              indicando tu número de orden: <strong>#{orderId.slice(-8).toUpperCase()}</strong>.
+              RealizÃ¡ la transferencia al CVU <strong>00000031000123456789</strong> y envianos el comprobante por WhatsApp
+              indicando tu nÃºmero de orden: <strong>#{orderId.slice(-8).toUpperCase()}</strong>.
             </p>
             <a href={`https://wa.me/5491100000000?text=Hola! Te paso el comprobante de mi orden #${orderId.slice(-8).toUpperCase()}`}
               target="_blank" rel="noreferrer"
@@ -72,11 +73,11 @@ export default async function CheckoutSuccessPage({
           </div>
         ) : order?.status === 'PAID' ? (
           <div className="bg-green-50 text-green-800 p-4 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
-            <CheckCircle2 size={18} /> Pago acreditado con éxito
+            <CheckCircle2 size={18} /> Pago acreditado con Ã©xito
           </div>
         ) : pending ? (
           <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl text-sm font-medium">
-            ⏳ Tu pago está siendo procesado por MercadoPago. Te avisaremos cuando se acredite.
+            â³ Tu pago estÃ¡ siendo procesado por MercadoPago. Te avisaremos cuando se acredite.
           </div>
         ) : null}
       </div>

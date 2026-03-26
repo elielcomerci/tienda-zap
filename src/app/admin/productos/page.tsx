@@ -1,4 +1,6 @@
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 import { getAllProductsAdmin, deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { Plus, Edit2, Copy, Trash2, Tag, Search, Check, X } from 'lucide-react'
@@ -27,7 +29,7 @@ export default async function AdminProductsPage() {
             <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">Producto</th>
-                <th className="px-6 py-4">Categoría</th>
+                <th className="px-6 py-4">CategorÃ­a</th>
                 <th className="px-6 py-4">Precio</th>
                 <th className="px-6 py-4 text-center">Stock</th>
                 <th className="px-6 py-4 text-center">Estado</th>
@@ -38,7 +40,7 @@ export default async function AdminProductsPage() {
               {products.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
-                    No hay productos cargados todavía.
+                    No hay productos cargados todavÃ­a.
                   </td>
                 </tr>
               ) : (
@@ -50,7 +52,7 @@ export default async function AdminProductsPage() {
                           {product.images[0] ? (
                             <Image src={product.images[0]} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-lg">🖨️</div>
+                            <div className="w-full h-full flex items-center justify-center text-lg">ðŸ–¨ï¸</div>
                           )}
                         </div>
                         <div>

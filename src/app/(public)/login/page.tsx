@@ -45,7 +45,7 @@ export default function LoginPage() {
             <Zap size={32} />
           </Link>
           <h1 className="text-2xl font-bold">ZAP Admin</h1>
-          <p className="text-gray-400 text-sm mt-1">Ingresá a tu panel de control</p>
+          <p className="text-gray-400 text-sm mt-1">IngresÃ¡ a tu panel de control</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-8 pt-6 space-y-4">
@@ -56,8 +56,8 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="label">Contraseña</label>
-            <input type="password" {...register('password')} className="input !bg-gray-50 focus:!bg-white" placeholder="••••••••" />
+            <label className="label">ContraseÃ±a</label>
+            <input type="password" {...register('password')} className="input !bg-gray-50 focus:!bg-white" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
           </div>
 

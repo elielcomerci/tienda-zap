@@ -13,8 +13,8 @@ export default function CartPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <ShoppingBag size={64} className="mx-auto text-gray-200 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Tu carrito está vacío</h1>
-        <p className="text-gray-500 mb-8">Agregá productos para empezar tu pedido</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Tu carrito estÃ¡ vacÃ­o</h1>
+        <p className="text-gray-500 mb-8">AgregÃ¡ productos para empezar tu pedido</p>
         <Link href="/productos" className="btn-primary">Ver productos</Link>
       </div>
     )
@@ -37,7 +37,7 @@ export default function CartPage() {
                     <Image src={item.image} alt={item.name} width={80} height={80}
                       className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">🖨️</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl">ðŸ–¨ï¸</div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -92,7 +92,7 @@ export default function CartPage() {
             <div className="space-y-2 mb-4">
               {items.map((item) => (
                 <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-gray-600 truncate mr-2">{item.name} ×{item.quantity}</span>
+                  <span className="text-gray-600 truncate mr-2">{item.name} Ã—{item.quantity}</span>
                   <span className="font-medium shrink-0">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
                 </div>
               ))}
