@@ -14,7 +14,7 @@ export default async function CheckoutSuccessPage({
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <h1 className="text-2xl font-bold mb-4 text-red-500">Error</h1>
-        <p className="mb-8">No se encontrÃ³ el nÃºmero de orden.</p>
+        <p className="mb-8">No se encontró el número de orden.</p>
         <Link href="/" className="btn-primary">Volver al inicio</Link>
       </div>
     )
@@ -38,7 +38,7 @@ export default async function CheckoutSuccessPage({
       <div className="card p-6 text-left mb-8">
         <div className="flex justify-between items-center mb-6 pb-6 border-b border-gray-100">
           <div>
-            <p className="text-sm text-gray-500 mb-1">NÃºmero de orden</p>
+            <p className="text-sm text-gray-500 mb-1">Número de orden</p>
             <p className="font-mono font-bold text-lg text-gray-900 flex items-center gap-2">
               #{orderId.slice(-8).toUpperCase()}
             </p>
@@ -55,8 +55,8 @@ export default async function CheckoutSuccessPage({
               âš ï¸ Falta el comprobante de pago
             </h3>
             <p className="text-sm text-orange-800 mb-4">
-              RealizÃ¡ la transferencia al CVU <strong>00000031000123456789</strong> y envianos el comprobante por WhatsApp
-              indicando tu nÃºmero de orden: <strong>#{orderId.slice(-8).toUpperCase()}</strong>.
+              Realizá la transferencia al CVU <strong>00000031000123456789</strong> y envianos el comprobante por WhatsApp
+              indicando tu número de orden: <strong>#{orderId.slice(-8).toUpperCase()}</strong>.
             </p>
             <a href={`https://wa.me/5491100000000?text=Hola! Te paso el comprobante de mi orden #${orderId.slice(-8).toUpperCase()}`}
               target="_blank" rel="noreferrer"
@@ -73,11 +73,11 @@ export default async function CheckoutSuccessPage({
           </div>
         ) : order?.status === 'PAID' ? (
           <div className="bg-green-50 text-green-800 p-4 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
-            <CheckCircle2 size={18} /> Pago acreditado con Ã©xito
+            <CheckCircle2 size={18} /> Pago acreditado con éxito
           </div>
         ) : pending ? (
           <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl text-sm font-medium">
-            â³ Tu pago estÃ¡ siendo procesado por MercadoPago. Te avisaremos cuando se acredite.
+            â³ Tu pago está siendo procesado por MercadoPago. Te avisaremos cuando se acredite.
           </div>
         ) : null}
       </div>

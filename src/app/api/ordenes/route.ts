@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
 import { orderCheckoutSchema } from '@/lib/validations'
+import { auth } from '@/auth'
 
 // POST /api/ordenes — crear orden TRANSFER o CASH
 export async function POST(req: NextRequest) {
@@ -12,8 +13,12 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Usar /api/checkout/mercadopago' }, { status: 400 })
     }
 
+    const session = await auth()
+    const userId = session?.user?.id
+
     const order = await prisma.order.create({
       data: {
+        userId: userId || null,
         guestEmail: data.guestEmail,
         guestName: data.guestName,
         guestPhone: data.guestPhone,

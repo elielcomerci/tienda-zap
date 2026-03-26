@@ -29,7 +29,7 @@ export default async function AdminProductsPage() {
             <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">Producto</th>
-                <th className="px-6 py-4">CategorÃ­a</th>
+                <th className="px-6 py-4">Categoría</th>
                 <th className="px-6 py-4">Precio</th>
                 <th className="px-6 py-4 text-center">Stock</th>
                 <th className="px-6 py-4 text-center">Estado</th>
@@ -40,7 +40,7 @@ export default async function AdminProductsPage() {
               {products.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
-                    No hay productos cargados todavÃ­a.
+                    No hay productos cargados todavía.
                   </td>
                 </tr>
               ) : (

@@ -2,6 +2,7 @@ import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { orderCheckoutSchema } from '@/lib/validations'
+import { auth } from '@/auth'
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -12,9 +13,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = orderCheckoutSchema.parse(body)
 
+    const session = await auth()
+    const userId = session?.user?.id
+
     // Crear la orden en DB primero
     const order = await prisma.order.create({
       data: {
+        userId: userId || null,
         guestEmail: data.guestEmail,
         guestName: data.guestName,
         guestPhone: data.guestPhone,

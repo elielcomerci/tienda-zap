@@ -1,16 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, LoginData } from '@/lib/validations'
 import { Zap, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const registered = searchParams.get('registered')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -32,11 +34,50 @@ export default function LoginPage() {
       setError('Credenciales incorrectas')
       setLoading(false)
     } else {
-      router.push('/admin')
+      router.push('/perfil')
       router.refresh()
     }
   }
 
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="p-8 pt-6 space-y-4">
+      {registered && (
+        <div className="p-3 bg-green-50 text-green-700 text-sm rounded-xl text-center font-medium">
+          ✓ ¡Cuenta creada! Ya podés ingresar.
+        </div>
+      )}
+
+      <div>
+        <label className="label">Email</label>
+        <input type="email" {...register('email')} className="input !bg-gray-50 focus:!bg-white" placeholder="admin@zap.com.ar" />
+        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+      </div>
+
+      <div>
+        <label className="label">Contraseña</label>
+        <input type="password" {...register('password')} className="input !bg-gray-50 focus:!bg-white" placeholder="••••••••" />
+        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+      </div>
+
+      {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center">{error}</p>}
+
+      <div className="pt-2">
+        <button type="submit" disabled={loading} className="btn-primary w-full justify-center !py-3">
+          {loading ? 'Verificando...' : 'Ingresar'} <ArrowRight size={16} />
+        </button>
+      </div>
+
+      <p className="text-center text-sm text-gray-500">
+        ¿No tenés cuenta?{' '}
+        <Link href="/registro" className="text-orange-500 font-semibold hover:underline">
+          Registrate
+        </Link>
+      </p>
+    </form>
+  )
+}
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden">
@@ -44,31 +85,12 @@ export default function LoginPage() {
           <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-500 shadow-lg shadow-orange-500/20 mb-4 transition-transform hover:scale-105">
             <Zap size={32} />
           </Link>
-          <h1 className="text-2xl font-bold">ZAP Admin</h1>
-          <p className="text-gray-400 text-sm mt-1">IngresÃ¡ a tu panel de control</p>
+          <h1 className="text-2xl font-bold">ZAP</h1>
+          <p className="text-gray-400 text-sm mt-1">Ingresá a tu cuenta</p>
         </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="p-8 pt-6 space-y-4">
-          <div>
-            <label className="label">Email</label>
-            <input type="email" {...register('email')} className="input !bg-gray-50 focus:!bg-white" placeholder="admin@zap.com.ar" />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-          </div>
-
-          <div>
-            <label className="label">ContraseÃ±a</label>
-            <input type="password" {...register('password')} className="input !bg-gray-50 focus:!bg-white" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-          </div>
-
-          {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg text-center">{error}</p>}
-
-          <div className="pt-2">
-            <button type="submit" disabled={loading} className="btn-primary w-full justify-center !py-3">
-              {loading ? 'Verificando...' : 'Ingresar'} <ArrowRight size={16} />
-            </button>
-          </div>
-        </form>
+        <Suspense fallback={<div className="p-8 text-center text-gray-400">Cargando...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   )

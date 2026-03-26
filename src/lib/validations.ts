@@ -32,6 +32,26 @@ export const loginSchema = z.object({
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 })
 
+export const registerSchema = z.object({
+  name: z.string().min(2, 'El nombre es requerido'),
+  email: z.string().email('Email inválido'),
+  phone: z.string().optional(),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  confirmPassword: z.string(),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: 'Las contraseñas no coinciden',
+  path: ['confirmPassword'],
+})
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, 'El nombre es requerido'),
+  phone: z.string().optional(),
+  currentPassword: z.string().optional(),
+  newPassword: z.string().optional(),
+})
+
 export type ProductFormData = z.infer<typeof productSchema>
 export type OrderCheckoutData = z.infer<typeof orderCheckoutSchema>
 export type LoginData = z.infer<typeof loginSchema>
+export type RegisterData = z.infer<typeof registerSchema>
+export type UpdateProfileData = z.infer<typeof updateProfileSchema>
