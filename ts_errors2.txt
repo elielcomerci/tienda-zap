@@ -1,0 +1,7 @@
+﻿.next/types/app/api/auth/[...nextauth]/route.ts(12,13): error TS2344: Type 'OmitWithTag<typeof import("C:/Users/eliel/tienda zap/src/app/api/auth/[...nextauth]/route"), "GET" | "POST" | "config" | "generateStaticParams" | "revalidate" | "dynamic" | "dynamicParams" | ... 8 more ... | "PATCH", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'handlers' is incompatible with index signature.
+    Type 'AppRouteHandlers' is not assignable to type 'never'.
+prisma/seed.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
+src/app/layout.tsx(2,8): error TS2882: Cannot find module or type declarations for side-effect import of './globals.css'.
+src/lib/prisma.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
+
