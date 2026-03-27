@@ -16,7 +16,7 @@ export async function getOrders(status?: string, paymentType?: string) {
       ...(paymentType && { paymentType: paymentType as any }),
     },
     include: {
-      items: { include: { product: true } },
+      items: { include: { product: true, selectedOptions: true } },
       user: { select: { name: true, email: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -27,7 +27,7 @@ export async function getOrder(id: string) {
   return prisma.order.findUnique({
     where: { id },
     include: {
-      items: { include: { product: true } },
+      items: { include: { product: true, selectedOptions: true } },
       user: { select: { name: true, email: true, phone: true } },
     },
   })

@@ -56,6 +56,9 @@ export default function CheckoutPage() {
         unitPrice: i.price,
         name: i.name,
         notes: i.notes,
+        fileUrl: i.fileUrl,
+        designRequested: i.designRequested,
+        selectedOptions: i.selectedOptions,
       })),
     }
 
@@ -155,10 +158,17 @@ export default function CheckoutPage() {
               <h2 className="font-bold text-gray-900 mb-4">Resumen y Archivos</h2>
               <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2">
                 {items.map((item) => (
-                  <div key={item.productId} className="flex flex-col border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                    <div className="flex justify-between text-sm font-medium">
-                      <span className="text-gray-800 mr-2">{item.name} ×{item.quantity}</span>
-                      <span className="shrink-0 text-orange-600">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                  <div key={item.cartItemId || item.productId} className="flex flex-col border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex flex-col mb-2">
+                      <div className="flex justify-between text-sm font-medium">
+                        <span className="text-gray-800 mr-2">{item.name} ×{item.quantity}</span>
+                        <span className="shrink-0 text-orange-600">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                      </div>
+                      {item.selectedOptions && item.selectedOptions.length > 0 && (
+                        <span className="text-xs text-gray-500 mt-0.5">
+                          {item.selectedOptions.map(o => o.value).join(' • ')}
+                        </span>
+                      )}
                     </div>
                     
                     {/* Opciones de archivo y diseño por producto */}

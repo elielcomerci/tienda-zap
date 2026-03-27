@@ -47,7 +47,12 @@ model Product {
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id])
   active      Boolean     @default(true)
-  stock       Int         @default(0)
+  stock       Int         @default(0) // Stock general (si aplica)
+  
+  // Configurador Avanzado
+  options     ProductOption[]
+  variants    ProductVariant[]
+  
   orderItems  OrderItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -97,6 +102,61 @@ model OrderItem {
   notes             String?
   fileUrl           String?
   designRequested   Boolean @default(false)
+  
+  // Opciones seleccionadas para este ítem
+  selectedOptions   OrderItemOption[]
+}
+
+model OrderItemOption {
+  id              String         @id @default(cuid())
+  orderItem       OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  orderItemId     String
+  optionName      String         // Ej: "Cantidad a Imprimir"
+  valueName       String         // Ej: "250 unidades"
+}
+
+// ==== Configurador Avanzado de Productos ====
+
+model ProductOption {
+  id          String   @id @default(cuid())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  name        String   // Ej: "Terminación", "Cantidad"
+  isRequired  Boolean  @default(true)
+  values      ProductOptionValue[]
+}
+
+model ProductOptionValue {
+  id          String         @id @default(cuid())
+  option      ProductOption  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  optionId    String
+  value       String         // Ej: "Laminado Mate", "100u"
+  
+  // Relación a las variantes que incluyen este valor
+  variants    VariantOption[]
+}
+
+model ProductVariant {
+  id          String           @id @default(cuid())
+  product     Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  price       Float            // Precio final de esta combinación exacta
+  sku         String?          
+  stock       Int?             // Opcional, si queremos llevar stock por variante
+  
+  // Relación con los valores específicos que forman esta combinación
+  options     VariantOption[]
+}
+
+// Tabla pivote para unir Variantes con sus Valores Específicos
+model VariantOption {
+  id          String               @id @default(cuid())
+  variant     ProductVariant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId   String
+  optionValue ProductOptionValue   @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+  optionValueId String
+
+  @@unique([variantId, optionValueId])
 }
 
 // NextAuth required models

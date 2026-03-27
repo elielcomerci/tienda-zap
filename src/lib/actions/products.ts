@@ -25,11 +25,66 @@ export async function createProduct(formData: FormData) {
     stock: formData.get('stock'),
     images: JSON.parse(formData.get('images') as string),
     active: formData.get('active') === 'true',
+    options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
+    variants: formData.get('variants') ? JSON.parse(formData.get('variants') as string) : [],
   }
 
   const data = productSchema.parse(raw)
 
-  await prisma.product.create({ data })
+  // Crear producto con sus relaciones anidadas
+  const createdProduct = await prisma.product.create({ 
+    data: {
+      name: data.name,
+      slug: data.slug,
+      description: data.description,
+      price: data.price,
+      categoryId: data.categoryId,
+      stock: data.stock,
+      images: data.images,
+      active: data.active,
+      options: {
+        create: data.options.map(o => ({
+          name: o.name,
+          isRequired: o.isRequired,
+          values: {
+            create: o.values.map(v => ({ value: v.value }))
+          }
+        }))
+      }
+    },
+    include: { options: { include: { values: true } } }
+  })
+
+  // Ahora creamos las variantes con sus relaciones a ProductOptionValue
+  if (data.variants && data.variants.length > 0 && createdProduct.options.length > 0) {
+    for (const variantData of data.variants) {
+      // Find the Option Value IDs based on the Name-Value string pairs in combinations
+      const optionValueIds: string[] = []
+      
+      for (const [optName, optVal] of Object.entries(variantData.combinations)) {
+        const matchingDBOption = createdProduct.options.find(o => o.name === optName)
+        if (matchingDBOption) {
+          const matchingDBValue = matchingDBOption.values.find(v => v.value === optVal)
+          if (matchingDBValue) {
+            optionValueIds.push(matchingDBValue.id)
+          }
+        }
+      }
+
+      await prisma.productVariant.create({
+        data: {
+          productId: createdProduct.id,
+          price: variantData.price,
+          sku: variantData.sku,
+          stock: variantData.stock,
+          options: {
+            create: optionValueIds.map(id => ({ optionValueId: id }))
+          }
+        }
+      })
+    }
+  }
+
   revalidatePath('/admin/productos')
   revalidatePath('/productos')
   redirect('/admin/productos')
@@ -47,11 +102,69 @@ export async function updateProduct(id: string, formData: FormData) {
     stock: formData.get('stock'),
     images: JSON.parse(formData.get('images') as string),
     active: formData.get('active') === 'true',
+    options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
+    variants: formData.get('variants') ? JSON.parse(formData.get('variants') as string) : [],
   }
 
   const data = productSchema.parse(raw)
 
-  await prisma.product.update({ where: { id }, data })
+  // Eliminar opciones y variantes viejas para evitar inconsistencias
+  await prisma.productOption.deleteMany({ where: { productId: id } })
+  await prisma.productVariant.deleteMany({ where: { productId: id } })
+
+  const updatedProduct = await prisma.product.update({ 
+    where: { id }, 
+    data: {
+      name: data.name,
+      slug: data.slug,
+      description: data.description,
+      price: data.price,
+      categoryId: data.categoryId,
+      stock: data.stock,
+      images: data.images,
+      active: data.active,
+      options: {
+        create: data.options.map(o => ({
+          name: o.name,
+          isRequired: o.isRequired,
+          values: {
+            create: o.values.map(v => ({ value: v.value }))
+          }
+        }))
+      }
+    },
+    include: { options: { include: { values: true } } }
+  })
+
+  // Recrear variantes
+  if (data.variants && data.variants.length > 0 && updatedProduct.options.length > 0) {
+    for (const variantData of data.variants) {
+      const optionValueIds: string[] = []
+      
+      for (const [optName, optVal] of Object.entries(variantData.combinations)) {
+        const matchingDBOption = updatedProduct.options.find(o => o.name === optName)
+        if (matchingDBOption) {
+          const matchingDBValue = matchingDBOption.values.find(v => v.value === optVal)
+          if (matchingDBValue) {
+            optionValueIds.push(matchingDBValue.id)
+          }
+        }
+      }
+
+      await prisma.productVariant.create({
+        data: {
+          productId: updatedProduct.id,
+          price: variantData.price,
+          sku: variantData.sku,
+          stock: variantData.stock,
+          options: {
+            create: optionValueIds.map(vid => ({ optionValueId: vid }))
+          }
+        }
+      })
+    }
+  }
+
   revalidatePath('/admin/productos')
   revalidatePath('/productos')
   redirect('/admin/productos')
@@ -100,13 +213,34 @@ export async function getProducts(categorySlug?: string, search?: string) {
 export async function getProduct(slug: string) {
   return prisma.product.findUnique({
     where: { slug },
-    include: { category: true },
+    include: { 
+      category: true,
+      options: { 
+        include: { values: true },
+        orderBy: { id: 'asc' }
+      },
+      variants: { 
+        include: { 
+          options: { 
+            include: { 
+              optionValue: { 
+                include: { option: true } 
+              } 
+            } 
+          } 
+        } 
+      }
+    },
   })
 }
 
 export async function getAllProductsAdmin() {
   return prisma.product.findMany({
-    include: { category: true },
+    include: { 
+      category: true,
+      options: { include: { values: true } },
+      variants: { include: { options: { include: { optionValue: true } } } }
+    },
     orderBy: { createdAt: 'desc' },
   })
 }

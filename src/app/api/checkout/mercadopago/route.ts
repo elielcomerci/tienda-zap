@@ -16,24 +16,31 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     const userId = session?.user?.id
 
-    // Crear la orden en DB primero
+    // Crear orden pendiente
     const order = await prisma.order.create({
       data: {
-        userId: userId || null,
-        guestEmail: data.guestEmail,
-        guestName: data.guestName,
-        guestPhone: data.guestPhone,
+        userId: session?.user?.id,
+        guestName: data.name,
+        guestEmail: data.email,
+        guestPhone: data.phone,
+        status: 'PENDING',
         paymentType: 'MERCADOPAGO',
+        total: data.items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0),
         notes: data.notes,
-        total: data.items.reduce((acc, i) => acc + i.unitPrice * i.quantity, 0),
         items: {
-          create: data.items.map((i) => ({
-            productId: i.productId,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-            notes: i.notes,
-            fileUrl: i.fileUrl,
-            designRequested: i.designRequested ?? false,
+          create: data.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            notes: item.notes,
+            fileUrl: item.fileUrl,
+            designRequested: item.designRequested,
+            selectedOptions: item.selectedOptions ? {
+              create: item.selectedOptions.map((opt: any) => ({
+                optionName: opt.name,
+                valueName: opt.value
+              }))
+            } : undefined
           })),
         },
       },
@@ -49,7 +56,7 @@ export async function POST(req: NextRequest) {
           unit_price: i.unitPrice,
           currency_id: 'ARS',
         })),
-        payer: { email: data.guestEmail },
+        payer: { email: data.email },
         external_reference: order.id,
         back_urls: {
           success: `${process.env.NEXTAUTH_URL}/checkout/success?orderId=${order.id}`,

@@ -30,7 +30,7 @@ export default function CartPage() {
         {/* Items */}
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => (
-            <div key={item.productId} className="card p-4">
+            <div key={item.cartItemId || item.productId} className="card p-4">
               <div className="flex gap-4">
                 <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                   {item.image ? (
@@ -42,8 +42,16 @@ export default function CartPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.name}</h3>
-                    <button onClick={() => removeItem(item.productId)}
+                    <div className="space-y-1">
+                      <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.name}</h3>
+                      {item.selectedOptions && item.selectedOptions.length > 0 && (
+                        <p className="text-xs text-gray-500 font-medium">
+                          {item.selectedOptions.map(opt => `${opt.value}`).join(' • ')}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <button onClick={() => removeItem(item.cartItemId!)}
                       className="text-gray-400 hover:text-red-500 transition-colors shrink-0">
                       <Trash2 size={16} />
                     </button>
@@ -54,12 +62,12 @@ export default function CartPage() {
 
                   <div className="flex items-center gap-3 mt-3">
                     <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
-                      <button onClick={() => item.quantity > 1 ? updateQuantity(item.productId, item.quantity - 1) : removeItem(item.productId)}
+                      <button onClick={() => item.quantity > 1 ? updateQuantity(item.cartItemId!, item.quantity - 1) : removeItem(item.cartItemId!)}
                         className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors">
                         <Minus size={12} />
                       </button>
                       <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                      <button onClick={() => updateQuantity(item.cartItemId!, item.quantity + 1)}
                         className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors">
                         <Plus size={12} />
                       </button>
@@ -72,7 +80,7 @@ export default function CartPage() {
                     type="text"
                     placeholder="Nota para este producto (opcional)..."
                     value={item.notes || ''}
-                    onChange={(e) => updateNotes(item.productId, e.target.value)}
+                    onChange={(e) => updateNotes(item.cartItemId!, e.target.value)}
                     className="input !py-1.5 !text-xs mt-2"
                   />
                 </div>
@@ -89,11 +97,19 @@ export default function CartPage() {
         <div className="space-y-4">
           <div className="card p-5 sticky top-24">
             <h2 className="font-bold text-gray-900 mb-4">Resumen del pedido</h2>
-            <div className="space-y-2 mb-4">
+            <div className="space-y-4 mb-4">
               {items.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-gray-600 truncate mr-2">{item.name} ×{item.quantity}</span>
-                  <span className="font-medium shrink-0">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                <div key={item.cartItemId || item.productId} className="flex justify-between text-sm items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-900 font-semibold truncate block w-full">{item.name}</span>
+                    {item.selectedOptions && item.selectedOptions.length > 0 && (
+                      <span className="text-gray-500 text-xs truncate block w-full">
+                        {item.selectedOptions.map(o => o.value).join(' • ')}
+                      </span>
+                    )}
+                    <span className="text-gray-400 text-xs">Cant: {item.quantity}</span>
+                  </div>
+                  <span className="font-medium shrink-0 mt-0.5">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
                 </div>
               ))}
             </div>

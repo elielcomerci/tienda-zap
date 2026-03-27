@@ -113,7 +113,12 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                         ${(item.unitPrice * item.quantity).toLocaleString('es-AR')}
                       </p>
                     </div>
-                    <p className="text-xs text-gray-500 mb-2">${item.unitPrice.toLocaleString('es-AR')} c/u</p>
+                    {item.selectedOptions && item.selectedOptions.length > 0 && (
+                      <p className="text-xs text-gray-500 mb-1 font-medium">
+                        {item.selectedOptions.map((opt: any) => opt.valueName).join(' • ')}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-400 mb-2">${item.unitPrice.toLocaleString('es-AR')} c/u</p>
 
                     {(item.fileUrl || item.designRequested) && (
                       <div className="flex gap-2 mb-3">

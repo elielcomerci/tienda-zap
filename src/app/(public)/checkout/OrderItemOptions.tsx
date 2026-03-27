@@ -41,7 +41,7 @@ export default function OrderItemOptions({ item }: { item: any }) {
 
       if (!uploadRes.ok) throw new Error('Error al subir el archivo')
 
-      updateItemOptions(item.productId, { fileUrl: publicUrl, designRequested: false })
+      updateItemOptions(item.cartItemId!, { fileUrl: publicUrl, designRequested: false })
     } catch (err: any) {
       setError(err.message || 'Error al procesar el archivo')
     } finally {
@@ -50,11 +50,11 @@ export default function OrderItemOptions({ item }: { item: any }) {
   }
 
   const handleDesignRequest = () => {
-    updateItemOptions(item.productId, { designRequested: true, fileUrl: undefined })
+    updateItemOptions(item.cartItemId!, { designRequested: true, fileUrl: undefined })
   }
 
   const clearOptions = () => {
-    updateItemOptions(item.productId, { designRequested: false, fileUrl: undefined })
+    updateItemOptions(item.cartItemId!, { designRequested: false, fileUrl: undefined })
     setError('')
   }
 

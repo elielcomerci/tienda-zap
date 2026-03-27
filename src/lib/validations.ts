@@ -6,15 +6,31 @@ export const productSchema = z.object({
   description: z.string().optional(),
   price: z.coerce.number().positive('El precio debe ser mayor a 0'),
   categoryId: z.string().min(1, 'Seleccioná una categoría'),
-  stock: z.coerce.number().int().min(0),
+  stock: z.coerce.number().int().min(0).default(0),
   images: z.array(z.string().url()).min(1, 'Agregá al menos una imagen'),
   active: z.boolean().default(true),
+  options: z.array(z.object({
+    id: z.string().optional(),
+    name: z.string().min(1),
+    isRequired: z.boolean(),
+    values: z.array(z.object({
+      id: z.string().optional(),
+      value: z.string().min(1)
+    })).min(1)
+  })).optional().default([]),
+  variants: z.array(z.object({
+    id: z.string().optional(),
+    combinations: z.record(z.string(), z.string()), // { "Cantidad": "100u" }
+    price: z.coerce.number().positive(),
+    sku: z.string().optional(),
+    stock: z.coerce.number().int().optional(),
+  })).optional().default([])
 })
 
 export const orderCheckoutSchema = z.object({
-  guestName: z.string().min(2, 'El nombre es requerido'),
-  guestEmail: z.string().email('Email inválido'),
-  guestPhone: z.string().min(8, 'Teléfono inválido'),
+  name: z.string().min(2, 'El nombre es requerido'),
+  email: z.string().email('Email inválido'),
+  phone: z.string().min(8, 'Teléfono inválido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH']),
   notes: z.string().optional(),
   items: z.array(
@@ -25,6 +41,10 @@ export const orderCheckoutSchema = z.object({
       notes: z.string().optional(),
       fileUrl: z.string().optional(),
       designRequested: z.boolean().optional(),
+      selectedOptions: z.array(z.object({
+        name: z.string(),
+        value: z.string()
+      })).optional()
     })
   ).min(1),
 })

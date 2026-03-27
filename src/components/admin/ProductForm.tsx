@@ -5,15 +5,20 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, UploadCloud, X, Save, AlertCircle } from 'lucide-react'
+import ProductOptionsConfigurator from './ProductOptionsConfigurator'
 
 export default function ProductForm({
   product,
   categories,
   action,
+  initialOptions,
+  initialVariants,
 }: {
   product?: any
   categories: any[]
   action: (formData: FormData) => Promise<void>
+  initialOptions?: any[]
+  initialVariants?: any[]
 }) {
   const router = useRouter()
   const [images, setImages] = useState<string[]>(product?.images || [])
@@ -61,6 +66,10 @@ export default function ProductForm({
     try {
       const formData = new FormData(e.currentTarget)
       formData.append('images', JSON.stringify(images))
+      
+      // La subida de options y variants ya viene en inputs hidden desde ProductOptionsConfigurator, 
+      // y están listos como JSON strings ('options' y 'variants')
+      
       if (!formData.get('active')) formData.set('active', 'false')
       else formData.set('active', 'true')
 
@@ -83,7 +92,7 @@ export default function ProductForm({
       </div>
 
       <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
+        <div className="md:col-span-3 grid md:grid-cols-2 gap-6">
           <div className="card p-6 space-y-4">
             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3">Información básica</h2>
 
@@ -123,7 +132,15 @@ export default function ProductForm({
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="md:col-span-3">
+          <ProductOptionsConfigurator 
+            initialOptions={initialOptions || product?.options || []}
+            initialVariants={initialVariants || product?.variants || []}
+            basePrice={product?.price || 0}
+          />
+        </div>
+
+        <div className="md:col-span-3 space-y-6">
           <div className="card p-6">
             <h2 className="font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">Clasificación</h2>
 

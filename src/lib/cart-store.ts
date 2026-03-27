@@ -10,15 +10,17 @@ export interface CartItem {
   notes?: string
   fileUrl?: string
   designRequested?: boolean
+  selectedOptions?: { name: string; value: string }[]
+  cartItemId?: string // Generated on add to uniquely identify configurations
 }
 
 interface CartStore {
   items: CartItem[]
   addItem: (item: CartItem) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
-  updateNotes: (productId: string, notes: string) => void
-  updateItemOptions: (productId: string, options: { fileUrl?: string; designRequested?: boolean }) => void
+  removeItem: (cartItemId: string) => void
+  updateQuantity: (cartItemId: string, quantity: number) => void
+  updateNotes: (cartItemId: string, notes: string) => void
+  updateItemOptions: (cartItemId: string, options: { fileUrl?: string; designRequested?: boolean }) => void
   clearCart: () => void
   total: () => number
   itemCount: () => number
@@ -31,43 +33,51 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (item) => {
         set((state) => {
-          const existing = state.items.find((i) => i.productId === item.productId)
+          // Generate a unique identifier based on product ID and its exact configuration
+          const optionsHash = item.selectedOptions 
+            ? JSON.stringify(item.selectedOptions.sort((a, b) => a.name.localeCompare(b.name)))
+            : ''
+          const cartItemId = item.cartItemId || `${item.productId}-${optionsHash}`
+
+          const itemWithId = { ...item, cartItemId }
+
+          const existing = state.items.find((i) => i.cartItemId === cartItemId)
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.productId === item.productId
+                i.cartItemId === cartItemId
                   ? { ...i, quantity: i.quantity + item.quantity }
                   : i
               ),
             }
           }
-          return { items: [...state.items, item] }
+          return { items: [...state.items, itemWithId] }
         })
       },
 
-      removeItem: (productId) =>
+      removeItem: (cartItemId) =>
         set((state) => ({
-          items: state.items.filter((i) => i.productId !== productId),
+          items: state.items.filter((i) => i.cartItemId !== cartItemId),
         })),
 
-      updateQuantity: (productId, quantity) =>
+      updateQuantity: (cartItemId, quantity) =>
         set((state) => ({
           items: state.items.map((i) =>
-            i.productId === productId ? { ...i, quantity } : i
+            i.cartItemId === cartItemId ? { ...i, quantity } : i
           ),
         })),
 
-      updateNotes: (productId, notes) =>
+      updateNotes: (cartItemId, notes) =>
         set((state) => ({
           items: state.items.map((i) =>
-            i.productId === productId ? { ...i, notes } : i
+            i.cartItemId === cartItemId ? { ...i, notes } : i
           ),
         })),
 
-      updateItemOptions: (productId, options) =>
+      updateItemOptions: (cartItemId, options) =>
         set((state) => ({
           items: state.items.map((i) =>
-            i.productId === productId ? { ...i, ...options } : i
+            i.cartItemId === cartItemId ? { ...i, ...options } : i
           ),
         })),
 

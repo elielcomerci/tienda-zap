@@ -1,11 +1,11 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getProduct, getProducts } from '@/lib/actions/products'
-import AddToCartButton from '@/components/public/AddToCartButton'
+import { getProduct } from '@/lib/actions/products'
+import ProductConfigurator from '@/components/public/ProductConfigurator'
 import { Package } from 'lucide-react'
 
-
 export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const product = await getProduct(slug)
@@ -50,29 +50,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           {product.description && (
             <p className="text-gray-600 mb-6 leading-relaxed">{product.description}</p>
           )}
-          <div className="card p-5 mb-6">
-            <p className="text-3xl font-black text-gray-900 mb-1">
-              ${product.price.toLocaleString('es-AR')}
-            </p>
-            <p className="text-sm text-gray-500">Precio unitario · IVA incluido</p>
-          </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-400'}`} />
-            <p className="text-sm text-gray-600">
-              {product.stock > 0 ? `${product.stock} unidades disponibles` : 'Sin stock — consultarnos'}
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <AddToCartButton product={{
-              productId: product.id,
-              name: product.name,
-              price: product.price,
-              image: product.images[0] || '',
-              quantity: 1,
-            }} />
-          </div>
+          {/* Configurator handles both simple and variant products */}
+          <ProductConfigurator product={product} />
 
           <div className="mt-6 p-4 bg-orange-50 rounded-xl">
             <div className="flex items-start gap-2">
