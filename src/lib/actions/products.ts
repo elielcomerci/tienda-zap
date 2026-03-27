@@ -5,6 +5,7 @@ import { productSchema } from '@/lib/validations'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
+import { slugify } from '@/lib/slug'
 
 async function requireAdmin() {
   const session = await auth()
@@ -13,12 +14,42 @@ async function requireAdmin() {
   }
 }
 
+async function ensureUniqueProductSlug(baseSlug: string, excludeProductId?: string) {
+  let candidate = baseSlug
+  let suffix = 2
+
+  while (true) {
+    const existing = await prisma.product.findFirst({
+      where: {
+        slug: candidate,
+        ...(excludeProductId ? { NOT: { id: excludeProductId } } : {}),
+      },
+      select: { id: true },
+    })
+
+    if (!existing) {
+      return candidate
+    }
+
+    candidate = `${baseSlug}-${suffix}`
+    suffix += 1
+  }
+}
+
 export async function createProduct(formData: FormData) {
   await requireAdmin()
 
+  const name = (formData.get('name') as string) || ''
+  const requestedSlug = (formData.get('slug') as string) || name
+  const normalizedSlug = slugify(requestedSlug)
+
+  if (!normalizedSlug) {
+    throw new Error('El nombre del producto debe incluir letras o números para generar un slug válido')
+  }
+
   const raw = {
-    name: formData.get('name') as string,
-    slug: formData.get('slug') as string,
+    name,
+    slug: normalizedSlug,
     description: formData.get('description') as string,
     price: formData.get('price'),
     categoryId: formData.get('categoryId') as string,
@@ -30,6 +61,7 @@ export async function createProduct(formData: FormData) {
   }
 
   const data = productSchema.parse(raw)
+  data.slug = await ensureUniqueProductSlug(data.slug)
 
   if (data.options.length > 0 && data.variants.length > 0) {
     data.price = 0
@@ -98,9 +130,17 @@ export async function createProduct(formData: FormData) {
 export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin()
 
+  const name = (formData.get('name') as string) || ''
+  const requestedSlug = (formData.get('slug') as string) || name
+  const normalizedSlug = slugify(requestedSlug)
+
+  if (!normalizedSlug) {
+    throw new Error('El nombre del producto debe incluir letras o números para generar un slug válido')
+  }
+
   const raw = {
-    name: formData.get('name') as string,
-    slug: formData.get('slug') as string,
+    name,
+    slug: normalizedSlug,
     description: formData.get('description') as string,
     price: formData.get('price'),
     categoryId: formData.get('categoryId') as string,
@@ -112,6 +152,7 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   const data = productSchema.parse(raw)
+  data.slug = await ensureUniqueProductSlug(data.slug, id)
 
   if (data.options.length > 0 && data.variants.length > 0) {
     data.price = 0
