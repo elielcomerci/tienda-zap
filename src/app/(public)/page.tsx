@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getCategories } from '@/lib/actions/categories'
-import { getProducts } from '@/lib/actions/products'
+import { getCategories } from '@/lib/categories'
+import { getProducts } from '@/lib/products'
 import { ArrowRight, Star, Truck, Shield, Zap } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'

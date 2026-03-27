@@ -2,16 +2,11 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 
 async function requireAdmin() {
   const session = await auth()
   if (!session || session.user?.role !== 'ADMIN') throw new Error('No autorizado')
-}
-
-export async function getCategories() {
-  return prisma.category.findMany({ orderBy: { name: 'asc' } })
 }
 
 export async function createCategory(formData: FormData) {

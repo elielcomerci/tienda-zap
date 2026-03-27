@@ -3,7 +3,8 @@ export const metadata = {
   title: 'Categorías | ZAP Admin',
 }
 
-import { getCategories, createCategory, deleteCategory } from '@/lib/actions/categories'
+import { createCategory, deleteCategory } from '@/lib/actions/categories'
+import { getCategories } from '@/lib/categories'
 import { prisma } from '@/lib/prisma'
 import { Tag, Trash2, Plus } from 'lucide-react'
 

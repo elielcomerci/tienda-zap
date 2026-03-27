@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
-import { getAllProductsAdmin, deleteProduct, duplicateProduct } from '@/lib/actions/products'
+import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
+import { getAllProductsAdmin } from '@/lib/products'
 import { Plus, Edit2, Copy, Trash2, Tag, Search, Check, X } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'

@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getProduct } from '@/lib/actions/products'
+import { getProduct } from '@/lib/products'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import { Package } from 'lucide-react'

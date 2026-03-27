@@ -1,4 +1,4 @@
-import { getCategories } from '@/lib/actions/categories'
+import { getCategories } from '@/lib/categories'
 import { updateProduct } from '@/lib/actions/products'
 import ProductForm from '@/components/admin/ProductForm'
 import { notFound } from 'next/navigation'
