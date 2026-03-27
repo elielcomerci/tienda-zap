@@ -1,19 +1,23 @@
-import { auth } from '@/auth'
 import { redirect, notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { ArrowLeft, Package, Download, Palette } from 'lucide-react'
+import { ArrowLeft, Download, MessageSquare, Package, Palette } from 'lucide-react'
+import { auth } from '@/auth'
+import { getCustomerOrder } from '@/lib/actions/orders'
+import OrderFileUploader from '@/components/public/OrderFileUploader'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
+import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
 export const dynamic = 'force-dynamic'
 
 const statusLabel: Record<string, string> = {
   PENDING: 'Pendiente',
   PAID: 'Pagado',
-  PROCESSING: 'En producción',
+  PROCESSING: 'En produccion',
   READY: 'Listo para retirar',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
 }
+
 const statusColor: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
   PAID: 'bg-blue-100 text-blue-700',
@@ -32,18 +36,7 @@ export default async function MiOrdenPage({
   if (!session?.user?.id) redirect('/login')
 
   const { id } = await params
-
-  // Guard: order must belong to this user
-  const order = await prisma.order.findFirst({
-    where: { id, userId: session.user.id },
-    include: {
-      items: {
-        include: {
-          product: { select: { name: true, slug: true, images: true } },
-        },
-      },
-    },
-  })
+  const order = await getCustomerOrder(id)
 
   if (!order) notFound()
 
@@ -53,60 +46,90 @@ export default async function MiOrdenPage({
     CASH: 'Efectivo',
   }
 
+  const orderCode = getOrderDisplayCode(order.id)
+  const filesWhatsappUrl = buildWhatsappUrl(
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+    `Hola! Te envio los archivos de mi orden #${orderCode}.`
+  )
+  const hasUploadableItems = order.items.some((item) => !item.designRequested)
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <Link href="/perfil" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6">
+    <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+      <Link href="/perfil" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
         <ArrowLeft size={16} /> Volver a mi perfil
       </Link>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Package size={24} className="text-orange-500" /> Pedido
           </h1>
-          <p className="text-sm text-gray-400 font-mono mt-1">#{order.id.slice(-8).toUpperCase()}</p>
+          <p className="text-sm text-gray-400 font-mono mt-1">#{orderCode}</p>
         </div>
         <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${statusColor[order.status]}`}>
           {statusLabel[order.status]}
         </span>
       </div>
 
-      {/* Items */}
-      <div className="card overflow-hidden mb-6">
+      <div className="card overflow-hidden">
         <div className="divide-y divide-gray-100">
-          {order.items.map((item) => (
-            <div key={item.id} className="p-4 flex items-center gap-4">
-              {item.product.images[0] ? (
-                <img src={item.product.images[0]} alt={item.product.name}
-                  className="w-14 h-14 rounded-xl object-cover bg-gray-100" />
-              ) : (
-                <div className="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center text-2xl">🖨️</div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm">{item.product.name}</p>
-                {item.notes && <p className="text-xs text-gray-400 mt-0.5">Nota: {item.notes}</p>}
-                
-                {(item.fileUrl || item.designRequested) && (
-                  <div className="mt-2 flex items-center gap-2">
-                    {item.fileUrl && (
-                      <a href={item.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors">
-                        <Download size={14} /> Bajar archivo
+          {order.items.map((item) => {
+            const downloadHref = `/api/orders/${order.id}/items/${item.id}/download`
+            const hasUploadedFile = Boolean(item.fileObjectKey || item.fileUrl)
+
+            return (
+              <div key={item.id} className="p-4 flex items-center gap-4">
+                {item.product.images[0] ? (
+                  <img
+                    src={item.product.images[0]}
+                    alt={item.product.name}
+                    className="w-14 h-14 rounded-xl object-cover bg-gray-100"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center text-2xl">
+                    P
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm">{item.product.name}</p>
+                  {item.notes && <p className="text-xs text-gray-400 mt-0.5">Nota: {item.notes}</p>}
+
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {hasUploadedFile && (
+                      <a
+                        href={downloadHref}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
+                      >
+                        <Download size={14} /> Descargar archivo
                       </a>
+                    )}
+                    {item.artworkSubmissionChannel === 'WHATSAPP' && !hasUploadedFile && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
+                        <MessageSquare size={14} /> Envio por WhatsApp
+                      </span>
                     )}
                     {item.designRequested && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded">
-                        <Palette size={14} /> Requiere diseño
+                        <Palette size={14} /> Requiere diseno
+                      </span>
+                    )}
+                    {!item.designRequested && !hasUploadedFile && item.artworkSubmissionChannel !== 'WHATSAPP' && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                        <Package size={14} /> Esperando archivo
                       </span>
                     )}
                   </div>
-                )}
-                <p className="text-xs text-gray-500 mt-1">{item.quantity} × ${item.unitPrice.toLocaleString('es-AR')}</p>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    {item.quantity} x ${item.unitPrice.toLocaleString('es-AR')}
+                  </p>
+                </div>
+                <p className="font-bold text-gray-900 shrink-0">
+                  ${(item.quantity * item.unitPrice).toLocaleString('es-AR')}
+                </p>
               </div>
-              <p className="font-bold text-gray-900 shrink-0">
-                ${(item.quantity * item.unitPrice).toLocaleString('es-AR')}
-              </p>
-            </div>
-          ))}
+            )
+          })}
         </div>
         <div className="p-4 bg-gray-50 flex justify-between font-bold text-gray-900">
           <span>Total</span>
@@ -114,20 +137,29 @@ export default async function MiOrdenPage({
         </div>
       </div>
 
-      {/* Info */}
+      {hasUploadableItems && (
+        <OrderFileUploader orderId={order.id} whatsappUrl={filesWhatsappUrl} items={order.items as any} />
+      )}
+
       <div className="card p-5 space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-gray-500">Fecha</span>
-          <span className="font-medium">{new Date(order.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+          <span className="font-medium">
+            {new Date(order.createdAt).toLocaleDateString('es-AR', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-500">Forma de pago</span>
           <span className="font-medium">{paymentLabels[order.paymentType]}</span>
         </div>
         {order.notes && (
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <span className="text-gray-500">Notas</span>
-            <span className="font-medium">{order.notes}</span>
+            <span className="font-medium text-right">{order.notes}</span>
           </div>
         )}
         {order.receiptUrl && (

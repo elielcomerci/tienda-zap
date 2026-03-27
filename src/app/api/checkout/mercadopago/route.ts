@@ -1,8 +1,14 @@
 import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { NextRequest } from 'next/server'
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { orderCheckoutSchema } from '@/lib/validations'
-import { auth } from '@/auth'
+import {
+  buildOrderAccessQuery,
+  createOrderPublicAccessToken,
+  hashOrderPublicAccessToken,
+} from '@/lib/order-access'
+import { resolveCheckoutOrderItems } from '@/lib/checkout-orders'
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -14,54 +20,43 @@ export async function POST(req: NextRequest) {
     const data = orderCheckoutSchema.parse(body)
 
     const session = await auth()
-    const userId = session?.user?.id
+    const publicAccessToken = createOrderPublicAccessToken()
+    const { resolvedItems, total } = await resolveCheckoutOrderItems(data.items)
 
-    // Crear orden pendiente
     const order = await prisma.order.create({
       data: {
         userId: session?.user?.id,
+        publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
         guestName: data.name,
         guestEmail: data.email,
         guestPhone: data.phone,
         status: 'PENDING',
         paymentType: 'MERCADOPAGO',
-        total: data.items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0),
+        total,
         notes: data.notes,
         items: {
-          create: data.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            notes: item.notes,
-            fileUrl: item.fileUrl,
-            designRequested: item.designRequested,
-            selectedOptions: item.selectedOptions ? {
-              create: item.selectedOptions.map((opt: any) => ({
-                optionName: opt.name,
-                valueName: opt.value
-              }))
-            } : undefined
-          })),
+          create: resolvedItems,
         },
       },
     })
 
-    // Crear preferencia en MercadoPago
+    const successQuery = buildOrderAccessQuery(order.id, publicAccessToken)
+
     const preference = await new Preference(client).create({
       body: {
-        items: data.items.map((i: any) => ({
-          id: i.productId,
-          title: i.name || 'Producto ZAP',
-          quantity: i.quantity,
-          unit_price: i.unitPrice,
+        items: data.items.map((item: any, index: number) => ({
+          id: item.productId,
+          title: item.name || 'Producto ZAP',
+          quantity: item.quantity,
+          unit_price: resolvedItems[index]?.unitPrice || item.unitPrice,
           currency_id: 'ARS',
         })),
         payer: { email: data.email },
         external_reference: order.id,
         back_urls: {
-          success: `${process.env.NEXTAUTH_URL}/checkout/success?orderId=${order.id}`,
+          success: `${process.env.NEXTAUTH_URL}/checkout/success?${successQuery}`,
           failure: `${process.env.NEXTAUTH_URL}/checkout?error=pago_fallido`,
-          pending: `${process.env.NEXTAUTH_URL}/checkout/success?orderId=${order.id}&pending=true`,
+          pending: `${process.env.NEXTAUTH_URL}/checkout/success?${successQuery}&pending=true`,
         },
         notification_url: `${process.env.NEXTAUTH_URL}/api/checkout/webhook`,
         auto_return: 'approved',
@@ -72,6 +67,7 @@ export async function POST(req: NextRequest) {
       preferenceId: preference.id,
       initPoint: preference.init_point,
       orderId: order.id,
+      accessToken: publicAccessToken,
     })
   } catch (error: any) {
     console.error('MP checkout error:', error)

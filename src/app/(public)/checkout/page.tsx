@@ -6,13 +6,13 @@ import { useCartStore } from '@/lib/cart-store'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CreditCard, Banknote, ArrowLeft, Smartphone } from 'lucide-react'
+import { CreditCard, Banknote, Smartphone } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(8, 'Teléfono inválido'),
+  email: z.string().email('Email invalido'),
+  phone: z.string().min(8, 'Telefono invalido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH']),
   notes: z.string().optional(),
 })
@@ -20,8 +20,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const paymentOptions = [
-  { value: 'MERCADOPAGO', label: 'MercadoPago', desc: 'Tarjeta de crédito, débito o MP', icon: CreditCard },
-  { value: 'TRANSFER', label: 'Transferencia', desc: 'CBU/CVU — subí tu comprobante', icon: Smartphone },
+  { value: 'MERCADOPAGO', label: 'MercadoPago', desc: 'Tarjeta de credito, debito o MP', icon: CreditCard },
+  { value: 'TRANSFER', label: 'Transferencia', desc: 'CBU/CVU - subi tu comprobante', icon: Smartphone },
   { value: 'CASH', label: 'Efectivo', desc: 'Retiro y pago en local', icon: Banknote },
 ] as const
 
@@ -31,7 +31,12 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { paymentType: 'MERCADOPAGO' },
   })
@@ -50,15 +55,14 @@ export default function CheckoutPage() {
 
     const payload = {
       ...data,
-      items: items.map((i) => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        unitPrice: i.price,
-        name: i.name,
-        notes: i.notes,
-        fileUrl: i.fileUrl,
-        designRequested: i.designRequested,
-        selectedOptions: i.selectedOptions,
+      items: items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        name: item.name,
+        notes: item.notes,
+        designRequested: item.designRequested,
+        selectedOptions: item.selectedOptions,
       })),
     }
 
@@ -82,10 +86,10 @@ export default function CheckoutPage() {
         const result = await res.json()
         if (!res.ok) throw new Error(result.error)
         clearCart()
-        router.push(`/checkout/success?orderId=${result.orderId}`)
+        router.push(`/checkout/success?${result.successQuery || `orderId=${result.orderId}`}`)
       }
     } catch (e: any) {
-      setError(e.message || 'Ocurrió un error, intentá de nuevo.')
+      setError(e.message || 'Ocurrio un error, intenta de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -97,19 +101,17 @@ export default function CheckoutPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Datos */}
             <div className="card p-6">
               <h2 className="font-bold text-gray-900 mb-4">Tus datos</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Nombre completo</label>
-                  <input {...register('name')} className="input" placeholder="Juan García" />
+                  <input {...register('name')} className="input" placeholder="Juan Garcia" />
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                 </div>
                 <div>
-                  <label className="label">Teléfono / WhatsApp</label>
+                  <label className="label">Telefono / WhatsApp</label>
                   <input {...register('phone')} className="input" placeholder="1134567890" />
                   {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                 </div>
@@ -120,58 +122,75 @@ export default function CheckoutPage() {
                 </div>
                 <div className="sm:col-span-2">
                   <label className="label">Notas adicionales (opcional)</label>
-                  <textarea {...register('notes')} className="input resize-none" rows={2}
-                    placeholder="Instrucciones especiales, tipo de papel, etc." />
+                  <textarea
+                    {...register('notes')}
+                    className="input resize-none"
+                    rows={2}
+                    placeholder="Instrucciones especiales, tipo de papel, etc."
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Pago */}
             <div className="card p-6">
-              <h2 className="font-bold text-gray-900 mb-4">Método de pago</h2>
+              <h2 className="font-bold text-gray-900 mb-4">Metodo de pago</h2>
               <div className="space-y-3">
-                {paymentOptions.map((opt) => (
-                  <label key={opt.value}
+                {paymentOptions.map((option) => (
+                  <label
+                    key={option.value}
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all
-                      ${paymentType === opt.value ? 'border-orange-400 bg-orange-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                    <input type="radio" value={opt.value} {...register('paymentType')} className="sr-only" />
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentType === opt.value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                      <opt.icon size={20} />
+                      ${paymentType === option.value ? 'border-orange-400 bg-orange-50' : 'border-gray-100 hover:border-gray-200'}`}
+                  >
+                    <input
+                      type="radio"
+                      value={option.value}
+                      {...register('paymentType')}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        paymentType === option.value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      <option.icon size={20} />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-gray-900">{opt.label}</p>
-                      <p className="text-xs text-gray-500">{opt.desc}</p>
+                      <p className="font-semibold text-sm text-gray-900">{option.label}</p>
+                      <p className="text-xs text-gray-500">{option.desc}</p>
                     </div>
                   </label>
                 ))}
               </div>
             </div>
 
-            {error && (
-              <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>
-            )}
+            {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>}
           </div>
 
-          {/* Summary */}
           <div>
             <div className="card p-5 sticky top-24">
-              <h2 className="font-bold text-gray-900 mb-4">Resumen y Archivos</h2>
+              <h2 className="font-bold text-gray-900 mb-4">Resumen y archivos</h2>
               <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2">
                 {items.map((item) => (
-                  <div key={item.cartItemId || item.productId} className="flex flex-col border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                  <div
+                    key={item.cartItemId || item.productId}
+                    className="flex flex-col border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                  >
                     <div className="flex flex-col mb-2">
                       <div className="flex justify-between text-sm font-medium">
-                        <span className="text-gray-800 mr-2">{item.name} ×{item.quantity}</span>
-                        <span className="shrink-0 text-orange-600">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                        <span className="text-gray-800 mr-2">
+                          {item.name} x{item.quantity}
+                        </span>
+                        <span className="shrink-0 text-orange-600">
+                          ${(item.price * item.quantity).toLocaleString('es-AR')}
+                        </span>
                       </div>
                       {item.selectedOptions && item.selectedOptions.length > 0 && (
                         <span className="text-xs text-gray-500 mt-0.5">
-                          {item.selectedOptions.map(o => o.value).join(' • ')}
+                          {item.selectedOptions.map((option) => option.value).join(' • ')}
                         </span>
                       )}
                     </div>
-                    
-                    {/* Opciones de archivo y diseño por producto */}
+
                     <OrderItemOptions item={item} />
                   </div>
                 ))}
@@ -181,7 +200,11 @@ export default function CheckoutPage() {
                 <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full justify-center !py-3.5">
-                {loading ? 'Procesando...' : paymentType === 'MERCADOPAGO' ? 'Pagar con MercadoPago' : 'Confirmar pedido'}
+                {loading
+                  ? 'Procesando...'
+                  : paymentType === 'MERCADOPAGO'
+                    ? 'Pagar con MercadoPago'
+                    : 'Confirmar pedido'}
               </button>
             </div>
           </div>

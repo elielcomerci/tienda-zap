@@ -1,9 +1,15 @@
-import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
-import { orderCheckoutSchema } from '@/lib/validations'
 import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
+import { orderCheckoutSchema } from '@/lib/validations'
+import {
+  buildOrderAccessQuery,
+  createOrderPublicAccessToken,
+  hashOrderPublicAccessToken,
+} from '@/lib/order-access'
+import { resolveCheckoutOrderItems } from '@/lib/checkout-orders'
 
-// POST /api/ordenes — crear orden TRANSFER o CASH
+// POST /api/ordenes - crear orden TRANSFER o CASH
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -14,37 +20,31 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await auth()
+    const publicAccessToken = createOrderPublicAccessToken()
+    const { resolvedItems, total } = await resolveCheckoutOrderItems(data.items)
 
     const order = await prisma.order.create({
       data: {
         userId: session?.user?.id,
+        publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
         guestName: data.name,
         guestEmail: data.email,
         guestPhone: data.phone,
         status: 'PENDING',
         paymentType: data.paymentType as 'TRANSFER' | 'CASH',
-        total: data.items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0),
+        total,
         notes: data.notes,
         items: {
-          create: data.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            notes: item.notes,
-            fileUrl: item.fileUrl,
-            designRequested: item.designRequested,
-            selectedOptions: item.selectedOptions ? {
-              create: item.selectedOptions.map((opt: any) => ({
-                optionName: opt.name,
-                valueName: opt.value
-              }))
-            } : undefined
-          })),
+          create: resolvedItems,
         },
       },
     })
 
-    return Response.json({ orderId: order.id })
+    return Response.json({
+      orderId: order.id,
+      accessToken: publicAccessToken,
+      successQuery: buildOrderAccessQuery(order.id, publicAccessToken),
+    })
   } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 })
   }

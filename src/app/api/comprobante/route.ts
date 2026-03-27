@@ -1,15 +1,28 @@
 import { put } from '@vercel/blob'
 import { NextRequest } from 'next/server'
+import { findAccessibleOrder } from '@/lib/order-access'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {
     const form = await req.formData()
-    const file = form.get('file') as File
-    const orderId = form.get('orderId') as string
+    const file = form.get('file') as File | null
+    const orderId = form.get('orderId') as string | null
+    const accessToken = form.get('accessToken') as string | null
 
     if (!file || !orderId) {
-      return Response.json({ error: 'Faltan parámetros' }, { status: 400 })
+      return Response.json({ error: 'Faltan parametros' }, { status: 400 })
+    }
+
+    const order = await findAccessibleOrder(orderId, accessToken || undefined, {
+      select: {
+        id: true,
+        status: true,
+      },
+    })
+
+    if (!order) {
+      return Response.json({ error: 'No autorizado' }, { status: 403 })
     }
 
     const blob = await put(`comprobantes/${orderId}-${Date.now()}-${file.name}`, file, {

@@ -39,7 +39,6 @@ export const orderCheckoutSchema = z.object({
       quantity: z.number().int().positive(),
       unitPrice: z.number().positive(),
       notes: z.string().optional(),
-      fileUrl: z.string().optional(),
       designRequested: z.boolean().optional(),
       selectedOptions: z.array(z.object({
         name: z.string(),

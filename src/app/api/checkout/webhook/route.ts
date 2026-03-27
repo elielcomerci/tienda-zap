@@ -1,6 +1,6 @@
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { syncOrderStatusAfterPayment } from '@/lib/orders-workflow'
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
@@ -15,21 +15,17 @@ export async function POST(req: NextRequest) {
       const payment = await new Payment(client).get({ id: body.data.id })
 
       if (payment.status === 'approved' && payment.external_reference) {
-        await prisma.order.update({
-          where: { id: payment.external_reference },
-          data: {
-            status: 'PAID',
-            paymentId: String(payment.id),
-          },
-        })
-        console.log(`✅ Orden ${payment.external_reference} marcada como PAID`)
+        const nextStatus = await syncOrderStatusAfterPayment(
+          payment.external_reference,
+          String(payment.id)
+        )
+        console.log(`Orden ${payment.external_reference} actualizada a ${nextStatus}`)
       }
     }
 
     return Response.json({ ok: true })
   } catch (error) {
     console.error('Webhook error:', error)
-    // Siempre retornar 200 para que MP no reintente
     return Response.json({ ok: true })
   }
 }
