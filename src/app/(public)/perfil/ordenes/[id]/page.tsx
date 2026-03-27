@@ -2,7 +2,7 @@ import { auth } from '@/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { ArrowLeft, Package } from 'lucide-react'
+import { ArrowLeft, Package, Download, Palette } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,7 +85,22 @@ export default async function MiOrdenPage({
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 text-sm">{item.product.name}</p>
                 {item.notes && <p className="text-xs text-gray-400 mt-0.5">Nota: {item.notes}</p>}
-                <p className="text-xs text-gray-500 mt-0.5">{item.quantity} × ${item.unitPrice.toLocaleString('es-AR')}</p>
+                
+                {(item.fileUrl || item.designRequested) && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {item.fileUrl && (
+                      <a href={item.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors">
+                        <Download size={14} /> Bajar archivo
+                      </a>
+                    )}
+                    {item.designRequested && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                        <Palette size={14} /> Requiere diseño
+                      </span>
+                    )}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-1">{item.quantity} × ${item.unitPrice.toLocaleString('es-AR')}</p>
               </div>
               <p className="font-bold text-gray-900 shrink-0">
                 ${(item.quantity * item.unitPrice).toLocaleString('es-AR')}

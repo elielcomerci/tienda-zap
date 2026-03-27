@@ -23,6 +23,8 @@ export const orderCheckoutSchema = z.object({
       quantity: z.number().int().positive(),
       unitPrice: z.number().positive(),
       notes: z.string().optional(),
+      fileUrl: z.string().optional(),
+      designRequested: z.boolean().optional(),
     })
   ).min(1),
 })

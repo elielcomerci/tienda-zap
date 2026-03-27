@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getOrder } from '@/lib/actions/orders'
-import { CheckCircle2, Copy } from 'lucide-react'
+import { CheckCircle2, Copy, MessageSquare } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export default async function CheckoutSuccessPage({
@@ -21,6 +21,7 @@ export default async function CheckoutSuccessPage({
   }
 
   const order = await getOrder(orderId)
+  const needsDesign = order?.items.some((i) => i.designRequested)
 
   return (
     <div className="max-w-xl mx-auto px-4 py-20 text-center">
@@ -85,6 +86,24 @@ export default async function CheckoutSuccessPage({
       <Link href="/" className="btn-secondary !w-full justify-center">
         Volver a la tienda
       </Link>
+
+      {needsDesign && (
+        <div className="bg-orange-50 rounded-2xl shadow-sm p-6 border border-orange-200 mt-6 text-center">
+          <MessageSquare size={32} className="mx-auto text-orange-500 mb-3" />
+          <h3 className="font-bold text-gray-900 mb-2">¡Solicitaste Diseño!</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Hacé clic abajo para enviarnos los detalles por WhatsApp y terminar de coordinar tus productos.
+          </p>
+          <a
+            href={`https://wa.me/5491134567890?text=${encodeURIComponent(`Hola! Acabo de pagar la orden #${orderId.slice(-8).toUpperCase()} y necesito coordinar el diseño.`)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary w-full justify-center !bg-[#25D366] !shadow-[#25D366]/30 hover:!bg-[#1ebc5a]"
+          >
+            Coordinar diseño por WhatsApp
+          </a>
+        </div>
+      )}
     </div>
   )
 }

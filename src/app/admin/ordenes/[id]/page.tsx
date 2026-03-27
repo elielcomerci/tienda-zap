@@ -1,7 +1,7 @@
 import { getOrder, updateOrderStatus, confirmManualPayment } from '@/lib/actions/orders'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CreditCard, Banknote, Smartphone, Receipt, CheckCircle, PackageOpen } from 'lucide-react'
+import { ArrowLeft, CreditCard, Banknote, Smartphone, Receipt, CheckCircle, PackageOpen, Download, Palette } from 'lucide-react'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }
 
@@ -114,6 +114,21 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                       </p>
                     </div>
                     <p className="text-xs text-gray-500 mb-2">${item.unitPrice.toLocaleString('es-AR')} c/u</p>
+
+                    {(item.fileUrl || item.designRequested) && (
+                      <div className="flex gap-2 mb-3">
+                        {item.fileUrl && (
+                          <a href={item.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">
+                            <Download size={14} /> Descargar Archivo Cliente
+                          </a>
+                        )}
+                        {item.designRequested && (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg">
+                            <Palette size={14} /> Diseño a coordinar
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {item.notes && (
                       <div className="bg-white p-3 rounded-lg border border-orange-100 text-sm text-gray-700">

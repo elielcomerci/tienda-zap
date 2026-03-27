@@ -8,6 +8,8 @@ export interface CartItem {
   image: string
   quantity: number
   notes?: string
+  fileUrl?: string
+  designRequested?: boolean
 }
 
 interface CartStore {
@@ -16,6 +18,7 @@ interface CartStore {
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   updateNotes: (productId: string, notes: string) => void
+  updateItemOptions: (productId: string, options: { fileUrl?: string; designRequested?: boolean }) => void
   clearCart: () => void
   total: () => number
   itemCount: () => number
@@ -58,6 +61,13 @@ export const useCartStore = create<CartStore>()(
         set((state) => ({
           items: state.items.map((i) =>
             i.productId === productId ? { ...i, notes } : i
+          ),
+        })),
+
+      updateItemOptions: (productId, options) =>
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.productId === productId ? { ...i, ...options } : i
           ),
         })),
 

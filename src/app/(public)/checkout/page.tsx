@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { CreditCard, Banknote, ArrowLeft, Smartphone } from 'lucide-react'
+import OrderItemOptions from './OrderItemOptions'
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
@@ -151,12 +152,17 @@ export default function CheckoutPage() {
           {/* Summary */}
           <div>
             <div className="card p-5 sticky top-24">
-              <h2 className="font-bold text-gray-900 mb-4">Resumen</h2>
-              <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+              <h2 className="font-bold text-gray-900 mb-4">Resumen y Archivos</h2>
+              <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2">
                 {items.map((item) => (
-                  <div key={item.productId} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate mr-2">{item.name} ×{item.quantity}</span>
-                    <span className="font-medium shrink-0">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                  <div key={item.productId} className="flex flex-col border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex justify-between text-sm font-medium">
+                      <span className="text-gray-800 mr-2">{item.name} ×{item.quantity}</span>
+                      <span className="shrink-0 text-orange-600">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
+                    </div>
+                    
+                    {/* Opciones de archivo y diseño por producto */}
+                    <OrderItemOptions item={item} />
                   </div>
                 ))}
               </div>

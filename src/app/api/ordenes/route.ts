@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
             quantity: i.quantity,
             unitPrice: i.unitPrice,
             notes: i.notes,
+            fileUrl: i.fileUrl,
+            designRequested: i.designRequested ?? false,
           })),
         },
       },
