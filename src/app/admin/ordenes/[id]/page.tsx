@@ -12,7 +12,8 @@ import {
   Receipt,
   Smartphone,
 } from 'lucide-react'
-import { confirmManualPayment, getAdminOrder, updateOrderStatus } from '@/lib/actions/orders'
+import { confirmManualPayment, updateOrderStatus } from '@/lib/actions/orders'
+import { getAdminOrder } from '@/lib/orders'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }

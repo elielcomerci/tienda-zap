@@ -1,4 +1,4 @@
-import { getDashboardStats } from '@/lib/actions/orders'
+import { getDashboardStats } from '@/lib/orders'
 import { DollarSign, PackageOpen, ShoppingBag, Truck } from 'lucide-react'
 import Link from 'next/link'
 

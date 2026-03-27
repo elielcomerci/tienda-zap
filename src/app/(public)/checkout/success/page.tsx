@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { CheckCircle2, MessageSquare } from 'lucide-react'
-import { getOrderForViewer } from '@/lib/actions/orders'
+import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
