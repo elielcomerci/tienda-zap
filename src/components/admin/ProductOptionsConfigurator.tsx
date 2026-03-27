@@ -40,13 +40,19 @@ export default function ProductOptionsConfigurator({
   initialOptions = [],
   initialVariants = [],
   basePrice = 0,
+  onOptionsChange,
 }: {
   initialOptions?: Option[]
   initialVariants?: Variant[]
   basePrice?: number
+  onOptionsChange?: (hasOptions: boolean) => void
 }) {
   const [options, setOptions] = useState<Option[]>(initialOptions)
   const [variants, setVariants] = useState<Variant[]>(initialVariants)
+
+  useEffect(() => {
+    onOptionsChange?.(options.length > 0)
+  }, [options, onOptionsChange])
 
   // Opciones base
   const addOption = () => {

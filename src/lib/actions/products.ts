@@ -31,6 +31,11 @@ export async function createProduct(formData: FormData) {
 
   const data = productSchema.parse(raw)
 
+  if (data.options.length > 0 && data.variants.length > 0) {
+    data.price = 0
+    data.stock = 0
+  }
+
   // Crear producto con sus relaciones anidadas
   const createdProduct = await prisma.product.create({ 
     data: {
@@ -107,6 +112,11 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   const data = productSchema.parse(raw)
+
+  if (data.options.length > 0 && data.variants.length > 0) {
+    data.price = 0
+    data.stock = 0
+  }
 
   // Eliminar opciones y variantes viejas para evitar inconsistencias
   await prisma.productOption.deleteMany({ where: { productId: id } })
@@ -205,7 +215,14 @@ export async function getProducts(categorySlug?: string, search?: string) {
         ],
       }),
     },
-    include: { category: true },
+    include: {
+      category: true,
+      variants: {
+        select: { price: true },
+        orderBy: { price: 'asc' },
+        take: 1
+      }
+    },
     orderBy: { createdAt: 'desc' },
   })
 }

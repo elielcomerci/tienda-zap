@@ -25,6 +25,7 @@ export default function ProductForm({
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasVariants, setHasVariants] = useState((initialOptions?.length || product?.options?.length) > 0 || false)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
@@ -120,15 +121,20 @@ export default function ProductForm({
                 <label className="label">Precio ARS *</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">$</span>
-                  <input type="number" name="price" defaultValue={product?.price} step="0.01" min="0" required className="input !pl-8" placeholder="0.00" />
+                  <input type="number" name="price" defaultValue={product?.price} step="0.01" min="0" required={!hasVariants} disabled={hasVariants} className="input !pl-8 disabled:opacity-60 disabled:bg-gray-50" placeholder="0.00" />
                 </div>
               </div>
 
               <div>
                 <label className="label">Stock inicial *</label>
-                <input type="number" name="stock" defaultValue={product?.stock ?? 100} min="0" required className="input" />
+                <input type="number" name="stock" defaultValue={product?.stock ?? 100} min="0" required={!hasVariants} disabled={hasVariants} className="input disabled:opacity-60 disabled:bg-gray-50" />
               </div>
             </div>
+            {hasVariants && (
+              <p className="text-xs text-orange-600 mt-3 font-medium bg-orange-50 p-2.5 rounded-xl border border-orange-100 flex items-center gap-2">
+                 <AlertCircle size={14} /> El precio y stock se definen individualmente en la matriz de variantes.
+              </p>
+            )}
           </div>
         </div>
 
@@ -137,6 +143,7 @@ export default function ProductForm({
             initialOptions={initialOptions || product?.options || []}
             initialVariants={initialVariants || product?.variants || []}
             basePrice={product?.price || 0}
+            onOptionsChange={setHasVariants}
           />
         </div>
 

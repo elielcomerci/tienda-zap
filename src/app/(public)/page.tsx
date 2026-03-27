@@ -106,25 +106,33 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {featuredProducts.map((product) => (
-              <Link key={product.id} href={`/productos/${product.slug}`} className="card overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all group">
-                <div className="aspect-square bg-gray-100 overflow-hidden">
-                  {product.images[0] ? (
-                    <Image src={product.images[0]} alt={product.name} width={400} height={400}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">🖨️</div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <p className="text-xs text-orange-500 font-semibold mb-1">{product.category.name}</p>
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
-                  <p className="text-lg font-bold text-gray-900">
-                    ${product.price.toLocaleString('es-AR')}
-                  </p>
-                </div>
-              </Link>
-            ))}
+            {featuredProducts.map((product) => {
+              const hasVariants = product.variants && product.variants.length > 0
+              const displayPrice = hasVariants ? product.variants[0]?.price : product.price
+              
+              return (
+                <Link key={product.id} href={`/productos/${product.slug}`} className="card overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all group">
+                  <div className="aspect-square bg-gray-100 overflow-hidden">
+                    {product.images[0] ? (
+                      <Image src={product.images[0]} alt={product.name} width={400} height={400}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl">🖨️</div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs text-orange-500 font-semibold mb-1">{product.category.name}</p>
+                    <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
+                    <div className="flex flex-col">
+                      {hasVariants && <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Desde</span>}
+                      <p className="text-lg font-bold text-gray-900">
+                        ${displayPrice.toLocaleString('es-AR')}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </section>
       )}

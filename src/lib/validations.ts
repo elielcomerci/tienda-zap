@@ -4,7 +4,7 @@ export const productSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   slug: z.string().min(2, 'El slug es requerido').regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones'),
   description: z.string().optional(),
-  price: z.coerce.number().positive('El precio debe ser mayor a 0'),
+  price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0'),
   categoryId: z.string().min(1, 'Seleccioná una categoría'),
   stock: z.coerce.number().int().min(0).default(0),
   images: z.array(z.string().url()).min(1, 'Agregá al menos una imagen'),

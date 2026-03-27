@@ -68,6 +68,11 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
 
   const currentPrice = activeVariant ? activeVariant.price : product.price
 
+  const minPrice = useMemo(() => {
+    if (!hasOptions || !product.variants || product.variants.length === 0) return product.price
+    return Math.min(...product.variants.map((v: any) => v.price))
+  }, [product.variants, product.price, hasOptions])
+
   const allRequiredSelected = useMemo(() => {
     if (!hasOptions) return true
     return product.options
@@ -188,13 +193,16 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             <p className="text-gray-400 text-sm font-medium mb-1">Precio Final</p>
             <div className="flex items-end gap-2">
               <span className="text-4xl font-black tabular-nums">
-                ${currentPrice.toLocaleString('es-AR')}
+                {!activeVariant && hasOptions ? (
+                  <span className="text-2xl text-gray-400 font-bold mr-1">Desde</span>
+                ) : null}
+                ${(!activeVariant && hasOptions ? minPrice : currentPrice).toLocaleString('es-AR')}
               </span>
               <span className="text-gray-400 text-sm mb-1.5 font-medium">ARS</span>
             </div>
-            {!activeVariant && product.options.length > 0 && (
+            {!activeVariant && hasOptions && (
               <p className="text-xs text-orange-300 mt-1.5 font-medium">
-                Seleccioná las opciones para ver el precio exacto
+                Seleccioná las opciones exactas para ver tu precio
               </p>
             )}
           </div>

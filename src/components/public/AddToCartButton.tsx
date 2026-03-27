@@ -1,10 +1,11 @@
 'use client'
 
 import { useCartStore, CartItem } from '@/lib/cart-store'
-import { ShoppingCart, Check } from 'lucide-react'
+import { ShoppingCart, Check, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
+import Link from 'next/link'
 
-export default function AddToCartButton({ product }: { product: CartItem }) {
+export default function AddToCartButton({ product, hasVariants, slug }: { product: CartItem, hasVariants?: boolean, slug?: string }) {
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
 
@@ -12,6 +13,17 @@ export default function AddToCartButton({ product }: { product: CartItem }) {
     addItem(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
+  }
+
+  if (hasVariants && slug) {
+    return (
+      <Link
+        href={`/productos/${slug}`}
+        className="btn-secondary !text-xs !py-1.5 !px-3 font-semibold !text-orange-600 !border-orange-200 hover:!bg-orange-50"
+      >
+        Opciones <ArrowRight size={14} className="ml-1" />
+      </Link>
+    )
   }
 
   return (
