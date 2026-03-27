@@ -21,7 +21,7 @@ export const productSchema = z.object({
   variants: z.array(z.object({
     id: z.string().optional(),
     combinations: z.record(z.string(), z.string()), // { "Cantidad": "100u" }
-    price: z.coerce.number().positive(),
+    price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0'),
     sku: z.string().optional(),
     stock: z.coerce.number().int().optional(),
   })).optional().default([])
@@ -37,7 +37,7 @@ export const orderCheckoutSchema = z.object({
     z.object({
       productId: z.string(),
       quantity: z.number().int().positive(),
-      unitPrice: z.number().positive(),
+      unitPrice: z.number().min(0),
       notes: z.string().optional(),
       designRequested: z.boolean().optional(),
       selectedOptions: z.array(z.object({

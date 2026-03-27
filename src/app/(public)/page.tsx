@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { getCategories } from '@/lib/categories'
 import { getProducts } from '@/lib/products'
 import { ArrowRight, Star, Truck, Shield, Zap } from 'lucide-react'
+import { getProductDisplayPrice } from '@/lib/product-pricing'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -108,7 +109,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {featuredProducts.map((product) => {
               const hasVariants = product.variants && product.variants.length > 0
-              const displayPrice = hasVariants ? product.variants[0]?.price : product.price
+              const displayPrice = getProductDisplayPrice(product)
               
               return (
                 <Link key={product.id} href={`/productos/${product.slug}`} className="card overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all group">
@@ -124,9 +125,11 @@ export default async function HomePage() {
                     <p className="text-xs text-orange-500 font-semibold mb-1">{product.category.name}</p>
                     <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{product.name}</h3>
                     <div className="flex flex-col">
-                      {hasVariants && <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Desde</span>}
+                      {hasVariants && displayPrice !== null && (
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Desde</span>
+                      )}
                       <p className="text-lg font-bold text-gray-900">
-                        ${displayPrice.toLocaleString('es-AR')}
+                        {displayPrice !== null ? `$${displayPrice.toLocaleString('es-AR')}` : 'Consultar'}
                       </p>
                     </div>
                   </div>

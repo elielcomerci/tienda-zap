@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const hasUnavailableItems = items.some((item) => item.price <= 0)
 
   const {
     register,
@@ -50,6 +51,11 @@ export default function CheckoutPage() {
   if (items.length === 0) return null
 
   const onSubmit = async (data: FormData) => {
+    if (hasUnavailableItems) {
+      setError('Hay productos con precio 0 marcados como no disponibles. Revisá el carrito antes de continuar.')
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -169,6 +175,11 @@ export default function CheckoutPage() {
           <div>
             <div className="card p-5 sticky top-24">
               <h2 className="font-bold text-gray-900 mb-4">Resumen y archivos</h2>
+              {hasUnavailableItems && (
+                <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                  Hay productos con precio 0 en tu carrito. Quitalos o elegí una variante disponible antes de confirmar.
+                </div>
+              )}
               <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div
@@ -199,9 +210,19 @@ export default function CheckoutPage() {
                 <span>Total</span>
                 <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
               </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full justify-center !py-3.5">
+              <button
+                type="submit"
+                disabled={loading || hasUnavailableItems}
+                className={`w-full justify-center !py-3.5 ${
+                  loading || hasUnavailableItems
+                    ? 'btn-secondary !cursor-not-allowed !border-gray-200 !bg-gray-200 !text-gray-500 hover:!bg-gray-200'
+                    : 'btn-primary'
+                }`}
+              >
                 {loading
                   ? 'Procesando...'
+                  : hasUnavailableItems
+                    ? 'Revisá el carrito'
                   : paymentType === 'MERCADOPAGO'
                     ? 'Pagar con MercadoPago'
                     : 'Confirmar pedido'}

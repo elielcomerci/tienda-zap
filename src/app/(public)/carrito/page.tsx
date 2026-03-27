@@ -8,6 +8,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
 export default function CartPage() {
   const { items, removeItem, updateQuantity, updateNotes, total, clearCart } = useCartStore()
   const count = useCartStore((s) => s.itemCount())
+  const hasUnavailableItems = items.some((item) => item.price <= 0)
 
   if (items.length === 0) {
     return (
@@ -97,6 +98,11 @@ export default function CartPage() {
         <div className="space-y-4">
           <div className="card p-5 sticky top-24">
             <h2 className="font-bold text-gray-900 mb-4">Resumen del pedido</h2>
+            {hasUnavailableItems && (
+              <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                Hay productos con precio 0 marcados como no disponibles. Quitalos del carrito para continuar.
+              </div>
+            )}
             <div className="space-y-4 mb-4">
               {items.map((item) => (
                 <div key={item.cartItemId || item.productId} className="flex justify-between text-sm items-start gap-4">
@@ -117,9 +123,19 @@ export default function CartPage() {
               <span>Total</span>
               <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
             </div>
-            <Link href="/checkout" className="btn-primary w-full mt-5 justify-center !py-3.5">
-              Continuar <ArrowRight size={18} />
-            </Link>
+            {hasUnavailableItems ? (
+              <button
+                type="button"
+                disabled
+                className="mt-5 flex w-full cursor-not-allowed justify-center rounded-xl bg-gray-200 px-4 py-3.5 font-semibold text-gray-500"
+              >
+                Revisá el carrito
+              </button>
+            ) : (
+              <Link href="/checkout" className="btn-primary w-full mt-5 justify-center !py-3.5">
+                Continuar <ArrowRight size={18} />
+              </Link>
+            )}
           </div>
         </div>
       </div>

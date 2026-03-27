@@ -25,7 +25,6 @@ export async function getProducts(categorySlug?: string, search?: string) {
       variants: {
         select: { price: true },
         orderBy: { price: 'asc' },
-        take: 1,
       },
     },
     orderBy: { createdAt: 'desc' },

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getProducts } from '@/lib/products'
 import { getCategories } from '@/lib/categories'
 import AddToCartButton from '@/components/public/AddToCartButton'
+import { getProductDisplayPrice } from '@/lib/product-pricing'
 
 export const dynamic = 'force-dynamic'
 export default async function ProductsPage({
@@ -52,7 +53,7 @@ export default async function ProductsPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {products.map((product) => {
                 const hasVariants = product.variants && product.variants.length > 0
-                const displayPrice = hasVariants ? product.variants[0]?.price : product.price
+                const displayPrice = getProductDisplayPrice(product)
                 
                 return (
                   <div key={product.id} className="card overflow-hidden group">
@@ -73,19 +74,24 @@ export default async function ProductsPage({
                       </Link>
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex flex-col">
-                          {hasVariants && <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Desde</span>}
-                          <p className="text-lg font-bold">${displayPrice.toLocaleString('es-AR')}</p>
+                          {hasVariants && displayPrice !== null && (
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Desde</span>
+                          )}
+                          <p className="text-lg font-bold">
+                            {displayPrice !== null ? `$${displayPrice.toLocaleString('es-AR')}` : 'Consultar'}
+                          </p>
                         </div>
                         <AddToCartButton 
                           product={{
                             productId: product.id,
                             name: product.name,
-                            price: displayPrice,
+                            price: displayPrice ?? 0,
                             image: product.images[0] || '',
                             quantity: 1,
                           }} 
                           hasVariants={hasVariants}
                           slug={product.slug}
+                          disabled={!hasVariants && displayPrice === null}
                         />
                       </div>
                     </div>

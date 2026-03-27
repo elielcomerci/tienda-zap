@@ -105,6 +105,10 @@ export async function resolveCheckoutOrderItems(
       unitPrice = matchingVariant.price
     }
 
+    if (unitPrice <= 0) {
+      throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
+    }
+
     return {
       productId: product.id,
       quantity: item.quantity,

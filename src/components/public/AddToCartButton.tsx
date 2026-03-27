@@ -5,11 +5,22 @@ import { ShoppingCart, Check, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 
-export default function AddToCartButton({ product, hasVariants, slug }: { product: CartItem, hasVariants?: boolean, slug?: string }) {
+export default function AddToCartButton({
+  product,
+  hasVariants,
+  slug,
+  disabled = false,
+}: {
+  product: CartItem
+  hasVariants?: boolean
+  slug?: string
+  disabled?: boolean
+}) {
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
 
   const handleAdd = () => {
+    if (disabled) return
     addItem(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -29,8 +40,13 @@ export default function AddToCartButton({ product, hasVariants, slug }: { produc
   return (
     <button
       onClick={handleAdd}
+      disabled={disabled || added}
       className={`p-2.5 rounded-xl text-white transition-all shadow-sm ${
-        added ? 'bg-green-500 shadow-green-200' : 'bg-orange-500 hover:bg-orange-600 shadow-orange-200'
+        added
+          ? 'bg-green-500 shadow-green-200'
+          : disabled
+            ? 'cursor-not-allowed bg-gray-300 shadow-gray-200'
+            : 'bg-orange-500 hover:bg-orange-600 shadow-orange-200'
       }`}
     >
       {added ? <Check size={16} /> : <ShoppingCart size={16} />}
