@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { request as httpsRequest } from 'node:https'
 import { prisma } from '@/lib/prisma'
 import {
   PaymentFrequency,
@@ -25,6 +26,19 @@ type SeriesDataPoint = {
   date: string
   value: number
 }
+
+type IndecSeriesCacheEntry = {
+  expiresAt: number
+  data: SeriesDataPoint[]
+}
+
+const INDEC_CACHE_TTL_MS = 24 * 60 * 60 * 1000
+const globalForIndecCache = globalThis as typeof globalThis & {
+  indecSeriesCache?: Map<string, IndecSeriesCacheEntry>
+}
+const indecSeriesCache = globalForIndecCache.indecSeriesCache ?? new Map()
+
+globalForIndecCache.indecSeriesCache = indecSeriesCache
 
 function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100
@@ -65,25 +79,96 @@ function normalizeSeriesData(data: unknown[]) {
     })
 }
 
+function buildIndecCacheKey(searchParams: Record<string, string>) {
+  return Object.entries(searchParams)
+    .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&')
+}
+
+function requestIndecPayload(url: URL): Promise<IndecSeriesResponse> {
+  return new Promise((resolve, reject) => {
+    const request = httpsRequest(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'zap-tienda/1.0',
+        },
+      },
+      (response) => {
+        const chunks: Buffer[] = []
+
+        response.on('data', (chunk) => {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+        })
+
+        response.on('end', () => {
+          const body = Buffer.concat(chunks).toString('utf8')
+
+          if ((response.statusCode ?? 500) < 200 || (response.statusCode ?? 500) >= 300) {
+            reject(
+              new Error(
+                `Respuesta inesperada ${response.statusCode}: ${body.slice(0, 300)}`
+              )
+            )
+            return
+          }
+
+          try {
+            resolve(JSON.parse(body) as IndecSeriesResponse)
+          } catch (error) {
+            reject(
+              new Error(
+                `No pudimos parsear la respuesta del IPC INDEC: ${
+                  error instanceof Error ? error.message : 'JSON invalido'
+                }`
+              )
+            )
+          }
+        })
+      }
+    )
+
+    request.setTimeout(15000, () => {
+      request.destroy(new Error('Timeout consultando IPC INDEC'))
+    })
+
+    request.on('error', reject)
+    request.end()
+  })
+}
+
 async function fetchIndecSeriesData(
   searchParams: Record<string, string>
 ): Promise<SeriesDataPoint[]> {
+  const cacheKey = buildIndecCacheKey(searchParams)
+  const cachedEntry = indecSeriesCache.get(cacheKey)
+
+  if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
+    return cachedEntry.data
+  }
+
   const url = new URL('https://apis.datos.gob.ar/series/api/series')
 
   for (const [key, value] of Object.entries(searchParams)) {
     url.searchParams.set(key, value)
   }
 
-  const response = await fetch(url.toString(), {
-    next: { revalidate: 60 * 60 * 24 },
-  })
+  const payload = await requestIndecPayload(url)
+  const normalizedData = normalizeSeriesData(payload.data || [])
 
-  if (!response.ok) {
-    throw new Error(`Respuesta inesperada ${response.status}`)
+  if (normalizedData.length === 0) {
+    console.warn(`La API de IPC INDEC respondio sin datos para ${url.toString()}.`)
   }
 
-  const payload = (await response.json()) as IndecSeriesResponse
-  return normalizeSeriesData(payload.data || [])
+  indecSeriesCache.set(cacheKey, {
+    expiresAt: Date.now() + INDEC_CACHE_TTL_MS,
+    data: normalizedData,
+  })
+
+  return normalizedData
 }
 
 function buildAverageRateSnapshot(seriesData: SeriesDataPoint[], monthlyRates: number[]) {
@@ -167,6 +252,9 @@ export async function getIndecAverageRatePercent(
     })
 
     if (fallbackSeriesData.length < 13) {
+      console.warn(
+        `No alcanzan los datos del IPC INDEC para calcular el promedio. Serie=${normalizedSeriesId}, transformados=${transformedSeriesData.length}, base=${fallbackSeriesData.length}.`
+      )
       return null
     }
 
