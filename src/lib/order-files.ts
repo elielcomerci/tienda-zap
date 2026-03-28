@@ -106,17 +106,19 @@ export function orderItemHasArtworkFile(item: {
 }
 
 export function orderItemNeedsArtwork(item: {
+  isService?: boolean | null
   designRequested?: boolean | null
   fileObjectKey?: string | null
   fileUrl?: string | null
 }) {
-  return !item.designRequested && !orderItemHasArtworkFile(item)
+  return !item.isService && !item.designRequested && !orderItemHasArtworkFile(item)
 }
 
 export function orderItemIsProductionReady(item: {
+  isService?: boolean | null
   designRequested?: boolean | null
   fileObjectKey?: string | null
   fileUrl?: string | null
 }) {
-  return Boolean(item.designRequested || orderItemHasArtworkFile(item))
+  return Boolean(item.isService || item.designRequested || orderItemHasArtworkFile(item))
 }

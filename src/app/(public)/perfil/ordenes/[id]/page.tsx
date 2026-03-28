@@ -51,7 +51,7 @@ export default async function MiOrdenPage({
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     `Hola! Te envio los archivos de mi orden #${orderCode}.`
   )
-  const hasUploadableItems = order.items.some((item) => !item.designRequested)
+  const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
@@ -113,7 +113,12 @@ export default async function MiOrdenPage({
                         <Palette size={14} /> Requiere diseno
                       </span>
                     )}
-                    {!item.designRequested && !hasUploadedFile && item.artworkSubmissionChannel !== 'WHATSAPP' && (
+                    {item.isService && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                        <Package size={14} /> Servicio
+                      </span>
+                    )}
+                    {!item.isService && !item.designRequested && !hasUploadedFile && item.artworkSubmissionChannel !== 'WHATSAPP' && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded">
                         <Package size={14} /> Esperando archivo
                       </span>

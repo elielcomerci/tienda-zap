@@ -12,6 +12,7 @@ import { MAX_ARTWORK_FILE_SIZE_BYTES } from '@/lib/order-files'
 type UploadableOrderItem = {
   id: string
   quantity: number
+  isService?: boolean | null
   designRequested?: boolean | null
   artworkSubmissionChannel: string
   fileObjectKey?: string | null
@@ -82,7 +83,7 @@ export default function OrderFileUploader({
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const [itemState, setItemState] = useState<Record<string, UploadState>>({})
 
-  const uploadableItems = items.filter((item) => !item.designRequested)
+  const uploadableItems = items.filter((item) => !item.isService && !item.designRequested)
 
   if (uploadableItems.length === 0) {
     return null

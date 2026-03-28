@@ -88,6 +88,7 @@ export default async function ProductsPage({
                             price: displayPrice ?? 0,
                             image: product.images[0] || '',
                             quantity: 1,
+                            isService: product.category.isService,
                           }} 
                           hasVariants={hasVariants}
                           slug={product.slug}

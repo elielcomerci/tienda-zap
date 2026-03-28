@@ -66,14 +66,23 @@ export default async function AdminProductsPage() {
                       <span className="badge bg-gray-100 text-gray-600">
                         {product.category.name}
                       </span>
+                      {product.category.isService && (
+                        <span className="badge ml-2 bg-blue-100 text-blue-700">
+                          Servicio
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-900">
                       ${product.price.toLocaleString('es-AR')}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                        {product.stock}
-                      </span>
+                      {product.category.isService ? (
+                        <span className="font-semibold text-blue-600">N/A</span>
+                      ) : (
+                        <span className={`font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                          {product.stock}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center">

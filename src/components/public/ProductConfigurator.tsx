@@ -11,6 +11,10 @@ type ProductWithOptions = {
   price: number
   stock?: number
   images: string[]
+  category: {
+    name: string
+    isService: boolean
+  }
   options: {
     id: string
     name: string
@@ -41,6 +45,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
   const addItem = useCartStore((state) => state.addItem)
 
   const hasOptions = product.options && product.options.length > 0
+  const isServiceProduct = product.category.isService
   const simpleProductAvailable = isPurchasablePrice(product.price)
 
   const variantCombinations = useMemo(() => {
@@ -134,6 +139,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
       price: currentPrice,
       image: product.images[0] || '',
       quantity: 1,
+      isService: isServiceProduct,
       selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
     })
 
@@ -162,12 +168,19 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className={`h-2 w-2 rounded-full ${product.stock && product.stock > 0 ? 'bg-green-500' : 'bg-red-400'}`} />
-          <p className="text-sm text-gray-600">
-            {product.stock && product.stock > 0 ? `${product.stock} unidades disponibles` : 'Sin stock — consultanos'}
-          </p>
-        </div>
+        {!isServiceProduct && (
+          <div className="flex items-center gap-3">
+            <div className={`h-2 w-2 rounded-full ${product.stock && product.stock > 0 ? 'bg-green-500' : 'bg-red-400'}`} />
+            <p className="text-sm text-gray-600">
+              {product.stock && product.stock > 0 ? `${product.stock} unidades disponibles` : 'Sin stock — consultanos'}
+            </p>
+          </div>
+        )}
+        {isServiceProduct && (
+          <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Es un servicio. Coordinamos los detalles despues de la compra.
+          </div>
+        )}
 
         <button
           onClick={handleAddToCart}

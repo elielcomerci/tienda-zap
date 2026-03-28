@@ -56,7 +56,7 @@ export default async function CheckoutSuccessPage({
     `Hola! Acabo de confirmar la orden #${orderCode} y necesito coordinar el diseno.`
   )
   const needsDesign = order.items.some((item) => item.designRequested)
-  const hasUploadableItems = order.items.some((item) => !item.designRequested)
+  const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
   const emailLabel = order.guestEmail || order.user?.email
 
   return (

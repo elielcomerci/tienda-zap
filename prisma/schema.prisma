@@ -31,10 +31,11 @@ enum Role {
 }
 
 model Category {
-  id       String    @id @default(cuid())
-  name     String
-  slug     String    @unique
-  products Product[]
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  isService Boolean   @default(false)
+  products  Product[]
 }
 
 model Product {
@@ -109,6 +110,7 @@ model OrderItem {
   quantity          Int
   unitPrice         Float
   notes             String?
+  isService         Boolean @default(false)
   fileUrl           String?
   fileObjectKey     String?
   fileOriginalName  String?

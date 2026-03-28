@@ -7,6 +7,7 @@ export interface CartItem {
   price: number
   image: string
   quantity: number
+  isService?: boolean
   notes?: string
   fileUrl?: string
   designRequested?: boolean

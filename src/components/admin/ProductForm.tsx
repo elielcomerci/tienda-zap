@@ -19,7 +19,12 @@ export default function ProductForm({
   initialRelatedProductIds,
 }: {
   product?: any
-  categories: any[]
+  categories: Array<{
+    id: string
+    name: string
+    slug: string
+    isService: boolean
+  }>
   action: (formData: FormData) => Promise<void>
   initialOptions?: any[]
   initialVariants?: any[]
@@ -40,6 +45,7 @@ export default function ProductForm({
   const [hasVariants, setHasVariants] = useState(
     (initialOptions?.length || product?.options?.length) > 0 || false
   )
+  const [selectedCategoryId, setSelectedCategoryId] = useState(product?.categoryId || '')
 
   const initialName = product?.name || ''
   const generatedInitialSlug = slugify(initialName)
@@ -50,6 +56,8 @@ export default function ProductForm({
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(
     Boolean(product?.slug && product.slug !== generatedInitialSlug)
   )
+  const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
+  const isServiceCategory = Boolean(selectedCategory?.isService)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
@@ -124,8 +132,8 @@ export default function ProductForm({
         slug: formData.get('slug') as string,
         description: (formData.get('description') as string) || '',
         price: formData.get('price'),
-        categoryId: formData.get('categoryId') as string,
-        stock: formData.get('stock'),
+        categoryId: selectedCategoryId,
+        stock: isServiceCategory ? 0 : formData.get('stock'),
         images,
         active: formData.get('active') === 'true',
         options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
@@ -242,23 +250,35 @@ export default function ProductForm({
                 </div>
               </div>
 
-              <div>
-                <label className="label">Stock inicial *</label>
-                <input
-                  type="number"
-                  name="stock"
-                  defaultValue={product?.stock ?? 100}
-                  min="0"
-                  required={!hasVariants}
-                  disabled={hasVariants}
-                  className="input disabled:bg-gray-50 disabled:opacity-60"
-                />
-              </div>
+              {isServiceCategory ? (
+                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+                  Esta categoria esta marcada como servicio, asi que no manejamos stock fisico.
+                </div>
+              ) : (
+                <div>
+                  <label className="label">Stock inicial *</label>
+                  <input
+                    type="number"
+                    name="stock"
+                    defaultValue={product?.stock ?? 100}
+                    min="0"
+                    required={!hasVariants}
+                    disabled={hasVariants}
+                    className="input disabled:bg-gray-50 disabled:opacity-60"
+                  />
+                </div>
+              )}
             </div>
             {hasVariants && (
               <p className="mt-3 flex items-center gap-2 rounded-xl border border-orange-100 bg-orange-50 p-2.5 text-xs font-medium text-orange-600">
                 <AlertCircle size={14} />
                 El precio y stock se definen individualmente en la matriz de variantes.
+              </p>
+            )}
+            {isServiceCategory && (
+              <p className="mt-3 flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-2.5 text-xs font-medium text-blue-700">
+                <AlertCircle size={14} />
+                Los servicios no piden archivos finales ni usan stock fisico en checkout.
               </p>
             )}
           </div>
@@ -269,6 +289,7 @@ export default function ProductForm({
             initialOptions={initialOptions || product?.options || []}
             initialVariants={initialVariants || product?.variants || []}
             basePrice={product?.price || 0}
+            disableStock={isServiceCategory}
             onOptionsChange={setHasVariants}
           />
         </div>
@@ -291,7 +312,8 @@ export default function ProductForm({
                 <label className="label">Categoria *</label>
                 <select
                   name="categoryId"
-                  defaultValue={product?.categoryId}
+                  value={selectedCategoryId}
+                  onChange={(event) => setSelectedCategoryId(event.target.value)}
                   required
                   className="input"
                 >

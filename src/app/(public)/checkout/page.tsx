@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const hasUnavailableItems = items.some((item) => item.price <= 0)
+  const hasItemsRequiringArtwork = items.some((item) => !item.isService)
 
   const {
     register,
@@ -174,7 +175,9 @@ export default function CheckoutPage() {
 
           <div>
             <div className="card p-5 sticky top-24">
-              <h2 className="font-bold text-gray-900 mb-4">Resumen y archivos</h2>
+              <h2 className="font-bold text-gray-900 mb-4">
+                {hasItemsRequiringArtwork ? 'Resumen y archivos' : 'Resumen del pedido'}
+              </h2>
               {hasUnavailableItems && (
                 <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
                   Hay productos con precio 0 en tu carrito. Quitalos o elegí una variante disponible antes de confirmar.

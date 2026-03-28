@@ -170,7 +170,12 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                             <Palette size={14} /> Diseno a coordinar
                           </span>
                         )}
-                        {!item.designRequested && !hasUploadedFile && item.artworkSubmissionChannel !== 'WHATSAPP' && (
+                        {item.isService && (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
+                            <PackageOpen size={14} /> Servicio
+                          </span>
+                        )}
+                        {!item.isService && !item.designRequested && !hasUploadedFile && item.artworkSubmissionChannel !== 'WHATSAPP' && (
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
                             <PackageOpen size={14} /> Esperando archivo
                           </span>

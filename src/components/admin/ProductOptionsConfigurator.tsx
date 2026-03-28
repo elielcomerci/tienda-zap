@@ -40,11 +40,13 @@ export default function ProductOptionsConfigurator({
   initialOptions = [],
   initialVariants = [],
   basePrice = 0,
+  disableStock = false,
   onOptionsChange,
 }: {
   initialOptions?: Option[]
   initialVariants?: Variant[]
   basePrice?: number
+  disableStock?: boolean
   onOptionsChange?: (hasOptions: boolean) => void
 }) {
   const [options, setOptions] = useState<Option[]>(initialOptions)
@@ -53,6 +55,14 @@ export default function ProductOptionsConfigurator({
   useEffect(() => {
     onOptionsChange?.(options.length > 0)
   }, [onOptionsChange, options])
+
+  useEffect(() => {
+    if (!disableStock) {
+      return
+    }
+
+    setVariants((current) => current.map((variant) => ({ ...variant, stock: undefined })))
+  }, [disableStock])
 
   const addOption = () => {
     setOptions([...options, { name: '', isRequired: true, values: [''] }])
@@ -266,7 +276,7 @@ export default function ProductOptionsConfigurator({
                   <th className="px-4 py-3">Variante</th>
                   <th className="w-40 px-4 py-3">Precio ARS</th>
                   <th className="w-32 px-4 py-3">SKU</th>
-                  <th className="w-24 px-4 py-3">Stock</th>
+                  {!disableStock && <th className="w-24 px-4 py-3">Stock</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -309,16 +319,18 @@ export default function ProductOptionsConfigurator({
                         placeholder="Ej: TJ-100-M"
                       />
                     </td>
-                    <td className="px-4 py-2">
-                      <input
-                        type="number"
-                        min="0"
-                        value={variant.stock ?? ''}
-                        onChange={(event) => updateVariantStock(index, parseInt(event.target.value, 10) || 0)}
-                        className="input !py-1.5 !w-full"
-                        placeholder="∞"
-                      />
-                    </td>
+                    {!disableStock && (
+                      <td className="px-4 py-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={variant.stock ?? ''}
+                          onChange={(event) => updateVariantStock(index, parseInt(event.target.value, 10) || 0)}
+                          className="input !py-1.5 !w-full"
+                          placeholder="∞"
+                        />
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -46,6 +46,7 @@ export async function finalizeOrderItemUpload(input: {
     select: {
       id: true,
       orderId: true,
+      isService: true,
       designRequested: true,
       fileObjectKey: true,
       order: {
@@ -62,6 +63,10 @@ export async function finalizeOrderItemUpload(input: {
 
   if (item.designRequested) {
     throw new Error('Este item esta marcado como diseno solicitado.')
+  }
+
+  if (item.isService) {
+    throw new Error('Este item corresponde a un servicio y no requiere archivo.')
   }
 
   if (!isArtworkUploadAllowedStatus(item.order.status)) {
@@ -111,6 +116,7 @@ export async function markOrderItemAsWhatsapp(input: {
     select: {
       id: true,
       orderId: true,
+      isService: true,
       designRequested: true,
       fileObjectKey: true,
       fileUrl: true,
@@ -128,6 +134,10 @@ export async function markOrderItemAsWhatsapp(input: {
 
   if (item.designRequested) {
     throw new Error('Este item ya esta marcado para diseno.')
+  }
+
+  if (item.isService) {
+    throw new Error('Este item corresponde a un servicio y no requiere archivo.')
   }
 
   if (item.fileObjectKey || item.fileUrl) {

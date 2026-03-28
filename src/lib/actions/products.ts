@@ -96,10 +96,28 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
   const data = parsed.data
   data.slug = await ensureUniqueProductSlug(data.slug, excludeProductId)
 
+  const category = await prisma.category.findUnique({
+    where: { id: data.categoryId },
+    select: { id: true, isService: true },
+  })
+
+  if (!category) {
+    throw new Error('La categoria seleccionada ya no existe. Recarga la pagina e intenta de nuevo.')
+  }
+
   if (data.options.length > 0 && data.variants.length > 0) {
     data.price = 0
     data.stock = 0
   }
+
+  if (category.isService) {
+    data.stock = 0
+  }
+
+  const variants = data.variants.map((variant) => ({
+    ...variant,
+    stock: category.isService ? undefined : variant.stock,
+  }))
 
   const relatedProductIds = [...new Set(data.relatedProductIds)].filter(
     (relatedProductId) => relatedProductId !== excludeProductId
@@ -107,7 +125,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
 
   await assertRelatedProductsExist(relatedProductIds, excludeProductId)
 
-  return { ...data, relatedProductIds }
+  return { ...data, variants, relatedProductIds, categoryIsService: category.isService }
 }
 
 function buildVariantOptionValueIds(
@@ -179,7 +197,7 @@ export async function createProduct(formData: FormData) {
           productId: createdProduct.id,
           price: variant.price,
           sku: variant.sku,
-          stock: variant.stock,
+          stock: data.categoryIsService ? undefined : variant.stock,
           options: {
             create: optionValueIds.map((optionValueId) => ({ optionValueId })),
           },
@@ -244,7 +262,7 @@ export async function updateProduct(id: string, formData: FormData) {
           productId: updatedProduct.id,
           price: variant.price,
           sku: variant.sku,
-          stock: variant.stock,
+          stock: data.categoryIsService ? undefined : variant.stock,
           options: {
             create: optionValueIds.map((optionValueId) => ({ optionValueId })),
           },

@@ -6,6 +6,14 @@ import { CheckCircle2, MessageSquare, UploadCloud } from 'lucide-react'
 export default function OrderItemOptions({ item }: { item: any }) {
   const { updateItemOptions } = useCartStore()
 
+  if (item.isService) {
+    return (
+      <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-blue-800">
+        Este item es un servicio, asi que no necesita archivo final ni stock fisico.
+      </div>
+    )
+  }
+
   const handleDesignRequest = () => {
     updateItemOptions(item.cartItemId!, { designRequested: true, fileUrl: undefined })
   }

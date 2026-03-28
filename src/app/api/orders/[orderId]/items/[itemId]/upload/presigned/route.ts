@@ -29,6 +29,7 @@ export async function POST(
     const item = await findAccessibleOrderItem(orderId, itemId, body.accessToken, {
       select: {
         id: true,
+        isService: true,
         designRequested: true,
         order: {
           select: {
@@ -45,6 +46,13 @@ export async function POST(
     if (item.designRequested) {
       return Response.json(
         { error: 'Este item esta marcado como diseno solicitado.' },
+        { status: 400 }
+      )
+    }
+
+    if (item.isService) {
+      return Response.json(
+        { error: 'Este item corresponde a un servicio y no requiere archivo.' },
         { status: 400 }
       )
     }

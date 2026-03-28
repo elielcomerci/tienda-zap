@@ -46,6 +46,11 @@ export async function resolveCheckoutOrderItems(
       active: true,
     },
     include: {
+      category: {
+        select: {
+          isService: true,
+        },
+      },
       options: {
         include: {
           values: true,
@@ -114,7 +119,8 @@ export async function resolveCheckoutOrderItems(
       quantity: item.quantity,
       unitPrice,
       notes: item.notes,
-      designRequested: Boolean(item.designRequested),
+      isService: product.category.isService,
+      designRequested: product.category.isService ? false : Boolean(item.designRequested),
       artworkSubmissionChannel: 'PENDING' as const,
       selectedOptions: selectedOptions.length > 0
         ? {
