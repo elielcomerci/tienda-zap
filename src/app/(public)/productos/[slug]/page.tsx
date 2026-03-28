@@ -1,10 +1,11 @@
-import Image from 'next/image'
+import { Package } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { getProduct } from '@/lib/products'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
+import ProductZapCreditPromo from '@/components/public/ProductZapCreditPromo'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
-import { Package } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,30 +25,41 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     .map((relation) => relation.relatedProduct)
     .filter((relatedProduct) => relatedProduct.active)
 
+  const creditWhatsappUrl = buildWhatsappUrl(
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+    `Hola! Vi el producto "${product.name}" en la tienda y quiero evaluarlo con Credito ZAP para mi negocio.`
+  )
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="grid md:grid-cols-2 gap-10">
-        {/* Imágenes Activas */}
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <div className="grid gap-10 md:grid-cols-2">
         <div className="w-full">
           <ProductImageGallery images={product.images} productName={product.name} />
         </div>
 
-        {/* Info */}
         <div>
-          <p className="text-sm text-orange-500 font-semibold mb-2">{product.category.name}</p>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+          <p className="mb-2 text-sm font-semibold text-orange-500">{product.category.name}</p>
+          <h1 className="mb-4 text-3xl font-bold text-gray-900">{product.name}</h1>
+
           {product.description && (
-            <p className="text-gray-600 mb-6 leading-relaxed">{product.description}</p>
+            <p className="mb-6 leading-relaxed text-gray-600">{product.description}</p>
           )}
 
-          {/* Configurator handles both simple and variant products */}
           <ProductConfigurator product={product} />
 
-          <div className="mt-6 p-4 bg-orange-50 rounded-xl">
+          <ProductZapCreditPromo
+            productName={product.name}
+            categoryName={product.category.name}
+            downPaymentPercent={product.creditDownPaymentPercent || 30}
+            whatsappUrl={creditWhatsappUrl}
+          />
+
+          <div className="mt-6 rounded-xl bg-orange-50 p-4">
             <div className="flex items-start gap-2">
-              <Package size={16} className="text-orange-500 mt-0.5 shrink-0" />
+              <Package size={16} className="mt-0.5 shrink-0 text-orange-500" />
               <p className="text-sm text-orange-700">
-                Podés incluir una nota personalizada (texto para cartelería, nombre para tarjetas, etc.) al confirmar tu pedido.
+                Podes incluir una nota personalizada al confirmar tu pedido: texto para carteleria,
+                nombres para tarjetas o cualquier aclaracion que necesite tu trabajo.
               </p>
             </div>
           </div>

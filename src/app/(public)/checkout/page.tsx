@@ -94,6 +94,21 @@ export default function CheckoutPage() {
   })
 
   const paymentType = watch('paymentType')
+  const submitLabel = loading
+    ? 'Procesando...'
+    : hasUnavailableItems
+      ? 'Revisa el carrito'
+      : paymentType === 'ZAP_CREDIT' && isLoadingCreditEligibility
+        ? 'Cargando condiciones...'
+        : paymentType === 'ZAP_CREDIT' && zapCreditDisabled
+          ? 'Inicia sesion para solicitar credito'
+          : paymentType === 'ZAP_CREDIT' && !zapCreditSelection
+            ? 'Configura tu plan'
+            : paymentType === 'MERCADOPAGO'
+              ? 'Pagar con MercadoPago'
+              : paymentType === 'ZAP_CREDIT'
+                ? 'Solicitar Credito ZAP'
+                : 'Confirmar pedido'
 
   useEffect(() => {
     if (items.length === 0) {
@@ -283,27 +298,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {paymentType === 'ZAP_CREDIT' && (
-                <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
-                  <p className="font-semibold">
-                    {creditEligibility?.hasDelinquency
-                      ? 'Solicitud de Credito ZAP en revision'
-                      : 'Credito ZAP con aprobacion automatica'}
-                  </p>
-                  <p className="mt-1 text-orange-800">
-                    {creditEligibility?.hasDelinquency
-                      ? 'Vamos a recalcular y revisar esta solicitud por tu historial de pagos. '
-                      : 'Si tu historial esta sano, el credito se aprueba automaticamente al generar la orden. '}
-                    El anticipo minimo estimado para este carrito es de{' '}
-                    <strong>
-                      ${estimatedDownPaymentAmount.toLocaleString('es-AR')} (
-                      {estimatedDownPaymentPercent}%)
-                    </strong>
-                    .
-                  </p>
-                </div>
-              )}
-
               {paymentType === 'ZAP_CREDIT' && creditEligibility?.hasDelinquency && (
                 <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                   <div className="flex items-start gap-3">
@@ -311,11 +305,9 @@ export default function CheckoutPage() {
                     <div>
                       <p className="font-semibold">Tenes cuotas vencidas en otros creditos</p>
                       <p className="mt-1 text-amber-800">
-                        Para esta nueva solicitud se aplica un recargo de{' '}
-                        <strong>+{creditEligibility.ratePenaltyPercent}%</strong> en la tasa de
-                        referencia y{' '}
-                        <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
-                        el anticipo.
+                        La simulacion ya incluye el recargo vigente: <strong>+{creditEligibility.ratePenaltyPercent}%</strong>{' '}
+                        sobre la tasa y <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong>{' '}
+                        puntos sobre el anticipo.
                       </p>
                     </div>
                   </div>
@@ -333,6 +325,8 @@ export default function CheckoutPage() {
                     }))}
                     eligibility={creditEligibility}
                     isLoading={isLoadingCreditEligibility}
+                    minimumDownPaymentAmount={estimatedDownPaymentAmount}
+                    minimumDownPaymentPercent={estimatedDownPaymentPercent}
                     onChange={setZapCreditSelection}
                   />
                 </div>
@@ -373,7 +367,7 @@ export default function CheckoutPage() {
 
                       {item.selectedOptions && item.selectedOptions.length > 0 && (
                         <span className="mt-0.5 text-xs text-gray-500">
-                          {item.selectedOptions.map((option) => option.value).join(' · ')}
+                          {item.selectedOptions.map((option) => option.value).join(' - ')}
                         </span>
                       )}
                     </div>
@@ -405,21 +399,7 @@ export default function CheckoutPage() {
                     : 'btn-primary'
                 }`}
               >
-                {loading
-                  ? 'Procesando...'
-                  : hasUnavailableItems
-                    ? 'Revisa el carrito'
-                    : paymentType === 'ZAP_CREDIT' && isLoadingCreditEligibility
-                      ? 'Cargando condiciones...'
-                  : paymentType === 'ZAP_CREDIT' && zapCreditDisabled
-                      ? 'Inicia sesion para solicitar credito'
-                      : paymentType === 'ZAP_CREDIT' && !zapCreditSelection
-                        ? 'Configura tu plan'
-                      : paymentType === 'MERCADOPAGO'
-                        ? 'Pagar con MercadoPago'
-                        : paymentType === 'ZAP_CREDIT'
-                          ? 'Solicitar Credito ZAP'
-                          : 'Confirmar pedido'}
+                {submitLabel}
               </button>
             </div>
           </div>

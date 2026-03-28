@@ -70,12 +70,14 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
     const selectedKeys = Object.keys(selected).filter((key) => selected[key])
     if (selectedKeys.length === 0) return null
 
-    return variantCombinations.find((variant) => {
-      const comboKeys = Object.keys(variant.combos)
-      if (comboKeys.length !== selectedKeys.length) return false
+    return (
+      variantCombinations.find((variant) => {
+        const comboKeys = Object.keys(variant.combos)
+        if (comboKeys.length !== selectedKeys.length) return false
 
-      return selectedKeys.every((key) => variant.combos[key] === selected[key])
-    }) || null
+        return selectedKeys.every((key) => variant.combos[key] === selected[key])
+      }) || null
+    )
   }, [hasOptions, selected, variantCombinations])
 
   const currentPrice = activeVariant ? activeVariant.price : product.price
@@ -108,17 +110,17 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
       : null
 
   const addToCartLabel = added
-    ? '¡Añadido!'
+    ? 'Agregado'
     : !hasOptions
       ? simpleProductAvailable
-        ? 'Añadir al carrito'
+        ? 'Agregar al carrito'
         : 'No disponible'
       : !allRequiredSelected
-        ? 'Elegí las opciones'
+        ? 'Elegi las opciones'
         : !activeVariant
-          ? 'Completá la variante'
+          ? 'Completa la variante'
           : selectedVariantAvailable
-            ? 'Añadir al carrito'
+            ? 'Agregar al carrito'
             : 'Variante no disponible'
 
   const handleSelect = (optionName: string, value: string) => {
@@ -159,13 +161,13 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
               <p className="mb-1 text-3xl font-black text-gray-900">
                 ${product.price.toLocaleString('es-AR')}
               </p>
-              <p className="text-sm text-gray-500">Precio unitario · IVA incluido</p>
+              <p className="text-sm text-gray-500">Precio unitario - IVA incluido</p>
             </>
           ) : (
             <>
               <p className="mb-1 text-3xl font-black text-gray-900">No disponible</p>
               <p className="text-sm text-gray-500">
-                Este producto está cargado con precio 0 y no se puede comprar online.
+                Este producto esta cargado con precio 0 y no se puede comprar online.
               </p>
             </>
           )}
@@ -173,17 +175,25 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
 
         {!isServiceProduct && (
           <div className="flex items-center gap-3">
-            <div className={`h-2 w-2 rounded-full ${product.stock && product.stock > 0 ? 'bg-green-500' : 'bg-red-400'}`} />
+            <div
+              className={`h-2 w-2 rounded-full ${
+                product.stock && product.stock > 0 ? 'bg-green-500' : 'bg-red-400'
+              }`}
+            />
             <p className="text-sm text-gray-600">
-              {product.stock && product.stock > 0 ? `${product.stock} unidades disponibles` : 'Sin stock — consultanos'}
+              {product.stock && product.stock > 0
+                ? `${product.stock} unidades disponibles`
+                : 'Sin stock - consultanos'}
             </p>
           </div>
         )}
+
         {isServiceProduct && (
           <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
             Es un servicio. Coordinamos los detalles despues de la compra.
           </div>
         )}
+
         <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-orange-800">
           Hasta 6 cuotas sin interes con tarjeta o Credito ZAP con anticipo desde el{' '}
           <strong>{creditDownPaymentPercent}%</strong>.
@@ -193,17 +203,18 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
           onClick={handleAddToCart}
           disabled={!canAddToCart || added}
           className={`
-            w-full rounded-xl px-6 py-4 font-bold transition-all flex items-center justify-center gap-2
-            ${added
-              ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-              : canAddToCart
-                ? 'bg-orange-500 text-white hover:bg-orange-400 hover:scale-105 active:scale-95 shadow-lg shadow-orange-500/30'
-                : 'cursor-not-allowed bg-gray-200 text-gray-500'
+            flex w-full items-center justify-center gap-2 rounded-xl px-6 py-4 font-bold transition-all
+            ${
+              added
+                ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                : canAddToCart
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:scale-105 hover:bg-orange-400 active:scale-95'
+                  : 'cursor-not-allowed bg-gray-200 text-gray-500'
             }
           `}
         >
           {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-          {added ? '¡Añadido al carrito!' : addToCartLabel}
+          {added ? 'Agregado al carrito' : addToCartLabel}
         </button>
       </div>
     )
@@ -233,13 +244,18 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                   onClick={() => handleSelect(option.name, value.value)}
                   className={`
                     relative rounded-xl border-2 p-3.5 text-left transition-all duration-150
-                    ${isSelected
-                      ? 'border-orange-500 bg-orange-50 shadow-md shadow-orange-100/50 ring-2 ring-orange-100'
-                      : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-gray-50'
+                    ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-50 shadow-md shadow-orange-100/50 ring-2 ring-orange-100'
+                        : 'border-gray-200 bg-white hover:border-orange-200 hover:bg-gray-50'
                     }
                   `}
                 >
-                  <span className={`block text-sm font-semibold ${isSelected ? 'text-orange-900' : 'text-gray-700'}`}>
+                  <span
+                    className={`block text-sm font-semibold ${
+                      isSelected ? 'text-orange-900' : 'text-gray-700'
+                    }`}
+                  >
                     {value.value}
                   </span>
                   {isSelected && (
@@ -257,7 +273,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
       <div className="mt-4 rounded-2xl bg-gray-900 p-6 text-white shadow-xl">
         <div className="flex flex-col items-center justify-between gap-5 sm:flex-row">
           <div>
-            <p className="mb-1 text-sm font-medium text-gray-400">Precio Final</p>
+            <p className="mb-1 text-sm font-medium text-gray-400">Precio final</p>
             <div className="flex items-end gap-2">
               {displayPrice !== null ? (
                 <>
@@ -276,17 +292,17 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
 
             {!allRequiredSelected && (
               <p className="mt-1.5 text-xs font-medium text-orange-300">
-                Seleccioná las opciones requeridas para ver la combinación exacta.
+                Selecciona las opciones requeridas para ver la combinacion exacta.
               </p>
             )}
             {allRequiredSelected && !activeVariant && (
               <p className="mt-1.5 text-xs font-medium text-orange-300">
-                Terminá de elegir la variante para habilitar la compra.
+                Termina de elegir la variante para habilitar la compra.
               </p>
             )}
             {activeVariant && !selectedVariantAvailable && (
               <p className="mt-1.5 text-xs font-medium text-orange-300">
-                Esta combinación está marcada con precio 0 y se toma como no disponible.
+                Esta combinacion esta marcada con precio 0 y se toma como no disponible.
               </p>
             )}
             {minPrice === null && !activeVariant && (
@@ -305,17 +321,18 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             onClick={handleAddToCart}
             disabled={!canAddToCart || added}
             className={`
-              w-full rounded-xl px-8 py-4 font-bold transition-all flex items-center justify-center gap-2 sm:w-auto
-              ${added
-                ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                : canAddToCart
-                  ? 'bg-orange-500 text-white hover:bg-orange-400 hover:scale-105 active:scale-95 shadow-lg shadow-orange-500/30'
-                  : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
+              flex w-full items-center justify-center gap-2 rounded-xl px-8 py-4 font-bold transition-all sm:w-auto
+              ${
+                added
+                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                  : canAddToCart
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:scale-105 hover:bg-orange-400 active:scale-95'
+                    : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
               }
             `}
           >
             {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-            {addToCartLabel}
+            {added ? 'Agregado al carrito' : addToCartLabel}
           </button>
         </div>
       </div>

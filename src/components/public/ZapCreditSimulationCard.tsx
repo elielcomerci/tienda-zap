@@ -12,6 +12,7 @@ import {
   clampCreditDownPaymentPercent,
   getEffectiveAnnualRatePercent,
   getNominalAnnualRatePercent,
+  getPaymentFrequencyLabel,
   getPeriodicRatePercent,
   PaymentFrequency,
 } from '@/lib/financing-calculator'
@@ -94,19 +95,22 @@ export default function ZapCreditSimulationCard({
   const downPaymentPercent = clampCreditDownPaymentPercent(
     calculateWeightedDownPaymentPercent(items) + eligibility.downPaymentPenaltyPercent
   )
+  const selectedInstallments = installmentsOverride ?? eligibility.defaultInstallments
+  const selectedPaymentFrequency =
+    paymentFrequencyOverride ?? eligibility.defaultPaymentFrequency
   const summary = calculateFinancingPlan({
     baseAmount: totalAmount,
     downPaymentPercent,
     ratePercent: eligibility.effectiveRatePercent,
-    installments: installmentsOverride ?? eligibility.defaultInstallments,
-    paymentFrequency: paymentFrequencyOverride ?? eligibility.defaultPaymentFrequency,
+    installments: selectedInstallments,
+    paymentFrequency: selectedPaymentFrequency,
   })
   const monthlyRatePercent = Math.max(0, eligibility.effectiveRatePercent)
   const nominalAnnualRatePercent = getNominalAnnualRatePercent(monthlyRatePercent)
   const effectiveAnnualRatePercent = getEffectiveAnnualRatePercent(monthlyRatePercent)
   const periodicRatePercent = getPeriodicRatePercent(
     monthlyRatePercent,
-    eligibility.defaultPaymentFrequency
+    selectedPaymentFrequency
   )
   const financedSharePercent = Math.max(0, 100 - summary.downPaymentPercent)
 
@@ -181,27 +185,41 @@ export default function ZapCreditSimulationCard({
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-orange-100 bg-white/85 p-4">
-        <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="font-semibold text-gray-900">Composicion del pedido</span>
-          <span className="text-gray-500">
-            Anticipo {summary.downPaymentPercent}% · Credito {financedSharePercent}%
+      {compact ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="rounded-full border border-orange-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-orange-800">
+            Anticipo {summary.downPaymentPercent}%
+          </span>
+          <span className="rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-700">
+            {summary.installments} pagos {getPaymentFrequencyLabel(summary.paymentFrequency).toLowerCase()}
+          </span>
+          <span className="rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-700">
+            {formatMoney(summary.financedAmount)} financiados
           </span>
         </div>
-        <div className="mt-3 h-3 overflow-hidden rounded-full bg-orange-100">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
-            style={{ width: `${summary.downPaymentPercent}%` }}
-          />
+      ) : (
+        <div className="mt-5 rounded-2xl border border-orange-100 bg-white/85 p-4">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="font-semibold text-gray-900">Composicion del pedido</span>
+            <span className="text-gray-500">
+              Anticipo {summary.downPaymentPercent}% - Credito {financedSharePercent}%
+            </span>
+          </div>
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-orange-100">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
+              style={{ width: `${summary.downPaymentPercent}%` }}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <details
         className="mt-5 overflow-hidden rounded-2xl border border-orange-200 bg-white/70"
         open={!compact}
       >
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
-          Ver detalle de tasas y como calculamos el plan
+          {compact ? 'Ver detalle tecnico del plan' : 'Ver detalle de tasas y como calculamos el plan'}
         </summary>
 
         <div className="border-t border-orange-100 px-4 pb-4 pt-4">
@@ -240,7 +258,7 @@ export default function ZapCreditSimulationCard({
               <p className="mt-1 text-xs text-gray-500">
                 Con capitalizacion mensual y cuota equivalente de{' '}
                 {periodicRatePercent.toLocaleString('es-AR')}% por{' '}
-                {getPeriodUnitLabel(eligibility.defaultPaymentFrequency)}.
+                {getPeriodUnitLabel(summary.paymentFrequency)}.
               </p>
             </div>
           </div>
