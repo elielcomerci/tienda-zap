@@ -254,9 +254,10 @@ export async function buildDraftZapCreditPlan(input: {
     paymentFrequency: settings.defaultPaymentFrequency as PaymentFrequency,
     firstDueDate,
   })
+  const autoApproved = eligibility.authenticated && !eligibility.hasDelinquency
 
   return {
-    status: 'REQUESTED' as const,
+    status: autoApproved ? ('APPROVED' as const) : ('QUOTED' as const),
     rateSource: eligibility.ratePenaltyPercent > 0 ? 'CUSTOM' : rateSource,
     indecAveragePercent: indecRate?.averageRatePercent ?? null,
     ratePercent: summary.ratePercent,
@@ -272,7 +273,7 @@ export async function buildDraftZapCreditPlan(input: {
     totalInterest: summary.totalInterest,
     notes: eligibility.hasDelinquency
       ? `Cliente con mora activa: recargo +${eligibility.ratePenaltyPercent}% y anticipo +${eligibility.downPaymentPenaltyPercent} puntos.`
-      : null,
+      : 'Credito aprobado automaticamente por historial de pagos saludable.',
     scheduleItems:
       summary.schedule.length > 0
         ? {

@@ -17,8 +17,8 @@ export default async function CheckoutSuccessPage({
 
   if (!orderId) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-24 text-center">
-        <h1 className="text-2xl font-bold mb-4 text-red-500">Error</h1>
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="mb-4 text-2xl font-bold text-red-500">Error</h1>
         <p className="mb-8">No encontramos el numero de orden.</p>
         <Link href="/" className="btn-primary">
           Volver al inicio
@@ -30,8 +30,8 @@ export default async function CheckoutSuccessPage({
   const order = await getOrderForViewer(orderId, token)
   if (!order) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-24 text-center">
-        <h1 className="text-2xl font-bold mb-4 text-red-500">Acceso no disponible</h1>
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="mb-4 text-2xl font-bold text-red-500">Acceso no disponible</h1>
         <p className="mb-8">
           Este enlace ya no es valido o la orden no pertenece a tu sesion actual.
         </p>
@@ -59,15 +59,17 @@ export default async function CheckoutSuccessPage({
   const needsDesign = order.items.some((item) => item.designRequested)
   const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
   const emailLabel = order.guestEmail || order.user?.email
+  const creditPlan = order.zapCreditPlan
+  const isAutoApprovedCredit = creditPlan?.status === 'APPROVED'
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-20 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-20">
       <div className="text-center">
-        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
           <CheckCircle2 size={40} className="text-green-500" />
         </div>
 
-        <h1 className="text-3xl font-black text-gray-900 mb-2">Pedido confirmado</h1>
+        <h1 className="mb-2 text-3xl font-black text-gray-900">Pedido confirmado</h1>
         <p className="text-gray-500">
           Tu orden ya quedo registrada.
           {emailLabel ? (
@@ -80,47 +82,57 @@ export default async function CheckoutSuccessPage({
       </div>
 
       <div className="card p-6 text-left">
-        <div className="flex justify-between items-center mb-6 pb-6 border-b border-gray-100">
+        <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-6">
           <div>
-            <p className="text-sm text-gray-500 mb-1">Numero de orden</p>
-            <p className="font-mono font-bold text-lg text-gray-900">#{orderCode}</p>
+            <p className="mb-1 text-sm text-gray-500">Numero de orden</p>
+            <p className="font-mono text-lg font-bold text-gray-900">#{orderCode}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-500 mb-1">Total</p>
-            <p className="font-bold text-xl text-orange-500">
+            <p className="mb-1 text-sm text-gray-500">Total</p>
+            <p className="text-xl font-bold text-orange-500">
               ${order.total.toLocaleString('es-AR')}
             </p>
           </div>
         </div>
 
         {order.paymentType === 'ZAP_CREDIT' && order.status === 'PENDING' ? (
-          <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
-            <h3 className="font-bold text-orange-900 mb-2">Solicitud de Credito ZAP recibida</h3>
+          <div className="rounded-xl border border-orange-100 bg-orange-50 p-5">
+            <h3 className="mb-2 font-bold text-orange-900">
+              {isAutoApprovedCredit
+                ? 'Credito ZAP aprobado automaticamente'
+                : 'Solicitud de Credito ZAP en revision'}
+            </h3>
             <p className="text-sm text-orange-800">
-              Ya registramos tu pedido. El equipo de ZAP te va a contactar para cerrar el plan,
-              confirmar el anticipo y definir el cronograma fijo.
+              {isAutoApprovedCredit
+                ? 'Tu financiacion ya quedo aprobada. Solo falta acreditar el anticipo para activar la orden y avanzar con la produccion.'
+                : 'Detectamos antecedentes de pago a revisar, asi que la solicitud queda cargada con el recargo correspondiente y pendiente de validacion manual.'}
             </p>
-            {order.zapCreditPlan && (
+
+            {creditPlan && (
               <div className="mt-4 rounded-xl border border-orange-200 bg-white/70 p-4 text-sm text-orange-900">
                 <p>
                   Anticipo estimado:{' '}
                   <strong>
-                    ${order.zapCreditPlan.downPaymentAmount.toLocaleString('es-AR')} ({order.zapCreditPlan.downPaymentPercent.toLocaleString('es-AR')}%)
+                    ${creditPlan.downPaymentAmount.toLocaleString('es-AR')} ({creditPlan.downPaymentPercent.toLocaleString('es-AR')}%)
                   </strong>
                 </p>
                 <p className="mt-1">
-                  Borrador actual:{' '}
+                  Plan actual:{' '}
                   <strong>
-                    {order.zapCreditPlan.installments} pagos · frecuencia {getPaymentFrequencyLabel(order.zapCreditPlan.paymentFrequency).toLowerCase()}
+                    {creditPlan.installments} pagos · frecuencia{' '}
+                    {getPaymentFrequencyLabel(creditPlan.paymentFrequency).toLowerCase()}
                   </strong>
+                </p>
+                <p className="mt-1">
+                  Estado de credito: <strong>{creditPlan.status}</strong>
                 </p>
               </div>
             )}
           </div>
         ) : order.paymentType === 'TRANSFER' && order.status === 'PENDING' && !order.receiptUrl ? (
-          <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
-            <h3 className="font-bold text-orange-900 mb-2">Falta el comprobante de pago</h3>
-            <p className="text-sm text-orange-800 mb-4">
+          <div className="rounded-xl border border-orange-100 bg-orange-50 p-5">
+            <h3 className="mb-2 font-bold text-orange-900">Falta el comprobante de pago</h3>
+            <p className="mb-4 text-sm text-orange-800">
               Realiza la transferencia y envia el comprobante indicando tu numero de orden:
               <strong> #{orderCode}</strong>.
             </p>
@@ -136,34 +148,34 @@ export default async function CheckoutSuccessPage({
             )}
           </div>
         ) : order.paymentType === 'CASH' ? (
-          <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
-            <h3 className="font-bold text-gray-900 mb-2">Pago en efectivo</h3>
+          <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
+            <h3 className="mb-2 font-bold text-gray-900">Pago en efectivo</h3>
             <p className="text-sm text-gray-600">
               Te esperamos en el local para abonar y retirar tu pedido cuando este listo.
             </p>
           </div>
         ) : order.status === 'PAID' ? (
-          <div className="bg-green-50 text-green-800 p-4 rounded-xl text-sm font-medium">
+          <div className="rounded-xl bg-green-50 p-4 text-sm font-medium text-green-800">
             Pago acreditado con exito.
           </div>
         ) : order.status === 'PROCESSING' ? (
-          <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm font-medium">
+          <div className="rounded-xl bg-blue-50 p-4 text-sm font-medium text-blue-800">
             Ya tenemos todo lo necesario y tu orden paso a produccion.
           </div>
         ) : pending ? (
-          <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl text-sm font-medium">
+          <div className="rounded-xl bg-yellow-50 p-4 text-sm font-medium text-yellow-800">
             Tu pago esta siendo procesado por MercadoPago. Te avisaremos cuando se acredite.
           </div>
         ) : null}
 
-        {order.paymentType === 'ZAP_CREDIT' && order.zapCreditPlan && order.status !== 'PENDING' && (
+        {order.paymentType === 'ZAP_CREDIT' && creditPlan && order.status !== 'PENDING' && (
           <div className="mt-4 rounded-xl border border-orange-100 bg-orange-50 p-4 text-sm text-orange-900">
             <p>
               Propuesta activa:{' '}
               <strong>
-                ${order.zapCreditPlan.downPaymentAmount.toLocaleString('es-AR')} de anticipo y{' '}
-                {order.zapCreditPlan.installments} pagos de $
-                {order.zapCreditPlan.installmentAmount.toLocaleString('es-AR')}
+                ${creditPlan.downPaymentAmount.toLocaleString('es-AR')} de anticipo y{' '}
+                {creditPlan.installments} pagos de $
+                {creditPlan.installmentAmount.toLocaleString('es-AR')}
               </strong>
               .
             </p>
@@ -181,10 +193,10 @@ export default async function CheckoutSuccessPage({
       )}
 
       {needsDesign && designWhatsappUrl && (
-        <div className="bg-orange-50 rounded-2xl shadow-sm p-6 border border-orange-200 text-center">
-          <MessageSquare size={32} className="mx-auto text-orange-500 mb-3" />
-          <h3 className="font-bold text-gray-900 mb-2">Solicitaste diseno</h3>
-          <p className="text-sm text-gray-600 mb-4">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 text-center shadow-sm">
+          <MessageSquare size={32} className="mx-auto mb-3 text-orange-500" />
+          <h3 className="mb-2 font-bold text-gray-900">Solicitaste diseno</h3>
+          <p className="mb-4 text-sm text-gray-600">
             Abrinos por WhatsApp para coordinar referencias, textos y detalles del trabajo.
           </p>
           <a

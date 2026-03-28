@@ -234,7 +234,9 @@ export async function saveOrderZapCreditPlan(input: {
     : 'CUSTOM'
 
   const nextPlanStatus =
-    order.zapCreditPlan?.status === 'ACTIVE' || order.zapCreditPlan?.status === 'COMPLETED'
+    order.zapCreditPlan?.status === 'APPROVED' ||
+    order.zapCreditPlan?.status === 'ACTIVE' ||
+    order.zapCreditPlan?.status === 'COMPLETED'
       ? order.zapCreditPlan.status
       : 'QUOTED'
 

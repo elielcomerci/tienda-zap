@@ -261,10 +261,16 @@ export default function CheckoutPage() {
 
               {paymentType === 'ZAP_CREDIT' && (
                 <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
-                  <p className="font-semibold">Solicitud de Credito ZAP</p>
+                  <p className="font-semibold">
+                    {creditEligibility?.hasDelinquency
+                      ? 'Solicitud de Credito ZAP en revision'
+                      : 'Credito ZAP con aprobacion automatica'}
+                  </p>
                   <p className="mt-1 text-orange-800">
-                    Registramos tu pedido ahora y el equipo de ZAP te contacta para definir el
-                    plan final. El anticipo minimo estimado para este carrito es de{' '}
+                    {creditEligibility?.hasDelinquency
+                      ? 'Vamos a recalcular y revisar esta solicitud por tu historial de pagos. '
+                      : 'Si tu historial esta sano, el credito se aprueba automaticamente al generar la orden. '}
+                    El anticipo minimo estimado para este carrito es de{' '}
                     <strong>
                       ${estimatedDownPaymentAmount.toLocaleString('es-AR')} ({estimatedDownPaymentPercent}%)
                     </strong>
