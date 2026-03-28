@@ -59,12 +59,12 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                     'use server'
                     await updateOrderStatus(order.id, data.get('status') as string)
                   }}
+                  className="space-y-2"
                 >
                   <select
                     name="status"
                     defaultValue={order.status}
                     className="input font-semibold"
-                    onChange={(event) => event.target.form?.submit()}
                   >
                     {statuses.map((status) => (
                       <option key={status} value={status}>
@@ -72,6 +72,9 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                       </option>
                     ))}
                   </select>
+                  <button type="submit" className="btn-secondary !py-2 !text-xs">
+                    Actualizar estado
+                  </button>
                 </form>
               </div>
 

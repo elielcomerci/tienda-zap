@@ -2,6 +2,17 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { findAccessibleOrder } from '@/lib/order-access'
 
+const validOrderStatuses = new Set([
+  'PENDING',
+  'PAID',
+  'PROCESSING',
+  'READY',
+  'DELIVERED',
+  'CANCELLED',
+])
+
+const validPaymentTypes = new Set(['MERCADOPAGO', 'TRANSFER', 'CASH'])
+
 async function requireAdmin() {
   const session = await auth()
   if (!session || session.user?.role !== 'ADMIN') throw new Error('No autorizado')
@@ -25,10 +36,13 @@ const viewerOrderInclude = {
 export async function getOrders(status?: string, paymentType?: string) {
   await requireAdmin()
 
+  const safeStatus = status && validOrderStatuses.has(status) ? status : undefined
+  const safePaymentType = paymentType && validPaymentTypes.has(paymentType) ? paymentType : undefined
+
   return prisma.order.findMany({
     where: {
-      ...(status && { status: status as any }),
-      ...(paymentType && { paymentType: paymentType as any }),
+      ...(safeStatus ? { status: safeStatus as any } : {}),
+      ...(safePaymentType ? { paymentType: safePaymentType as any } : {}),
     },
     include: adminOrderInclude,
     orderBy: { createdAt: 'desc' },
