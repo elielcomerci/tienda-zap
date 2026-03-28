@@ -86,7 +86,7 @@ function buildIndecCacheKey(searchParams: Record<string, string>) {
     .join('&')
 }
 
-function requestIndecPayload(url: URL): Promise<IndecSeriesResponse> {
+function requestIndecPayload(url: URL, redirectCount = 0): Promise<IndecSeriesResponse> {
   return new Promise((resolve, reject) => {
     const request = httpsRequest(
       url,
@@ -106,11 +106,27 @@ function requestIndecPayload(url: URL): Promise<IndecSeriesResponse> {
 
         response.on('end', () => {
           const body = Buffer.concat(chunks).toString('utf8')
+          const statusCode = response.statusCode ?? 500
 
-          if ((response.statusCode ?? 500) < 200 || (response.statusCode ?? 500) >= 300) {
+          if (
+            [301, 302, 307, 308].includes(statusCode) &&
+            response.headers.location
+          ) {
+            if (redirectCount >= 5) {
+              reject(new Error('Demasiadas redirecciones consultando IPC INDEC'))
+              return
+            }
+
+            resolve(
+              requestIndecPayload(new URL(response.headers.location, url), redirectCount + 1)
+            )
+            return
+          }
+
+          if (statusCode < 200 || statusCode >= 300) {
             reject(
               new Error(
-                `Respuesta inesperada ${response.statusCode}: ${body.slice(0, 300)}`
+                `Respuesta inesperada ${statusCode}: ${body.slice(0, 300)}`
               )
             )
             return
@@ -150,7 +166,7 @@ async function fetchIndecSeriesData(
     return cachedEntry.data
   }
 
-  const url = new URL('https://apis.datos.gob.ar/series/api/series')
+  const url = new URL('https://apis.datos.gob.ar/series/api/series/')
 
   for (const [key, value] of Object.entries(searchParams)) {
     url.searchParams.set(key, value)
