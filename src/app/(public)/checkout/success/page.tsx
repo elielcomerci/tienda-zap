@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { CheckCircle2, MessageSquare } from 'lucide-react'
+import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
@@ -92,7 +93,31 @@ export default async function CheckoutSuccessPage({
           </div>
         </div>
 
-        {order.paymentType === 'TRANSFER' && order.status === 'PENDING' && !order.receiptUrl ? (
+        {order.paymentType === 'ZAP_CREDIT' && order.status === 'PENDING' ? (
+          <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
+            <h3 className="font-bold text-orange-900 mb-2">Solicitud de Credito ZAP recibida</h3>
+            <p className="text-sm text-orange-800">
+              Ya registramos tu pedido. El equipo de ZAP te va a contactar para cerrar el plan,
+              confirmar el anticipo y definir el cronograma fijo.
+            </p>
+            {order.zapCreditPlan && (
+              <div className="mt-4 rounded-xl border border-orange-200 bg-white/70 p-4 text-sm text-orange-900">
+                <p>
+                  Anticipo estimado:{' '}
+                  <strong>
+                    ${order.zapCreditPlan.downPaymentAmount.toLocaleString('es-AR')} ({order.zapCreditPlan.downPaymentPercent.toLocaleString('es-AR')}%)
+                  </strong>
+                </p>
+                <p className="mt-1">
+                  Borrador actual:{' '}
+                  <strong>
+                    {order.zapCreditPlan.installments} pagos · frecuencia {getPaymentFrequencyLabel(order.zapCreditPlan.paymentFrequency).toLowerCase()}
+                  </strong>
+                </p>
+              </div>
+            )}
+          </div>
+        ) : order.paymentType === 'TRANSFER' && order.status === 'PENDING' && !order.receiptUrl ? (
           <div className="bg-orange-50 p-5 rounded-xl border border-orange-100">
             <h3 className="font-bold text-orange-900 mb-2">Falta el comprobante de pago</h3>
             <p className="text-sm text-orange-800 mb-4">
@@ -130,6 +155,20 @@ export default async function CheckoutSuccessPage({
             Tu pago esta siendo procesado por MercadoPago. Te avisaremos cuando se acredite.
           </div>
         ) : null}
+
+        {order.paymentType === 'ZAP_CREDIT' && order.zapCreditPlan && order.status !== 'PENDING' && (
+          <div className="mt-4 rounded-xl border border-orange-100 bg-orange-50 p-4 text-sm text-orange-900">
+            <p>
+              Propuesta activa:{' '}
+              <strong>
+                ${order.zapCreditPlan.downPaymentAmount.toLocaleString('es-AR')} de anticipo y{' '}
+                {order.zapCreditPlan.installments} pagos de $
+                {order.zapCreditPlan.installmentAmount.toLocaleString('es-AR')}
+              </strong>
+              .
+            </p>
+          </div>
+        )}
       </div>
 
       {hasUploadableItems && (

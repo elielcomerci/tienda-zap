@@ -44,6 +44,7 @@ model Product {
   slug              String            @unique
   description       String?
   price             Float
+  creditDownPaymentPercent Int       @default(30)
   images            String[]
   categoryId        String
   category          Category          @relation(fields: [categoryId], references: [id])
@@ -76,6 +77,7 @@ model Order {
   paymentId   String?
   receiptUrl  String?
   notes       String?
+  zapCreditPlan ZapCreditPlan?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -93,6 +95,29 @@ enum PaymentType {
   MERCADOPAGO
   TRANSFER
   CASH
+  ZAP_CREDIT
+}
+
+enum PaymentFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum FinancingRateSource {
+  INDEC_AVERAGE
+  MANUAL_OVERRIDE
+  CUSTOM
+}
+
+enum ZapCreditStatus {
+  REQUESTED
+  QUOTED
+  APPROVED
+  ACTIVE
+  COMPLETED
+  REJECTED
+  CANCELLED
 }
 
 enum ArtworkSubmissionChannel {
@@ -109,6 +134,7 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity          Int
   unitPrice         Float
+  creditDownPaymentPercent Int @default(30)
   notes             String?
   isService         Boolean @default(false)
   fileUrl           String?
@@ -122,6 +148,41 @@ model OrderItem {
   
   // Opciones seleccionadas para este ítem
   selectedOptions   OrderItemOption[]
+}
+
+model FinancingSettings {
+  id                      String           @id @default("default")
+  indecSeriesId           String           @default("101.1_I2NG_2016_M_22")
+  manualRatePercent       Float?
+  defaultInstallments     Int              @default(6)
+  defaultPaymentFrequency PaymentFrequency @default(MONTHLY)
+  cardInstallments        Int              @default(6)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+}
+
+model ZapCreditPlan {
+  id                 String              @id @default(cuid())
+  orderId            String              @unique
+  order              Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status             ZapCreditStatus     @default(REQUESTED)
+  rateSource         FinancingRateSource @default(INDEC_AVERAGE)
+  indecAveragePercent Float?
+  ratePercent        Float
+  installments       Int
+  paymentFrequency   PaymentFrequency    @default(MONTHLY)
+  firstDueDate       DateTime?
+  baseAmount         Float
+  downPaymentPercent Float
+  downPaymentAmount  Float
+  financedAmount     Float
+  installmentAmount  Float
+  totalRepayable     Float
+  totalInterest      Float
+  notes              String?
+  quotedAt           DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 model OrderItemOption {

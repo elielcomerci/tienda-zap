@@ -6,21 +6,23 @@ import { useCartStore } from '@/lib/cart-store'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CreditCard, Banknote, Smartphone } from 'lucide-react'
+import { CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
+import { calculateWeightedDownPaymentPercent } from '@/lib/financing-calculator'
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
   email: z.string().email('Email invalido'),
   phone: z.string().min(8, 'Telefono invalido'),
-  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH']),
+  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH', 'ZAP_CREDIT']),
   notes: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
 const paymentOptions = [
-  { value: 'MERCADOPAGO', label: 'MercadoPago', desc: 'Tarjeta de credito, debito o MP', icon: CreditCard },
+  { value: 'MERCADOPAGO', label: 'Tarjeta / MercadoPago', desc: 'Hasta 6 cuotas sin interes', icon: CreditCard },
+  { value: 'ZAP_CREDIT', label: 'Credito ZAP', desc: 'Anticipo y saldo en cuotas fijas', icon: Wallet },
   { value: 'TRANSFER', label: 'Transferencia', desc: 'CBU/CVU - subi tu comprobante', icon: Smartphone },
   { value: 'CASH', label: 'Efectivo', desc: 'Retiro y pago en local', icon: Banknote },
 ] as const
@@ -32,6 +34,14 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const hasUnavailableItems = items.some((item) => item.price <= 0)
   const hasItemsRequiringArtwork = items.some((item) => !item.isService)
+  const estimatedDownPaymentPercent = calculateWeightedDownPaymentPercent(
+    items.map((item) => ({
+      unitPrice: item.price,
+      quantity: item.quantity,
+      creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
+    }))
+  )
+  const estimatedDownPaymentAmount = total() * (estimatedDownPaymentPercent / 100)
 
   const {
     register,
@@ -168,6 +178,20 @@ export default function CheckoutPage() {
                   </label>
                 ))}
               </div>
+
+              {paymentType === 'ZAP_CREDIT' && (
+                <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
+                  <p className="font-semibold">Solicitud de Credito ZAP</p>
+                  <p className="mt-1 text-orange-800">
+                    Registramos tu pedido ahora y el equipo de ZAP te contacta para definir el
+                    plan final. El anticipo minimo estimado para este carrito es de{' '}
+                    <strong>
+                      ${estimatedDownPaymentAmount.toLocaleString('es-AR')} ({estimatedDownPaymentPercent}%)
+                    </strong>
+                    .
+                  </p>
+                </div>
+              )}
             </div>
 
             {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>}
@@ -228,7 +252,9 @@ export default function CheckoutPage() {
                     ? 'Revisá el carrito'
                   : paymentType === 'MERCADOPAGO'
                     ? 'Pagar con MercadoPago'
-                    : 'Confirmar pedido'}
+                    : paymentType === 'ZAP_CREDIT'
+                      ? 'Solicitar Credito ZAP'
+                      : 'Confirmar pedido'}
               </button>
             </div>
           </div>

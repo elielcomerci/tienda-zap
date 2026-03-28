@@ -118,6 +118,7 @@ export async function resolveCheckoutOrderItems(
       productId: product.id,
       quantity: item.quantity,
       unitPrice,
+      creditDownPaymentPercent: product.creditDownPaymentPercent,
       notes: item.notes,
       isService: product.category.isService,
       designRequested: product.category.isService ? false : Boolean(item.designRequested),

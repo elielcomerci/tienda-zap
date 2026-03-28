@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Download, MessageSquare, Package, Palette } from 'lucide-react'
 import { auth } from '@/auth'
+import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getCustomerOrder } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
@@ -44,6 +45,7 @@ export default async function MiOrdenPage({
     MERCADOPAGO: 'MercadoPago',
     TRANSFER: 'Transferencia bancaria',
     CASH: 'Efectivo',
+    ZAP_CREDIT: 'Credito ZAP',
   }
 
   const orderCode = getOrderDisplayCode(order.id)
@@ -161,6 +163,22 @@ export default async function MiOrdenPage({
           <span className="text-gray-500">Forma de pago</span>
           <span className="font-medium">{paymentLabels[order.paymentType]}</span>
         </div>
+        {order.paymentType === 'ZAP_CREDIT' && order.zapCreditPlan && (
+          <>
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-500">Anticipo estimado</span>
+              <span className="font-medium text-right">
+                ${order.zapCreditPlan.downPaymentAmount.toLocaleString('es-AR')} ({order.zapCreditPlan.downPaymentPercent.toLocaleString('es-AR')}%)
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-500">Plan actual</span>
+              <span className="font-medium text-right">
+                {order.zapCreditPlan.installments} pagos · {getPaymentFrequencyLabel(order.zapCreditPlan.paymentFrequency)}
+              </span>
+            </div>
+          </>
+        )}
         {order.notes && (
           <div className="flex justify-between gap-4">
             <span className="text-gray-500">Notas</span>

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
+  ArrowRight,
   Banknote,
   CheckCircle,
   CreditCard,
@@ -11,8 +12,10 @@ import {
   Palette,
   Receipt,
   Smartphone,
+  Wallet,
 } from 'lucide-react'
 import { confirmManualPayment, updateOrderStatus } from '@/lib/actions/orders'
+import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getAdminOrder } from '@/lib/orders'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -83,6 +86,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 <div className="flex items-center gap-2 font-medium text-gray-900">
                   {order.paymentType === 'MERCADOPAGO' ? (
                     <CreditCard size={18} className="text-blue-500" />
+                  ) : order.paymentType === 'ZAP_CREDIT' ? (
+                    <Wallet size={18} className="text-orange-500" />
                   ) : order.paymentType === 'TRANSFER' ? (
                     <Smartphone size={18} className="text-green-500" />
                   ) : (
@@ -92,6 +97,61 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 </div>
                 {order.paymentId && <p className="text-xs text-gray-500 font-mono mt-1">ID: {order.paymentId}</p>}
               </div>
+
+              {order.paymentType === 'ZAP_CREDIT' && order.zapCreditPlan && (
+                <div className="rounded-xl border border-orange-100 bg-orange-50 p-4 text-sm text-orange-900">
+                  <p className="font-semibold">Propuesta de Credito ZAP</p>
+                  <div className="mt-2 space-y-1 text-orange-800">
+                    <p>
+                      Anticipo requerido:{' '}
+                      <strong>
+                        ${order.zapCreditPlan.downPaymentAmount.toLocaleString('es-AR')} ({order.zapCreditPlan.downPaymentPercent.toLocaleString('es-AR')}%)
+                      </strong>
+                    </p>
+                    <p>
+                      Saldo financiado:{' '}
+                      <strong>${order.zapCreditPlan.financedAmount.toLocaleString('es-AR')}</strong>
+                    </p>
+                    <p>
+                      Plan:{' '}
+                      <strong>
+                        {order.zapCreditPlan.installments} pagos · {getPaymentFrequencyLabel(order.zapCreditPlan.paymentFrequency)}
+                      </strong>
+                    </p>
+                    <p>
+                      Cuota estimada:{' '}
+                      <strong>${order.zapCreditPlan.installmentAmount.toLocaleString('es-AR')}</strong>
+                    </p>
+                    <p>
+                      Tasa fija:{' '}
+                      <strong>{order.zapCreditPlan.ratePercent.toLocaleString('es-AR')}%</strong>
+                    </p>
+                    <p>
+                      Estado de propuesta: <strong>{order.zapCreditPlan.status}</strong>
+                    </p>
+                  </div>
+
+                  <Link href={`/admin/financiacion?orderId=${order.id}`} className="btn-secondary mt-4 !py-2 !text-xs">
+                    Abrir calculadora de esta orden
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
+
+              {order.paymentType === 'ZAP_CREDIT' && !order.zapCreditPlan && (
+                <div className="rounded-xl border border-orange-100 bg-orange-50 p-4 text-sm text-orange-900">
+                  <p className="font-semibold">Orden con Credito ZAP sin propuesta guardada</p>
+                  <p className="mt-1 text-orange-800">
+                    Abrí la calculadora para definir anticipo, tasa y cronograma antes de
+                    confirmarla con el cliente.
+                  </p>
+
+                  <Link href={`/admin/financiacion?orderId=${order.id}`} className="btn-secondary mt-4 !py-2 !text-xs">
+                    Crear propuesta de credito
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
 
               {order.paymentType !== 'MERCADOPAGO' && order.status === 'PENDING' && (
                 <div className="pt-4 border-t">
@@ -105,7 +165,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                       type="submit"
                       className="btn-primary w-full justify-center !text-xs !py-2 !bg-green-600 hover:!bg-green-700"
                     >
-                      <CheckCircle size={14} /> Confirmar pago manual
+                      <CheckCircle size={14} /> {order.paymentType === 'ZAP_CREDIT' ? 'Confirmar anticipo y habilitar orden' : 'Confirmar pago manual'}
                     </button>
                   </form>
                 </div>

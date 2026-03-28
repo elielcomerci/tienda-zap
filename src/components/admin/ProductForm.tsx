@@ -132,6 +132,7 @@ export default function ProductForm({
         slug: formData.get('slug') as string,
         description: (formData.get('description') as string) || '',
         price: formData.get('price'),
+        creditDownPaymentPercent: formData.get('creditDownPaymentPercent'),
         categoryId: selectedCategoryId,
         stock: isServiceCategory ? 0 : formData.get('stock'),
         images,
@@ -248,6 +249,28 @@ export default function ProductForm({
                     placeholder="0.00"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="label">Anticipo Credito ZAP *</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="creditDownPaymentPercent"
+                    defaultValue={product?.creditDownPaymentPercent ?? 30}
+                    min="30"
+                    max="50"
+                    step="1"
+                    required
+                    className="input !pr-10"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-gray-400">
+                    %
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Define el anticipo minimo para financiar este producto con Credito ZAP.
+                </p>
               </div>
 
               {isServiceCategory ? (

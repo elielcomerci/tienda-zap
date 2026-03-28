@@ -86,6 +86,7 @@ export default async function ProductsPage({
                             productId: product.id,
                             name: product.name,
                             price: displayPrice ?? 0,
+                            creditDownPaymentPercent: product.creditDownPaymentPercent,
                             image: product.images[0] || '',
                             quantity: 1,
                             isService: product.category.isService,

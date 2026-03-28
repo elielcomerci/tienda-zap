@@ -9,6 +9,7 @@ type ProductWithOptions = {
   id: string
   name: string
   price: number
+  creditDownPaymentPercent: number
   stock?: number
   images: string[]
   category: {
@@ -47,6 +48,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
   const hasOptions = product.options && product.options.length > 0
   const isServiceProduct = product.category.isService
   const simpleProductAvailable = isPurchasablePrice(product.price)
+  const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
 
   const variantCombinations = useMemo(() => {
     if (!product.variants) return []
@@ -137,6 +139,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
       productId: product.id,
       name: product.name,
       price: currentPrice,
+      creditDownPaymentPercent,
       image: product.images[0] || '',
       quantity: 1,
       isService: isServiceProduct,
@@ -181,6 +184,10 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             Es un servicio. Coordinamos los detalles despues de la compra.
           </div>
         )}
+        <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          Hasta 6 cuotas sin interes con tarjeta o Credito ZAP con anticipo desde el{' '}
+          <strong>{creditDownPaymentPercent}%</strong>.
+        </div>
 
         <button
           onClick={handleAddToCart}
@@ -287,6 +294,10 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                 Este producto no tiene variantes disponibles para compra online en este momento.
               </p>
             )}
+            <p className="mt-2 text-xs font-medium text-gray-300">
+              Hasta 6 cuotas sin interes con tarjeta o Credito ZAP con anticipo desde el{' '}
+              {creditDownPaymentPercent}%.
+            </p>
           </div>
 
           <button

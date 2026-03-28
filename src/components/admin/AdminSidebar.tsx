@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Package,
+  Percent,
   ShoppingCart,
   Tag,
   Menu,
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/admin/productos', label: 'Productos', icon: Package },
   { href: '/admin/categorias', label: 'Categorías', icon: Tag },
   { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
+  { href: '/admin/financiacion', label: 'FinanciaciÃ³n', icon: Percent },
 ]
 
 export default function AdminSidebar() {

@@ -11,7 +11,7 @@ const validOrderStatuses = new Set([
   'CANCELLED',
 ])
 
-const validPaymentTypes = new Set(['MERCADOPAGO', 'TRANSFER', 'CASH'])
+const validPaymentTypes = new Set(['MERCADOPAGO', 'TRANSFER', 'CASH', 'ZAP_CREDIT'])
 
 async function requireAdmin() {
   const session = await auth()
@@ -21,6 +21,7 @@ async function requireAdmin() {
 const adminOrderInclude = {
   items: { include: { product: true, selectedOptions: true } },
   user: { select: { name: true, email: true, phone: true } },
+  zapCreditPlan: true,
 }
 
 const viewerOrderInclude = {
@@ -31,6 +32,7 @@ const viewerOrderInclude = {
     },
   },
   user: { select: { name: true, email: true, phone: true } },
+  zapCreditPlan: true,
 }
 
 export async function getOrders(status?: string, paymentType?: string) {

@@ -8,6 +8,11 @@ export const productSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Solo minusculas, numeros y guiones'),
   description: z.string().optional(),
   price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0'),
+  creditDownPaymentPercent: z.coerce
+    .number()
+    .int('El anticipo debe ser un numero entero')
+    .min(30, 'El anticipo minimo para Credito ZAP es 30%')
+    .max(50, 'El anticipo maximo para Credito ZAP es 50%'),
   categoryId: z.string().min(1, 'Selecciona una categoria'),
   stock: z.coerce.number().int().min(0).default(0),
   images: z.array(z.string().url()).min(1, 'Agrega al menos una imagen'),
@@ -115,7 +120,7 @@ export const orderCheckoutSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   email: z.string().email('Email invalido'),
   phone: z.string().min(8, 'Telefono invalido'),
-  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH']),
+  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH', 'ZAP_CREDIT']),
   notes: z.string().optional(),
   items: z.array(
     z.object({

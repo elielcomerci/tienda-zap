@@ -10,6 +10,7 @@ import {
   PackageIcon,
   RefreshCcw,
   Smartphone,
+  Wallet,
   XCircle,
 } from 'lucide-react'
 import { getOrders } from '@/lib/orders'
@@ -32,6 +33,7 @@ const paymentIcons = {
   MERCADOPAGO: { label: 'MercadoPago', icon: CreditCard },
   TRANSFER: { label: 'Transferencia', icon: Smartphone },
   CASH: { label: 'Efectivo', icon: Banknote },
+  ZAP_CREDIT: { label: 'Credito ZAP', icon: Wallet },
 } as const
 
 function getOrderCustomerLabel(order: {

@@ -8,8 +8,9 @@ import {
   hashOrderPublicAccessToken,
 } from '@/lib/order-access'
 import { resolveCheckoutOrderItems } from '@/lib/checkout-orders'
+import { buildDraftZapCreditPlan } from '@/lib/financing'
 
-// POST /api/ordenes - crear orden TRANSFER o CASH
+// POST /api/ordenes - crear orden TRANSFER, CASH o ZAP_CREDIT
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -22,6 +23,17 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
     const { resolvedItems, total } = await resolveCheckoutOrderItems(data.items)
+    const zapCreditPlan =
+      data.paymentType === 'ZAP_CREDIT'
+        ? await buildDraftZapCreditPlan({
+            baseAmount: total,
+            items: resolvedItems.map((item) => ({
+              unitPrice: item.unitPrice,
+              quantity: item.quantity,
+              creditDownPaymentPercent: item.creditDownPaymentPercent,
+            })),
+          })
+        : null
 
     const order = await prisma.order.create({
       data: {
@@ -31,12 +43,17 @@ export async function POST(req: NextRequest) {
         guestEmail: data.email,
         guestPhone: data.phone,
         status: 'PENDING',
-        paymentType: data.paymentType as 'TRANSFER' | 'CASH',
+        paymentType: data.paymentType as 'TRANSFER' | 'CASH' | 'ZAP_CREDIT',
         total,
         notes: data.notes,
         items: {
           create: resolvedItems,
         },
+        zapCreditPlan: zapCreditPlan
+          ? {
+              create: zapCreditPlan,
+            }
+          : undefined,
       },
     })
 
