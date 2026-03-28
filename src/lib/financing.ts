@@ -30,6 +30,11 @@ function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100
 }
 
+function normalizeIndecSeriesId(seriesId?: string | null) {
+  const normalized = seriesId?.trim()
+  return normalized || DEFAULT_INDEC_SERIES_ID
+}
+
 function normalizeSeriesData(data: unknown[]) {
   return data
     .map((entry) => {
@@ -128,9 +133,11 @@ export async function getFinancingSettings() {
 export async function getIndecAverageRatePercent(
   seriesId = DEFAULT_INDEC_SERIES_ID
 ): Promise<IndecRateSnapshot | null> {
+  const normalizedSeriesId = normalizeIndecSeriesId(seriesId)
+
   try {
     const transformedSeriesData = await fetchIndecSeriesData({
-      ids: seriesId,
+      ids: normalizedSeriesId,
       representation_mode: 'percent_change',
       format: 'json',
       metadata: 'none',
@@ -153,7 +160,7 @@ export async function getIndecAverageRatePercent(
     }
 
     const fallbackSeriesData = await fetchIndecSeriesData({
-      ids: seriesId,
+      ids: normalizedSeriesId,
       format: 'json',
       metadata: 'none',
       last: '13',
@@ -186,7 +193,15 @@ export async function getIndecAverageRatePercent(
 
 export async function getFinancingSnapshot() {
   const settings = await getFinancingSettings()
-  const indecRate = await getIndecAverageRatePercent(settings.indecSeriesId)
+  const normalizedSeriesId = normalizeIndecSeriesId(settings.indecSeriesId)
+  let indecRate = await getIndecAverageRatePercent(normalizedSeriesId)
+
+  if (!indecRate && normalizedSeriesId !== DEFAULT_INDEC_SERIES_ID) {
+    console.warn(
+      `No se pudo leer la serie INDEC configurada (${normalizedSeriesId}). Usando fallback ${DEFAULT_INDEC_SERIES_ID}.`
+    )
+    indecRate = await getIndecAverageRatePercent(DEFAULT_INDEC_SERIES_ID)
+  }
 
   if (settings.manualRatePercent != null) {
     return {
