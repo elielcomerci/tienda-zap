@@ -22,11 +22,20 @@ export async function POST(req: NextRequest) {
 
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
+
+    if (data.paymentType === 'ZAP_CREDIT' && !session?.user?.id) {
+      return Response.json(
+        { error: 'Inicia sesion para solicitar Credito ZAP y seguir tus cuotas.' },
+        { status: 401 }
+      )
+    }
+
     const { resolvedItems, total } = await resolveCheckoutOrderItems(data.items)
     const zapCreditPlan =
       data.paymentType === 'ZAP_CREDIT'
         ? await buildDraftZapCreditPlan({
             baseAmount: total,
+            userId: session?.user?.id,
             items: resolvedItems.map((item) => ({
               unitPrice: item.unitPrice,
               quantity: item.quantity,

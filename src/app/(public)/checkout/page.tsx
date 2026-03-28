@@ -6,9 +6,12 @@ import { useCartStore } from '@/lib/cart-store'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react'
+import { AlertTriangle, CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
-import { calculateWeightedDownPaymentPercent } from '@/lib/financing-calculator'
+import {
+  calculateWeightedDownPaymentPercent,
+  clampCreditDownPaymentPercent,
+} from '@/lib/financing-calculator'
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
@@ -19,6 +22,18 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
+
+type CreditEligibility = {
+  authenticated: boolean
+  canRequestCredit: boolean
+  activeCreditsCount: number
+  overdueInstallmentsCount: number
+  hasDelinquency: boolean
+  effectiveRatePercent: number
+  baseRatePercent: number
+  ratePenaltyPercent: number
+  downPaymentPenaltyPercent: number
+}
 
 const paymentOptions = [
   { value: 'MERCADOPAGO', label: 'Tarjeta / MercadoPago', desc: 'Hasta 6 cuotas sin interes', icon: CreditCard },
@@ -32,20 +47,26 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [creditEligibility, setCreditEligibility] = useState<CreditEligibility | null>(null)
   const hasUnavailableItems = items.some((item) => item.price <= 0)
   const hasItemsRequiringArtwork = items.some((item) => !item.isService)
-  const estimatedDownPaymentPercent = calculateWeightedDownPaymentPercent(
+  const baseDownPaymentPercent = calculateWeightedDownPaymentPercent(
     items.map((item) => ({
       unitPrice: item.price,
       quantity: item.quantity,
       creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
     }))
   )
+  const estimatedDownPaymentPercent = clampCreditDownPaymentPercent(
+    baseDownPaymentPercent + (creditEligibility?.downPaymentPenaltyPercent ?? 0)
+  )
   const estimatedDownPaymentAmount = total() * (estimatedDownPaymentPercent / 100)
+  const zapCreditDisabled = Boolean(creditEligibility && !creditEligibility.canRequestCredit)
 
   const {
     register,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors },
   } = useForm<FormData>({
@@ -59,11 +80,44 @@ export default function CheckoutPage() {
     if (items.length === 0) router.replace('/carrito')
   }, [items.length, router])
 
+  useEffect(() => {
+    let active = true
+
+    fetch('/api/creditos/eligibility')
+      .then(async (response) => {
+        const payload = await response.json()
+        if (!response.ok) {
+          throw new Error(payload.error || 'No pudimos validar Credito ZAP.')
+        }
+
+        if (active) {
+          setCreditEligibility(payload)
+          if (!payload.canRequestCredit) {
+            setValue('paymentType', 'MERCADOPAGO')
+          }
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setCreditEligibility(null)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [setValue])
+
   if (items.length === 0) return null
 
   const onSubmit = async (data: FormData) => {
     if (hasUnavailableItems) {
       setError('Hay productos con precio 0 marcados como no disponibles. Revisá el carrito antes de continuar.')
+      return
+    }
+
+    if (data.paymentType === 'ZAP_CREDIT' && creditEligibility && !creditEligibility.canRequestCredit) {
+      setError('Inicia sesion para solicitar Credito ZAP y seguir tus cuotas desde el panel.')
       return
     }
 
@@ -152,32 +206,58 @@ export default function CheckoutPage() {
             <div className="card p-6">
               <h2 className="font-bold text-gray-900 mb-4">Metodo de pago</h2>
               <div className="space-y-3">
-                {paymentOptions.map((option) => (
-                  <label
-                    key={option.value}
-                    className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all
-                      ${paymentType === option.value ? 'border-orange-400 bg-orange-50' : 'border-gray-100 hover:border-gray-200'}`}
-                  >
-                    <input
-                      type="radio"
-                      value={option.value}
-                      {...register('paymentType')}
-                      className="sr-only"
-                    />
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        paymentType === option.value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-500'
+                {paymentOptions.map((option) => {
+                  const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
+
+                  return (
+                    <label
+                      key={option.value}
+                      className={`flex items-center gap-4 rounded-xl border-2 p-4 transition-all ${
+                        optionDisabled
+                          ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
+                          : paymentType === option.value
+                            ? 'cursor-pointer border-orange-400 bg-orange-50'
+                            : 'cursor-pointer border-gray-100 hover:border-gray-200'
                       }`}
                     >
-                      <option.icon size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900">{option.label}</p>
-                      <p className="text-xs text-gray-500">{option.desc}</p>
-                    </div>
-                  </label>
-                ))}
+                      <input
+                        type="radio"
+                        value={option.value}
+                        {...register('paymentType')}
+                        className="sr-only"
+                        disabled={optionDisabled}
+                      />
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                          paymentType === option.value && !optionDisabled
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        <option.icon size={20} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{option.label}</p>
+                        <p className="text-xs text-gray-500">
+                          {optionDisabled
+                            ? 'Disponible solo para clientes con sesion iniciada'
+                            : option.desc}
+                        </p>
+                      </div>
+                    </label>
+                  )
+                })}
               </div>
+
+              {zapCreditDisabled && (
+                <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                  <p className="font-semibold">Credito ZAP para usuarios registrados</p>
+                  <p className="mt-1 text-blue-800">
+                    Inicia sesion para solicitar credito, seguir cuotas, cargar comprobantes y ver
+                    tu estado financiero desde el panel.
+                  </p>
+                </div>
+              )}
 
               {paymentType === 'ZAP_CREDIT' && (
                 <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
@@ -190,6 +270,23 @@ export default function CheckoutPage() {
                     </strong>
                     .
                   </p>
+                </div>
+              )}
+
+              {paymentType === 'ZAP_CREDIT' && creditEligibility?.hasDelinquency && (
+                <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
+                    <div>
+                      <p className="font-semibold">Tenes cuotas vencidas en otros creditos</p>
+                      <p className="mt-1 text-amber-800">
+                        Para esta nueva solicitud se aplica un recargo de{' '}
+                        <strong>+{creditEligibility.ratePenaltyPercent}%</strong> en la tasa de
+                        referencia y <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong>{' '}
+                        puntos sobre el anticipo.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -239,9 +336,9 @@ export default function CheckoutPage() {
               </div>
               <button
                 type="submit"
-                disabled={loading || hasUnavailableItems}
+                disabled={loading || hasUnavailableItems || (paymentType === 'ZAP_CREDIT' && zapCreditDisabled)}
                 className={`w-full justify-center !py-3.5 ${
-                  loading || hasUnavailableItems
+                  loading || hasUnavailableItems || (paymentType === 'ZAP_CREDIT' && zapCreditDisabled)
                     ? 'btn-secondary !cursor-not-allowed !border-gray-200 !bg-gray-200 !text-gray-500 hover:!bg-gray-200'
                     : 'btn-primary'
                 }`}
@@ -250,7 +347,9 @@ export default function CheckoutPage() {
                   ? 'Procesando...'
                   : hasUnavailableItems
                     ? 'Revisá el carrito'
-                  : paymentType === 'MERCADOPAGO'
+                  : paymentType === 'ZAP_CREDIT' && zapCreditDisabled
+                    ? 'Inicia sesion para solicitar credito'
+                    : paymentType === 'MERCADOPAGO'
                     ? 'Pagar con MercadoPago'
                     : paymentType === 'ZAP_CREDIT'
                       ? 'Solicitar Credito ZAP'

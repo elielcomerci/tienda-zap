@@ -177,6 +177,12 @@ export default async function MiOrdenPage({
                 {order.zapCreditPlan.installments} pagos · {getPaymentFrequencyLabel(order.zapCreditPlan.paymentFrequency)}
               </span>
             </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-500">Panel de credito</span>
+              <Link href={`/perfil/creditos/${order.zapCreditPlan.id}`} className="font-medium text-orange-500 hover:underline">
+                Ver detalle
+              </Link>
+            </div>
           </>
         )}
         {order.notes && (

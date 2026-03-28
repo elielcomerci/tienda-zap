@@ -3,6 +3,7 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { findAccessibleOrder, findAccessibleOrderItem } from '@/lib/order-access'
+import { activateZapCreditPlanForOrder } from '@/lib/actions/credits'
 import { deleteR2Object, getR2ObjectMetadata } from '@/lib/r2'
 import {
   isArtworkUploadAllowedStatus,
@@ -31,6 +32,7 @@ export async function updateOrderStatus(id: string, status: string) {
 export async function confirmManualPayment(id: string) {
   await requireAdmin()
   await syncOrderStatusAfterPayment(id)
+  await activateZapCreditPlanForOrder(id)
 }
 
 export async function finalizeOrderItemUpload(input: {

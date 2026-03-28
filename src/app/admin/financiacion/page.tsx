@@ -205,7 +205,42 @@ export default async function AdminFinancingPage({
             />
           </div>
 
-          <div className="md:col-span-2 xl:col-span-3 flex items-end">
+          <div>
+            <label className="label">Recargo por mora sobre tasa</label>
+            <div className="relative">
+              <input
+                type="number"
+                name="delinquentRatePenaltyPercent"
+                min="0"
+                step="0.01"
+                defaultValue={financingSnapshot.settings.delinquentRatePenaltyPercent}
+                className="input !pr-10"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-gray-400">
+                %
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className="label">Recargo por mora sobre anticipo</label>
+            <div className="relative">
+              <input
+                type="number"
+                name="delinquentDownPaymentPenaltyPercent"
+                min="0"
+                max="20"
+                step="1"
+                defaultValue={financingSnapshot.settings.delinquentDownPaymentPenaltyPercent}
+                className="input !pr-10"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-gray-400">
+                pts
+              </span>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 xl:col-span-4 flex items-end">
             <button type="submit" className="btn-primary justify-center !py-3">
               Guardar configuracion
             </button>

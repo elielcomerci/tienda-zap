@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
+  LogOut,
+  Menu,
   Package,
   Percent,
   ShoppingCart,
   Tag,
-  Menu,
+  Wallet,
   X,
-  LogOut,
   Zap,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -19,9 +20,10 @@ import { signOut } from 'next-auth/react'
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/productos', label: 'Productos', icon: Package },
-  { href: '/admin/categorias', label: 'Categorías', icon: Tag },
-  { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
-  { href: '/admin/financiacion', label: 'FinanciaciÃ³n', icon: Percent },
+  { href: '/admin/categorias', label: 'Categorias', icon: Tag },
+  { href: '/admin/ordenes', label: 'Ordenes', icon: ShoppingCart },
+  { href: '/admin/creditos', label: 'Creditos', icon: Wallet },
+  { href: '/admin/financiacion', label: 'Financiacion', icon: Percent },
 ]
 
 export default function AdminSidebar() {
@@ -33,15 +35,13 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-xl bg-white shadow-md"
+        className="fixed left-4 top-4 z-50 rounded-xl bg-white p-2 shadow-md lg:hidden"
         onClick={() => setOpen(!open)}
       >
         {open ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 z-40 bg-black/20 lg:hidden"
@@ -49,36 +49,35 @@ export default function AdminSidebar() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-64 bg-gray-900 text-white flex flex-col transition-transform duration-300
-          ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col bg-gray-900 text-white transition-transform duration-300 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0`}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 px-6 py-5 border-b border-gray-800">
-          <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
+        <div className="flex items-center gap-2.5 border-b border-gray-800 px-6 py-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500">
             <Zap size={18} className="text-white" />
           </div>
           <div>
             <span className="font-bold text-white">ZAP</span>{' '}
-            <span className="text-gray-400 text-sm">Admin</span>
+            <span className="text-sm text-gray-400">Admin</span>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 space-y-1 px-3 py-4">
           {navItems.map((item) => {
             const active = isActive(item.href, item.exact)
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                  ${active
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                  active
                     ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                  }`}
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
               >
                 <item.icon size={18} />
                 {item.label}
@@ -87,22 +86,21 @@ export default function AdminSidebar() {
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="px-3 py-4 border-t border-gray-800 space-y-1">
+        <div className="space-y-1 border-t border-gray-800 px-3 py-4">
           <Link
             href="/"
             target="_blank"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-400 transition-all hover:bg-gray-800 hover:text-white"
           >
             <Zap size={18} />
             Ver tienda
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-all"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-400 transition-all hover:bg-gray-800 hover:text-red-400"
           >
             <LogOut size={18} />
-            Cerrar sesión
+            Cerrar sesion
           </button>
         </div>
       </aside>

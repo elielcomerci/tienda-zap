@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { updateProfile } from '@/lib/actions/auth'
 import { signOut } from '@/auth'
 import Link from 'next/link'
-import { User, Package, LogOut, ChevronRight } from 'lucide-react'
+import { User, Package, LogOut, ChevronRight, Wallet, AlertTriangle } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mi perfil — ZAP Tienda' }
@@ -34,12 +34,27 @@ export default async function PerfilPage({
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const [user, orders] = await Promise.all([
+  const [user, orders, creditsCount, overdueCreditsCount] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.user.id } }),
     prisma.order.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
       include: { items: { include: { product: { select: { name: true } } } } },
+    }),
+    prisma.zapCreditPlan.count({
+      where: {
+        order: { userId: session.user.id },
+      },
+    }),
+    prisma.zapCreditInstallment.count({
+      where: {
+        dueDate: { lt: new Date() },
+        status: { in: ['PENDING', 'REJECTED'] },
+        plan: {
+          status: { in: ['APPROVED', 'ACTIVE'] },
+          order: { userId: session.user.id },
+        },
+      },
     }),
   ])
 
@@ -113,6 +128,29 @@ export default async function PerfilPage({
 
         {/* Orders */}
         <div className="md:col-span-3">
+          <Link
+            href="/perfil/creditos"
+            className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-orange-200 hover:shadow-sm group"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+              <Wallet size={22} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-bold text-gray-900">Mis creditos</h2>
+                {overdueCreditsCount > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-800">
+                    <AlertTriangle size={12} /> {overdueCreditsCount} vencida/s
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                {creditsCount} credito/s registrados. Entra para ver cuotas, pagos y comprobantes.
+              </p>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-gray-300 transition-colors group-hover:text-orange-400" />
+          </Link>
+
           <div className="flex items-center gap-2 mb-4">
             <Package size={20} className="text-orange-500" />
             <h2 className="font-bold text-gray-900">Mis pedidos</h2>

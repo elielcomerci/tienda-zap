@@ -131,10 +131,16 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                     </p>
                   </div>
 
-                  <Link href={`/admin/financiacion?orderId=${order.id}`} className="btn-secondary mt-4 !py-2 !text-xs">
-                    Abrir calculadora de esta orden
-                    <ArrowRight size={14} />
-                  </Link>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link href={`/admin/creditos/${order.zapCreditPlan.id}`} className="btn-secondary !py-2 !text-xs">
+                      Ver panel de credito
+                      <ArrowRight size={14} />
+                    </Link>
+                    <Link href={`/admin/financiacion?orderId=${order.id}`} className="btn-secondary !py-2 !text-xs">
+                      Abrir calculadora de esta orden
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
                 </div>
               )}
 

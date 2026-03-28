@@ -157,6 +157,8 @@ model FinancingSettings {
   defaultInstallments     Int              @default(6)
   defaultPaymentFrequency PaymentFrequency @default(MONTHLY)
   cardInstallments        Int              @default(6)
+  delinquentRatePenaltyPercent Float       @default(8)
+  delinquentDownPaymentPenaltyPercent Int  @default(10)
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @updatedAt
 }
@@ -181,8 +183,81 @@ model ZapCreditPlan {
   totalInterest      Float
   notes              String?
   quotedAt           DateTime?
+  scheduleItems      ZapCreditInstallment[]
+  paymentSubmissions ZapCreditPaymentSubmission[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+}
+
+enum ZapCreditInstallmentStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ZapCreditPaymentSubmissionStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum ZapCreditPaymentMethod {
+  TRANSFER
+  CASH
+  OTHER
+}
+
+model ZapCreditInstallment {
+  id                   String                     @id @default(cuid())
+  planId               String
+  plan                 ZapCreditPlan              @relation(fields: [planId], references: [id], onDelete: Cascade)
+  sequence             Int
+  dueDate              DateTime
+  amount               Float
+  principalAmount      Float
+  interestAmount       Float
+  balanceAfter         Float
+  status               ZapCreditInstallmentStatus @default(PENDING)
+  approvedSubmissionId String?
+  submittedAt          DateTime?
+  approvedAt           DateTime?
+  reviewNotes          String?
+  submissions          ZapCreditPaymentSubmission[]
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+
+  @@unique([planId, sequence])
+}
+
+model ZapCreditPaymentSubmission {
+  id                    String                           @id @default(cuid())
+  installmentId         String
+  installment           ZapCreditInstallment             @relation(fields: [installmentId], references: [id], onDelete: Cascade)
+  planId                String
+  plan                  ZapCreditPlan                    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  submittedByUserId     String?
+  reviewedByUserId      String?
+  paymentMethod         ZapCreditPaymentMethod          @default(TRANSFER)
+  amount                Float
+  proofUrl              String
+  proofFileName         String
+  proofContentType      String?
+  proofSizeBytes        Int?
+  proofHash             String
+  duplicateOfSubmissionId String?
+  duplicateOfSubmission ZapCreditPaymentSubmission?     @relation("CreditSubmissionDuplicates", fields: [duplicateOfSubmissionId], references: [id], onDelete: SetNull)
+  duplicateSubmissions  ZapCreditPaymentSubmission[]    @relation("CreditSubmissionDuplicates")
+  notes                 String?
+  reviewNotes           String?
+  status                ZapCreditPaymentSubmissionStatus @default(SUBMITTED)
+  reviewedAt            DateTime?
+  createdAt             DateTime                        @default(now())
+  updatedAt             DateTime                        @updatedAt
+
+  @@index([planId, status])
+  @@index([proofHash])
 }
 
 model OrderItemOption {

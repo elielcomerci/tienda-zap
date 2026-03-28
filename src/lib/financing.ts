@@ -5,6 +5,7 @@ import {
   PaymentFrequency,
   calculateFinancingPlan,
   calculateWeightedDownPaymentPercent,
+  clampCreditDownPaymentPercent,
 } from '@/lib/financing-calculator'
 
 const DEFAULT_FINANCING_SETTINGS_ID = 'default'
@@ -169,8 +170,66 @@ export async function getFinancingSnapshot() {
   }
 }
 
+export async function getCreditEligibilityForUser(userId?: string | null) {
+  const financingSnapshot = await getFinancingSnapshot()
+
+  if (!userId) {
+    return {
+      authenticated: false,
+      canRequestCredit: false,
+      activeCreditsCount: 0,
+      overdueInstallmentsCount: 0,
+      hasDelinquency: false,
+      effectiveRatePercent: financingSnapshot.effectiveRatePercent,
+      baseRatePercent: financingSnapshot.effectiveRatePercent,
+      ratePenaltyPercent: 0,
+      downPaymentPenaltyPercent: 0,
+    }
+  }
+
+  const [activeCreditsCount, overdueInstallmentsCount] = await Promise.all([
+    prisma.zapCreditPlan.count({
+      where: {
+        order: { userId },
+        status: { in: ['QUOTED', 'APPROVED', 'ACTIVE'] },
+      },
+    }),
+    prisma.zapCreditInstallment.count({
+      where: {
+        dueDate: { lt: new Date() },
+        status: { in: ['PENDING', 'REJECTED'] },
+        plan: {
+          status: { in: ['APPROVED', 'ACTIVE'] },
+          order: { userId },
+        },
+      },
+    }),
+  ])
+
+  const hasDelinquency = overdueInstallmentsCount > 0
+  const ratePenaltyPercent = hasDelinquency
+    ? financingSnapshot.settings.delinquentRatePenaltyPercent
+    : 0
+  const downPaymentPenaltyPercent = hasDelinquency
+    ? financingSnapshot.settings.delinquentDownPaymentPenaltyPercent
+    : 0
+
+  return {
+    authenticated: true,
+    canRequestCredit: true,
+    activeCreditsCount,
+    overdueInstallmentsCount,
+    hasDelinquency,
+    effectiveRatePercent: financingSnapshot.effectiveRatePercent + ratePenaltyPercent,
+    baseRatePercent: financingSnapshot.effectiveRatePercent,
+    ratePenaltyPercent,
+    downPaymentPenaltyPercent,
+  }
+}
+
 export async function buildDraftZapCreditPlan(input: {
   baseAmount: number
+  userId?: string | null
   items: Array<{
     unitPrice: number
     quantity: number
@@ -179,15 +238,18 @@ export async function buildDraftZapCreditPlan(input: {
 }) {
   const { settings, indecRate, effectiveRatePercent, rateSource } =
     await getFinancingSnapshot()
+  const eligibility = await getCreditEligibilityForUser(input.userId)
 
-  const downPaymentPercent = calculateWeightedDownPaymentPercent(input.items)
+  const downPaymentPercent = clampCreditDownPaymentPercent(
+    calculateWeightedDownPaymentPercent(input.items) + eligibility.downPaymentPenaltyPercent
+  )
   const firstDueDate = getDefaultFirstDueDate(
     settings.defaultPaymentFrequency as PaymentFrequency
   )
   const summary = calculateFinancingPlan({
     baseAmount: input.baseAmount,
     downPaymentPercent,
-    ratePercent: effectiveRatePercent,
+    ratePercent: eligibility.effectiveRatePercent || effectiveRatePercent,
     installments: settings.defaultInstallments,
     paymentFrequency: settings.defaultPaymentFrequency as PaymentFrequency,
     firstDueDate,
@@ -195,7 +257,7 @@ export async function buildDraftZapCreditPlan(input: {
 
   return {
     status: 'REQUESTED' as const,
-    rateSource,
+    rateSource: eligibility.ratePenaltyPercent > 0 ? 'CUSTOM' : rateSource,
     indecAveragePercent: indecRate?.averageRatePercent ?? null,
     ratePercent: summary.ratePercent,
     installments: summary.installments,
@@ -208,5 +270,22 @@ export async function buildDraftZapCreditPlan(input: {
     installmentAmount: summary.installmentAmount,
     totalRepayable: summary.totalRepayable,
     totalInterest: summary.totalInterest,
+    notes: eligibility.hasDelinquency
+      ? `Cliente con mora activa: recargo +${eligibility.ratePenaltyPercent}% y anticipo +${eligibility.downPaymentPenaltyPercent} puntos.`
+      : null,
+    scheduleItems:
+      summary.schedule.length > 0
+        ? {
+            create: summary.schedule.map((item) => ({
+              sequence: item.installmentNumber,
+              dueDate: item.dueDate,
+              amount: item.amount,
+              principalAmount: item.principalAmount,
+              interestAmount: item.interestAmount,
+              balanceAfter: item.balanceAfter,
+              status: 'PENDING' as const,
+            })),
+          }
+        : undefined,
   }
 }

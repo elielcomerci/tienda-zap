@@ -62,6 +62,31 @@ function isSameRate(left: number, right: number) {
   return Math.abs(left - right) < 0.01
 }
 
+async function replaceZapCreditSchedule(planId: string, summary: ReturnType<typeof calculateFinancingPlan>) {
+  await prisma.zapCreditInstallment.deleteMany({
+    where: {
+      planId,
+    },
+  })
+
+  if (summary.schedule.length === 0) {
+    return
+  }
+
+  await prisma.zapCreditInstallment.createMany({
+    data: summary.schedule.map((item) => ({
+      planId,
+      sequence: item.installmentNumber,
+      dueDate: item.dueDate,
+      amount: item.amount,
+      principalAmount: item.principalAmount,
+      interestAmount: item.interestAmount,
+      balanceAfter: item.balanceAfter,
+      status: 'PENDING',
+    })),
+  })
+}
+
 export async function saveFinancingSettings(formData: FormData) {
   await requireAdmin()
 
@@ -83,6 +108,15 @@ export async function saveFinancingSettings(formData: FormData) {
     'Las cuotas con tarjeta',
     { min: 1, max: 6 }
   )
+  const delinquentRatePenaltyPercent = parseOptionalNonNegativeNumber(
+    formData.get('delinquentRatePenaltyPercent'),
+    'El recargo por mora sobre tasa'
+  ) ?? 0
+  const delinquentDownPaymentPenaltyPercent = parsePositiveInteger(
+    formData.get('delinquentDownPaymentPenaltyPercent'),
+    'El recargo por mora sobre anticipo',
+    { min: 0, max: 20 }
+  )
 
   await prisma.financingSettings.upsert({
     where: { id: 'default' },
@@ -92,6 +126,8 @@ export async function saveFinancingSettings(formData: FormData) {
       defaultInstallments,
       defaultPaymentFrequency,
       cardInstallments,
+      delinquentRatePenaltyPercent,
+      delinquentDownPaymentPenaltyPercent,
     },
     create: {
       id: 'default',
@@ -100,6 +136,8 @@ export async function saveFinancingSettings(formData: FormData) {
       defaultInstallments,
       defaultPaymentFrequency,
       cardInstallments,
+      delinquentRatePenaltyPercent,
+      delinquentDownPaymentPenaltyPercent,
     },
   })
 
@@ -126,6 +164,22 @@ export async function saveOrderZapCreditPlan(input: {
       id: true,
       total: true,
       paymentType: true,
+      zapCreditPlan: {
+        select: {
+          id: true,
+          status: true,
+          scheduleItems: {
+            select: {
+              status: true,
+              submissions: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
       items: {
         select: {
           quantity: true,
@@ -142,6 +196,14 @@ export async function saveOrderZapCreditPlan(input: {
 
   if (order.paymentType !== 'ZAP_CREDIT') {
     throw new Error('Solo podes guardar una propuesta sobre ordenes de Credito ZAP.')
+  }
+
+  if (
+    order.zapCreditPlan?.scheduleItems.some(
+      (item) => item.status === 'SUBMITTED' || item.status === 'APPROVED' || item.submissions.length > 0
+    )
+  ) {
+    throw new Error('Este credito ya tiene pagos cargados. No podemos regenerar el plan sin perder trazabilidad.')
   }
 
   const ratePercent = parseOptionalNonNegativeNumber(input.ratePercent, 'La tasa') ?? 0
@@ -171,10 +233,15 @@ export async function saveOrderZapCreditPlan(input: {
     ? financingSnapshot.rateSource
     : 'CUSTOM'
 
-  await prisma.zapCreditPlan.upsert({
+  const nextPlanStatus =
+    order.zapCreditPlan?.status === 'ACTIVE' || order.zapCreditPlan?.status === 'COMPLETED'
+      ? order.zapCreditPlan.status
+      : 'QUOTED'
+
+  const plan = await prisma.zapCreditPlan.upsert({
     where: { orderId: order.id },
     update: {
-      status: 'QUOTED',
+      status: nextPlanStatus,
       rateSource,
       indecAveragePercent: financingSnapshot.indecRate?.averageRatePercent ?? null,
       ratePercent: summary.ratePercent,
@@ -193,7 +260,7 @@ export async function saveOrderZapCreditPlan(input: {
     },
     create: {
       orderId: order.id,
-      status: 'QUOTED',
+      status: nextPlanStatus,
       rateSource,
       indecAveragePercent: financingSnapshot.indecRate?.averageRatePercent ?? null,
       ratePercent: summary.ratePercent,
@@ -210,10 +277,19 @@ export async function saveOrderZapCreditPlan(input: {
       notes: input.notes?.trim() || null,
       quotedAt: new Date(),
     },
+    select: {
+      id: true,
+    },
   })
 
+  await replaceZapCreditSchedule(plan.id, summary)
+
   revalidatePath('/admin/financiacion')
+  revalidatePath('/admin/creditos')
+  revalidatePath(`/admin/creditos/${plan.id}`)
   revalidatePath('/admin/ordenes')
   revalidatePath(`/admin/ordenes/${order.id}`)
+  revalidatePath('/perfil/creditos')
+  revalidatePath(`/perfil/creditos/${plan.id}`)
   revalidatePath('/checkout/success')
 }
