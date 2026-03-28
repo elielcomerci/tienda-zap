@@ -55,6 +55,7 @@ export default function ZapCreditSimulationCard({
   items,
   eligibility,
   isLoading = false,
+  compact = false,
   title = 'Simula tu Credito ZAP',
   description = 'La tasa se congela al cerrar la venta y no cambia durante el plan.',
 }: {
@@ -62,6 +63,7 @@ export default function ZapCreditSimulationCard({
   items: CreditSimulationItem[]
   eligibility: CreditEligibilitySnapshot | null
   isLoading?: boolean
+  compact?: boolean
   title?: string
   description?: string
 }) {
@@ -190,57 +192,71 @@ export default function ZapCreditSimulationCard({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 lg:grid-cols-3">
-        <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Tasa base</p>
-          <p className="mt-2 text-xl font-black text-gray-900">
-            {eligibility.baseRatePercent.toLocaleString('es-AR')}% mensual
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            Promedio mensual IPC de los ultimos 12 meses.
-          </p>
-        </div>
+      <details
+        className="mt-5 overflow-hidden rounded-2xl border border-orange-200 bg-white/70"
+        open={!compact}
+      >
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
+          Ver detalle de tasas y como calculamos el plan
+        </summary>
 
-        <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            TNA estimada
-          </p>
-          <p className="mt-2 text-xl font-black text-gray-900">
-            {nominalAnnualRatePercent.toLocaleString('es-AR')}%
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            Equivale a sumar la tasa mensual fija durante 12 meses.
-          </p>
-        </div>
+        <div className="border-t border-orange-100 px-4 pb-4 pt-4">
+          <div className="grid gap-3 lg:grid-cols-3">
+            <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Tasa base
+              </p>
+              <p className="mt-2 text-xl font-black text-gray-900">
+                {eligibility.baseRatePercent.toLocaleString('es-AR')}% mensual
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Promedio mensual IPC de los ultimos 12 meses.
+              </p>
+            </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            TEA estimada
-          </p>
-          <p className="mt-2 text-xl font-black text-gray-900">
-            {effectiveAnnualRatePercent.toLocaleString('es-AR')}%
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            Con capitalizacion mensual y cuota equivalente de{' '}
-            {periodicRatePercent.toLocaleString('es-AR')}% por {getPeriodUnitLabel(eligibility.defaultPaymentFrequency)}.
-          </p>
-        </div>
-      </div>
+            <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                TNA estimada
+              </p>
+              <p className="mt-2 text-xl font-black text-gray-900">
+                {nominalAnnualRatePercent.toLocaleString('es-AR')}%
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Equivale a sumar la tasa mensual fija durante 12 meses.
+              </p>
+            </div>
 
-      <div className="mt-5 rounded-2xl border border-dashed border-orange-200 bg-white/70 p-4 text-sm text-gray-700">
-        <p className="font-semibold text-gray-900">Como se calcula este plan</p>
-        <p className="mt-2">
-          1. Se toma el total del carrito y se define el anticipo minimo segun los productos.
-        </p>
-        <p className="mt-1">
-          2. Sobre el saldo restante se aplica una tasa fija mensual cerrada al momento de la
-          venta.
-        </p>
-        <p className="mt-1">
-          3. El sistema proyecta {getPaymentLabel(summary.installments, summary.paymentFrequency)} y
-          te muestra el costo final estimado antes de confirmar.
-        </p>
-      </div>
+            <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                TEA estimada
+              </p>
+              <p className="mt-2 text-xl font-black text-gray-900">
+                {effectiveAnnualRatePercent.toLocaleString('es-AR')}%
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Con capitalizacion mensual y cuota equivalente de{' '}
+                {periodicRatePercent.toLocaleString('es-AR')}% por{' '}
+                {getPeriodUnitLabel(eligibility.defaultPaymentFrequency)}.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-dashed border-orange-200 bg-white/70 p-4 text-sm text-gray-700">
+            <p className="font-semibold text-gray-900">Como se calcula este plan</p>
+            <p className="mt-2">
+              1. Se toma el total del carrito y se define el anticipo minimo segun los productos.
+            </p>
+            <p className="mt-1">
+              2. Sobre el saldo restante se aplica una tasa fija mensual cerrada al momento de la
+              venta.
+            </p>
+            <p className="mt-1">
+              3. El sistema proyecta {getPaymentLabel(summary.installments, summary.paymentFrequency)}{' '}
+              y te muestra el costo final estimado antes de confirmar.
+            </p>
+          </div>
+        </div>
+      </details>
 
       {!eligibility.authenticated && (
         <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
