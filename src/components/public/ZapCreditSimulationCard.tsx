@@ -56,6 +56,8 @@ export default function ZapCreditSimulationCard({
   eligibility,
   isLoading = false,
   compact = false,
+  installmentsOverride,
+  paymentFrequencyOverride,
   title = 'Simula tu Credito ZAP',
   description = 'La tasa se congela al cerrar la venta y no cambia durante el plan.',
 }: {
@@ -64,6 +66,8 @@ export default function ZapCreditSimulationCard({
   eligibility: CreditEligibilitySnapshot | null
   isLoading?: boolean
   compact?: boolean
+  installmentsOverride?: number
+  paymentFrequencyOverride?: PaymentFrequency
   title?: string
   description?: string
 }) {
@@ -94,8 +98,8 @@ export default function ZapCreditSimulationCard({
     baseAmount: totalAmount,
     downPaymentPercent,
     ratePercent: eligibility.effectiveRatePercent,
-    installments: eligibility.defaultInstallments,
-    paymentFrequency: eligibility.defaultPaymentFrequency,
+    installments: installmentsOverride ?? eligibility.defaultInstallments,
+    paymentFrequency: paymentFrequencyOverride ?? eligibility.defaultPaymentFrequency,
   })
   const monthlyRatePercent = Math.max(0, eligibility.effectiveRatePercent)
   const nominalAnnualRatePercent = getNominalAnnualRatePercent(monthlyRatePercent)

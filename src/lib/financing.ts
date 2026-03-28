@@ -3,6 +3,8 @@ import 'server-only'
 import { request as httpsRequest } from 'node:https'
 import { prisma } from '@/lib/prisma'
 import {
+  clampInstallmentsForFrequency,
+  getInstallmentLimits,
   PaymentFrequency,
   calculateFinancingPlan,
   calculateWeightedDownPaymentPercent,
@@ -220,6 +222,18 @@ function getDefaultFirstDueDate(paymentFrequency: PaymentFrequency) {
   return now
 }
 
+function getPaymentPlanLabel(paymentFrequency: PaymentFrequency, installments: number) {
+  if (paymentFrequency === 'MONTHLY') {
+    return `${installments} pago${installments === 1 ? '' : 's'} mensuales`
+  }
+
+  if (paymentFrequency === 'WEEKLY') {
+    return `${installments} pago${installments === 1 ? '' : 's'} semanales`
+  }
+
+  return `${installments} pago${installments === 1 ? '' : 's'} diarios`
+}
+
 export async function getFinancingSettings() {
   return prisma.financingSettings.upsert({
     where: { id: DEFAULT_FINANCING_SETTINGS_ID },
@@ -398,6 +412,10 @@ export async function buildDraftZapCreditPlan(input: {
     quantity: number
     creditDownPaymentPercent: number
   }>
+  selectedPlan?: {
+    installments?: number
+    paymentFrequency?: PaymentFrequency
+  }
 }) {
   const { settings, indecRate, effectiveRatePercent, rateSource } =
     await getFinancingSnapshot()
@@ -406,18 +424,35 @@ export async function buildDraftZapCreditPlan(input: {
   const downPaymentPercent = clampCreditDownPaymentPercent(
     calculateWeightedDownPaymentPercent(input.items) + eligibility.downPaymentPenaltyPercent
   )
+  const paymentFrequency =
+    input.selectedPlan?.paymentFrequency ??
+    (settings.defaultPaymentFrequency as PaymentFrequency)
+  const defaultInstallments = clampInstallmentsForFrequency(
+    settings.defaultInstallments,
+    paymentFrequency
+  )
+  const installments = input.selectedPlan?.installments ?? defaultInstallments
+  const { min: minInstallments, max: maxInstallments } = getInstallmentLimits(paymentFrequency)
+
+  if (!Number.isInteger(installments) || installments < minInstallments || installments > maxInstallments) {
+    throw new Error(
+      `Para pagos ${paymentFrequency === 'MONTHLY' ? 'mensuales' : paymentFrequency === 'WEEKLY' ? 'semanales' : 'diarios'} podes elegir entre ${minInstallments} y ${maxInstallments} pagos.`
+    )
+  }
+
   const firstDueDate = getDefaultFirstDueDate(
-    settings.defaultPaymentFrequency as PaymentFrequency
+    paymentFrequency
   )
   const summary = calculateFinancingPlan({
     baseAmount: input.baseAmount,
     downPaymentPercent,
     ratePercent: eligibility.effectiveRatePercent || effectiveRatePercent,
-    installments: settings.defaultInstallments,
-    paymentFrequency: settings.defaultPaymentFrequency as PaymentFrequency,
+    installments,
+    paymentFrequency,
     firstDueDate,
   })
   const autoApproved = eligibility.authenticated && !eligibility.hasDelinquency
+  const planLabel = getPaymentPlanLabel(summary.paymentFrequency, summary.installments)
 
   return {
     status: autoApproved ? ('APPROVED' as const) : ('QUOTED' as const),
@@ -435,8 +470,8 @@ export async function buildDraftZapCreditPlan(input: {
     totalRepayable: summary.totalRepayable,
     totalInterest: summary.totalInterest,
     notes: eligibility.hasDelinquency
-      ? `Cliente con mora activa: recargo +${eligibility.ratePenaltyPercent}% y anticipo +${eligibility.downPaymentPenaltyPercent} puntos.`
-      : 'Credito aprobado automaticamente por historial de pagos saludable.',
+      ? `Cliente con mora activa: recargo +${eligibility.ratePenaltyPercent}% y anticipo +${eligibility.downPaymentPenaltyPercent} puntos. Plan elegido: ${planLabel}.`
+      : `Credito aprobado automaticamente por historial de pagos saludable. Plan elegido: ${planLabel}.`,
     scheduleItems:
       summary.schedule.length > 0
         ? {

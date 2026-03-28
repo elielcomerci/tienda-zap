@@ -8,10 +8,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { AlertTriangle, Banknote, CreditCard, Smartphone, Wallet } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
-import ZapCreditSimulationCard from '@/components/public/ZapCreditSimulationCard'
+import CheckoutZapCreditConfigurator from '@/components/public/CheckoutZapCreditConfigurator'
 import {
   calculateWeightedDownPaymentPercent,
   clampCreditDownPaymentPercent,
+  PaymentFrequency,
 } from '@/lib/financing-calculator'
 import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 
@@ -57,6 +58,10 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [zapCreditSelection, setZapCreditSelection] = useState<{
+    installments: number
+    paymentFrequency: PaymentFrequency
+  } | null>(null)
   const {
     eligibility: creditEligibility,
     isLoading: isLoadingCreditEligibility,
@@ -135,6 +140,7 @@ export default function CheckoutPage() {
         designRequested: item.designRequested,
         selectedOptions: item.selectedOptions,
       })),
+      zapCreditConfig: data.paymentType === 'ZAP_CREDIT' ? zapCreditSelection : undefined,
     }
 
     try {
@@ -318,7 +324,7 @@ export default function CheckoutPage() {
 
               {paymentType === 'ZAP_CREDIT' && (
                 <div className="mt-4">
-                  <ZapCreditSimulationCard
+                  <CheckoutZapCreditConfigurator
                     totalAmount={total()}
                     items={items.map((item) => ({
                       unitPrice: item.price,
@@ -327,9 +333,7 @@ export default function CheckoutPage() {
                     }))}
                     eligibility={creditEligibility}
                     isLoading={isLoadingCreditEligibility}
-                    compact
-                    title="Asi quedaria tu plan para este carrito"
-                    description="Ves el anticipo, la cuota estimada y las tasas equivalentes antes de confirmar la solicitud."
+                    onChange={setZapCreditSelection}
                   />
                 </div>
               )}
@@ -389,12 +393,14 @@ export default function CheckoutPage() {
                 disabled={
                   loading ||
                   hasUnavailableItems ||
-                  (paymentType === 'ZAP_CREDIT' && zapCreditDisabled)
+                  (paymentType === 'ZAP_CREDIT' &&
+                    (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
                 }
                 className={`w-full justify-center !py-3.5 ${
                   loading ||
                   hasUnavailableItems ||
-                  (paymentType === 'ZAP_CREDIT' && zapCreditDisabled)
+                  (paymentType === 'ZAP_CREDIT' &&
+                    (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
                     ? 'btn-secondary !cursor-not-allowed !border-gray-200 !bg-gray-200 !text-gray-500 hover:!bg-gray-200'
                     : 'btn-primary'
                 }`}
@@ -403,8 +409,12 @@ export default function CheckoutPage() {
                   ? 'Procesando...'
                   : hasUnavailableItems
                     ? 'Revisa el carrito'
-                    : paymentType === 'ZAP_CREDIT' && zapCreditDisabled
+                    : paymentType === 'ZAP_CREDIT' && isLoadingCreditEligibility
+                      ? 'Cargando condiciones...'
+                  : paymentType === 'ZAP_CREDIT' && zapCreditDisabled
                       ? 'Inicia sesion para solicitar credito'
+                      : paymentType === 'ZAP_CREDIT' && !zapCreditSelection
+                        ? 'Configura tu plan'
                       : paymentType === 'MERCADOPAGO'
                         ? 'Pagar con MercadoPago'
                         : paymentType === 'ZAP_CREDIT'

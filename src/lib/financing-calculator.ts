@@ -2,6 +2,15 @@ export const PAYMENT_FREQUENCIES = ['DAILY', 'WEEKLY', 'MONTHLY'] as const
 
 export type PaymentFrequency = (typeof PAYMENT_FREQUENCIES)[number]
 
+export const CREDIT_INSTALLMENT_LIMITS: Record<
+  PaymentFrequency,
+  { min: number; max: number }
+> = {
+  DAILY: { min: 1, max: 90 },
+  WEEKLY: { min: 1, max: 26 },
+  MONTHLY: { min: 1, max: 12 },
+}
+
 export type FinancingScheduleItem = {
   installmentNumber: number
   dueDate: Date
@@ -73,6 +82,18 @@ export function getPaymentFrequencyLabel(paymentFrequency: PaymentFrequency) {
     default:
       return 'Mensual'
   }
+}
+
+export function getInstallmentLimits(paymentFrequency: PaymentFrequency) {
+  return CREDIT_INSTALLMENT_LIMITS[paymentFrequency]
+}
+
+export function clampInstallmentsForFrequency(
+  installments: number,
+  paymentFrequency: PaymentFrequency
+) {
+  const { min, max } = getInstallmentLimits(paymentFrequency)
+  return Math.max(min, Math.min(max, Math.round(installments)))
 }
 
 export function calculateWeightedDownPaymentPercent(

@@ -122,6 +122,12 @@ export const orderCheckoutSchema = z.object({
   phone: z.string().min(8, 'Telefono invalido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH', 'ZAP_CREDIT']),
   notes: z.string().optional(),
+  zapCreditConfig: z
+    .object({
+      installments: z.number().int().positive(),
+      paymentFrequency: z.enum(['DAILY', 'WEEKLY', 'MONTHLY']),
+    })
+    .optional(),
   items: z.array(
     z.object({
       productId: z.string(),
@@ -135,6 +141,14 @@ export const orderCheckoutSchema = z.object({
       })).optional(),
     })
   ).min(1),
+}).superRefine((data, ctx) => {
+  if (data.paymentType === 'ZAP_CREDIT' && !data.zapCreditConfig) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['zapCreditConfig'],
+      message: 'Configura el plan de Credito ZAP antes de continuar.',
+    })
+  }
 })
 
 export const loginSchema = z.object({

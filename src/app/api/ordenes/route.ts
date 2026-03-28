@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         ? await buildDraftZapCreditPlan({
             baseAmount: total,
             userId: session?.user?.id,
+            selectedPlan: data.zapCreditConfig,
             items: resolvedItems.map((item) => ({
               unitPrice: item.unitPrice,
               quantity: item.quantity,
