@@ -3,6 +3,7 @@ import { updateProduct } from '@/lib/actions/products'
 import ProductForm from '@/components/admin/ProductForm'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getProductRelationOptions } from '@/lib/products'
 
 export const metadata = { title: 'Editar Producto | ZAP Admin' }
 
@@ -24,11 +25,19 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           },
         },
       },
+      outgoingRelations: {
+        select: {
+          relatedProductId: true,
+        },
+      },
     },
   })
   if (!product) notFound()
 
-  const categories = await getCategories()
+  const [categories, availableProducts] = await Promise.all([
+    getCategories(),
+    getProductRelationOptions(id),
+  ])
   const updateAction = updateProduct.bind(null, id)
 
   // Transform DB data to ProductOptionsConfigurator format
@@ -56,6 +65,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     }
   })
 
+  const initialRelatedProductIds = product.outgoingRelations.map(
+    (relation) => relation.relatedProductId
+  )
+
   return (
     <ProductForm
       product={product}
@@ -63,6 +76,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       action={updateAction}
       initialOptions={initialOptions}
       initialVariants={initialVariants}
+      availableProducts={availableProducts}
+      initialRelatedProductIds={initialRelatedProductIds}
     />
   )
 }

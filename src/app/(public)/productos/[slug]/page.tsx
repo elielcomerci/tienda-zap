@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getProduct } from '@/lib/products'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
+import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { Package } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -18,6 +19,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params
   const product = await getProduct(slug)
   if (!product || !product.active) notFound()
+
+  const relatedProducts = product.outgoingRelations
+    .map((relation) => relation.relatedProduct)
+    .filter((relatedProduct) => relatedProduct.active)
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -48,6 +53,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </div>
+
+      <RelatedProductsSection products={relatedProducts} />
     </div>
   )
 }

@@ -38,24 +38,26 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String?
-  price       Float
-  images      String[]
-  categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
-  active      Boolean     @default(true)
-  stock       Int         @default(0) // Stock general (si aplica)
+  id                String            @id @default(cuid())
+  name              String
+  slug              String            @unique
+  description       String?
+  price             Float
+  images            String[]
+  categoryId        String
+  category          Category          @relation(fields: [categoryId], references: [id])
+  active            Boolean           @default(true)
+  stock             Int               @default(0) // Stock general (si aplica)
   
   // Configurador Avanzado
-  options     ProductOption[]
-  variants    ProductVariant[]
+  options           ProductOption[]
+  variants          ProductVariant[]
+  outgoingRelations ProductRelation[] @relation("ProductOutgoingRelations")
+  incomingRelations ProductRelation[] @relation("ProductIncomingRelations")
   
-  orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  orderItems        OrderItem[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
 
 model Order {
@@ -159,6 +161,18 @@ model ProductVariant {
   
   // Relación con los valores específicos que forman esta combinación
   options     VariantOption[]
+}
+
+model ProductRelation {
+  id               String   @id @default(cuid())
+  productId        String
+  relatedProductId String
+  createdAt        DateTime @default(now())
+
+  product        Product @relation("ProductOutgoingRelations", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct Product @relation("ProductIncomingRelations", fields: [relatedProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, relatedProductId])
 }
 
 // Tabla pivote para unir Variantes con sus Valores Específicos

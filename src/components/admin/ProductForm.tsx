@@ -5,7 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, UploadCloud, X, Save, AlertCircle } from 'lucide-react'
 import ProductOptionsConfigurator from './ProductOptionsConfigurator'
+import ProductRelationsPicker from './ProductRelationsPicker'
 import { slugify } from '@/lib/slug'
+import { getFirstValidationError, productSchema } from '@/lib/validations'
 
 export default function ProductForm({
   product,
@@ -13,12 +15,23 @@ export default function ProductForm({
   action,
   initialOptions,
   initialVariants,
+  availableProducts,
+  initialRelatedProductIds,
 }: {
   product?: any
   categories: any[]
   action: (formData: FormData) => Promise<void>
   initialOptions?: any[]
   initialVariants?: any[]
+  availableProducts: Array<{
+    id: string
+    name: string
+    slug: string
+    active: boolean
+    images: string[]
+    category: { name: string }
+  }>
+  initialRelatedProductIds?: string[]
 }) {
   const [images, setImages] = useState<string[]>(product?.images || [])
   const [uploading, setUploading] = useState(false)
@@ -41,13 +54,14 @@ export default function ProductForm({
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
     setUploading(true)
+    setError('')
 
     const files = Array.from(e.target.files)
     const newUrls: string[] = []
 
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('Una imagen supera los 5MB')
+        setError('Cada imagen debe pesar como maximo 5MB.')
         continue
       }
 
@@ -60,7 +74,7 @@ export default function ProductForm({
         const data = await res.json()
         newUrls.push(data.url)
       } catch {
-        alert('Error al subir imagen')
+        setError('No pudimos subir una de las imagenes. Intenta de nuevo.')
       }
     }
 
@@ -104,6 +118,29 @@ export default function ProductForm({
 
       if (!formData.get('active')) formData.set('active', 'false')
       else formData.set('active', 'true')
+
+      const raw = {
+        name: formData.get('name') as string,
+        slug: formData.get('slug') as string,
+        description: (formData.get('description') as string) || '',
+        price: formData.get('price'),
+        categoryId: formData.get('categoryId') as string,
+        stock: formData.get('stock'),
+        images,
+        active: formData.get('active') === 'true',
+        options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
+        variants: formData.get('variants') ? JSON.parse(formData.get('variants') as string) : [],
+        relatedProductIds: formData.get('relatedProductIds')
+          ? JSON.parse(formData.get('relatedProductIds') as string)
+          : [],
+      }
+
+      const parsed = productSchema.safeParse(raw)
+      if (!parsed.success) {
+        setError(getFirstValidationError(parsed.error))
+        setLoading(false)
+        return
+      }
 
       await action(formData)
     } catch (err: any) {
@@ -233,6 +270,13 @@ export default function ProductForm({
             initialVariants={initialVariants || product?.variants || []}
             basePrice={product?.price || 0}
             onOptionsChange={setHasVariants}
+          />
+        </div>
+
+        <div className="md:col-span-3">
+          <ProductRelationsPicker
+            products={availableProducts}
+            initialSelectedIds={initialRelatedProductIds || []}
           />
         </div>
 

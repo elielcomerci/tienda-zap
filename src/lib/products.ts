@@ -12,13 +12,15 @@ export async function getProducts(categorySlug?: string, search?: string) {
   return prisma.product.findMany({
     where: {
       active: true,
-      ...(categorySlug && { category: { slug: categorySlug } }),
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
+      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
     },
     include: {
       category: true,
@@ -51,6 +53,20 @@ export async function getProduct(slug: string) {
           },
         },
       },
+      outgoingRelations: {
+        include: {
+          relatedProduct: {
+            include: {
+              category: true,
+              variants: {
+                select: { price: true },
+                orderBy: { price: 'asc' },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      },
     },
   })
 }
@@ -63,7 +79,31 @@ export async function getAllProductsAdmin() {
       category: true,
       options: { include: { values: true } },
       variants: { include: { options: { include: { optionValue: true } } } },
+      outgoingRelations: {
+        select: { relatedProductId: true },
+      },
     },
     orderBy: { createdAt: 'desc' },
+  })
+}
+
+export async function getProductRelationOptions(excludeProductId?: string) {
+  await requireAdmin()
+
+  return prisma.product.findMany({
+    where: excludeProductId ? { id: { not: excludeProductId } } : undefined,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      active: true,
+      images: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: { name: 'asc' },
   })
 }
