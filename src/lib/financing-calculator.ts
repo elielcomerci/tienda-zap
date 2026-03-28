@@ -108,6 +108,22 @@ export function getPeriodicRate(ratePercent: number, paymentFrequency: PaymentFr
   return Math.pow(1 + annualEffectiveRate, 1 / PERIODS_PER_YEAR[paymentFrequency]) - 1
 }
 
+export function getPeriodicRatePercent(
+  ratePercent: number,
+  paymentFrequency: PaymentFrequency
+) {
+  return roundPercent(getPeriodicRate(ratePercent, paymentFrequency) * 100)
+}
+
+export function getNominalAnnualRatePercent(ratePercent: number) {
+  return roundPercent(Math.max(0, ratePercent) * 12)
+}
+
+export function getEffectiveAnnualRatePercent(ratePercent: number) {
+  const normalizedMonthlyRate = Math.max(0, ratePercent) / 100
+  return roundPercent((Math.pow(1 + normalizedMonthlyRate, 12) - 1) * 100)
+}
+
 export function calculateInstallmentAmount(
   financedAmount: number,
   periodicRate: number,

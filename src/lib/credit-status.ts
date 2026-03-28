@@ -93,6 +93,7 @@ export function summarizeCreditPlan(plan: CreditPlanLike) {
   const approvedItems = plan.scheduleItems.filter((item) => item.status === 'APPROVED')
   const submittedItems = plan.scheduleItems.filter((item) => item.status === 'SUBMITTED')
   const rejectedItems = plan.scheduleItems.filter((item) => item.status === 'REJECTED')
+  const activeItems = plan.scheduleItems.filter((item) => item.status !== 'CANCELLED')
   const overdueItems = plan.scheduleItems.filter(
     (item) =>
       item.status === 'PENDING' &&
@@ -103,12 +104,17 @@ export function summarizeCreditPlan(plan: CreditPlanLike) {
     (item) => item.status === 'PENDING' && item.dueDate.getTime() >= now
   )
   const paidAmount = approvedItems.reduce((total, item) => total + item.amount, 0)
+  const totalScheduledAmount = activeItems.reduce((total, item) => total + item.amount, 0)
   const remainingAmount =
     plan.scheduleItems.length > 0
       ? plan.scheduleItems
           .filter((item) => item.status !== 'APPROVED' && item.status !== 'CANCELLED')
           .reduce((total, item) => total + item.amount, 0)
       : Math.max(0, plan.financedAmount - paidAmount)
+  const installmentProgressPercent =
+    activeItems.length > 0 ? Math.round((approvedItems.length / activeItems.length) * 100) : 0
+  const paymentProgressPercent =
+    totalScheduledAmount > 0 ? Math.round((paidAmount / totalScheduledAmount) * 100) : 0
   const nextDueItem =
     plan.scheduleItems
       .filter((item) => item.status !== 'APPROVED' && item.status !== 'CANCELLED')
@@ -128,6 +134,9 @@ export function summarizeCreditPlan(plan: CreditPlanLike) {
     pendingCount: pendingItems.length,
     paidAmount,
     remainingAmount,
+    totalScheduledAmount,
+    installmentProgressPercent,
+    paymentProgressPercent,
     nextDueItem,
     flaggedSubmissions,
   }

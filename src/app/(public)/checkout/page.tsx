@@ -8,10 +8,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { AlertTriangle, CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
+import ZapCreditSimulationCard from '@/components/public/ZapCreditSimulationCard'
 import {
   calculateWeightedDownPaymentPercent,
   clampCreditDownPaymentPercent,
 } from '@/lib/financing-calculator'
+import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 
 const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
@@ -22,18 +24,6 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
-
-type CreditEligibility = {
-  authenticated: boolean
-  canRequestCredit: boolean
-  activeCreditsCount: number
-  overdueInstallmentsCount: number
-  hasDelinquency: boolean
-  effectiveRatePercent: number
-  baseRatePercent: number
-  ratePenaltyPercent: number
-  downPaymentPenaltyPercent: number
-}
 
 const paymentOptions = [
   { value: 'MERCADOPAGO', label: 'Tarjeta / MercadoPago', desc: 'Hasta 6 cuotas sin interes', icon: CreditCard },
@@ -47,7 +37,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [creditEligibility, setCreditEligibility] = useState<CreditEligibility | null>(null)
+  const { eligibility: creditEligibility, isLoading: isLoadingCreditEligibility } =
+    useCreditEligibility()
   const hasUnavailableItems = items.some((item) => item.price <= 0)
   const hasItemsRequiringArtwork = items.some((item) => !item.isService)
   const baseDownPaymentPercent = calculateWeightedDownPaymentPercent(
@@ -81,32 +72,10 @@ export default function CheckoutPage() {
   }, [items.length, router])
 
   useEffect(() => {
-    let active = true
-
-    fetch('/api/creditos/eligibility')
-      .then(async (response) => {
-        const payload = await response.json()
-        if (!response.ok) {
-          throw new Error(payload.error || 'No pudimos validar Credito ZAP.')
-        }
-
-        if (active) {
-          setCreditEligibility(payload)
-          if (!payload.canRequestCredit) {
-            setValue('paymentType', 'MERCADOPAGO')
-          }
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setCreditEligibility(null)
-        }
-      })
-
-    return () => {
-      active = false
+    if (creditEligibility && !creditEligibility.canRequestCredit) {
+      setValue('paymentType', 'MERCADOPAGO')
     }
-  }, [setValue])
+  }, [creditEligibility, setValue])
 
   if (items.length === 0) return null
 
@@ -293,6 +262,23 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {paymentType === 'ZAP_CREDIT' && (
+                <div className="mt-4">
+                  <ZapCreditSimulationCard
+                    totalAmount={total()}
+                    items={items.map((item) => ({
+                      unitPrice: item.price,
+                      quantity: item.quantity,
+                      creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
+                    }))}
+                    eligibility={creditEligibility}
+                    isLoading={isLoadingCreditEligibility}
+                    title="Asi quedaria tu plan para este carrito"
+                    description="Ves el anticipo, la cuota estimada y las tasas equivalentes antes de confirmar la solicitud."
+                  />
                 </div>
               )}
             </div>

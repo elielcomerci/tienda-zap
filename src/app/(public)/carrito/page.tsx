@@ -4,11 +4,14 @@ import { useCartStore } from '@/lib/cart-store'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
+import ZapCreditSimulationCard from '@/components/public/ZapCreditSimulationCard'
+import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, updateNotes, total, clearCart } = useCartStore()
   const count = useCartStore((s) => s.itemCount())
   const hasUnavailableItems = items.some((item) => item.price <= 0)
+  const { eligibility, isLoading } = useCreditEligibility()
 
   if (items.length === 0) {
     return (
@@ -123,6 +126,22 @@ export default function CartPage() {
               <span>Total</span>
               <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
             </div>
+
+            <div className="mt-5">
+              <ZapCreditSimulationCard
+                totalAmount={total()}
+                items={items.map((item) => ({
+                  unitPrice: item.price,
+                  quantity: item.quantity,
+                  creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
+                }))}
+                eligibility={eligibility}
+                isLoading={isLoading}
+                title="Simulacion rapida de Credito ZAP"
+                description="Te mostramos una proyeccion del plan antes de avanzar al checkout."
+              />
+            </div>
+
             {hasUnavailableItems ? (
               <button
                 type="button"

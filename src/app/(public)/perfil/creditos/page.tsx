@@ -2,7 +2,11 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { AlertTriangle, ArrowLeft, ChevronRight, Wallet } from 'lucide-react'
 import { auth } from '@/auth'
-import { summarizeCreditPlan, getCreditPlanStatusLabel, getCreditPlanStatusTheme } from '@/lib/credit-status'
+import {
+  summarizeCreditPlan,
+  getCreditPlanStatusLabel,
+  getCreditPlanStatusTheme,
+} from '@/lib/credit-status'
 import { getCustomerCreditPlans, getCurrentUserCreditEligibility } from '@/lib/credits'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -22,7 +26,10 @@ export default async function CustomerCreditsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <Link href="/perfil" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
+      <Link
+        href="/perfil"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
+      >
         <ArrowLeft size={16} /> Volver a mi perfil
       </Link>
 
@@ -56,11 +63,15 @@ export default async function CustomerCreditsPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="card p-5">
           <p className="text-sm font-medium text-gray-500">Creditos activos</p>
-          <p className="mt-2 text-2xl font-black text-gray-900">{eligibility.activeCreditsCount}</p>
+          <p className="mt-2 text-2xl font-black text-gray-900">
+            {eligibility.activeCreditsCount}
+          </p>
         </div>
         <div className="card p-5">
           <p className="text-sm font-medium text-gray-500">Cuotas vencidas</p>
-          <p className="mt-2 text-2xl font-black text-gray-900">{eligibility.overdueInstallmentsCount}</p>
+          <p className="mt-2 text-2xl font-black text-gray-900">
+            {eligibility.overdueInstallmentsCount}
+          </p>
         </div>
         <div className="card p-5">
           <p className="text-sm font-medium text-gray-500">Creditos totales</p>
@@ -72,7 +83,10 @@ export default async function CustomerCreditsPage() {
         <div className="card p-12 text-center text-gray-400">
           <Wallet size={40} className="mx-auto mb-3 text-gray-200" />
           <p className="font-medium">Todavia no tenes creditos activos</p>
-          <Link href="/productos" className="mt-3 inline-block text-sm text-orange-500 hover:underline">
+          <Link
+            href="/productos"
+            className="mt-3 inline-block text-sm text-orange-500 hover:underline"
+          >
             Ver productos
           </Link>
         </div>
@@ -86,11 +100,13 @@ export default async function CustomerCreditsPage() {
               <Link
                 key={plan.id}
                 href={`/perfil/creditos/${plan.id}`}
-                className="card flex items-center gap-4 p-4 transition-all hover:border-orange-200 hover:shadow-sm group"
+                className="group card flex items-center gap-4 p-4 transition-all hover:border-orange-200 hover:shadow-sm"
               >
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getCreditPlanStatusTheme(plan.status)}`}>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getCreditPlanStatusTheme(plan.status)}`}
+                    >
                       {getCreditPlanStatusLabel(plan.status)}
                     </span>
                     <span className="text-xs text-gray-400">Orden #{orderCode}</span>
@@ -100,17 +116,32 @@ export default async function CustomerCreditsPage() {
                       </span>
                     )}
                   </div>
+
                   <p className="text-sm font-semibold text-gray-900">
                     {plan.order.items.map((item) => item.product.name).join(', ')}
                   </p>
+
                   <p className="mt-1 text-sm text-gray-500">
                     Pagado: ${summary.paidAmount.toLocaleString('es-AR')} · Pendiente: $
                     {summary.remainingAmount.toLocaleString('es-AR')}
                   </p>
+
+                  <div className="mt-3">
+                    <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
+                      <span>Avance del credito</span>
+                      <span>{summary.paymentProgressPercent}% cobrado</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
+                        style={{ width: `${summary.paymentProgressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+
                   {summary.nextDueItem && (
-                    <p className="mt-1 text-xs text-gray-400">
-                      Proximo vencimiento:{' '}
-                      {summary.nextDueItem.dueDate.toLocaleDateString('es-AR')}
+                    <p className="mt-2 text-xs text-gray-400">
+                      Proximo vencimiento {summary.nextDueItem.dueDate.toLocaleDateString('es-AR')}
                     </p>
                   )}
                 </div>
@@ -119,7 +150,10 @@ export default async function CustomerCreditsPage() {
                   <p className="font-bold text-gray-900">
                     ${plan.financedAmount.toLocaleString('es-AR')}
                   </p>
-                  <ChevronRight size={16} className="ml-auto mt-1 text-gray-300 transition-colors group-hover:text-orange-400" />
+                  <ChevronRight
+                    size={16}
+                    className="ml-auto mt-1 text-gray-300 transition-colors group-hover:text-orange-400"
+                  />
                 </div>
               </Link>
             )

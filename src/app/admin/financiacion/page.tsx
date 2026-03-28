@@ -70,7 +70,7 @@ export default async function AdminFinancingPage({
               <Percent size={20} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Promedio IPC 12 meses</p>
+              <p className="text-sm font-medium text-gray-500">Promedio IPC mensual 12 meses</p>
               <p className="text-2xl font-black text-gray-900">
                 {financingSnapshot.indecRate
                   ? `${financingSnapshot.indecRate.averageRatePercent.toLocaleString('es-AR')}%`
@@ -91,7 +91,7 @@ export default async function AdminFinancingPage({
               <Landmark size={20} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Tasa activa</p>
+              <p className="text-sm font-medium text-gray-500">Tasa activa mensual</p>
               <p className="text-2xl font-black text-gray-900">
                 {financingSnapshot.effectiveRatePercent.toLocaleString('es-AR')}%
               </p>

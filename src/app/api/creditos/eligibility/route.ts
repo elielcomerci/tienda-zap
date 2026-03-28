@@ -1,9 +1,18 @@
 import { getCurrentUserCreditEligibility } from '@/lib/credits'
+import { getFinancingSnapshot } from '@/lib/financing'
 
 export async function GET() {
   try {
-    const eligibility = await getCurrentUserCreditEligibility()
-    return Response.json(eligibility)
+    const [eligibility, financingSnapshot] = await Promise.all([
+      getCurrentUserCreditEligibility(),
+      getFinancingSnapshot(),
+    ])
+
+    return Response.json({
+      ...eligibility,
+      defaultInstallments: financingSnapshot.settings.defaultInstallments,
+      defaultPaymentFrequency: financingSnapshot.settings.defaultPaymentFrequency,
+    })
   } catch (error: any) {
     return Response.json(
       {
