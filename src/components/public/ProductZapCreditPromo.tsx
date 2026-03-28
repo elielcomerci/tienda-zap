@@ -20,12 +20,12 @@ export default function ProductZapCreditPromo({
             Credito ZAP
           </p>
           <h2 className="mt-2 text-2xl font-black text-gray-900">
-            Este producto tambien se puede mover sin descapitalizar tu negocio
+            Puedes resolver este producto hoy sin ahogarte con el pago
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-gray-600">
-            Si {productName.toLowerCase()} resuelve una necesidad puntual de tu local, podes
-            trabajarlo con anticipo desde el {downPaymentPercent}% y adaptar el saldo a un plan
-            fijo pensado para comercios.
+            Si {productName.toLowerCase()} es parte de una mejora que tu negocio necesita ahora,
+            puedes avanzarlo con anticipo desde el {downPaymentPercent}% y ordenar el resto en un
+            plan fijo mas comodo.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -52,11 +52,11 @@ export default function ProductZapCreditPromo({
             <div className="rounded-2xl border border-white/80 bg-white/90 p-4">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <Building2 size={15} className="text-orange-500" />
-                Para comercios
+                En tu contexto
               </div>
               <p className="mt-2 text-lg font-black text-gray-900">Ideal para {categoryName}</p>
               <p className="mt-1 text-xs text-gray-500">
-                Pensado para resolver necesidades reales de negocio.
+                Pensado para necesidades reales y pagos mas llevaderos.
               </p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function ProductZapCreditPromo({
           <div className="mt-4 space-y-3 text-sm text-gray-600">
             <p>1. Configuralo y agregalo al carrito para simular el credito real.</p>
             <p>2. En checkout elegi Credito ZAP y ajusta el plan segun tu caja.</p>
-            <p>3. Si preferis, te lo prearmamos por WhatsApp con este producto como base.</p>
+            <p>3. Si prefieres, te ayudamos por WhatsApp a cerrar este mismo pedido.</p>
           </div>
 
           <div className="mt-5 flex flex-col gap-3">
@@ -84,8 +84,8 @@ export default function ProductZapCreditPromo({
             )}
 
             <p className="rounded-2xl border border-dashed border-orange-200 bg-orange-50/70 px-4 py-3 text-sm text-orange-900">
-              Vendedores y clientes pueden usar esta misma ficha como base para conversar el caso y
-              cerrar el plan sobre una necesidad concreta.
+              Si compartiste este link o llegaste desde WhatsApp, esta ficha ya te sirve como base
+              para consultar el producto exacto y revisar una financiacion posible.
             </p>
           </div>
         </div>

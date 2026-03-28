@@ -31,17 +31,17 @@ const zapCreditHighlights = [
   {
     icon: BadgePercent,
     title: 'Anticipo desde 30%',
-    desc: 'Se define segun el producto y el historial del cliente.',
+    desc: 'Reserva tu trabajo hoy y cubre el resto con un plan claro.',
   },
   {
     icon: Store,
-    title: 'Pensado para negocios',
-    desc: 'Sirve para carteleria, impresos, exhibidores, servicios y mas.',
+    title: 'Cuida tu caja',
+    desc: 'Resuelve carteleria, impresos o exhibidores sin desarmar todo tu presupuesto.',
   },
   {
     icon: MessageCircleMore,
-    title: 'Ideal para vender por WhatsApp',
-    desc: 'Cada link de producto ya puede abrir una conversacion sobre el caso real del cliente.',
+    title: 'Asesoria por WhatsApp',
+    desc: 'Si tienes dudas, te ayudamos a elegir producto, anticipo y forma de pago.',
   },
 ]
 
@@ -94,17 +94,17 @@ export default async function HomePage() {
               Credito ZAP
             </p>
             <h2 className="mt-2 text-3xl font-black text-gray-900 md:text-4xl">
-              Una forma concreta de acercarte clientes que hoy postergan la compra
+              Si necesitas resolverlo ahora, puedes pagarlo con mas aire
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-              Si un negocio sabe que necesita renovar carteleria, sumar impresos o resolver una
-              necesidad operativa, ya no tiene que esperar a juntar todo el efectivo. Credito ZAP
-              acompana cualquier producto del catalogo y se puede explicar facil desde un link.
+              Si hoy necesitas renovar tu carteleria, imprimir material para vender mejor o encarar
+              un trabajo importante, no hace falta postergarlo. Con Credito ZAP puedes confirmar el
+              pedido con anticipo y distribuir el saldo en pagos fijos segun tu ritmo.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/productos" className="btn-primary">
-                Ver productos financiables <ArrowRight size={18} />
+                Ver productos con Credito ZAP <ArrowRight size={18} />
               </Link>
               {zapCreditWhatsappUrl && (
                 <Link
@@ -114,7 +114,7 @@ export default async function HomePage() {
                   className="btn-secondary"
                 >
                   <MessageCircleMore size={18} />
-                  Hablar por WhatsApp
+                  Consultar mi plan por WhatsApp
                 </Link>
               )}
             </div>
