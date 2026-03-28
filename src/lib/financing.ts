@@ -21,6 +21,11 @@ type IndecRateSnapshot = {
   monthlyRates: number[]
 }
 
+type SeriesDataPoint = {
+  date: string
+  value: number
+}
+
 function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100
 }
@@ -50,9 +55,46 @@ function normalizeSeriesData(data: unknown[]) {
 
       return null
     })
-    .filter((entry): entry is { date: string; value: number } => {
+    .filter((entry): entry is SeriesDataPoint => {
       return Boolean(entry && Number.isFinite(entry.value))
     })
+}
+
+async function fetchIndecSeriesData(
+  searchParams: Record<string, string>
+): Promise<SeriesDataPoint[]> {
+  const url = new URL('https://apis.datos.gob.ar/series/api/series')
+
+  for (const [key, value] of Object.entries(searchParams)) {
+    url.searchParams.set(key, value)
+  }
+
+  const response = await fetch(url.toString(), {
+    next: { revalidate: 60 * 60 * 24 },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Respuesta inesperada ${response.status}`)
+  }
+
+  const payload = (await response.json()) as IndecSeriesResponse
+  return normalizeSeriesData(payload.data || [])
+}
+
+function buildAverageRateSnapshot(seriesData: SeriesDataPoint[], monthlyRates: number[]) {
+  if (seriesData.length === 0 || monthlyRates.length === 0) {
+    return null
+  }
+
+  const averageRatePercent = roundCurrency(
+    monthlyRates.reduce((total, rate) => total + rate, 0) / monthlyRates.length
+  )
+
+  return {
+    averageRatePercent,
+    lastObservationDate: seriesData[seriesData.length - 1]?.date || '',
+    monthlyRates,
+  } satisfies IndecRateSnapshot
 }
 
 function getDefaultFirstDueDate(paymentFrequency: PaymentFrequency) {
@@ -87,31 +129,45 @@ export async function getIndecAverageRatePercent(
   seriesId = DEFAULT_INDEC_SERIES_ID
 ): Promise<IndecRateSnapshot | null> {
   try {
-    const url = new URL('https://apis.datos.gob.ar/series/api/series')
-    url.searchParams.set('ids', seriesId)
-    url.searchParams.set('format', 'json')
-    url.searchParams.set('last', '13')
-
-    const response = await fetch(url.toString(), {
-      next: { revalidate: 60 * 60 * 24 },
+    const transformedSeriesData = await fetchIndecSeriesData({
+      ids: seriesId,
+      representation_mode: 'percent_change',
+      format: 'json',
+      metadata: 'none',
+      last: '12',
     })
 
-    if (!response.ok) {
-      throw new Error(`Respuesta inesperada ${response.status}`)
+    if (transformedSeriesData.length >= 12) {
+      const monthlyRates = transformedSeriesData
+        .map((entry) => roundCurrency(entry.value * 100))
+        .filter((value) => Number.isFinite(value))
+
+      const transformedSnapshot = buildAverageRateSnapshot(
+        transformedSeriesData,
+        monthlyRates
+      )
+
+      if (transformedSnapshot) {
+        return transformedSnapshot
+      }
     }
 
-    const payload = (await response.json()) as IndecSeriesResponse
-    const seriesData = normalizeSeriesData(payload.data || [])
+    const fallbackSeriesData = await fetchIndecSeriesData({
+      ids: seriesId,
+      format: 'json',
+      metadata: 'none',
+      last: '13',
+    })
 
-    if (seriesData.length < 13) {
+    if (fallbackSeriesData.length < 13) {
       return null
     }
 
     const monthlyRates: number[] = []
 
-    for (let index = 1; index < seriesData.length; index += 1) {
-      const previousValue = seriesData[index - 1]?.value
-      const currentValue = seriesData[index]?.value
+    for (let index = 1; index < fallbackSeriesData.length; index += 1) {
+      const previousValue = fallbackSeriesData[index - 1]?.value
+      const currentValue = fallbackSeriesData[index]?.value
 
       if (!previousValue || !currentValue) {
         continue
@@ -121,19 +177,7 @@ export async function getIndecAverageRatePercent(
       monthlyRates.push(roundCurrency(variation))
     }
 
-    if (monthlyRates.length === 0) {
-      return null
-    }
-
-    const averageRatePercent = roundCurrency(
-      monthlyRates.reduce((total, rate) => total + rate, 0) / monthlyRates.length
-    )
-
-    return {
-      averageRatePercent,
-      lastObservationDate: seriesData[seriesData.length - 1]?.date || '',
-      monthlyRates,
-    }
+    return buildAverageRateSnapshot(fallbackSeriesData, monthlyRates)
   } catch (error) {
     console.error('No se pudo consultar IPC INDEC:', error)
     return null
