@@ -116,71 +116,74 @@ export default function ZapCreditSimulationCard({
 
   return (
     <div className="rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 sm:p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-            Credito ZAP
-          </p>
-          <h3 className="mt-1 text-lg sm:text-xl font-black text-gray-900 break-words">{title}</h3>
-          <p className="mt-2 max-w-2xl text-sm text-gray-600">{description}</p>
-        </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+              Credito ZAP
+            </p>
+            <h3 className="mt-1 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">{title}</h3>
+          </div>
 
-        <div className="rounded-2xl border border-orange-200 bg-white/80 px-4 py-3 text-right shrink-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Tasa mensual fija
-          </p>
-          <p className="mt-1 text-xl sm:text-2xl font-black text-orange-600">
-            {monthlyRatePercent.toLocaleString('es-AR')}%
-          </p>
+          <div className="rounded-2xl border border-orange-200 bg-white/80 px-3 py-2 text-right shrink-0">
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Tasa mensual fija
+            </p>
+            <p className="mt-1 text-lg sm:text-xl md:text-2xl font-black text-orange-600">
+              {monthlyRatePercent.toLocaleString('es-AR')}%
+            </p>
+          </div>
         </div>
+        
+        <p className="text-sm text-gray-600">{description}</p>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-white/70 bg-white/90 p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <CircleDollarSign size={15} className="text-orange-500" />
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <CircleDollarSign size={14} className="text-orange-500" />
             Anticipo
           </div>
-          <p className="mt-2 text-xl sm:text-2xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
             {formatMoney(summary.downPaymentAmount)}
           </p>
-          <p className="mt-1 text-xs text-gray-500">{summary.downPaymentPercent}% del pedido</p>
+          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">{summary.downPaymentPercent}% del pedido</p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/90 p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <WalletCards size={15} className="text-orange-500" />
+        <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <WalletCards size={14} className="text-orange-500" />
             Saldo financiado
           </div>
-          <p className="mt-2 text-xl sm:text-2xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
             {formatMoney(summary.financedAmount)}
           </p>
-          <p className="mt-1 text-xs text-gray-500">{financedSharePercent}% del pedido</p>
+          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">{financedSharePercent}% del pedido</p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/90 p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <CalendarClock size={15} className="text-orange-500" />
+        <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <CalendarClock size={14} className="text-orange-500" />
             Cuota estimada
           </div>
-          <p className="mt-2 text-xl sm:text-2xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
             {formatMoney(summary.installmentAmount)}
           </p>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">
             {getPaymentLabel(summary.installments, summary.paymentFrequency)}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/90 p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <BadgePercent size={15} className="text-orange-500" />
+        <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <BadgePercent size={14} className="text-orange-500" />
             Total proyectado
           </div>
-          <p className="mt-2 text-xl sm:text-2xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
             {formatMoney(summary.totalRepayable)}
           </p>
-          <p className="mt-1 text-xs text-gray-500">
-            Interes estimado {formatMoney(summary.totalInterest)}
+          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">
+            Interes {formatMoney(summary.totalInterest)}
           </p>
         </div>
       </div>
@@ -198,14 +201,14 @@ export default function ZapCreditSimulationCard({
           </span>
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-orange-100 bg-white/85 p-4">
+        <div className="mt-4 rounded-2xl border border-orange-100 bg-white/85 p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
             <span className="font-semibold text-gray-900">Composicion del pedido</span>
             <span className="text-gray-500 text-xs sm:text-sm">
               Anticipo {summary.downPaymentPercent}% - Credito {financedSharePercent}%
             </span>
           </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-orange-100">
+          <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-orange-100">
             <div
               className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
               style={{ width: `${summary.downPaymentPercent}%` }}
@@ -215,7 +218,7 @@ export default function ZapCreditSimulationCard({
       )}
 
       <details
-        className="mt-5 overflow-hidden rounded-2xl border border-orange-200 bg-white/70"
+        className="mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-white/70"
         open={!compact}
       >
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
@@ -224,11 +227,11 @@ export default function ZapCreditSimulationCard({
 
         <div className="border-t border-orange-100 px-4 pb-4 pt-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
+            <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Tasa base
               </p>
-              <p className="mt-2 text-xl font-black text-gray-900 break-words">
+              <p className="mt-2 text-lg sm:text-xl font-black text-gray-900 break-words">
                 {eligibility.baseRatePercent.toLocaleString('es-AR')}% mensual
               </p>
               <p className="mt-1 text-xs text-gray-500">
@@ -236,11 +239,11 @@ export default function ZapCreditSimulationCard({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
+            <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 TNA estimada
               </p>
-              <p className="mt-2 text-xl font-black text-gray-900 break-words">
+              <p className="mt-2 text-lg sm:text-xl font-black text-gray-900 break-words">
                 {nominalAnnualRatePercent.toLocaleString('es-AR')}%
               </p>
               <p className="mt-1 text-xs text-gray-500">
@@ -248,11 +251,11 @@ export default function ZapCreditSimulationCard({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white/90 p-4">
+            <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 TEA estimada
               </p>
-              <p className="mt-2 text-xl font-black text-gray-900 break-words">
+              <p className="mt-2 text-lg sm:text-xl font-black text-gray-900 break-words">
                 {effectiveAnnualRatePercent.toLocaleString('es-AR')}%
               </p>
               <p className="mt-1 text-xs text-gray-500">
@@ -263,16 +266,16 @@ export default function ZapCreditSimulationCard({
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-dashed border-orange-200 bg-white/70 p-4 text-sm text-gray-700">
+          <div className="mt-4 rounded-2xl border border-dashed border-orange-200 bg-white/70 p-3 sm:p-4 text-sm text-gray-700">
             <p className="font-semibold text-gray-900">Como se calcula este plan</p>
-            <p className="mt-2">
+            <p className="mt-2 text-xs sm:text-sm">
               1. Se toma el total del carrito y se define el anticipo minimo segun los productos.
             </p>
-            <p className="mt-1">
+            <p className="mt-1 text-xs sm:text-sm">
               2. Sobre el saldo restante se aplica una tasa fija mensual cerrada al momento de la
               venta.
             </p>
-            <p className="mt-1">
+            <p className="mt-1 text-xs sm:text-sm">
               3. El sistema proyecta {getPaymentLabel(summary.installments, summary.paymentFrequency)}{' '}
               y te muestra el costo final estimado antes de confirmar.
             </p>
@@ -281,14 +284,14 @@ export default function ZapCreditSimulationCard({
       </details>
 
       {!eligibility.authenticated && (
-        <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+        <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-3 sm:p-4 text-xs sm:text-sm text-blue-900">
           Inicia sesion para solicitar este credito y despues seguir tus cuotas, comprobantes y
           vencimientos desde tu panel.
         </div>
       )}
 
       {eligibility.hasDelinquency && (
-        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 sm:p-4 text-xs sm:text-sm text-amber-900">
           Esta simulacion ya incluye el recargo por mora vigente:{' '}
           <strong>+{eligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
           <strong>+{eligibility.downPaymentPenaltyPercent}</strong> puntos sobre el anticipo.

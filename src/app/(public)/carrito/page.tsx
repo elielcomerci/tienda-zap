@@ -30,9 +30,9 @@ export default function CartPage() {
         Mi carrito <span className="text-gray-400 font-normal text-base">({count} {count === 1 ? 'item' : 'items'})</span>
       </h1>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-5 gap-8">
         {/* Items */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-3 space-y-4">
           {items.map((item) => (
             <div key={item.cartItemId || item.productId} className="card p-4">
               <div className="flex gap-4">
