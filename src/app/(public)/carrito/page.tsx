@@ -25,23 +25,33 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold text-gray-900 mb-8">
-        Mi carrito <span className="text-gray-400 font-normal text-base">({count} {count === 1 ? 'item' : 'items'})</span>
+        Mi carrito{' '}
+        <span className="text-gray-400 font-normal text-base">
+          ({count} {count === 1 ? 'item' : 'items'})
+        </span>
       </h1>
 
-      <div className="grid lg:grid-cols-5 gap-8">
-        {/* Items */}
-        <div className="lg:col-span-3 space-y-4">
+      {/* Items + Resumen */}
+      <div className="grid lg:grid-cols-[1fr_22rem] gap-8 items-start">
+
+        {/* Columna izquierda: items */}
+        <div className="space-y-4">
           {items.map((item) => (
             <div key={item.cartItemId || item.productId} className="card p-4">
               <div className="flex gap-4">
                 <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                   {item.image ? (
-                    <Image src={item.image} alt={item.name} width={80} height={80}
-                      className="w-full h-full object-cover" />
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">ðŸ–¨ï¸</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl">🖨️</div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -50,113 +60,129 @@ export default function CartPage() {
                       <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.name}</h3>
                       {item.selectedOptions && item.selectedOptions.length > 0 && (
                         <p className="text-xs text-gray-500 font-medium">
-                          {item.selectedOptions.map(opt => `${opt.value}`).join(' • ')}
+                          {item.selectedOptions.map((opt) => opt.value).join(' • ')}
                         </p>
                       )}
                     </div>
-                    
-                    <button onClick={() => removeItem(item.cartItemId!)}
-                      className="text-gray-400 hover:text-red-500 transition-colors shrink-0">
+                    <button
+                      onClick={() => removeItem(item.cartItemId!)}
+                      className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                    >
                       <Trash2 size={16} />
                     </button>
                   </div>
                   <p className="text-orange-500 font-bold mt-1">
                     ${(item.price * item.quantity).toLocaleString('es-AR')}
                   </p>
-
                   <div className="flex items-center gap-3 mt-3">
                     <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
-                      <button onClick={() => item.quantity > 1 ? updateQuantity(item.cartItemId!, item.quantity - 1) : removeItem(item.cartItemId!)}
-                        className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors">
+                      <button
+                        onClick={() =>
+                          item.quantity > 1
+                            ? updateQuantity(item.cartItemId!, item.quantity - 1)
+                            : removeItem(item.cartItemId!)
+                        }
+                        className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                      >
                         <Minus size={12} />
                       </button>
                       <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.cartItemId!, item.quantity + 1)}
-                        className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors">
+                      <button
+                        onClick={() => updateQuantity(item.cartItemId!, item.quantity + 1)}
+                        className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                      >
                         <Plus size={12} />
                       </button>
                     </div>
                     <span className="text-xs text-gray-400">${item.price.toLocaleString('es-AR')} c/u</span>
                   </div>
-
-                  {/* Notas */}
                   <input
                     type="text"
                     placeholder="Nota para este producto (opcional)..."
                     value={item.notes || ''}
                     onChange={(e) => updateNotes(item.cartItemId!, e.target.value)}
-                    className="input !py-1.5 !text-xs mt-2"
+                    className="input py-1.5! text-xs! mt-2"
                   />
                 </div>
               </div>
             </div>
           ))}
 
-          <button onClick={clearCart} className="text-sm text-gray-400 hover:text-red-500 transition-colors">
+          <button
+            onClick={clearCart}
+            className="text-sm text-gray-400 hover:text-red-500 transition-colors"
+          >
             Vaciar carrito
           </button>
         </div>
 
-        {/* Resumen */}
-        <div className="space-y-4">
-          <div className="card p-5 sticky top-24">
-            <h2 className="font-bold text-gray-900 mb-4">Resumen del pedido</h2>
-            {hasUnavailableItems && (
-              <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
-                Hay productos con precio 0 marcados como no disponibles. Quitalos del carrito para continuar.
-              </div>
-            )}
-            <div className="space-y-4 mb-4">
-              {items.map((item) => (
-                <div key={item.cartItemId || item.productId} className="flex justify-between text-sm items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <span className="text-gray-900 font-semibold truncate block w-full">{item.name}</span>
-                    {item.selectedOptions && item.selectedOptions.length > 0 && (
-                      <span className="text-gray-500 text-xs truncate block w-full">
-                        {item.selectedOptions.map(o => o.value).join(' • ')}
-                      </span>
-                    )}
-                    <span className="text-gray-400 text-xs">Cant: {item.quantity}</span>
-                  </div>
-                  <span className="font-medium shrink-0 mt-0.5">${(item.price * item.quantity).toLocaleString('es-AR')}</span>
-                </div>
-              ))}
-            </div>
-            <div className="border-t pt-4 flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
-            </div>
+        {/* Columna derecha: resumen sticky */}
+        <div className="card p-5 lg:sticky lg:top-24">
+          <h2 className="font-bold text-gray-900 mb-4">Resumen del pedido</h2>
 
-            <div className="mt-5">
-              <ZapCreditSimulationCard
-                totalAmount={total()}
-                items={items.map((item) => ({
-                  unitPrice: item.price,
-                  quantity: item.quantity,
-                  creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
-                }))}
-                eligibility={eligibility}
-                isLoading={isLoading}
-                title="Simulacion rapida de Credito ZAP"
-                description="Te mostramos una proyeccion del plan antes de avanzar al checkout."
-              />
+          {hasUnavailableItems && (
+            <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              Hay productos con precio 0 marcados como no disponibles. Quitalos del carrito para continuar.
             </div>
+          )}
 
-            {hasUnavailableItems ? (
-              <button
-                type="button"
-                disabled
-                className="mt-5 flex w-full cursor-not-allowed justify-center rounded-xl bg-gray-200 px-4 py-3.5 font-semibold text-gray-500"
+          <div className="space-y-3 mb-4">
+            {items.map((item) => (
+              <div
+                key={item.cartItemId || item.productId}
+                className="flex justify-between text-sm items-start gap-4"
               >
-                Revisá el carrito
-              </button>
-            ) : (
-              <Link href="/checkout" className="btn-primary w-full mt-5 justify-center !py-3.5">
-                Continuar <ArrowRight size={18} />
-              </Link>
-            )}
+                <div className="flex-1 min-w-0">
+                  <span className="text-gray-900 font-semibold truncate block w-full">{item.name}</span>
+                  {item.selectedOptions && item.selectedOptions.length > 0 && (
+                    <span className="text-gray-500 text-xs truncate block w-full">
+                      {item.selectedOptions.map((o) => o.value).join(' • ')}
+                    </span>
+                  )}
+                  <span className="text-gray-400 text-xs">Cant: {item.quantity}</span>
+                </div>
+                <span className="font-medium shrink-0 mt-0.5">
+                  ${(item.price * item.quantity).toLocaleString('es-AR')}
+                </span>
+              </div>
+            ))}
           </div>
+
+          <div className="border-t pt-4 flex justify-between font-bold text-lg mb-5">
+            <span>Total</span>
+            <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
+          </div>
+
+          {hasUnavailableItems ? (
+            <button
+              type="button"
+              disabled
+              className="flex w-full cursor-not-allowed justify-center rounded-xl bg-gray-200 px-4 py-3.5 font-semibold text-gray-500"
+            >
+              Revisá el carrito
+            </button>
+          ) : (
+            <Link href="/checkout" className="btn-primary w-full justify-center py-3.5!">
+              Continuar <ArrowRight size={18} />
+            </Link>
+          )}
         </div>
+      </div>
+
+      {/* Simulación ZAP Credit — ancho completo, debajo del grid */}
+      <div className="mt-8">
+        <ZapCreditSimulationCard
+          totalAmount={total()}
+          items={items.map((item) => ({
+            unitPrice: item.price,
+            quantity: item.quantity,
+            creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
+          }))}
+          eligibility={eligibility}
+          isLoading={isLoading}
+          title="Simulacion rapida de Credito ZAP"
+          description="Te mostramos una proyeccion del plan antes de avanzar al checkout."
+        />
       </div>
     </div>
   )
