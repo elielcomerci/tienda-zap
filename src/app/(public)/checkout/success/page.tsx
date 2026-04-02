@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { CheckCircle2, MessageSquare } from 'lucide-react'
+import { CheckCircle2, Clock, MessageSquare } from 'lucide-react'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
+import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -62,17 +63,31 @@ export default async function CheckoutSuccessPage({
   const creditPlan = order.zapCreditPlan
   const isAutoApprovedCredit = creditPlan?.status === 'APPROVED'
 
+  const isMpPending = order.paymentType === 'MERCADOPAGO' && order.status === 'PENDING'
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-20">
       <div className="text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-          <CheckCircle2 size={40} className="text-green-500" />
+        <div
+          className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${
+            isMpPending ? 'bg-yellow-100' : 'bg-green-100'
+          }`}
+        >
+          {isMpPending ? (
+            <Clock size={40} className="text-yellow-500" />
+          ) : (
+            <CheckCircle2 size={40} className="text-green-500" />
+          )}
         </div>
 
-        <h1 className="mb-2 text-3xl font-black text-gray-900">Pedido confirmado</h1>
+        <h1 className="mb-2 text-3xl font-black text-gray-900">
+          {isMpPending ? 'Pago pendiente' : 'Pedido confirmado'}
+        </h1>
         <p className="text-gray-500">
-          Tu orden ya quedo registrada.
-          {emailLabel ? (
+          {isMpPending
+            ? 'Tu orden ya fue registrada pero el pago no fue completado aún.'
+            : 'Tu orden ya quedo registrada.'}
+          {emailLabel && !isMpPending ? (
             <>
               <br />
               Te enviamos una copia del detalle a <strong>{emailLabel}</strong>.
@@ -95,7 +110,18 @@ export default async function CheckoutSuccessPage({
           </div>
         </div>
 
-        {order.paymentType === 'ZAP_CREDIT' && order.status === 'PENDING' ? (
+        {isMpPending ? (
+          <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-5 space-y-4">
+            <div>
+              <h3 className="font-bold text-yellow-900 mb-1">El pago no fue completado</h3>
+              <p className="text-sm text-yellow-800">
+                Tu orden está reservada. Podés retomar el pago en cualquier momento desde este
+                enlace — no se creará una nueva orden.
+              </p>
+            </div>
+            <ResumePaymentButton orderId={order.id} accessToken={token} />
+          </div>
+        ) : order.paymentType === 'ZAP_CREDIT' && order.status === 'PENDING' ? (
           <div className="rounded-xl border border-orange-100 bg-orange-50 p-5">
             <h3 className="mb-2 font-bold text-orange-900">
               {isAutoApprovedCredit

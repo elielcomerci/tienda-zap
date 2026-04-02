@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { AlertTriangle, ArrowLeft, Receipt, Wallet } from 'lucide-react'
 import { auth } from '@/auth'
 import CreditPaymentUploader from '@/components/public/CreditPaymentUploader'
+import MpInstallmentPayButton from '@/components/public/MpInstallmentPayButton'
 import {
   getCreditPlanStatusLabel,
   getCreditPlanStatusTheme,
@@ -133,7 +134,7 @@ export default async function CustomerCreditDetailPage({
           <div className="mt-5 space-y-4">
             <div>
               <div className="mb-1 flex items-center justify-between text-sm text-gray-600">
-                <span>Capital recuperado</span>
+                <span>Tu progreso de pago</span>
                 <span>
                   ${summary.paidAmount.toLocaleString('es-AR')} de $
                   {summary.totalScheduledAmount.toLocaleString('es-AR')}
@@ -290,7 +291,21 @@ export default async function CustomerCreditDetailPage({
                       </div>
                     )}
 
-                    {canUploadProof && <CreditPaymentUploader installmentId={installment.id} />}
+                    {canUploadProof && (
+                      <div className="space-y-2">
+                        <MpInstallmentPayButton
+                          installmentId={installment.id}
+                          amount={installment.amount}
+                          sequence={installment.sequence}
+                        />
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <div className="h-px flex-1 bg-gray-200" />
+                          <span>o subí un comprobante</span>
+                          <div className="h-px flex-1 bg-gray-200" />
+                        </div>
+                        <CreditPaymentUploader installmentId={installment.id} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

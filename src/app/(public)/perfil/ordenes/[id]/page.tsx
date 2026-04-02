@@ -1,10 +1,11 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Download, MessageSquare, Package, Palette } from 'lucide-react'
+import { ArrowLeft, Clock, Download, MessageSquare, Package, Palette } from 'lucide-react'
 import { auth } from '@/auth'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getCustomerOrder } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
+import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -55,6 +56,8 @@ export default async function MiOrdenPage({
   )
   const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
 
+  const isMpPending = order.paymentType === 'MERCADOPAGO' && order.status === 'PENDING'
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
       <Link href="/perfil" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
@@ -72,6 +75,19 @@ export default async function MiOrdenPage({
           {statusLabel[order.status]}
         </span>
       </div>
+
+      {isMpPending && (
+        <div className="card p-5 border-yellow-200 bg-yellow-50 space-y-3">
+          <div className="flex items-center gap-2">
+            <Clock size={18} className="text-yellow-600 shrink-0" />
+            <p className="font-semibold text-yellow-900 text-sm">Pago pendiente en MercadoPago</p>
+          </div>
+          <p className="text-sm text-yellow-800">
+            Tu orden está reservada pero el pago no fue completado. Podés retomarlo acá mismo — no se generará una nueva orden.
+          </p>
+          <ResumePaymentButton orderId={order.id} />
+        </div>
+      )}
 
       <div className="card overflow-hidden">
         <div className="divide-y divide-gray-100">

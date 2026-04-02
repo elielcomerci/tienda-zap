@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     const preference = await new Preference(client).create({
       body: {
-        items: resolvedItems.map((item, index) => ({
+        items: resolvedItems.map((item) => ({
           id: item.productId,
           title: 'Producto ZAP',
           quantity: item.quantity,
@@ -71,6 +71,12 @@ export async function POST(req: NextRequest) {
         notification_url: notificationUrl.toString(),
         auto_return: 'approved',
       },
+    })
+
+    // Guardar preferenceId para poder recuperar el link de pago sin crear orden duplicada
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { mpPreferenceId: preference.id },
     })
 
     return Response.json({

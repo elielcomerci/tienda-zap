@@ -74,8 +74,9 @@ model Order {
   total       Float
   status      OrderStatus @default(PENDING)
   paymentType PaymentType
-  paymentId   String?
-  receiptUrl  String?
+  paymentId      String?
+  mpPreferenceId String?
+  receiptUrl     String?
   notes       String?
   zapCreditPlan ZapCreditPlan?
   createdAt   DateTime    @default(now())
@@ -220,6 +221,7 @@ model ZapCreditInstallment {
   interestAmount       Float
   balanceAfter         Float
   status               ZapCreditInstallmentStatus @default(PENDING)
+  mpPreferenceId       String?
   approvedSubmissionId String?
   submittedAt          DateTime?
   approvedAt           DateTime?

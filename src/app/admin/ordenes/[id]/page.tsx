@@ -95,7 +95,19 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                   )}
                   {order.paymentType}
                 </div>
-                {order.paymentId && <p className="text-xs text-gray-500 font-mono mt-1">ID: {order.paymentId}</p>}
+                {order.paymentType === 'MERCADOPAGO' && order.status === 'PENDING' && (
+                  <div className="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800">
+                    Esperando pago en MercadoPago
+                    {order.mpPreferenceId && (
+                      <span className="block font-mono mt-0.5 text-yellow-600 truncate">
+                        Preferencia: {order.mpPreferenceId}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {order.paymentId && (
+                  <p className="text-xs text-gray-500 font-mono mt-1">Pago ID: {order.paymentId}</p>
+                )}
               </div>
 
               {order.paymentType === 'ZAP_CREDIT' && order.zapCreditPlan && (
