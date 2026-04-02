@@ -3,10 +3,8 @@ import { getFinancingSnapshot } from '@/lib/financing'
 
 export async function GET() {
   try {
-    const [eligibility, financingSnapshot] = await Promise.all([
-      getCurrentUserCreditEligibility(),
-      getFinancingSnapshot(),
-    ])
+    const financingSnapshot = await getFinancingSnapshot()
+    const eligibility = await getCurrentUserCreditEligibility(financingSnapshot)
 
     return Response.json({
       ...eligibility,

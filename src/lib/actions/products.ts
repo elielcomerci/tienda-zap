@@ -208,8 +208,10 @@ export async function createProduct(formData: FormData) {
     }
   }
 
+  revalidatePath('/')
   revalidatePath('/admin/productos')
   revalidatePath('/productos')
+  revalidatePath(`/productos/${createdProduct.slug}`)
   redirect('/admin/productos')
 }
 
@@ -217,6 +219,10 @@ export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin()
 
   const data = await parseProductFormData(formData, id)
+  const originalProduct = await prisma.product.findUnique({
+    where: { id },
+    select: { slug: true },
+  })
 
   await prisma.productOption.deleteMany({ where: { productId: id } })
   await prisma.productVariant.deleteMany({ where: { productId: id } })
@@ -274,15 +280,29 @@ export async function updateProduct(id: string, formData: FormData) {
     }
   }
 
+  if (originalProduct?.slug) {
+    revalidatePath(`/productos/${originalProduct.slug}`)
+  }
+  revalidatePath('/')
   revalidatePath('/admin/productos')
   revalidatePath('/productos')
+  revalidatePath(`/productos/${updatedProduct.slug}`)
   redirect('/admin/productos')
 }
 
 export async function deleteProduct(id: string) {
   await requireAdmin()
+  const originalProduct = await prisma.product.findUnique({
+    where: { id },
+    select: { slug: true },
+  })
   await prisma.product.update({ where: { id }, data: { active: false } })
+  if (originalProduct?.slug) {
+    revalidatePath(`/productos/${originalProduct.slug}`)
+  }
+  revalidatePath('/')
   revalidatePath('/admin/productos')
+  revalidatePath('/productos')
 }
 
 export async function duplicateProduct(id: string) {
@@ -302,5 +322,6 @@ export async function duplicateProduct(id: string) {
     },
   })
 
+  revalidatePath('/')
   revalidatePath('/admin/productos')
 }

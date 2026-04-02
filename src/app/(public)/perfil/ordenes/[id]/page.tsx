@@ -37,7 +37,7 @@ export default async function MiOrdenPage({
   if (!session?.user?.id) redirect('/login')
 
   const { id } = await params
-  const order = await getCustomerOrder(id)
+  const order = await getCustomerOrder(id, session.user.id)
 
   if (!order) notFound()
 

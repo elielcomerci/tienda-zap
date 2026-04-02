@@ -35,6 +35,7 @@ export async function createCategory(formData: FormData) {
     },
   })
 
+  revalidatePath('/')
   revalidatePath('/admin/categorias')
   revalidatePath('/productos')
 }
@@ -52,6 +53,7 @@ export async function updateCategory(id: string, name: string, isService = false
     data: { name, slug, isService },
   })
 
+  revalidatePath('/')
   revalidatePath('/admin/categorias')
   revalidatePath('/productos')
 }
@@ -64,6 +66,7 @@ export async function setCategoryServiceFlag(id: string, isService: boolean) {
     data: { isService },
   })
 
+  revalidatePath('/')
   revalidatePath('/admin/categorias')
   revalidatePath('/admin/productos')
   revalidatePath('/productos')
@@ -74,5 +77,7 @@ export async function deleteCategory(id: string) {
   const count = await prisma.product.count({ where: { categoryId: id } })
   if (count > 0) throw new Error(`Esta categoria tiene ${count} producto(s) asociados`)
   await prisma.category.delete({ where: { id } })
+  revalidatePath('/')
   revalidatePath('/admin/categorias')
+  revalidatePath('/productos')
 }

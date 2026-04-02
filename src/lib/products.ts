@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -8,7 +9,11 @@ async function requireAdmin() {
   }
 }
 
-export async function getProducts(categorySlug?: string, search?: string) {
+export async function getProducts(
+  categorySlug?: string,
+  search?: string,
+  options?: { take?: number }
+) {
   return prisma.product.findMany({
     where: {
       active: true,
@@ -30,10 +35,11 @@ export async function getProducts(categorySlug?: string, search?: string) {
       },
     },
     orderBy: { createdAt: 'desc' },
+    take: options?.take,
   })
 }
 
-export async function getProduct(slug: string) {
+export const getProduct = cache(async function getProduct(slug: string) {
   return prisma.product.findUnique({
     where: { slug },
     include: {
@@ -68,6 +74,13 @@ export async function getProduct(slug: string) {
         orderBy: { createdAt: 'asc' },
       },
     },
+  })
+})
+
+export async function getActiveProductSlugs() {
+  return prisma.product.findMany({
+    where: { active: true },
+    select: { slug: true },
   })
 }
 

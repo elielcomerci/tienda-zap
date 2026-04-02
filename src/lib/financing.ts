@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { request as httpsRequest } from 'node:https'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import {
   clampInstallmentsForFrequency,
@@ -235,15 +236,37 @@ function getPaymentPlanLabel(paymentFrequency: PaymentFrequency, installments: n
 }
 
 export async function getFinancingSettings() {
-  return prisma.financingSettings.upsert({
+  const existingSettings = await prisma.financingSettings.findUnique({
     where: { id: DEFAULT_FINANCING_SETTINGS_ID },
-    update: {},
-    create: {
-      id: DEFAULT_FINANCING_SETTINGS_ID,
-      indecSeriesId: DEFAULT_INDEC_SERIES_ID,
-    },
   })
+
+  if (existingSettings) {
+    return existingSettings
+  }
+
+  try {
+    return await prisma.financingSettings.create({
+      data: {
+        id: DEFAULT_FINANCING_SETTINGS_ID,
+        indecSeriesId: DEFAULT_INDEC_SERIES_ID,
+      },
+    })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const fallbackSettings = await prisma.financingSettings.findUnique({
+        where: { id: DEFAULT_FINANCING_SETTINGS_ID },
+      })
+
+      if (fallbackSettings) {
+        return fallbackSettings
+      }
+    }
+
+    throw error
+  }
 }
+
+export type FinancingSnapshot = Awaited<ReturnType<typeof getFinancingSnapshot>>
 
 export async function getIndecAverageRatePercent(
   seriesId = DEFAULT_INDEC_SERIES_ID
@@ -347,8 +370,11 @@ export async function getFinancingSnapshot() {
   }
 }
 
-export async function getCreditEligibilityForUser(userId?: string | null) {
-  const financingSnapshot = await getFinancingSnapshot()
+export async function getCreditEligibilityForUser(
+  userId?: string | null,
+  financingSnapshot?: FinancingSnapshot
+) {
+  const snapshot = financingSnapshot ?? (await getFinancingSnapshot())
 
   if (!userId) {
     return {
@@ -357,8 +383,8 @@ export async function getCreditEligibilityForUser(userId?: string | null) {
       activeCreditsCount: 0,
       overdueInstallmentsCount: 0,
       hasDelinquency: false,
-      effectiveRatePercent: financingSnapshot.effectiveRatePercent,
-      baseRatePercent: financingSnapshot.effectiveRatePercent,
+      effectiveRatePercent: snapshot.effectiveRatePercent,
+      baseRatePercent: snapshot.effectiveRatePercent,
       ratePenaltyPercent: 0,
       downPaymentPenaltyPercent: 0,
     }
@@ -385,10 +411,10 @@ export async function getCreditEligibilityForUser(userId?: string | null) {
 
   const hasDelinquency = overdueInstallmentsCount > 0
   const ratePenaltyPercent = hasDelinquency
-    ? financingSnapshot.settings.delinquentRatePenaltyPercent
+    ? snapshot.settings.delinquentRatePenaltyPercent
     : 0
   const downPaymentPenaltyPercent = hasDelinquency
-    ? financingSnapshot.settings.delinquentDownPaymentPenaltyPercent
+    ? snapshot.settings.delinquentDownPaymentPenaltyPercent
     : 0
 
   return {
@@ -397,8 +423,8 @@ export async function getCreditEligibilityForUser(userId?: string | null) {
     activeCreditsCount,
     overdueInstallmentsCount,
     hasDelinquency,
-    effectiveRatePercent: financingSnapshot.effectiveRatePercent + ratePenaltyPercent,
-    baseRatePercent: financingSnapshot.effectiveRatePercent,
+    effectiveRatePercent: snapshot.effectiveRatePercent + ratePenaltyPercent,
+    baseRatePercent: snapshot.effectiveRatePercent,
     ratePenaltyPercent,
     downPaymentPenaltyPercent,
   }
@@ -417,9 +443,9 @@ export async function buildDraftZapCreditPlan(input: {
     paymentFrequency?: PaymentFrequency
   }
 }) {
-  const { settings, indecRate, effectiveRatePercent, rateSource } =
-    await getFinancingSnapshot()
-  const eligibility = await getCreditEligibilityForUser(input.userId)
+  const snapshot = await getFinancingSnapshot()
+  const { settings, indecRate, effectiveRatePercent, rateSource } = snapshot
+  const eligibility = await getCreditEligibilityForUser(input.userId, snapshot)
 
   const downPaymentPercent = clampCreditDownPaymentPercent(
     calculateWeightedDownPaymentPercent(input.items) + eligibility.downPaymentPenaltyPercent

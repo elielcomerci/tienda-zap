@@ -1,12 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingCart, Zap, User, Menu, X } from 'lucide-react'
+import { ShoppingCart, Zap, Menu, X } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState } from 'react'
-import { Session } from 'next-auth'
 
-export default function PublicHeader({ session }: { session: Session | null }) {
+export default function PublicHeader() {
   const itemCount = useCartStore((s) => s.itemCount())
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -39,19 +38,12 @@ export default function PublicHeader({ session }: { session: Session | null }) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {session ? (
-            session?.user?.role === 'ADMIN' ? (
-              <Link href="/admin" className="btn-secondary !py-2 !px-3 !text-xs">Panel admin</Link>
-            ) : (
-              <Link href="/perfil" className="p-2 rounded-xl hover:bg-orange-50 transition-colors" title="Mi perfil">
-                <User size={20} className="text-orange-500" />
-              </Link>
-            )
-          ) : (
-            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-orange-500 transition-colors">
-              Ingresar
-            </Link>
-          )}
+          <Link
+            href="/login"
+            className="text-sm font-medium text-gray-600 hover:text-orange-500 transition-colors"
+          >
+            Ingresar
+          </Link>
 
           <Link href="/carrito" className="relative p-2 rounded-xl hover:bg-orange-50 transition-colors">
             <ShoppingCart size={22} className="text-gray-700" />

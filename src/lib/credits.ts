@@ -2,7 +2,7 @@ import 'server-only'
 
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { getCreditEligibilityForUser } from '@/lib/financing'
+import { type FinancingSnapshot, getCreditEligibilityForUser } from '@/lib/financing'
 
 async function requireAdmin() {
   const session = await auth()
@@ -61,13 +61,16 @@ const creditPlanInclude = {
   },
 }
 
-export async function getCurrentUserCreditEligibility() {
-  const session = await auth()
-  return getCreditEligibilityForUser(session?.user?.id)
+export async function getCurrentUserCreditEligibility(
+  financingSnapshot?: FinancingSnapshot,
+  userId?: string
+) {
+  const sessionUserId = userId ?? (await auth())?.user?.id
+  return getCreditEligibilityForUser(sessionUserId, financingSnapshot)
 }
 
-export async function getCustomerCreditPlans() {
-  const session = await requireCustomer()
+export async function getCustomerCreditPlans(userId?: string) {
+  const session = userId ? { user: { id: userId } } : await requireCustomer()
 
   return prisma.zapCreditPlan.findMany({
     where: {
@@ -82,8 +85,8 @@ export async function getCustomerCreditPlans() {
   })
 }
 
-export async function getCustomerCreditPlan(id: string) {
-  const session = await requireCustomer()
+export async function getCustomerCreditPlan(id: string, userId?: string) {
+  const session = userId ? { user: { id: userId } } : await requireCustomer()
 
   return prisma.zapCreditPlan.findFirst({
     where: {

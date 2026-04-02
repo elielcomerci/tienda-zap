@@ -36,7 +36,7 @@ export default async function CustomerCreditDetailPage({
   if (!session?.user?.id) redirect('/login')
 
   const { id } = await params
-  const plan = await getCustomerCreditPlan(id)
+  const plan = await getCustomerCreditPlan(id, session.user.id)
   if (!plan) notFound()
 
   const summary = summarizeCreditPlan(plan)

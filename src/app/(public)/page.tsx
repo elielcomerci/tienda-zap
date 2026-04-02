@@ -15,7 +15,6 @@ import { getProducts } from '@/lib/products'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 
-export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'ZAP Tienda - Impresion y grafica',
 }
@@ -46,9 +45,10 @@ const zapCreditHighlights = [
 ]
 
 export default async function HomePage() {
-  const [categories, featured] = await Promise.all([getCategories(), getProducts(undefined, undefined)])
-
-  const featuredProducts = featured.slice(0, 4)
+  const [categories, featuredProducts] = await Promise.all([
+    getCategories(),
+    getProducts(undefined, undefined, { take: 4 }),
+  ])
   const zapCreditWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     'Hola! Quiero conocer como funciona Credito ZAP para mi negocio.'

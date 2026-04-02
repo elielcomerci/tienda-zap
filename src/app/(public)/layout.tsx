@@ -1,13 +1,10 @@
 import Link from 'next/link'
-import { auth } from '@/auth'
 import PublicHeader from '@/components/public/PublicHeader'
 
-export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  let session = null
-  try { session = await auth() } catch {}
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <PublicHeader session={session} />
+      <PublicHeader />
       <main className="flex-1">{children}</main>
       <footer className="bg-gray-900 text-gray-400 py-10 mt-16">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">

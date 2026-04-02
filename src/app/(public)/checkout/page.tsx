@@ -58,6 +58,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [orderCreated, setOrderCreated] = useState(false)
   const [zapCreditSelection, setZapCreditSelection] = useState<{
     installments: number
     paymentFrequency: PaymentFrequency
@@ -111,10 +112,10 @@ export default function CheckoutPage() {
                 : 'Confirmar pedido'
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !orderCreated) {
       router.replace('/carrito')
     }
-  }, [items.length, router])
+  }, [items.length, router, orderCreated])
 
   useEffect(() => {
     if (creditEligibility && !creditEligibility.canRequestCredit) {
@@ -167,6 +168,7 @@ export default function CheckoutPage() {
         })
         const result = await response.json()
         if (!response.ok) throw new Error(result.error)
+        setOrderCreated(true)
         clearCart()
         router.push(result.initPoint)
       } else {
@@ -177,6 +179,7 @@ export default function CheckoutPage() {
         })
         const result = await response.json()
         if (!response.ok) throw new Error(result.error)
+        setOrderCreated(true)
         clearCart()
         router.push(`/checkout/success?${result.successQuery || `orderId=${result.orderId}`}`)
       }
@@ -249,7 +252,7 @@ export default function CheckoutPage() {
                   return (
                     <label
                       key={option.value}
-                      className={`flex min-h-[92px] items-center gap-4 rounded-xl border-2 p-4 transition-all ${
+                      className={`flex min-h-23 items-center gap-4 rounded-xl border-2 p-4 transition-all ${
                         optionDisabled
                           ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
                           : paymentType === option.value
@@ -390,12 +393,12 @@ export default function CheckoutPage() {
                   (paymentType === 'ZAP_CREDIT' &&
                     (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
                 }
-                className={`w-full justify-center !py-3.5 ${
+                className={`w-full justify-center py-3.5 ${
                   loading ||
                   hasUnavailableItems ||
                   (paymentType === 'ZAP_CREDIT' &&
                     (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
-                    ? 'btn-secondary !cursor-not-allowed !border-gray-200 !bg-gray-200 !text-gray-500 hover:!bg-gray-200'
+                    ? 'btn-secondary cursor-not-allowed border-gray-200 bg-gray-200 text-gray-500 hover:bg-gray-200'
                     : 'btn-primary'
                 }`}
               >

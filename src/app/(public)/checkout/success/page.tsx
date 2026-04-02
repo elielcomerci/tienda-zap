@@ -141,7 +141,7 @@ export default async function CheckoutSuccessPage({
                 href={receiptWhatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="btn-primary w-full justify-center !bg-[#25D366] !shadow-[#25D366]/30 hover:!bg-[#1ebc5a]"
+                className="btn-primary w-full justify-center bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
               >
                 Enviar comprobante por WhatsApp
               </a>
@@ -203,14 +203,14 @@ export default async function CheckoutSuccessPage({
             href={designWhatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="btn-primary w-full justify-center !bg-[#25D366] !shadow-[#25D366]/30 hover:!bg-[#1ebc5a]"
+            className="btn-primary w-full justify-center bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
           >
             Coordinar diseno por WhatsApp
           </a>
         </div>
       )}
 
-      <Link href="/" className="btn-secondary !w-full justify-center">
+      <Link href="/" className="btn-secondary w-full justify-center">
         Volver a la tienda
       </Link>
     </div>

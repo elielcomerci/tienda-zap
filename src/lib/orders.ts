@@ -66,12 +66,12 @@ export async function getOrderForViewer(id: string, accessToken?: string) {
   })
 }
 
-export async function getCustomerOrder(id: string) {
-  const session = await auth()
-  if (!session?.user?.id) throw new Error('No autorizado')
+export async function getCustomerOrder(id: string, userId?: string) {
+  const sessionUserId = userId ?? (await auth())?.user?.id
+  if (!sessionUserId) throw new Error('No autorizado')
 
   return prisma.order.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId: sessionUserId },
     include: viewerOrderInclude,
   })
 }

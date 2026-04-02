@@ -8,6 +8,7 @@ import {
   getCreditPlanStatusTheme,
 } from '@/lib/credit-status'
 import { getCustomerCreditPlans, getCurrentUserCreditEligibility } from '@/lib/credits'
+import { getFinancingSnapshot } from '@/lib/financing'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
 export const dynamic = 'force-dynamic'
@@ -19,9 +20,10 @@ export default async function CustomerCreditsPage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
+  const financingSnapshot = await getFinancingSnapshot()
   const [plans, eligibility] = await Promise.all([
-    getCustomerCreditPlans(),
-    getCurrentUserCreditEligibility(),
+    getCustomerCreditPlans(session.user.id),
+    getCurrentUserCreditEligibility(financingSnapshot, session.user.id),
   ])
 
   return (

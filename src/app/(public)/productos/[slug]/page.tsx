@@ -1,13 +1,20 @@
 import { Package } from 'lucide-react'
 import { notFound } from 'next/navigation'
-import { getProduct } from '@/lib/products'
+import { getActiveProductSlugs, getProduct } from '@/lib/products'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import ProductZapCreditPromo from '@/components/public/ProductZapCreditPromo'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  const products = await getActiveProductSlugs()
+  return products.map((product) => ({
+    slug: product.slug,
+  }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
