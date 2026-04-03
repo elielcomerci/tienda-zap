@@ -126,6 +126,26 @@ export default function CheckoutPage() {
     }
   }, [creditEligibility, setValue])
 
+  useEffect(() => {
+    if (zapCreditSelection) {
+      setValue('zapCreditConfig', zapCreditSelection)
+    } else {
+      setValue('zapCreditConfig', undefined)
+    }
+  }, [zapCreditSelection, setValue])
+
+  useEffect(() => {
+    // Fill items in form state to satisfy Zod validation .min(1)
+    setValue('items', items.map(item => ({
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      notes: item.notes,
+      designRequested: item.designRequested,
+      selectedOptions: item.selectedOptions
+    })))
+  }, [items, setValue])
+
   if (items.length === 0) return null
 
   const onSubmit = async (data: OrderCheckoutData) => {
@@ -412,6 +432,17 @@ export default function CheckoutPage() {
             </div>
 
             {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+            
+            {Object.keys(errors).length > 0 && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <p className="font-bold mb-1">Por favor, revisa los siguientes campos:</p>
+                <ul className="list-disc list-inside space-y-0.5 opacity-80">
+                  {Object.entries(errors).map(([key, err]) => (
+                    <li key={key}>{(err as any)?.message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div>
