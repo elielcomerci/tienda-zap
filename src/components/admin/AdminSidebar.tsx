@@ -14,6 +14,7 @@ import {
   Wallet,
   X,
   Zap,
+  Megaphone
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/creditos', label: 'Creditos', icon: Wallet },
   { href: '/admin/financiacion', label: 'Financiacion', icon: Percent },
   { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
+  { href: '/admin/campanas', label: 'Campañas Partner', icon: Megaphone },
 ]
 
 export default function AdminSidebar() {
