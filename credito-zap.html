@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crédito ZAP – Financiamiento inteligente para tu negocio</title>
+  <meta name="description" content="Crédito ZAP: el sistema de financiación más simple y transparente. Comprá ahora, pagá en cuotas. Tasa fija mensual del 3.59%." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --zap-gold:   #F5C842;
+      --zap-gold2:  #E8A820;
+      --zap-dark:   #0D0D12;
+      --zap-navy:   #0F1628;
+      --zap-ink:    #12192E;
+      --zap-card:   #161D30;
+      --zap-card2:  #1C2440;
+      --zap-border: rgba(245,200,66,0.18);
+      --zap-glow:   rgba(245,200,66,0.12);
+      --text-main:  #F0F2FF;
+      --text-sub:   #8A93B2;
+      --text-tiny:  #5A6280;
+      --radius:     16px;
+      --radius-sm:  10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--zap-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── Animated BG ─────────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(245,200,66,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 30% at 90% 80%,  rgba(245,200,66,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Layout ──────────────────────────────────────────────── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    section { padding: 80px 0; }
+
+    /* ─── Navigation ──────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,18,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--zap-border);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--zap-gold); }
+    .badge-nav {
+      background: linear-gradient(135deg, var(--zap-gold), var(--zap-gold2));
+      color: var(--zap-dark);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 100px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Hero ────────────────────────────────────────────────── */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+      position: relative;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245,200,66,0.10);
+      border: 1px solid rgba(245,200,66,0.30);
+      color: var(--zap-gold);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 100px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-tag::before { content: '⚡'; }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5.2rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, var(--zap-gold) 20%, #fff 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--text-sub);
+      max-width: 580px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+    }
+
+    /* Rate Showcase */
+    .rate-showcase {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 56px;
+    }
+    .rate-card {
+      background: var(--zap-card);
+      border: 1px solid var(--zap-border);
+      border-radius: var(--radius);
+      padding: 28px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .rate-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(245,200,66,0.12);
+    }
+    .rate-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--zap-gold), transparent);
+    }
+    .rate-card .label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+    .rate-card .value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--zap-gold);
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .rate-card .unit {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+    .rate-card.featured {
+      background: linear-gradient(135deg, rgba(245,200,66,0.12), rgba(245,200,66,0.04));
+      border-color: rgba(245,200,66,0.40);
+    }
+
+    /* CTA Buttons */
+    .cta-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--zap-gold), var(--zap-gold2));
+      color: var(--zap-dark);
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 14px 28px;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(245,200,66,0.35);
+    }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 13px 28px;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.18);
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-outline:hover {
+      border-color: rgba(245,200,66,0.5);
+      background: rgba(245,200,66,0.06);
+    }
+
+    /* ─── Section Headers ─────────────────────────────────────── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--zap-gold);
+      margin-bottom: 12px;
+    }
+    .section-label::before { content: '──'; opacity: 0.5; }
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    h2 .accent { color: var(--zap-gold); }
+    .section-sub {
+      font-size: 1rem;
+      color: var(--text-sub);
+      max-width: 540px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    /* ─── Divider ─────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--zap-border), transparent);
+      margin: 0;
+    }
+
+    /* ─── How It Works ────────────────────────────────────────── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      counter-reset: steps;
+    }
+    .step {
+      background: var(--zap-card);
+      border: 1px solid var(--zap-border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      position: relative;
+      transition: border-color 0.3s, transform 0.3s;
+      counter-increment: steps;
+    }
+    .step:hover {
+      border-color: rgba(245,200,66,0.4);
+      transform: translateY(-4px);
+    }
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: rgba(245,200,66,0.15);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .step-icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+    .step h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+    .step p {
+      font-size: 0.88rem;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    /* ─── Simulator ───────────────────────────────────────────── */
+    .simulator-wrapper {
+      background: var(--zap-card);
+      border: 1px solid var(--zap-border);
+      border-radius: 24px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .simulator-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,200,66,0.10), transparent 70%);
+    }
+    .sim-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 36px;
+    }
+    .sim-group { display: flex; flex-direction: column; gap: 8px; }
+    .sim-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+    }
+    .sim-group input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--zap-card2);
+      outline: none;
+      cursor: pointer;
+    }
+    .sim-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--zap-gold);
+      border: 2px solid var(--zap-dark);
+      box-shadow: 0 0 8px rgba(245,200,66,0.5);
+      cursor: pointer;
+    }
+    .sim-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--zap-gold);
+      min-width: 80px;
+    }
+    .sim-result {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .sim-result-card {
+      background: var(--zap-card2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+    }
+    .sim-result-card .r-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-tiny);
+      margin-bottom: 8px;
+    }
+    .sim-result-card .r-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .sim-result-card.highlight .r-value { color: var(--zap-gold); }
+    .sim-note {
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--text-tiny);
+      text-align: center;
+    }
+
+    /* ─── Cuotas Table ────────────────────────────────────────── */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .plan-card {
+      background: var(--zap-card);
+      border: 1px solid var(--zap-border);
+      border-radius: var(--radius);
+      padding: 28px 22px;
+      text-align: center;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      cursor: default;
+    }
+    .plan-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 60px rgba(245,200,66,0.10);
+      border-color: rgba(245,200,66,0.35);
+    }
+    .plan-card.popular {
+      border-color: rgba(245,200,66,0.50);
+      background: linear-gradient(160deg, rgba(245,200,66,0.08), var(--zap-card));
+    }
+    .popular-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--zap-gold), var(--zap-gold2));
+      color: var(--zap-dark);
+      font-size: 0.68rem;
+      font-weight: 900;
+      padding: 4px 14px;
+      border-radius: 100px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .plan-cuotas {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--zap-gold);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .plan-label {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-bottom: 20px;
+    }
+    .plan-rows { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+    .plan-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-sub);
+    }
+    .plan-row:last-child { border-bottom: none; }
+    .plan-row strong { color: var(--text-main); font-weight: 600; }
+    .plan-row .tag {
+      background: rgba(245,200,66,0.12);
+      color: var(--zap-gold);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ─── Features ────────────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--zap-card);
+      border: 1px solid var(--zap-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(245,200,66,0.35);
+      transform: translateY(-3px);
+    }
+    .feature-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .feature-card p {
+      font-size: 0.88rem;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    /* ─── FAQ ─────────────────────────────────────────────────── */
+    .faq-list { display: flex; flex-direction: column; gap: 12px; }
+    .faq-item {
+      background: var(--zap-card);
+      border: 1px solid var(--zap-border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text-main);
+      text-align: left;
+      padding: 20px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      font-family: 'Inter', sans-serif;
+      transition: color 0.2s;
+    }
+    .faq-q:hover { color: var(--zap-gold); }
+    .faq-q .chevron {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .faq-item.open .faq-q .chevron { transform: rotate(180deg); color: var(--zap-gold); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .faq-item.open .faq-a { max-height: 300px; }
+    .faq-a-inner {
+      padding: 0 24px 20px;
+      font-size: 0.88rem;
+      color: var(--text-sub);
+      line-height: 1.7;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 16px;
+    }
+
+    /* ─── Conditions Banner ───────────────────────────────────── */
+    .conditions-band {
+      background: linear-gradient(135deg, rgba(245,200,66,0.10), rgba(245,200,66,0.05));
+      border: 1px solid rgba(245,200,66,0.25);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+    }
+    .conditions-band h2 { margin-bottom: 8px; }
+    .conditions-band p { color: var(--text-sub); margin-bottom: 32px; }
+
+    /* ─── Fine Print ──────────────────────────────────────────── */
+    .fine-print {
+      background: rgba(0,0,0,0.3);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 48px 0 32px;
+    }
+    .fine-print-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .fine-print h4 {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-tiny);
+      margin-bottom: 16px;
+    }
+    .fine-print p, .fine-print li {
+      font-size: 0.68rem;
+      color: #3E465A;
+      line-height: 1.7;
+    }
+    .fine-print ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .fine-print ul li::before { content: '› '; color: #3E465A; }
+    .fine-print-divider {
+      border: none;
+      height: 1px;
+      background: rgba(255,255,255,0.04);
+      margin: 24px 0;
+    }
+    .fine-print-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .fine-print-footer .logo-sm {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-tiny);
+      letter-spacing: -0.3px;
+    }
+    .fine-print-footer .logo-sm span { color: rgba(245,200,66,0.4); }
+
+    /* ─── Animations ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.7s ease both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,200,66,0.3); }
+      50%       { box-shadow: 0 0 0 12px rgba(245,200,66,0); }
+    }
+
+    /* ─── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .sim-controls { grid-template-columns: 1fr; }
+      .sim-result { grid-template-columns: 1fr; }
+      .simulator-wrapper { padding: 28px 20px; }
+      section { padding: 56px 0; }
+      .conditions-band { padding: 32px 20px; }
+    }
+
+    /* ─── Stat banner ─────────────────────────────────────────── */
+    .stat-strip {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: nowrap;
+      border: 1px solid var(--zap-border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 64px;
+    }
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      padding: 24px 20px;
+      border-right: 1px solid var(--zap-border);
+      background: var(--zap-card);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item .s-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--zap-gold);
+      letter-spacing: -0.5px;
+    }
+    .stat-item .s-lbl {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+    @media (max-width: 500px) {
+      .stat-strip { flex-direction: column; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--zap-border); }
+      .stat-item:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo">ZAP <span>Crédito</span></div>
+    <span class="badge-nav">⚡ Financiación ZAP</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-tag fade-up">Sistema de financiación ZAP</div>
+    <h1 class="fade-up delay-1">
+      Comprá hoy.<br/>
+      <em>Pagá en cuotas.</em>
+    </h1>
+    <p class="hero-sub fade-up delay-2">
+      Crédito ZAP es el sistema de financiamiento propio de nuestro comercio.
+      Sin bancos, sin tarjetas, sin vueltas. Una tasa fija mensual, cuotas claras
+      y aprobación en el local.
+    </p>
+
+    <div class="rate-showcase fade-up delay-3">
+      <div class="rate-card featured">
+        <div class="label">Tasa mensual fija</div>
+        <div class="value">3,59<span style="font-size:1.4rem">%</span></div>
+        <div class="unit">sobre saldo deudor</div>
+      </div>
+      <div class="rate-card">
+        <div class="label">Hasta</div>
+        <div class="value">12</div>
+        <div class="unit">cuotas mensuales</div>
+      </div>
+      <div class="rate-card">
+        <div class="label">Aprobación</div>
+        <div class="value" style="font-size: 1.6rem; padding-top: 4px;">En el local</div>
+        <div class="unit">sin trámites externos</div>
+      </div>
+    </div>
+
+    <div class="cta-row fade-up">
+      <a href="#simulador" class="btn-primary">Simular mi crédito ⚡</a>
+      <a href="#como-funciona" class="btn-outline">¿Cómo funciona? →</a>
+    </div>
+
+    <div class="stat-strip fade-up">
+      <div class="stat-item">
+        <div class="s-val">0%</div>
+        <div class="s-lbl">Costo de apertura</div>
+      </div>
+      <div class="stat-item">
+        <div class="s-val">100%</div>
+        <div class="s-lbl">Transparencia en cuotas</div>
+      </div>
+      <div class="stat-item">
+        <div class="s-val">1–12</div>
+        <div class="s-lbl">Cuotas disponibles</div>
+      </div>
+      <div class="stat-item">
+        <div class="s-val">Hoy</div>
+        <div class="s-lbl">Te llevás el producto</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona">
+  <div class="container">
+    <div class="section-label">Proceso</div>
+    <h2>Simple como <span class="accent">debe ser</span></h2>
+    <p class="section-sub">
+      Cuatro pasos y tu producto sale con vos el mismo día. Sin esperas, sin formularios interminables.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">🛍️</div>
+        <h3>Elegís el producto</h3>
+        <p>Seleccionás lo que querés llevar de nuestro catálogo. Podés combinar artículos en una sola operación de crédito.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">📋</div>
+        <h3>Solicitás el crédito</h3>
+        <p>En el local te solicitamos un documento de identidad válido y datos de contacto. Sin aval de banco ni historial crediticio externo.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">✅</div>
+        <h3>Aprobamos la operación</h3>
+        <p>Evaluamos internamente y aprobamos la operación. El proceso es rápido y se realiza en el mismo momento de la compra.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-icon">📦</div>
+        <h3>Te llevás el producto</h3>
+        <p>Con el crédito aprobado, el producto es tuyo desde el primer día. Recibís el detalle de tus cuotas por escrito.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-icon">📅</div>
+        <h3>Pagás cada mes</h3>
+        <p>Abonás la cuota mensual en el local o por los medios habilitados. Te enviamos recordatorios antes de cada vencimiento.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">06</div>
+        <div class="step-icon">🎯</div>
+        <h3>Crédito cancelado</h3>
+        <p>Al abonar la última cuota, el crédito queda saldado y tu historial interno queda limpio para futuros créditos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- SIMULADOR -->
+<section id="simulador">
+  <div class="container">
+    <div class="section-label">Calculadora</div>
+    <h2>Simulá tu <span class="accent">crédito ZAP</span></h2>
+    <p class="section-sub">
+      Mové los controles para ver exactamente cuánto pagás por mes. Sin sorpresas.
+    </p>
+
+    <div class="simulator-wrapper">
+      <div class="sim-controls">
+        <div class="sim-group">
+          <label>Monto a financiar</label>
+          <div class="sim-value" id="montoVal">$50.000</div>
+          <input type="range" id="montoRange" min="5000" max="500000" step="5000" value="50000" />
+          <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-tiny);margin-top:4px;">
+            <span>$5.000</span><span>$500.000</span>
+          </div>
+        </div>
+        <div class="sim-group">
+          <label>Cantidad de cuotas</label>
+          <div class="sim-value" id="cuotasVal">6 cuotas</div>
+          <input type="range" id="cuotasRange" min="1" max="12" step="1" value="6" />
+          <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-tiny);margin-top:4px;">
+            <span>1 cuota</span><span>12 cuotas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sim-result">
+        <div class="sim-result-card highlight">
+          <div class="r-label">Cuota mensual</div>
+          <div class="r-value" id="cuotaResult">—</div>
+        </div>
+        <div class="sim-result-card">
+          <div class="r-label">Total a pagar</div>
+          <div class="r-value" id="totalResult">—</div>
+        </div>
+        <div class="sim-result-card">
+          <div class="r-label">Interés total</div>
+          <div class="r-value" id="interesResult">—</div>
+        </div>
+      </div>
+      <p class="sim-note">
+        * Valores calculados sobre el saldo deudor con tasa fija mensual del 3,59% (sistema francés). 
+        Consultar CFT en el local. Simulación de carácter informativo, no constituye oferta de crédito.
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PLANES / CUOTAS -->
+<section id="planes">
+  <div class="container">
+    <div class="section-label">Planes de cuotas</div>
+    <h2>Elegí tu <span class="accent">plan</span></h2>
+    <p class="section-sub">
+      Ejemplo sobre un monto de $100.000. Todas las cuotas son fijas e iguales entre sí.
+    </p>
+
+    <div class="plans-grid" id="plansGrid">
+      <!-- generado por JS -->
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- FEATURES -->
+<section id="ventajas">
+  <div class="container">
+    <div class="section-label">Beneficios</div>
+    <h2>Por qué elegir <span class="accent">Crédito ZAP</span></h2>
+    <p class="section-sub">Diseñado para que accedas sin complicaciones.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Tasa fija siempre</h3>
+        <p>El 3,59% mensual no cambia en ninguna cuota. Ni surpresas ni ajustes. Lo que firmás es lo que pagás.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Aprobación inmediata</h3>
+        <p>No dependemos de ningún banco ni buró externo. Decidimos nosotros, en el local, ese mismo momento.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Cuotas iguales</h3>
+        <p>Sistema de amortización francés: siempre pagás la misma cuota cada mes durante toda la vida del crédito.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Acceso online a tu cuenta</h3>
+        <p>Consultá el estado de tu crédito, cuotas pendientes y vencimientos en cualquier momento desde tu celular.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <h3>Sin tarjeta ni banco</h3>
+        <p>Accedés al crédito aunque no tengas tarjeta de crédito ni cuenta bancaria activa. Solo necesitás tu DNI.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Cancelación anticipada</h3>
+        <p>Podés cancelar el crédito anticipadamente en cualquier momento. Solo pagás el capital restante más intereses devengados.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- FAQ -->
+<section id="preguntas">
+  <div class="container">
+    <div class="section-label">Preguntas frecuentes</div>
+    <h2>Todo lo que querés <span class="accent">saber</span></h2>
+    <p class="section-sub" style="margin-bottom: 32px;">
+      Si después de esto todavía tenés dudas, consultanos en el local.
+    </p>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Qué es la tasa de interés mensual del 3,59%?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          La tasa del 3,59% mensual es el porcentaje que se aplica sobre el <strong>saldo de capital pendiente</strong> de pago para calcular los intereses de cada cuota. 
+          Con el sistema francés, cada cuota es igual, pero al principio pagás más intereses y menos capital, y al final más capital y menos intereses. 
+          Es una tasa <strong>fija</strong>: nunca sube ni baja durante la vigencia del crédito.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Necesito historial crediticio o buen score?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          No consultamos bases de datos externas de scoring crediticio. La evaluación es interna y se basa en criterios propios del comercio. 
+          El único requisito obligatorio es presentar un <strong>documento de identidad vigente</strong> y un número de contacto. 
+          Clientes con historial positivo en nuestro sistema pueden acceder a mayores montos.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Cuánto es el monto máximo que puedo financiar?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          El monto máximo disponible depende del perfil del cliente y el criterio interno del comercio. 
+          Los montos son flexibles y se ajustan caso por caso. Para conocer el límite aplicable a tu perfil, 
+          consultanos directamente en el local. Los clientes con historial de pagos positivo acceden generalmente a montos más elevados.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Qué pasa si me atraso con una cuota?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Las cuotas abonadas fuera de la fecha de vencimiento generan <strong>intereses punitorios</strong> sobre el monto vencido impago. 
+          La tasa punitoria se informa en el acuerdo de crédito al momento de la firma. 
+          Si anticipás un inconveniente, contactanos antes del vencimiento: en muchos casos podemos gestionar una reprogramación sin costo adicional.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Puedo pagar una cuota antes de que venza?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Sí. Podés abonar cuotas anticipadas en cualquier momento. El pago adelantado reduce el saldo de capital, 
+          lo que puede disminuir el interés total del crédito si optás por cancelarlo completo. No hay penalidad por pago anticipado.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Dónde y cómo puedo pagar las cuotas?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Las cuotas se pueden abonar directamente en el local, en efectivo o con los medios de pago habilitados. 
+          También podés gestionar el pago online a través del portal de clientes disponible en nuestra plataforma. 
+          Te enviaremos un recordatorio antes de cada vencimiento para que no lo olvides.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Qué documentación recibo al tomar el crédito?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          Al aprobar el crédito recibís: (1) el detalle completo del plan de cuotas con fecha de vencimiento, monto de cada cuota, 
+          capital e intereses desglosados; (2) el costo financiero total (CFT) expresado en porcentaje anual; 
+          (3) las condiciones generales del crédito. Toda la documentación queda también disponible en tu perfil digital.
+        </div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Qué es el CFT (Costo Financiero Total)?
+          <span class="chevron">▼</span>
+        </button>
+        <div class="faq-a"><div class="faq-a-inner">
+          El CFT es un indicador que expresa el costo total de un crédito en términos anuales, incluyendo 
+          la tasa de interés y cualquier otro cargo asociado a la operación. Permite comparar fácilmente diferentes 
+          opciones de financiamiento. En Crédito ZAP, el CFT se informa de forma clara antes de que firmes cualquier acuerdo.
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- CTA FINAL -->
+<section>
+  <div class="container">
+    <div class="conditions-band">
+      <div class="section-label" style="justify-content:center;">Empezá ahora</div>
+      <h2>Tu próxima compra,<br/><span class="accent">en cuotas fijas.</span></h2>
+      <p>Vení al local y pedí tu Crédito ZAP hoy mismo.<br/>Sin turnos, sin esperas, sin bancos.</p>
+      <div class="cta-row">
+        <a href="#simulador" class="btn-primary">Simular mi crédito ⚡</a>
+        <a href="#como-funciona" class="btn-outline">Ver cómo funciona →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LETRA CHICA -->
+<div class="fine-print">
+  <div class="fine-print-inner">
+    <h4>⚖️ Información legal y condiciones del crédito — Letra chica</h4>
+    <ul>
+      <li>La tasa de interés mensual aplicable es del <strong>3,59% fija sobre saldo deudor</strong>, calculada mediante el sistema de amortización francés (cuota fija). Dicha tasa se mantiene constante durante toda la vigencia del crédito y no está sujeta a actualización por ningún índice.</li>
+      <li>El <strong>Costo Financiero Total (CFT)</strong> varía según el plazo elegido y se informa de manera clara e impresa en el acuerdo de crédito que el cliente firma antes de retirar el producto. El CFT incluye la tasa de interés compensatoria y cualquier gasto adicional aplicable a la operación.</li>
+      <li>El otorgamiento del crédito está sujeto a <strong>evaluación interna</strong> por parte del comercio. La aprobación no es automática ni está garantizada. El comercio se reserva el derecho de rechazar o modificar montos y plazos solicitados según criterios propios de riesgo crediticio.</li>
+      <li>En caso de <strong>mora o atraso en el pago</strong> de cualquier cuota, se devengarán intereses punitorios sobre el monto impago desde la fecha de vencimiento hasta la fecha de efectivo pago. La tasa punitoria se especifica en el contrato individual de crédito.</li>
+      <li>El cliente tiene derecho a la <strong>cancelación anticipada total o parcial</strong> del crédito en cualquier momento, abonando el capital pendiente más los intereses compensatorios devengados hasta la fecha de cancelación efectiva. No se aplican penalidades adicionales por cancelación anticipada.</li>
+      <li>La <strong>simulación online</strong> disponible en este documento es de carácter exclusivamente informativo y orientativo. Los valores resultantes no constituyen una oferta formal de crédito ni generan obligación alguna para el comercio. Los montos finales se determinan al momento de la aprobación de la operación.</li>
+      <li>Los plazos disponibles son de <strong>1 a 12 cuotas mensuales consecutivas</strong>, con vencimiento mensual. Las fechas de vencimiento de cada cuota se establecen en función de la fecha de otorgamiento del crédito y se detallan en el cronograma de pagos entregado al cliente.</li>
+      <li>El cliente presta conformidad con las condiciones mediante su <strong>firma en el acuerdo de crédito</strong>. Se recomienda leer detenidamente toda la documentación antes de suscribir el acuerdo.</li>
+      <li>El comercio no es una entidad financiera ni un banco. <strong>Crédito ZAP es un sistema de financiamiento propio</strong> del comercio, destinado exclusivamente a la adquisición de bienes y servicios ofrecidos en el establecimiento. No está regulado por el Banco Central de la República Argentina (BCRA).</li>
+      <li>El titular del crédito asume la responsabilidad total del pago de las cuotas según el cronograma acordado. La mora en el pago puede afectar el acceso a futuros créditos dentro del sistema interno del comercio.</li>
+      <li>Cualquier reclamo o consulta deberá realizarse en el local comercial, en el horario de atención habitual. El comercio cuenta con un libro de quejas disponible para el cliente.</li>
+    </ul>
+    <hr class="fine-print-divider" />
+    <p style="color: #2A3050; font-size: 0.65rem;">
+      Documento de carácter comercial e informativo. Los ejemplos de cuotas y montos son de carácter ilustrativo. 
+      Los valores reales pueden diferir por redondeo. Tasa vigente sujeta a cambios con previo aviso al cliente al momento de la solicitud. 
+      Versión del documento: Abril 2026.
+    </p>
+    <div class="fine-print-footer">
+      <div class="logo-sm">ZAP <span>Crédito</span> — Sistema de financiamiento propio</div>
+      <div style="font-size:0.65rem;color:#2A3050;">
+        Tasa mensual: 3,59% · Sistema francés · 1 a 12 cuotas fijas
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── Formateo de moneda ─────────────────────────────────────
+  const fmt = (n) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
+
+  // ─── Cálculo de cuota (sistema francés) ────────────────────
+  function calcFrances(capital, n, tasaMensual) {
+    const r = tasaMensual / 100;
+    if (n === 1) return { cuota: capital * (1 + r), total: capital * (1 + r), interes: capital * r };
+    const cuota = capital * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    const total  = cuota * n;
+    const interes = total - capital;
+    return { cuota, total, interes };
+  }
+
+  const TASA = 3.59;
+
+  // ─── Simulador ──────────────────────────────────────────────
+  const montoRange  = document.getElementById('montoRange');
+  const cuotasRange = document.getElementById('cuotasRange');
+  const montoVal    = document.getElementById('montoVal');
+  const cuotasVal   = document.getElementById('cuotasVal');
+  const cuotaResult = document.getElementById('cuotaResult');
+  const totalResult = document.getElementById('totalResult');
+  const interesResult = document.getElementById('interesResult');
+
+  function updateSim() {
+    const monto  = parseInt(montoRange.value);
+    const cuotas = parseInt(cuotasRange.value);
+    const r = calcFrances(monto, cuotas, TASA);
+    montoVal.textContent   = fmt(monto);
+    cuotasVal.textContent  = `${cuotas} ${cuotas === 1 ? 'cuota' : 'cuotas'}`;
+    cuotaResult.textContent  = fmt(Math.round(r.cuota));
+    totalResult.textContent  = fmt(Math.round(r.total));
+    interesResult.textContent = fmt(Math.round(r.interes));
+  }
+
+  montoRange.addEventListener('input', updateSim);
+  cuotasRange.addEventListener('input', updateSim);
+  updateSim();
+
+  // ─── Planes table ───────────────────────────────────────────
+  const EJEMPLO = 100000;
+  const populares = [3, 6, 9, 12];
+  const planesGrid = document.getElementById('plansGrid');
+  [1, 2, 3, 4, 6, 9, 12].forEach(n => {
+    const r = calcFrances(EJEMPLO, n, TASA);
+    const isPopular = n === 6;
+    const card = document.createElement('div');
+    card.className = 'plan-card' + (isPopular ? ' popular' : '');
+    const sobrecosto = ((r.total / EJEMPLO - 1) * 100).toFixed(1);
+    card.innerHTML = `
+      ${isPopular ? '<div class="popular-badge">⭐ Más elegido</div>' : ''}
+      <div class="plan-cuotas">${n}</div>
+      <div class="plan-label">${n === 1 ? 'cuota' : 'cuotas mensuales'}</div>
+      <div class="plan-rows">
+        <div class="plan-row">Cuota mensual<strong>${fmt(Math.round(r.cuota))}</strong></div>
+        <div class="plan-row">Capital<strong>${fmt(EJEMPLO)}</strong></div>
+        <div class="plan-row">Interés total<strong>${fmt(Math.round(r.interes))}</strong></div>
+        <div class="plan-row">Total a pagar<strong>${fmt(Math.round(r.total))}</strong></div>
+        <div class="plan-row">Sobrecosto <span class="tag">+${sobrecosto}%</span></div>
+      </div>
+    `;
+    planesGrid.appendChild(card);
+  });
+
+  // ─── FAQ Toggle ─────────────────────────────────────────────
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // ─── Intersection Observer (fade-up on scroll) ──────────────
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.step, .feature-card, .plan-card, .rate-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    io.observe(el);
+  });
+</script>
+</body>
+</html>

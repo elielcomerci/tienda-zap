@@ -79,6 +79,9 @@ model Order {
   receiptUrl     String?
   notes       String?
   zapCreditPlan ZapCreditPlan?
+  // Integración con kiosco24
+  partnerAccountId String?
+  partnerAccount   PartnerAccount? @relation(fields: [partnerAccountId], references: [id], onDelete: SetNull)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -359,4 +362,46 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ── Integración con kiosco24 ──────────────────────────────────────────────────
+
+model PartnerAccount {
+  id                  String   @id @default(cuid())
+  // Identidad del Branch en kiosco24
+  kiosco24BranchId    String   @unique  // Branch.id en la DB de kiosco24
+  kiosco24BranchName  String            // Branch.name (cacheado)
+  kiosco24AccessKey   String   @unique  // Branch.accessKey — usado como Bearer token
+  kiosco24OwnerEmail  String?           // Email del dueño para contacto
+  // Branding cacheado del kiosco
+  logoUrl             String?
+  primaryColor        String?
+  // Estado del vínculo
+  active              Boolean  @default(true)
+  // Órdenes generadas por esta sucursal en tienda.zap
+  orders              Order[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([kiosco24AccessKey])
+}
+
+model PartnerCampaign {
+  id              String   @id @default(cuid())
+  zone            String   // 'resumen', 'stats', 'configuracion'
+  format          String   // 'text_only', 'banner_small', 'banner_large'
+  title           String
+  description     String?
+  ctaText         String?
+  imageUrl        String?
+  backgroundColor String?
+  textColor       String?
+  actionType      String   // 'open_url', 'one_click_order'
+  actionUrl       String?
+  productId       String?  // Si actionType = one_click_order
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([zone, active])
 }

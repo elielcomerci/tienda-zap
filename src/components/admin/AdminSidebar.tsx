@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  Building2,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/admin/ordenes', label: 'Ordenes', icon: ShoppingCart },
   { href: '/admin/creditos', label: 'Creditos', icon: Wallet },
   { href: '/admin/financiacion', label: 'Financiacion', icon: Percent },
+  { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
 ]
 
 export default function AdminSidebar() {
