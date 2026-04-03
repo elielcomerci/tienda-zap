@@ -236,9 +236,15 @@ export default async function CheckoutSuccessPage({
         </div>
       )}
 
-      <Link href="/" className="btn-secondary w-full justify-center">
-        Volver a la tienda
-      </Link>
+      {order.user?.id ? (
+        <Link href={`/perfil/ordenes/${order.id}`} className="btn-secondary w-full justify-center">
+          Ver detalle de la compra
+        </Link>
+      ) : (
+        <Link href="/" className="btn-secondary w-full justify-center">
+          Volver a la tienda
+        </Link>
+      )}
     </div>
   )
 }

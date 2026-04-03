@@ -5,7 +5,11 @@ import { ShoppingCart, Zap, Menu, X } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState } from 'react'
 
-export default function PublicHeader() {
+export default function PublicHeader({
+  user,
+}: {
+  user?: { name?: string | null } | null
+}) {
   const itemCount = useCartStore((s) => s.itemCount())
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -38,12 +42,24 @@ export default function PublicHeader() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="text-sm font-medium text-gray-600 hover:text-orange-500 transition-colors"
-          >
-            Ingresar
-          </Link>
+          {user ? (
+            <Link
+              href="/perfil"
+              className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-2 mr-3"
+            >
+              <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs uppercase">
+                {user.name ? user.name.charAt(0) : 'U'}
+              </div>
+              <span className="hidden sm:inline">Mi perfil</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm font-medium text-gray-600 hover:text-orange-500 transition-colors mr-3"
+            >
+              Ingresar
+            </Link>
+          )}
 
           <Link href="/carrito" className="relative p-2 rounded-xl hover:bg-orange-50 transition-colors">
             <ShoppingCart size={22} className="text-gray-700" />
