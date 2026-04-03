@@ -399,6 +399,10 @@ model PartnerCampaign {
   actionType      String   // 'open_url', 'one_click_order'
   actionUrl       String?
   productId       String?  // Si actionType = one_click_order
+  // Promoción / Descuento
+  promoType       String?  // 'COMBO', 'ZONA_ROJA', 'HAPPY_HOUR', 'DIA_TEMATICO', null = sin promo
+  discountKind    String?  // 'PERCENTAGE' | 'FIXED_PRICE'
+  discountValue   Float?   // % o precio fijo según discountKind
   active          Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

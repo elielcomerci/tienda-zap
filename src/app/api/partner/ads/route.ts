@@ -1,8 +1,10 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { authenticatePartnerRequest } from '@/lib/partner-auth'
+import { prisma } from '@/lib/prisma'
 
 export type AdFormat = 'text_only' | 'banner_small' | 'banner_large'
+export type AdPromoDiscountKind = 'PERCENTAGE' | 'FIXED_PRICE'
 
 export interface AdPayload {
   id: string
@@ -20,6 +22,13 @@ export interface AdPayload {
     type: 'open_url' | 'one_click_order' | 'informational'
     url?: string
     productId?: string
+    productName?: string
+    productSlug?: string
+  }
+  promo?: {
+    type: string
+    discountKind: AdPromoDiscountKind
+    discountValue: number
   }
 }
 
@@ -27,7 +36,7 @@ export interface AdPayload {
  * GET /api/partner/ads?zone=xxx
  *
  * AdSense B2B para Kiosco24.
- * Recibe la zona y devuelve un slot publicitario o null si no hay nada para esa zona.
+ * Devuelve la campaña activa más reciente para la zona indicada, o null.
  */
 export async function GET(req: Request) {
   const auth = await authenticatePartnerRequest(req)
@@ -38,49 +47,59 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const zone = searchParams.get('zone')
 
-  // Mapeo básico estático temporal. 
-  // TODO: Migrar a base de datos (Ej: tabla PartnerCampaigns).
-  
-  let ad: AdPayload | null = null
-
-  if (zone === 'resumen') {
-    // Zona Resumen: impacto alto visual
-    ad = {
-      id: 'promo-primavera-26',
-      zone: 'resumen',
-      format: 'banner_small',
-      content: {
-        title: '¡Vestí tu Kiosco para Primavera! 🌸',
-        description: 'Impresión de cenefa superior y 2 vinilos promocionales con 50% OFF.',
-        ctaText: 'Ver promo en ZAP',
-        backgroundColor: '#fdf4ff',
-        textColor: '#86198f', // fuchsia-800
-      },
-      action: {
-        type: 'open_url',
-        url: 'https://tienda.zap.com.ar', // TODO: URL directa al carrito o producto
-      },
-    }
-  } else if (zone === 'stats') {
-    // Zona Stats: texto sutil orientado a métricas
-    ad = {
-      id: 'flyers-boost',
-      zone: 'stats',
-      format: 'text_only',
-      content: {
-        title: '¿Las ventas están estancadas?',
-        description: 'Probá imprimir 1000 flyers B&N para repartir en el barrio por solo $5000.',
-        ctaText: 'Solicitar impresión',
-      },
-      action: {
-        type: 'open_url',
-        url: 'https://tienda.zap.com.ar',
-      },
-    }
-  } else {
-    // Para zonas sin campañas activas, devolvemos success pero data null
+  if (!zone) {
     return NextResponse.json({ data: null })
   }
 
-  return NextResponse.json({ data: ad })
+  try {
+    const campaign = await prisma.partnerCampaign.findFirst({
+      where: { zone, active: true },
+      orderBy: { updatedAt: 'desc' },
+    })
+
+    if (!campaign) {
+      return NextResponse.json({ data: null })
+    }
+
+    // Enriquecer con datos del producto si es one_click_order
+    let productName: string | undefined
+    let productSlug: string | undefined
+
+    if (campaign.actionType === 'one_click_order' && campaign.productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: campaign.productId },
+        select: { name: true, slug: true },
+      })
+      productName = product?.name
+      productSlug = product?.slug
+    }
+
+    const ad: AdPayload = {
+      id: campaign.id,
+      zone: campaign.zone,
+      format: campaign.format as AdFormat,
+      content: {
+        title: campaign.title,
+        description: campaign.description ?? undefined,
+        ctaText: campaign.ctaText ?? undefined,
+        imageUrl: campaign.imageUrl ?? undefined,
+        backgroundColor: campaign.backgroundColor ?? undefined,
+        textColor: campaign.textColor ?? undefined,
+      },
+      ...(campaign.actionType && {
+        action: {
+          type: campaign.actionType as AdPayload['action']['type'],
+          url: campaign.actionUrl ?? undefined,
+          productId: campaign.productId ?? undefined,
+          productName,
+          productSlug,
+        },
+      }),
+    }
+
+    return NextResponse.json({ data: ad })
+  } catch (err) {
+    console.error('[partner/ads] Error fetching campaign:', err)
+    return NextResponse.json({ data: null })
+  }
 }
