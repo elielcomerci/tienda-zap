@@ -44,6 +44,11 @@ export async function POST(req: NextRequest) {
             unitPrice: true,
           },
         },
+        zapCreditPlan: {
+          select: {
+            downPaymentAmount: true,
+          },
+        },
       },
     })
 
@@ -51,8 +56,8 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Orden no encontrada o acceso denegado' }, { status: 404 })
     }
 
-    if (order.paymentType !== 'MERCADOPAGO') {
-      return Response.json({ error: 'Esta orden no usa MercadoPago' }, { status: 400 })
+    if (order.paymentType !== 'MERCADOPAGO' && order.paymentType !== 'ZAP_CREDIT') {
+      return Response.json({ error: 'Esta orden no soporta pago online directo' }, { status: 400 })
     }
 
     if (order.status !== 'PENDING') {
@@ -90,16 +95,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const preferenceItems =
+      order.paymentType === 'ZAP_CREDIT' && order.zapCreditPlan
+        ? [
+            {
+              id: `anticipo-${order.id}`,
+              title: 'Anticipo Credito ZAP',
+              quantity: 1,
+              unit_price: order.zapCreditPlan.downPaymentAmount,
+              currency_id: 'ARS',
+            },
+          ]
+        : order.items.map((item) => ({
+            id: item.productId,
+            title: 'Producto ZAP',
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            currency_id: 'ARS',
+          }))
+
     // Crear nueva preferencia (con los mismos items de la orden original)
     const newPreference = await preferenceApi.create({
       body: {
-        items: order.items.map((item) => ({
-          id: item.productId,
-          title: 'Producto ZAP',
-          quantity: item.quantity,
-          unit_price: item.unitPrice,
-          currency_id: 'ARS',
-        })),
+        items: preferenceItems,
         payer: { email: order.guestEmail ?? undefined },
         external_reference: order.id,
         back_urls: {

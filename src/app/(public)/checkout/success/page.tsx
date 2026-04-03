@@ -154,6 +154,10 @@ export default async function CheckoutSuccessPage({
                 </p>
               </div>
             )}
+
+            <div className="mt-4">
+              <ResumePaymentButton orderId={order.id} accessToken={token} label="Pagar anticipo con MercadoPago" />
+            </div>
           </div>
         ) : order.paymentType === 'TRANSFER' && order.status === 'PENDING' && !order.receiptUrl ? (
           <div className="rounded-xl border border-orange-100 bg-orange-50 p-5">
@@ -236,7 +240,7 @@ export default async function CheckoutSuccessPage({
         </div>
       )}
 
-      {order.user?.id ? (
+      {order.userId ? (
         <Link href={`/perfil/ordenes/${order.id}`} className="btn-secondary w-full justify-center">
           Ver detalle de la compra
         </Link>

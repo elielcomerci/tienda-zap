@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowLeft, Receipt, Wallet } from 'lucide-react'
 import { auth } from '@/auth'
 import CreditPaymentUploader from '@/components/public/CreditPaymentUploader'
 import MpInstallmentPayButton from '@/components/public/MpInstallmentPayButton'
+import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import {
   getCreditPlanStatusLabel,
   getCreditPlanStatusTheme,
@@ -16,6 +17,7 @@ import {
 } from '@/lib/financing-calculator'
 import { getCustomerCreditPlan } from '@/lib/credits'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -44,6 +46,12 @@ export default async function CustomerCreditDetailPage({
   const orderCode = getOrderDisplayCode(plan.order.id)
   const nominalAnnualRatePercent = getNominalAnnualRatePercent(plan.ratePercent)
   const effectiveAnnualRatePercent = getEffectiveAnnualRatePercent(plan.ratePercent)
+  
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
+  const receiptWhatsappUrl = buildWhatsappUrl(
+    whatsappNumber,
+    `Hola! Te envio el comprobante del anticipo de mi credito #${orderCode}.`
+  )
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
@@ -98,6 +106,28 @@ export default async function CustomerCreditDetailPage({
           <p className="mt-2 text-2xl font-black text-gray-900">
             ${plan.downPaymentAmount.toLocaleString('es-AR')}
           </p>
+          {plan.order.status === 'PENDING' && (
+            <div className="mt-3 space-y-2">
+              <ResumePaymentButton orderId={plan.order.id} label="Pagar con MercadoPago" className="btn-primary w-full justify-center !py-2 !text-sm" />
+              {receiptWhatsappUrl && (
+                <>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <div className="h-px flex-1 bg-gray-200" />
+                    <span>o envia el comprobante</span>
+                    <div className="h-px flex-1 bg-gray-200" />
+                  </div>
+                  <a
+                    href={receiptWhatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-primary w-full justify-center bg-[#25D366] !py-2 !text-sm shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
+                  >
+                    Enviar por WhatsApp
+                  </a>
+                </>
+              )}
+            </div>
+          )}
         </div>
         <div className="card p-5">
           <p className="text-sm font-medium text-gray-500">Capital financiado</p>
