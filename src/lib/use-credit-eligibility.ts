@@ -15,6 +15,19 @@ export type CreditEligibilitySnapshot = {
   downPaymentPenaltyPercent: number
   defaultInstallments: number
   defaultPaymentFrequency: PaymentFrequency
+  userProfile?: {
+    name: string | null
+    email: string | null
+    phone: string | null
+    documentId: string | null
+    billingAddress: string | null
+    billingCity: string | null
+    billingProvince: string | null
+    shippingAddress: string | null
+    shippingCity: string | null
+    shippingProvince: string | null
+    shippingPostalCode: string | null
+  }
 }
 
 export function useCreditEligibility() {

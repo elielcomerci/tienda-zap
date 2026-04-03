@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider   = "prisma-client-js"
   engineType = "library"
@@ -11,23 +8,24 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(CUSTOMER)
-  name      String?
-  phone     String?
-  orders    Order[]
-  createdAt DateTime @default(now())
-
-  // NextAuth
-  accounts Account[]
-  sessions Session[]
-}
-
-enum Role {
-  ADMIN
-  CUSTOMER
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  password           String
+  role               Role      @default(CUSTOMER)
+  name               String?
+  phone              String?
+  createdAt          DateTime  @default(now())
+  billingAddress     String?
+  billingCity        String?
+  billingProvince    String?
+  documentId         String?
+  shippingAddress    String?
+  shippingCity       String?
+  shippingPostalCode String?
+  shippingProvince   String?
+  accounts           Account[]
+  orders             Order[]
+  sessions           Session[]
 }
 
 model Category {
@@ -39,51 +37,302 @@ model Category {
 }
 
 model Product {
-  id                String            @id @default(cuid())
-  name              String
-  slug              String            @unique
-  description       String?
-  price             Float
-  creditDownPaymentPercent Int       @default(30)
-  images            String[]
-  categoryId        String
-  category          Category          @relation(fields: [categoryId], references: [id])
-  active            Boolean           @default(true)
-  stock             Int               @default(0) // Stock general (si aplica)
-  
-  // Configurador Avanzado
-  options           ProductOption[]
-  variants          ProductVariant[]
-  outgoingRelations ProductRelation[] @relation("ProductOutgoingRelations")
-  incomingRelations ProductRelation[] @relation("ProductIncomingRelations")
-  
-  orderItems        OrderItem[]
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id                       String            @id @default(cuid())
+  name                     String
+  slug                     String            @unique
+  description              String?
+  price                    Float
+  images                   String[]
+  categoryId               String
+  active                   Boolean           @default(true)
+  stock                    Int               @default(0)
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  creditDownPaymentPercent Int               @default(30)
+  orderItems               OrderItem[]
+  category                 Category          @relation(fields: [categoryId], references: [id])
+  options                  ProductOption[]
+  outgoingRelations        ProductRelation[] @relation("ProductOutgoingRelations")
+  incomingRelations        ProductRelation[] @relation("ProductIncomingRelations")
+  variants                 ProductVariant[]
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  userId      String?
-  user        User?       @relation(fields: [userId], references: [id])
+  id                    String          @id @default(cuid())
+  userId                String?
+  guestEmail            String?
+  guestName             String?
+  guestPhone            String?
+  total                 Float
+  status                OrderStatus     @default(PENDING)
+  paymentType           PaymentType
+  paymentId             String?
+  receiptUrl            String?
+  notes                 String?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
   publicAccessTokenHash String?
-  guestEmail  String?
-  guestName   String?
-  guestPhone  String?
-  items       OrderItem[]
-  total       Float
-  status      OrderStatus @default(PENDING)
-  paymentType PaymentType
-  paymentId      String?
-  mpPreferenceId String?
-  receiptUrl     String?
-  notes       String?
-  zapCreditPlan ZapCreditPlan?
-  // Integración con kiosco24
-  partnerAccountId String?
-  partnerAccount   PartnerAccount? @relation(fields: [partnerAccountId], references: [id], onDelete: SetNull)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  mpPreferenceId        String?
+  partnerAccountId      String?
+  billingAddress        String?
+  billingCity           String?
+  billingProvince       String?
+  documentId            String?
+  shippingAddress       String?
+  shippingCity          String?
+  shippingPostalCode    String?
+  shippingProvince      String?
+  partnerAccount        PartnerAccount? @relation(fields: [partnerAccountId], references: [id])
+  user                  User?           @relation(fields: [userId], references: [id])
+  items                 OrderItem[]
+  zapCreditPlan         ZapCreditPlan?
+}
+
+model OrderItem {
+  id                       String                   @id @default(cuid())
+  orderId                  String
+  productId                String
+  quantity                 Int
+  unitPrice                Float
+  notes                    String?
+  designRequested          Boolean                  @default(false)
+  fileUrl                  String?
+  artworkSubmissionChannel ArtworkSubmissionChannel @default(PENDING)
+  fileContentType          String?
+  fileObjectKey            String?
+  fileOriginalName         String?
+  fileSizeBytes            Int?
+  fileUploadedAt           DateTime?
+  isService                Boolean                  @default(false)
+  creditDownPaymentPercent Int                      @default(30)
+  order                    Order                    @relation(fields: [orderId], references: [id])
+  product                  Product                  @relation(fields: [productId], references: [id])
+  selectedOptions          OrderItemOption[]
+}
+
+model FinancingSettings {
+  id                                  String           @id @default("default")
+  indecSeriesId                       String           @default("101.1_I2NG_2016_M_22")
+  manualRatePercent                   Float?
+  defaultInstallments                 Int              @default(6)
+  defaultPaymentFrequency             PaymentFrequency @default(MONTHLY)
+  cardInstallments                    Int              @default(6)
+  createdAt                           DateTime         @default(now())
+  updatedAt                           DateTime         @updatedAt
+  delinquentDownPaymentPenaltyPercent Int              @default(10)
+  delinquentRatePenaltyPercent        Float            @default(8)
+}
+
+model ZapCreditPlan {
+  id                  String                       @id @default(cuid())
+  orderId             String                       @unique
+  status              ZapCreditStatus              @default(REQUESTED)
+  rateSource          FinancingRateSource          @default(INDEC_AVERAGE)
+  indecAveragePercent Float?
+  ratePercent         Float
+  installments        Int
+  paymentFrequency    PaymentFrequency             @default(MONTHLY)
+  firstDueDate        DateTime?
+  baseAmount          Float
+  downPaymentPercent  Float
+  downPaymentAmount   Float
+  financedAmount      Float
+  installmentAmount   Float
+  totalRepayable      Float
+  totalInterest       Float
+  notes               String?
+  quotedAt            DateTime?
+  createdAt           DateTime                     @default(now())
+  updatedAt           DateTime                     @updatedAt
+  scheduleItems       ZapCreditInstallment[]
+  paymentSubmissions  ZapCreditPaymentSubmission[]
+  order               Order                        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model ZapCreditInstallment {
+  id                   String                       @id @default(cuid())
+  planId               String
+  sequence             Int
+  dueDate              DateTime
+  amount               Float
+  principalAmount      Float
+  interestAmount       Float
+  balanceAfter         Float
+  status               ZapCreditInstallmentStatus   @default(PENDING)
+  approvedSubmissionId String?
+  submittedAt          DateTime?
+  approvedAt           DateTime?
+  reviewNotes          String?
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  mpPreferenceId       String?
+  plan                 ZapCreditPlan                @relation(fields: [planId], references: [id], onDelete: Cascade)
+  submissions          ZapCreditPaymentSubmission[]
+
+  @@unique([planId, sequence])
+}
+
+model ZapCreditPaymentSubmission {
+  id                      String                           @id @default(cuid())
+  installmentId           String
+  planId                  String
+  submittedByUserId       String?
+  reviewedByUserId        String?
+  paymentMethod           ZapCreditPaymentMethod           @default(TRANSFER)
+  amount                  Float
+  proofUrl                String
+  proofFileName           String
+  proofContentType        String?
+  proofSizeBytes          Int?
+  proofHash               String
+  duplicateOfSubmissionId String?
+  notes                   String?
+  reviewNotes             String?
+  status                  ZapCreditPaymentSubmissionStatus @default(SUBMITTED)
+  reviewedAt              DateTime?
+  createdAt               DateTime                         @default(now())
+  updatedAt               DateTime                         @updatedAt
+  duplicateOfSubmission   ZapCreditPaymentSubmission?      @relation("CreditSubmissionDuplicates", fields: [duplicateOfSubmissionId], references: [id])
+  duplicateSubmissions    ZapCreditPaymentSubmission[]     @relation("CreditSubmissionDuplicates")
+  installment             ZapCreditInstallment             @relation(fields: [installmentId], references: [id], onDelete: Cascade)
+  plan                    ZapCreditPlan                    @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, status])
+  @@index([proofHash])
+}
+
+model OrderItemOption {
+  id          String    @id @default(cuid())
+  orderItemId String
+  optionName  String
+  valueName   String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+}
+
+model ProductOption {
+  id         String               @id @default(cuid())
+  productId  String
+  name       String
+  isRequired Boolean              @default(true)
+  product    Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values     ProductOptionValue[]
+}
+
+model ProductOptionValue {
+  id       String          @id @default(cuid())
+  optionId String
+  value    String
+  option   ProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  variants VariantOption[]
+}
+
+model ProductVariant {
+  id        String          @id @default(cuid())
+  productId String
+  price     Float
+  sku       String?
+  stock     Int?
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  options   VariantOption[]
+}
+
+model ProductRelation {
+  id               String   @id @default(cuid())
+  productId        String
+  relatedProductId String
+  createdAt        DateTime @default(now())
+  product          Product  @relation("ProductOutgoingRelations", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct   Product  @relation("ProductIncomingRelations", fields: [relatedProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, relatedProductId])
+}
+
+model VariantOption {
+  id            String             @id @default(cuid())
+  variantId     String
+  optionValueId String
+  optionValue   ProductOptionValue @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+  variant       ProductVariant     @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, optionValueId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PartnerAccount {
+  id                 String   @id @default(cuid())
+  kiosco24BranchId   String   @unique
+  kiosco24BranchName String
+  kiosco24AccessKey  String   @unique
+  kiosco24OwnerEmail String?
+  logoUrl            String?
+  primaryColor       String?
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  orders             Order[]
+
+  @@index([kiosco24AccessKey])
+}
+
+model PartnerCampaign {
+  id              String   @id @default(cuid())
+  zone            String
+  format          String
+  title           String
+  description     String?
+  ctaText         String?
+  imageUrl        String?
+  backgroundColor String?
+  textColor       String?
+  actionType      String
+  actionUrl       String?
+  productId       String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  discountKind    String?
+  discountValue   Float?
+  promoType       String?
+
+  @@index([zone, active])
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
 }
 
 enum OrderStatus {
@@ -130,69 +379,6 @@ enum ArtworkSubmissionChannel {
   WHATSAPP
 }
 
-model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity          Int
-  unitPrice         Float
-  creditDownPaymentPercent Int @default(30)
-  notes             String?
-  isService         Boolean @default(false)
-  fileUrl           String?
-  fileObjectKey     String?
-  fileOriginalName  String?
-  fileContentType   String?
-  fileSizeBytes     Int?
-  fileUploadedAt    DateTime?
-  artworkSubmissionChannel ArtworkSubmissionChannel @default(PENDING)
-  designRequested   Boolean @default(false)
-  
-  // Opciones seleccionadas para este ítem
-  selectedOptions   OrderItemOption[]
-}
-
-model FinancingSettings {
-  id                      String           @id @default("default")
-  indecSeriesId           String           @default("101.1_I2NG_2016_M_22")
-  manualRatePercent       Float?
-  defaultInstallments     Int              @default(6)
-  defaultPaymentFrequency PaymentFrequency @default(MONTHLY)
-  cardInstallments        Int              @default(6)
-  delinquentRatePenaltyPercent Float       @default(8)
-  delinquentDownPaymentPenaltyPercent Int  @default(10)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-}
-
-model ZapCreditPlan {
-  id                 String              @id @default(cuid())
-  orderId            String              @unique
-  order              Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  status             ZapCreditStatus     @default(REQUESTED)
-  rateSource         FinancingRateSource @default(INDEC_AVERAGE)
-  indecAveragePercent Float?
-  ratePercent        Float
-  installments       Int
-  paymentFrequency   PaymentFrequency    @default(MONTHLY)
-  firstDueDate       DateTime?
-  baseAmount         Float
-  downPaymentPercent Float
-  downPaymentAmount  Float
-  financedAmount     Float
-  installmentAmount  Float
-  totalRepayable     Float
-  totalInterest      Float
-  notes              String?
-  quotedAt           DateTime?
-  scheduleItems      ZapCreditInstallment[]
-  paymentSubmissions ZapCreditPaymentSubmission[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-}
-
 enum ZapCreditInstallmentStatus {
   PENDING
   SUBMITTED
@@ -211,201 +397,4 @@ enum ZapCreditPaymentMethod {
   TRANSFER
   CASH
   OTHER
-}
-
-model ZapCreditInstallment {
-  id                   String                     @id @default(cuid())
-  planId               String
-  plan                 ZapCreditPlan              @relation(fields: [planId], references: [id], onDelete: Cascade)
-  sequence             Int
-  dueDate              DateTime
-  amount               Float
-  principalAmount      Float
-  interestAmount       Float
-  balanceAfter         Float
-  status               ZapCreditInstallmentStatus @default(PENDING)
-  mpPreferenceId       String?
-  approvedSubmissionId String?
-  submittedAt          DateTime?
-  approvedAt           DateTime?
-  reviewNotes          String?
-  submissions          ZapCreditPaymentSubmission[]
-  createdAt            DateTime                   @default(now())
-  updatedAt            DateTime                   @updatedAt
-
-  @@unique([planId, sequence])
-}
-
-model ZapCreditPaymentSubmission {
-  id                    String                           @id @default(cuid())
-  installmentId         String
-  installment           ZapCreditInstallment             @relation(fields: [installmentId], references: [id], onDelete: Cascade)
-  planId                String
-  plan                  ZapCreditPlan                    @relation(fields: [planId], references: [id], onDelete: Cascade)
-  submittedByUserId     String?
-  reviewedByUserId      String?
-  paymentMethod         ZapCreditPaymentMethod          @default(TRANSFER)
-  amount                Float
-  proofUrl              String
-  proofFileName         String
-  proofContentType      String?
-  proofSizeBytes        Int?
-  proofHash             String
-  duplicateOfSubmissionId String?
-  duplicateOfSubmission ZapCreditPaymentSubmission?     @relation("CreditSubmissionDuplicates", fields: [duplicateOfSubmissionId], references: [id], onDelete: SetNull)
-  duplicateSubmissions  ZapCreditPaymentSubmission[]    @relation("CreditSubmissionDuplicates")
-  notes                 String?
-  reviewNotes           String?
-  status                ZapCreditPaymentSubmissionStatus @default(SUBMITTED)
-  reviewedAt            DateTime?
-  createdAt             DateTime                        @default(now())
-  updatedAt             DateTime                        @updatedAt
-
-  @@index([planId, status])
-  @@index([proofHash])
-}
-
-model OrderItemOption {
-  id              String         @id @default(cuid())
-  orderItem       OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
-  orderItemId     String
-  optionName      String         // Ej: "Cantidad a Imprimir"
-  valueName       String         // Ej: "250 unidades"
-}
-
-// ==== Configurador Avanzado de Productos ====
-
-model ProductOption {
-  id          String   @id @default(cuid())
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   String
-  name        String   // Ej: "Terminación", "Cantidad"
-  isRequired  Boolean  @default(true)
-  values      ProductOptionValue[]
-}
-
-model ProductOptionValue {
-  id          String         @id @default(cuid())
-  option      ProductOption  @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  optionId    String
-  value       String         // Ej: "Laminado Mate", "100u"
-  
-  // Relación a las variantes que incluyen este valor
-  variants    VariantOption[]
-}
-
-model ProductVariant {
-  id          String           @id @default(cuid())
-  product     Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   String
-  price       Float            // Precio final de esta combinación exacta
-  sku         String?          
-  stock       Int?             // Opcional, si queremos llevar stock por variante
-  
-  // Relación con los valores específicos que forman esta combinación
-  options     VariantOption[]
-}
-
-model ProductRelation {
-  id               String   @id @default(cuid())
-  productId        String
-  relatedProductId String
-  createdAt        DateTime @default(now())
-
-  product        Product @relation("ProductOutgoingRelations", fields: [productId], references: [id], onDelete: Cascade)
-  relatedProduct Product @relation("ProductIncomingRelations", fields: [relatedProductId], references: [id], onDelete: Cascade)
-
-  @@unique([productId, relatedProductId])
-}
-
-// Tabla pivote para unir Variantes con sus Valores Específicos
-model VariantOption {
-  id          String               @id @default(cuid())
-  variant     ProductVariant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  variantId   String
-  optionValue ProductOptionValue   @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
-  optionValueId String
-
-  @@unique([variantId, optionValueId])
-}
-
-// NextAuth required models
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// ── Integración con kiosco24 ──────────────────────────────────────────────────
-
-model PartnerAccount {
-  id                  String   @id @default(cuid())
-  // Identidad del Branch en kiosco24
-  kiosco24BranchId    String   @unique  // Branch.id en la DB de kiosco24
-  kiosco24BranchName  String            // Branch.name (cacheado)
-  kiosco24AccessKey   String   @unique  // Branch.accessKey — usado como Bearer token
-  kiosco24OwnerEmail  String?           // Email del dueño para contacto
-  // Branding cacheado del kiosco
-  logoUrl             String?
-  primaryColor        String?
-  // Estado del vínculo
-  active              Boolean  @default(true)
-  // Órdenes generadas por esta sucursal en tienda.zap
-  orders              Order[]
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  @@index([kiosco24AccessKey])
-}
-
-model PartnerCampaign {
-  id              String   @id @default(cuid())
-  zone            String   // 'resumen', 'stats', 'configuracion'
-  format          String   // 'text_only', 'banner_small', 'banner_large'
-  title           String
-  description     String?
-  ctaText         String?
-  imageUrl        String?
-  backgroundColor String?
-  textColor       String?
-  actionType      String   // 'open_url', 'one_click_order'
-  actionUrl       String?
-  productId       String?  // Si actionType = one_click_order
-  // Promoción / Descuento
-  promoType       String?  // 'COMBO', 'ZONA_ROJA', 'HAPPY_HOUR', 'DIA_TEMATICO', null = sin promo
-  discountKind    String?  // 'PERCENTAGE' | 'FIXED_PRICE'
-  discountValue   Float?   // % o precio fijo según discountKind
-  active          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([zone, active])
 }

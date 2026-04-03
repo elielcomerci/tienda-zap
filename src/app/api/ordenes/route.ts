@@ -52,8 +52,19 @@ export async function POST(req: NextRequest) {
         guestName: data.name,
         guestEmail: data.email,
         guestPhone: data.phone,
+        
+        // New fields snapshot
+        documentId: data.documentId,
+        billingAddress: data.billingAddress,
+        billingCity: data.billingCity,
+        billingProvince: data.billingProvince,
+        shippingAddress: data.shippingAddress,
+        shippingCity: data.shippingCity,
+        shippingProvince: data.shippingProvince,
+        shippingPostalCode: data.shippingPostalCode,
+
         status: 'PENDING',
-        paymentType: data.paymentType as 'TRANSFER' | 'CASH' | 'ZAP_CREDIT',
+        paymentType: data.paymentType as 'TRANSFER' | 'ZAP_CREDIT',
         total,
         notes: data.notes,
         items: {
@@ -66,6 +77,24 @@ export async function POST(req: NextRequest) {
           : undefined,
       },
     })
+
+    // Sync with User Profile if logged in
+    if (session?.user?.id) {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+          phone: data.phone,
+          documentId: data.documentId,
+          billingAddress: data.billingAddress,
+          billingCity: data.billingCity,
+          billingProvince: data.billingProvince,
+          shippingAddress: data.shippingAddress,
+          shippingCity: data.shippingCity,
+          shippingProvince: data.shippingProvince,
+          shippingPostalCode: data.shippingPostalCode,
+        },
+      })
+    }
 
     return Response.json({
       orderId: order.id,

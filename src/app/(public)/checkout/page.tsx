@@ -15,16 +15,9 @@ import {
   PaymentFrequency,
 } from '@/lib/financing-calculator'
 import { useCreditEligibility } from '@/lib/use-credit-eligibility'
+import { orderCheckoutSchema, type OrderCheckoutData } from '@/lib/validations'
 
-const schema = z.object({
-  name: z.string().min(2, 'Nombre requerido'),
-  email: z.string().email('Email invalido'),
-  phone: z.string().min(8, 'Telefono invalido'),
-  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH', 'ZAP_CREDIT']),
-  notes: z.string().optional(),
-})
-
-type FormData = z.infer<typeof schema>
+// Local schema removed, using orderCheckoutSchema from validations.ts
 
 const paymentOptions = [
   {
@@ -44,12 +37,6 @@ const paymentOptions = [
     label: 'Transferencia',
     desc: 'CBU/CVU - subi tu comprobante',
     icon: Smartphone,
-  },
-  {
-    value: 'CASH',
-    label: 'Efectivo',
-    desc: 'Retiro y pago en local',
-    icon: Banknote,
   },
 ] as const
 
@@ -89,8 +76,8 @@ export default function CheckoutPage() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
+  } = useForm<OrderCheckoutData>({
+    resolver: zodResolver(orderCheckoutSchema),
     defaultValues: { paymentType: 'MERCADOPAGO' },
   })
 
@@ -121,11 +108,27 @@ export default function CheckoutPage() {
     if (creditEligibility && !creditEligibility.canRequestCredit) {
       setValue('paymentType', 'MERCADOPAGO')
     }
+    
+    // Auto-fill profile data if available
+    if (creditEligibility?.userProfile) {
+      const profile = creditEligibility.userProfile
+      if (profile.name) setValue('name', profile.name)
+      if (profile.email) setValue('email', profile.email)
+      if (profile.phone) setValue('phone', profile.phone)
+      if (profile.documentId) setValue('documentId', profile.documentId)
+      if (profile.billingAddress) setValue('billingAddress', profile.billingAddress)
+      if (profile.billingCity) setValue('billingCity', profile.billingCity)
+      if (profile.billingProvince) setValue('billingProvince', profile.billingProvince)
+      if (profile.shippingAddress) setValue('shippingAddress', profile.shippingAddress)
+      if (profile.shippingCity) setValue('shippingCity', profile.shippingCity)
+      if (profile.shippingProvince) setValue('shippingProvince', profile.shippingProvince)
+      if (profile.shippingPostalCode) setValue('shippingPostalCode', profile.shippingPostalCode)
+    }
   }, [creditEligibility, setValue])
 
   if (items.length === 0) return null
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: OrderCheckoutData) => {
     if (hasUnavailableItems) {
       setError(
         'Hay productos con precio 0 marcados como no disponibles. Revisa el carrito antes de continuar.'
@@ -227,6 +230,78 @@ export default function CheckoutPage() {
                   />
                   {errors.email && (
                     <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="label">Documento (CUIT / CUIL / DNI)</label>
+                  <input {...register('documentId')} className="input" placeholder="20-12345678-9" />
+                  {errors.documentId && (
+                    <p className="mt-1 text-xs text-red-500">{errors.documentId.message}</p>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2 mt-2">
+                  <h3 className="text-sm font-bold text-gray-900 border-b pb-1 mb-3">Datos de facturacion</h3>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="label">Direccion de facturacion</label>
+                  <input {...register('billingAddress')} className="input" placeholder="Calle Falsa 123" />
+                  {errors.billingAddress && (
+                    <p className="mt-1 text-xs text-red-500">{errors.billingAddress.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">Ciudad</label>
+                  <input {...register('billingCity')} className="input" placeholder="Rosario" />
+                  {errors.billingCity && (
+                    <p className="mt-1 text-xs text-red-500">{errors.billingCity.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">Provincia</label>
+                  <input {...register('billingProvince')} className="input" placeholder="Santa Fe" />
+                  {errors.billingProvince && (
+                    <p className="mt-1 text-xs text-red-500">{errors.billingProvince.message}</p>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2 mt-2">
+                  <h3 className="text-sm font-bold text-gray-900 border-b pb-1 mb-3">Datos de envio</h3>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="label">Direccion de envio</label>
+                  <input {...register('shippingAddress')} className="input" placeholder="Av. Pellegrini 1500" />
+                  {errors.shippingAddress && (
+                    <p className="mt-1 text-xs text-red-500">{errors.shippingAddress.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">Ciudad</label>
+                  <input {...register('shippingCity')} className="input" placeholder="Rosario" />
+                  {errors.shippingCity && (
+                    <p className="mt-1 text-xs text-red-500">{errors.shippingCity.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">Provincia</label>
+                  <input {...register('shippingProvince')} className="input" placeholder="Santa Fe" />
+                  {errors.shippingProvince && (
+                    <p className="mt-1 text-xs text-red-500">{errors.shippingProvince.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">Codigo Postal</label>
+                  <input {...register('shippingPostalCode')} className="input" placeholder="2000" />
+                  {errors.shippingPostalCode && (
+                    <p className="mt-1 text-xs text-red-500">{errors.shippingPostalCode.message}</p>
                   )}
                 </div>
 

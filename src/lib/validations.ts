@@ -120,8 +120,19 @@ export const orderCheckoutSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   email: z.string().email('Email invalido'),
   phone: z.string().min(8, 'Telefono invalido'),
-  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'CASH', 'ZAP_CREDIT']),
+  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'ZAP_CREDIT']), // Removed CASH
   notes: z.string().optional(),
+  
+  // Extended Customer Information
+  documentId: z.string().min(7, 'Documento (DNI/CUIL/CUIT) invalido'),
+  billingAddress: z.string().min(3, 'Direccion de facturacion requerida'),
+  billingCity: z.string().min(2, 'Ciudad de facturacion requerida'),
+  billingProvince: z.string().min(2, 'Provincia de facturacion requerida'),
+  shippingAddress: z.string().min(3, 'Direccion de envio requerida'),
+  shippingCity: z.string().min(2, 'Ciudad de envio requerida'),
+  shippingProvince: z.string().min(2, 'Provincia de envio requerida'),
+  shippingPostalCode: z.string().min(4, 'Codigo postal invalido'),
+
   zapCreditConfig: z
     .object({
       installments: z.number().int().positive(),
@@ -170,6 +181,14 @@ export const registerSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   phone: z.string().optional(),
+  documentId: z.string().optional(),
+  billingAddress: z.string().optional(),
+  billingCity: z.string().optional(),
+  billingProvince: z.string().optional(),
+  shippingAddress: z.string().optional(),
+  shippingCity: z.string().optional(),
+  shippingProvince: z.string().optional(),
+  shippingPostalCode: z.string().optional(),
   currentPassword: z.string().optional(),
   newPassword: z.string().optional(),
 })

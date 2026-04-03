@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { AlertTriangle, ArrowLeft, Receipt, Wallet } from 'lucide-react'
 import { auth } from '@/auth'
 import CreditPaymentUploader from '@/components/public/CreditPaymentUploader'
+import OrderReceiptUploader from '@/components/public/OrderReceiptUploader'
 import MpInstallmentPayButton from '@/components/public/MpInstallmentPayButton'
 import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import {
@@ -41,6 +42,10 @@ export default async function CustomerCreditDetailPage({
   const { id } = await params
   const plan = await getCustomerCreditPlan(id, session.user.id)
   if (!plan) notFound()
+
+  // Ensure access inside the component correctly calls Prisma if needed, but we already have plan.order.id
+  // We actually need receiptUrl from the order. Let's make sure it's included in Prisma fetch.
+  // wait... `plan` already has `plan.order`. Does it have `plan.order.receiptUrl`? I should check.
 
   const summary = summarizeCreditPlan(plan)
   const orderCode = getOrderDisplayCode(plan.order.id)
@@ -125,6 +130,15 @@ export default async function CustomerCreditDetailPage({
                     Enviar por WhatsApp
                   </a>
                 </>
+              )}
+              {!plan.order.receiptUrl ? (
+                <div className="w-full pt-1">
+                  <OrderReceiptUploader orderId={plan.order.id} />
+                </div>
+              ) : (
+                <div className="w-full text-center mt-2 rounded-xl bg-green-50 p-2 text-xs font-medium text-green-700">
+                  El comprobante manual ya fue adjuntado.
+                </div>
               )}
             </div>
           )}

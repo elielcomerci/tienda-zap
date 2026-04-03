@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, MessageSquare } from 'lucide-react'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
+import OrderReceiptUploader from '@/components/public/OrderReceiptUploader'
 import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
@@ -155,27 +156,69 @@ export default async function CheckoutSuccessPage({
               </div>
             )}
 
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <ResumePaymentButton orderId={order.id} accessToken={token} label="Pagar anticipo con MercadoPago" />
+              {receiptWhatsappUrl && (
+                <>
+                  <div className="flex items-center gap-2 text-xs text-orange-400/50">
+                    <div className="h-px flex-1 bg-orange-200" />
+                    <span>o envia el comprobante</span>
+                    <div className="h-px flex-1 bg-orange-200" />
+                  </div>
+                  <a
+                    href={receiptWhatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-primary w-full justify-center bg-[#25D366] !py-2 !text-sm shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
+                  >
+                    Enviar por WhatsApp
+                  </a>
+                </>
+              )}
+              {!order.receiptUrl ? (
+                <div className="w-full pt-1">
+                  <OrderReceiptUploader orderId={order.id} accessToken={token} />
+                </div>
+              ) : (
+                <div className="w-full text-center mt-2 rounded-xl bg-green-50 p-2 text-xs font-medium text-green-700">
+                  El comprobante manual ya fue adjuntado.
+                </div>
+              )}
             </div>
           </div>
-        ) : order.paymentType === 'TRANSFER' && order.status === 'PENDING' && !order.receiptUrl ? (
+        ) : order.paymentType === 'TRANSFER' && order.status === 'PENDING' ? (
           <div className="rounded-xl border border-orange-100 bg-orange-50 p-5">
             <h3 className="mb-2 font-bold text-orange-900">Falta el comprobante de pago</h3>
             <p className="mb-4 text-sm text-orange-800">
               Realiza la transferencia y envia el comprobante indicando tu numero de orden:
               <strong> #{orderCode}</strong>.
             </p>
-            {receiptWhatsappUrl && (
-              <a
-                href={receiptWhatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-primary w-full justify-center bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
-              >
-                Enviar comprobante por WhatsApp
-              </a>
-            )}
+            <div className="space-y-3">
+              {receiptWhatsappUrl && (
+                <a
+                  href={receiptWhatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-primary w-full justify-center bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
+                >
+                  Enviar comprobante por WhatsApp
+                </a>
+              )}
+              {!order.receiptUrl ? (
+                <>
+                  <div className="flex items-center gap-2 text-xs text-orange-400/50">
+                    <div className="h-px flex-1 bg-orange-200" />
+                    <span>o adjuntalo aca directamente</span>
+                    <div className="h-px flex-1 bg-orange-200" />
+                  </div>
+                  <OrderReceiptUploader orderId={order.id} accessToken={token} />
+                </>
+              ) : (
+                <div className="w-full text-center mt-2 rounded-xl bg-green-50 p-2 text-sm font-medium text-green-700 border border-green-200">
+                  El comprobante manual ya fue adjuntado y esta siendo revisado.
+                </div>
+              )}
+            </div>
           </div>
         ) : order.paymentType === 'CASH' ? (
           <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
