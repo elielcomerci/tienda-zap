@@ -129,12 +129,12 @@ export default function CheckoutZapCreditConfigurator({
               Plan sugerido
             </p>
             <h3 className="mt-1 text-xl font-black text-gray-900">
-              Cerralo con una propuesta simple y ajustala solo si hace falta
+              Arma el plan sin salirte del checkout
             </h3>
             <p className="mt-2 max-w-2xl text-sm text-gray-600">
               {eligibility?.hasDelinquency
-                ? 'Ya aplicamos las condiciones vigentes para tu historial y te mostramos un plan realista desde el inicio.'
-                : 'Si tu historial esta sano, la aprobacion es automatica al generar la orden. Mostramos primero lo importante para no frenarte la compra.'}
+                ? 'Ya aplicamos las condiciones vigentes a tu simulacion para que arranques con un plan realista.'
+                : 'Mostramos anticipo, cuota y total estimado primero. El resto queda disponible solo si quieres revisarlo.'}
             </p>
           </div>
 
@@ -167,7 +167,7 @@ export default function CheckoutZapCreditConfigurator({
           <div>
             <p className="text-sm font-semibold text-gray-900">Queres afinar el plan?</p>
             <p className="mt-1 text-sm text-gray-600">
-              Podes cambiar frecuencia y cantidad de pagos. La tasa y el anticipo minimo no se tocan.
+              Podes cambiar frecuencia y cantidad de pagos. La tasa y el anticipo minimo quedan fijos.
             </p>
           </div>
 
@@ -270,27 +270,15 @@ export default function CheckoutZapCreditConfigurator({
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-700">
-                  <Gauge size={15} />
-                  Regla de tasa
-                </div>
-                <p className="mt-2 text-sm text-orange-900">
-                  La tasa siempre sale de la referencia vigente de ZAP y, si corresponde, incluye el
-                  recargo por mora.
-                </p>
+            <div className="rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-700">
+                <Gauge size={15} />
+                Regla simple
               </div>
-
-              <div className="rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-700">
-                  <CalendarClock size={15} />
-                  Anticipo minimo
-                </div>
-                <p className="mt-2 text-sm text-orange-900">
-                  El anticipo no baja al personalizar. Solo cambias como repartir el saldo financiado.
-                </p>
-              </div>
+              <p className="mt-2 text-sm text-orange-900">
+                Personalizas cuotas y frecuencia. La tasa y el anticipo minimo no bajan al mover el
+                plan.
+              </p>
             </div>
           </div>
         )}
@@ -305,7 +293,7 @@ export default function CheckoutZapCreditConfigurator({
         installmentsOverride={installments}
         paymentFrequencyOverride={paymentFrequency}
         title="Asi quedaria tu plan"
-        description="Mostramos primero anticipo, cuota y total estimado. El detalle tecnico queda desplegable para quien quiera revisarlo."
+        description="Primero ves anticipo, cuota y total estimado. El detalle tecnico queda desplegable."
       />
     </div>
   )

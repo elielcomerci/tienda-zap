@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CheckCircle2, Clock, MessageSquare } from 'lucide-react'
+import { CheckCircle2, Clock, FileText, MessageSquare } from 'lucide-react'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
@@ -279,6 +279,24 @@ export default async function CheckoutSuccessPage({
             className="btn-primary w-full justify-center bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
           >
             Coordinar diseno por WhatsApp
+          </a>
+        </div>
+      )}
+
+      {order.invoiceUrl && (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 text-center shadow-sm">
+          <FileText size={32} className="mx-auto mb-3 text-blue-600" />
+          <h3 className="mb-2 font-bold text-gray-900">Factura adjunta a tu compra</h3>
+          <p className="mb-4 text-sm text-gray-600">
+            Ya dejamos la factura vinculada a esta orden para que la tengas a mano.
+          </p>
+          <a
+            href={order.invoiceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-secondary w-full justify-center"
+          >
+            Ver factura
           </a>
         </div>
       )}

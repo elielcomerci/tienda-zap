@@ -55,8 +55,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <ProductConfigurator product={product} />
 
           <ProductZapCreditPromo
-            productName={product.name}
-            categoryName={product.category.name}
             downPaymentPercent={product.creditDownPaymentPercent || 30}
             whatsappUrl={creditWhatsappUrl}
           />

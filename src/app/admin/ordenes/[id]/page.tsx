@@ -7,6 +7,7 @@ import {
   CheckCircle,
   CreditCard,
   Download,
+  FileText,
   MessageSquare,
   PackageOpen,
   Palette,
@@ -18,6 +19,7 @@ import { confirmManualPayment, updateOrderStatus } from '@/lib/actions/orders'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getAdminOrder } from '@/lib/orders'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
+import OrderInvoiceUploader from '@/components/admin/OrderInvoiceUploader'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }
 
@@ -194,8 +196,20 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                   <Receipt size={14} /> Ver comprobante
                 </a>
               )}
+
+              {order.invoiceUrl && (
+                <a href={order.invoiceUrl} target="_blank" rel="noreferrer" className="btn-secondary w-full justify-center !text-xs !py-2">
+                  <FileText size={14} /> Ver factura adjunta
+                </a>
+              )}
             </div>
           </div>
+
+          <OrderInvoiceUploader
+            orderId={order.id}
+            currentInvoiceUrl={order.invoiceUrl}
+            currentInvoiceFileName={order.invoiceFileName}
+          />
         </div>
 
         <div className="md:col-span-2 space-y-6">

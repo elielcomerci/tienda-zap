@@ -30,17 +30,17 @@ const zapCreditHighlights = [
   {
     icon: BadgePercent,
     title: 'Anticipo desde 30%',
-    desc: 'Reserva tu trabajo hoy y cubre el resto con un plan claro.',
+    desc: 'Confirmas el pedido y cubres el resto con pagos fijos.',
   },
   {
     icon: Store,
     title: 'Cuida tu caja',
-    desc: 'Resuelve carteleria, impresos o exhibidores sin desarmar todo tu presupuesto.',
+    desc: 'Resuelve impresos y exhibicion sin desarmar todo tu presupuesto.',
   },
   {
     icon: MessageCircleMore,
-    title: 'Asesoria por WhatsApp',
-    desc: 'Si tienes dudas, te ayudamos a elegir producto, anticipo y forma de pago.',
+    title: 'Info en un solo lugar',
+    desc: 'Condiciones, privacidad y funcionamiento concentrados en una pagina dedicada.',
   },
 ]
 
@@ -97,14 +97,16 @@ export default async function HomePage() {
               Si necesitas resolverlo ahora, puedes pagarlo con mas aire
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-              Si hoy necesitas renovar tu carteleria, imprimir material para vender mejor o encarar
-              un trabajo importante, no hace falta postergarlo. Con Credito ZAP puedes confirmar el
-              pedido con anticipo y distribuir el saldo en pagos fijos segun tu ritmo.
+              Credito ZAP te deja confirmar con anticipo y distribuir el saldo en pagos fijos.
+              La explicacion completa vive aparte para que comprar siga siendo rapido.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/productos" className="btn-primary">
-                Ver productos con Credito ZAP <ArrowRight size={18} />
+              <Link href="/credito-zap" className="btn-primary">
+                Conocer Credito ZAP <ArrowRight size={18} />
+              </Link>
+              <Link href="/productos" className="btn-secondary">
+                Ver productos
               </Link>
               {zapCreditWhatsappUrl && (
                 <Link

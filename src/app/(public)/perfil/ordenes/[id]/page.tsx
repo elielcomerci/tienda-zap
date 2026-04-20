@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Download, MessageSquare, Package, Palette } from 'lucide-react'
+import { ArrowLeft, Clock, Download, FileText, MessageSquare, Package, Palette } from 'lucide-react'
 import { auth } from '@/auth'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getCustomerOrder } from '@/lib/orders'
@@ -212,6 +212,14 @@ export default async function MiOrdenPage({
             <span className="text-gray-500">Comprobante</span>
             <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline font-medium">
               Ver comprobante
+            </a>
+          </div>
+        )}
+        {order.invoiceUrl && (
+          <div className="flex justify-between">
+            <span className="text-gray-500">Factura</span>
+            <a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-orange-500 hover:underline font-medium">
+              <FileText size={14} /> {order.invoiceFileName || 'Ver factura'}
             </a>
           </div>
         )}

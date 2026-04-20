@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/cart-store'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { AlertTriangle, Banknote, CreditCard, Smartphone, Wallet } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, CircleHelp, CreditCard, PencilLine, Smartphone, Wallet } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
 import CheckoutZapCreditConfigurator from '@/components/public/CheckoutZapCreditConfigurator'
 import {
@@ -16,8 +16,6 @@ import {
 } from '@/lib/financing-calculator'
 import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 import { orderCheckoutSchema, type OrderCheckoutData } from '@/lib/validations'
-
-// Local schema removed, using orderCheckoutSchema from validations.ts
 
 const paymentOptions = [
   {
@@ -40,12 +38,86 @@ const paymentOptions = [
   },
 ] as const
 
+type CustomerFieldConfig = {
+  name:
+    | 'name'
+    | 'phone'
+    | 'email'
+    | 'documentId'
+    | 'billingAddress'
+    | 'billingCity'
+    | 'billingProvince'
+    | 'shippingAddress'
+    | 'shippingCity'
+    | 'shippingProvince'
+    | 'shippingPostalCode'
+  label: string
+  placeholder: string
+  type?: 'email'
+  fullWidth?: boolean
+}
+
+const customerSections: readonly { title: string; fields: readonly CustomerFieldConfig[] }[] = [
+  {
+    title: 'Datos principales',
+    fields: [
+      { name: 'name', label: 'Nombre completo', placeholder: 'Juan Garcia' },
+      { name: 'phone', label: 'Telefono / WhatsApp', placeholder: '1134567890' },
+      {
+        name: 'email',
+        label: 'Email',
+        placeholder: 'juan@email.com',
+        type: 'email',
+        fullWidth: true,
+      },
+      {
+        name: 'documentId',
+        label: 'Documento (CUIT / CUIL / DNI)',
+        placeholder: '20-12345678-9',
+        fullWidth: true,
+      },
+    ],
+  },
+  {
+    title: 'Datos de facturacion',
+    fields: [
+      {
+        name: 'billingAddress',
+        label: 'Direccion de facturacion',
+        placeholder: 'Calle Falsa 123',
+        fullWidth: true,
+      },
+      { name: 'billingCity', label: 'Ciudad', placeholder: 'Rosario' },
+      { name: 'billingProvince', label: 'Provincia', placeholder: 'Santa Fe' },
+    ],
+  },
+  {
+    title: 'Datos de envio',
+    fields: [
+      {
+        name: 'shippingAddress',
+        label: 'Direccion de envio',
+        placeholder: 'Av. Pellegrini 1500',
+        fullWidth: true,
+      },
+      { name: 'shippingCity', label: 'Ciudad', placeholder: 'Rosario' },
+      { name: 'shippingProvince', label: 'Provincia', placeholder: 'Santa Fe' },
+      { name: 'shippingPostalCode', label: 'Codigo Postal', placeholder: '2000' },
+    ],
+  },
+]
+
+function hasTextValue(value: unknown) {
+  return typeof value === 'string' ? value.trim().length > 0 : Boolean(value)
+}
+
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCartStore()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderCreated, setOrderCreated] = useState(false)
+  const [showProfileEditor, setShowProfileEditor] = useState(false)
   const [zapCreditSelection, setZapCreditSelection] = useState<{
     installments: number
     paymentFrequency: PaymentFrequency
@@ -81,7 +153,14 @@ export default function CheckoutPage() {
     defaultValues: { paymentType: 'MERCADOPAGO' },
   })
 
-  const paymentType = watch('paymentType')
+  const formValues = watch()
+  const paymentType = formValues.paymentType
+  const authenticatedUser = Boolean(creditEligibility?.authenticated)
+  const missingProfileFields = customerSections.flatMap((section) =>
+    section.fields.filter((field) => !hasTextValue(formValues[field.name]))
+  )
+  const hasMissingProfileFields = missingProfileFields.length > 0
+
   const submitLabel = loading
     ? 'Procesando...'
     : hasUnavailableItems
@@ -108,8 +187,7 @@ export default function CheckoutPage() {
     if (creditEligibility && !creditEligibility.canRequestCredit) {
       setValue('paymentType', 'MERCADOPAGO')
     }
-    
-    // Auto-fill profile data if available
+
     if (creditEligibility?.userProfile) {
       const profile = creditEligibility.userProfile
       if (profile.name) setValue('name', profile.name)
@@ -127,6 +205,12 @@ export default function CheckoutPage() {
   }, [creditEligibility, setValue])
 
   useEffect(() => {
+    if (authenticatedUser && hasMissingProfileFields) {
+      setShowProfileEditor(true)
+    }
+  }, [authenticatedUser, hasMissingProfileFields])
+
+  useEffect(() => {
     if (zapCreditSelection) {
       setValue('zapCreditConfig', zapCreditSelection)
     } else {
@@ -135,18 +219,54 @@ export default function CheckoutPage() {
   }, [zapCreditSelection, setValue])
 
   useEffect(() => {
-    // Fill items in form state to satisfy Zod validation .min(1)
-    setValue('items', items.map(item => ({
-      productId: item.productId,
-      quantity: item.quantity,
-      unitPrice: item.price,
-      notes: item.notes,
-      designRequested: item.designRequested,
-      selectedOptions: item.selectedOptions
-    })))
+    setValue(
+      'items',
+      items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        notes: item.notes,
+        designRequested: item.designRequested,
+        selectedOptions: item.selectedOptions,
+      }))
+    )
   }, [items, setValue])
 
   if (items.length === 0) return null
+
+  const renderCustomerField = (field: CustomerFieldConfig) => (
+    <div key={field.name} className={field.fullWidth ? 'sm:col-span-2' : undefined}>
+      <label className="label">{field.label}</label>
+      <input
+        {...register(field.name)}
+        type={field.type}
+        className="input"
+        placeholder={field.placeholder}
+      />
+      {errors[field.name] && (
+        <p className="mt-1 text-xs text-red-500">{errors[field.name]?.message as string}</p>
+      )}
+    </div>
+  )
+
+  const renderCustomerSections = (mode: 'all' | 'missing') =>
+    customerSections.map((section) => {
+      const fields =
+        mode === 'missing'
+          ? section.fields.filter((field) => !hasTextValue(formValues[field.name]))
+          : section.fields
+
+      if (fields.length === 0) return null
+
+      return (
+        <Fragment key={section.title}>
+          <div className="sm:col-span-2 mt-2">
+            <h3 className="mb-3 border-b pb-1 text-sm font-bold text-gray-900">{section.title}</h3>
+          </div>
+          {fields.map(renderCustomerField)}
+        </Fragment>
+      )
+    })
 
   const onSubmit = async (data: OrderCheckoutData) => {
     if (hasUnavailableItems) {
@@ -223,118 +343,110 @@ export default function CheckoutPage() {
             <div className="card p-6">
               <h2 className="mb-4 font-bold text-gray-900">Tus datos</h2>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="label">Nombre completo</label>
-                  <input {...register('name')} className="input" placeholder="Juan Garcia" />
-                  {errors.name && (
-                    <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+              {isLoadingCreditEligibility ? (
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                  Cargando tus datos y condiciones de compra...
+                </div>
+              ) : authenticatedUser ? (
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
+                      <div>
+                        <p className="font-semibold">Usaremos los datos de tu cuenta para este pedido.</p>
+                        <p className="mt-1 text-emerald-800">
+                          No hace falta volver a cargar nombre y contacto si ya los tenemos.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {!hasMissingProfileFields && (
+                    <div className="grid gap-4 lg:grid-cols-3">
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          Contacto
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-gray-900">{formValues.name}</p>
+                        <p className="mt-1 text-sm text-gray-600">{formValues.email}</p>
+                        <p className="mt-1 text-sm text-gray-600">{formValues.phone}</p>
+                        <p className="mt-1 text-sm text-gray-600">{formValues.documentId}</p>
+                      </div>
+
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          Facturacion
+                        </p>
+                        <p className="mt-2 text-sm text-gray-600">{formValues.billingAddress}</p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {formValues.billingCity} - {formValues.billingProvince}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          Envio
+                        </p>
+                        <p className="mt-2 text-sm text-gray-600">{formValues.shippingAddress}</p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {formValues.shippingCity} - {formValues.shippingProvince}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">CP {formValues.shippingPostalCode}</p>
+                      </div>
+                    </div>
                   )}
-                </div>
 
-                <div>
-                  <label className="label">Telefono / WhatsApp</label>
-                  <input {...register('phone')} className="input" placeholder="1134567890" />
-                  {errors.phone && (
-                    <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
+                  {hasMissingProfileFields ? (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                      <p className="text-sm font-semibold text-amber-900">
+                        Faltan algunos datos para cerrar este pedido.
+                      </p>
+                      <p className="mt-1 text-sm text-amber-800">
+                        Solo te pedimos completar lo que todavia no esta cargado.
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowProfileEditor((current) => !current)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
+                    >
+                      <PencilLine size={16} />
+                      {showProfileEditor ? 'Ocultar edicion manual' : 'Editar datos para este pedido'}
+                    </button>
                   )}
-                </div>
 
-                <div className="sm:col-span-2">
-                  <label className="label">Email</label>
-                  <input
-                    {...register('email')}
-                    type="email"
-                    className="input"
-                    placeholder="juan@email.com"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+                  {(showProfileEditor || hasMissingProfileFields) && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {renderCustomerSections(hasMissingProfileFields ? 'missing' : 'all')}
+                    </div>
                   )}
-                </div>
 
-                <div className="sm:col-span-2">
-                  <label className="label">Documento (CUIT / CUIL / DNI)</label>
-                  <input {...register('documentId')} className="input" placeholder="20-12345678-9" />
-                  {errors.documentId && (
-                    <p className="mt-1 text-xs text-red-500">{errors.documentId.message}</p>
-                  )}
+                  <div>
+                    <label className="label">Notas adicionales (opcional)</label>
+                    <textarea
+                      {...register('notes')}
+                      className="input resize-none"
+                      rows={2}
+                      placeholder="Instrucciones especiales, tipo de papel, etc."
+                    />
+                  </div>
                 </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {renderCustomerSections('all')}
 
-                <div className="sm:col-span-2 mt-2">
-                  <h3 className="text-sm font-bold text-gray-900 border-b pb-1 mb-3">Datos de facturacion</h3>
+                  <div className="sm:col-span-2">
+                    <label className="label">Notas adicionales (opcional)</label>
+                    <textarea
+                      {...register('notes')}
+                      className="input resize-none"
+                      rows={2}
+                      placeholder="Instrucciones especiales, tipo de papel, etc."
+                    />
+                  </div>
                 </div>
-
-                <div className="sm:col-span-2">
-                  <label className="label">Direccion de facturacion</label>
-                  <input {...register('billingAddress')} className="input" placeholder="Calle Falsa 123" />
-                  {errors.billingAddress && (
-                    <p className="mt-1 text-xs text-red-500">{errors.billingAddress.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="label">Ciudad</label>
-                  <input {...register('billingCity')} className="input" placeholder="Rosario" />
-                  {errors.billingCity && (
-                    <p className="mt-1 text-xs text-red-500">{errors.billingCity.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="label">Provincia</label>
-                  <input {...register('billingProvince')} className="input" placeholder="Santa Fe" />
-                  {errors.billingProvince && (
-                    <p className="mt-1 text-xs text-red-500">{errors.billingProvince.message}</p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2 mt-2">
-                  <h3 className="text-sm font-bold text-gray-900 border-b pb-1 mb-3">Datos de envio</h3>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="label">Direccion de envio</label>
-                  <input {...register('shippingAddress')} className="input" placeholder="Av. Pellegrini 1500" />
-                  {errors.shippingAddress && (
-                    <p className="mt-1 text-xs text-red-500">{errors.shippingAddress.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="label">Ciudad</label>
-                  <input {...register('shippingCity')} className="input" placeholder="Rosario" />
-                  {errors.shippingCity && (
-                    <p className="mt-1 text-xs text-red-500">{errors.shippingCity.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="label">Provincia</label>
-                  <input {...register('shippingProvince')} className="input" placeholder="Santa Fe" />
-                  {errors.shippingProvince && (
-                    <p className="mt-1 text-xs text-red-500">{errors.shippingProvince.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="label">Codigo Postal</label>
-                  <input {...register('shippingPostalCode')} className="input" placeholder="2000" />
-                  {errors.shippingPostalCode && (
-                    <p className="mt-1 text-xs text-red-500">{errors.shippingPostalCode.message}</p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="label">Notas adicionales (opcional)</label>
-                  <textarea
-                    {...register('notes')}
-                    className="input resize-none"
-                    rows={2}
-                    placeholder="Instrucciones especiales, tipo de papel, etc."
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="card p-6">
@@ -393,6 +505,45 @@ export default function CheckoutPage() {
                     Inicia sesion para solicitar credito, seguir cuotas, cargar comprobantes y ver
                     tu estado financiero desde el panel.
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href="/login" className="btn-secondary !px-4 !py-2 !text-sm">
+                      Iniciar sesion
+                    </Link>
+                    <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                      Ver mas informacion
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
+                <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50/60 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Confirmas con anticipo y el resto queda en pagos fijos.
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600">
+                        Dejamos aqui solo el resumen rapido. El detalle completo de funcionamiento y
+                        privacidad esta en una pagina aparte.
+                      </p>
+                    </div>
+
+                    <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                      Ver mas informacion
+                    </Link>
+                  </div>
+
+                  <details className="mt-3 rounded-2xl border border-orange-100 bg-white/80">
+                    <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
+                      <CircleHelp size={16} className="text-orange-500" />
+                      Resumen rapido de Credito ZAP
+                    </summary>
+                    <div className="border-t border-orange-100 px-4 py-3 text-sm text-gray-600">
+                      Disponible para clientes con cuenta. Puedes simular el plan, confirmar el
+                      pedido y despues seguir cuotas, comprobantes y estados desde tu panel.
+                    </div>
+                  </details>
                 </div>
               )}
 
@@ -403,9 +554,10 @@ export default function CheckoutPage() {
                     <div>
                       <p className="font-semibold">Tenes cuotas vencidas en otros creditos</p>
                       <p className="mt-1 text-amber-800">
-                        La simulacion ya incluye el recargo vigente: <strong>+{creditEligibility.ratePenaltyPercent}%</strong>{' '}
-                        sobre la tasa y <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong>{' '}
-                        puntos sobre el anticipo.
+                        La simulacion ya incluye el recargo vigente:{' '}
+                        <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
+                        <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
+                        el anticipo.
                       </p>
                     </div>
                   </div>
@@ -432,10 +584,10 @@ export default function CheckoutPage() {
             </div>
 
             {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-            
+
             {Object.keys(errors).length > 0 && (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                <p className="font-bold mb-1">Por favor, revisa los siguientes campos:</p>
+                <p className="mb-1 font-bold">Por favor, revisa los siguientes campos:</p>
                 <ul className="list-disc list-inside space-y-0.5 opacity-80">
                   {Object.entries(errors).map(([key, err]) => (
                     <li key={key}>{(err as any)?.message}</li>

@@ -217,12 +217,9 @@ export default function ZapCreditSimulationCard({
         </div>
       )}
 
-      <details
-        className="mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-white/70"
-        open={!compact}
-      >
+      <details className="mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-white/70">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
-          {compact ? 'Ver detalle tecnico del plan' : 'Ver detalle de tasas y como calculamos el plan'}
+          Ver detalle tecnico del plan
         </summary>
 
         <div className="border-t border-orange-100 px-4 pb-4 pt-4">
