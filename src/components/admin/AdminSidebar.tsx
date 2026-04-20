@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Ticket,
   Package,
   Percent,
   ShoppingCart,
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/ordenes', label: 'Ordenes', icon: ShoppingCart },
   { href: '/admin/creditos', label: 'Creditos', icon: Wallet },
   { href: '/admin/financiacion', label: 'Financiacion', icon: Percent },
+  { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
   { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
   { href: '/admin/campanas', label: 'Campañas Partner', icon: Megaphone },
 ]

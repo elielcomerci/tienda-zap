@@ -8,7 +8,7 @@ import {
   createOrderPublicAccessToken,
   hashOrderPublicAccessToken,
 } from '@/lib/order-access'
-import { resolveCheckoutOrderItems } from '@/lib/checkout-orders'
+import { evaluateCheckoutPricing, reserveCouponRedemptionForOrder } from '@/lib/coupons'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,35 +22,57 @@ export async function POST(req: NextRequest) {
 
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
-    const { resolvedItems, total } = await resolveCheckoutOrderItems(data.items)
+    const pricing = await evaluateCheckoutPricing({
+      items: data.items,
+      couponCode: data.couponCode,
+      userId: session?.user?.id,
+    })
     const client = new MercadoPagoConfig({ accessToken })
 
-    const order = await prisma.order.create({
-      data: {
-        userId: session?.user?.id,
-        publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
-        guestName: data.name,
-        guestEmail: data.email,
-        guestPhone: data.phone,
+    const order = await prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.order.create({
+        data: {
+          userId: session?.user?.id,
+          publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
+          guestName: data.name,
+          guestEmail: data.email,
+          guestPhone: data.phone,
 
-        // New fields snapshot
-        documentId: data.documentId,
-        billingAddress: data.billingAddress,
-        billingCity: data.billingCity,
-        billingProvince: data.billingProvince,
-        shippingAddress: data.shippingAddress,
-        shippingCity: data.shippingCity,
-        shippingProvince: data.shippingProvince,
-        shippingPostalCode: data.shippingPostalCode,
+          documentId: data.documentId,
+          billingAddress: data.billingAddress,
+          billingCity: data.billingCity,
+          billingProvince: data.billingProvince,
+          shippingAddress: data.shippingAddress,
+          shippingCity: data.shippingCity,
+          shippingProvince: data.shippingProvince,
+          shippingPostalCode: data.shippingPostalCode,
 
-        status: 'PENDING',
-        paymentType: 'MERCADOPAGO',
-        total,
-        notes: data.notes,
-        items: {
-          create: resolvedItems,
+          status: 'PENDING',
+          paymentType: 'MERCADOPAGO',
+          subtotal: pricing.subtotal,
+          discountTotal: pricing.discountTotal,
+          total: pricing.total,
+          couponCode: pricing.couponCode ?? null,
+          pricingSnapshot: pricing.pricingSnapshot,
+          notes: data.notes,
+          items: {
+            create: pricing.resolvedItems,
+          },
         },
-      },
+      })
+
+      if (pricing.couponCode && pricing.discountTotal > 0) {
+        await reserveCouponRedemptionForOrder({
+          tx,
+          orderId: createdOrder.id,
+          couponCode: pricing.couponCode,
+          subtotal: pricing.subtotal,
+          discountTotal: pricing.discountTotal,
+          userId: session?.user?.id,
+        })
+      }
+
+      return createdOrder
     })
 
     // Sync with User Profile if logged in
@@ -81,15 +103,30 @@ export async function POST(req: NextRequest) {
     pendingUrl.search = `${successQuery}&pending=true`
     const notificationUrl = new URL('/api/checkout/webhook', baseUrl)
 
+    const mercadoPagoItems =
+      pricing.discountTotal > 0
+        ? [
+            {
+              id: `pedido-${order.id}`,
+              title: pricing.appliedCoupon
+                ? `Pedido ZAP · ${pricing.appliedCoupon.promotionName}`
+                : 'Pedido ZAP',
+              quantity: 1,
+              unit_price: pricing.total,
+              currency_id: 'ARS',
+            },
+          ]
+        : pricing.resolvedItems.map((item) => ({
+            id: item.productId,
+            title: 'Producto ZAP',
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            currency_id: 'ARS',
+          }))
+
     const preference = await new Preference(client).create({
       body: {
-        items: resolvedItems.map((item) => ({
-          id: item.productId,
-          title: 'Producto ZAP',
-          quantity: item.quantity,
-          unit_price: item.unitPrice,
-          currency_id: 'ARS',
-        })),
+        items: mercadoPagoItems,
         payer: { email: data.email },
         external_reference: order.id,
         back_urls: {

@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
         paymentType: true,
         mpPreferenceId: true,
         guestEmail: true,
+        discountTotal: true,
         total: true,
         publicAccessTokenHash: true,
         items: {
@@ -106,6 +107,16 @@ export async function POST(req: NextRequest) {
               currency_id: 'ARS',
             },
           ]
+        : order.discountTotal > 0
+          ? [
+              {
+                id: `pedido-${order.id}`,
+                title: 'Pedido ZAP',
+                quantity: 1,
+                unit_price: order.total,
+                currency_id: 'ARS',
+              },
+            ]
         : order.items.map((item) => ({
             id: item.productId,
             title: 'Producto ZAP',

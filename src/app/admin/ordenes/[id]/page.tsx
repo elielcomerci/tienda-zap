@@ -31,6 +31,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   if (!order) notFound()
 
   const orderCode = getOrderDisplayCode(order.id)
+  const hasDiscount = (order.discountTotal ?? 0) > 0
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -109,6 +110,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 )}
                 {order.paymentId && (
                   <p className="text-xs text-gray-500 font-mono mt-1">Pago ID: {order.paymentId}</p>
+                )}
+                {order.couponCode && (
+                  <div className="mt-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs text-orange-800">
+                    Cupon aplicado: <span className="font-semibold">{order.couponCode}</span>
+                  </div>
                 )}
               </div>
 
@@ -288,6 +294,14 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
             <div className="mt-6 pt-6 border-t flex justify-end">
               <div className="text-right">
+                {typeof order.subtotal === 'number' && (
+                  <p className="text-sm text-gray-500">Subtotal ${order.subtotal.toLocaleString('es-AR')}</p>
+                )}
+                {hasDiscount && (
+                  <p className="text-sm font-semibold text-emerald-700">
+                    Descuento -${order.discountTotal.toLocaleString('es-AR')}
+                  </p>
+                )}
                 <p className="text-sm text-gray-500 mb-1">Total</p>
                 <p className="text-3xl font-black text-gray-900">${order.total.toLocaleString('es-AR')}</p>
               </div>

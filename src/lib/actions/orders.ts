@@ -2,6 +2,7 @@
 
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { releaseCouponRedemptionForOrder } from '@/lib/coupons'
 import { findAccessibleOrder, findAccessibleOrderItem } from '@/lib/order-access'
 import { activateZapCreditPlanForOrder } from '@/lib/actions/credits'
 import { deleteR2Object, getR2ObjectMetadata } from '@/lib/r2'
@@ -26,6 +27,9 @@ export async function updateOrderStatus(id: string, status: string) {
     where: { id },
     data: { status: status as any },
   })
+  if (status === 'CANCELLED') {
+    await releaseCouponRedemptionForOrder(id)
+  }
   revalidateOrderViews(id)
 }
 

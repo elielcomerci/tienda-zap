@@ -92,6 +92,7 @@ export default async function CheckoutSuccessPage({
   const paymentLabel = paymentTypeLabels[order.paymentType as keyof typeof paymentTypeLabels] ?? order.paymentType
   const statusLabel = orderStatusLabels[order.status as keyof typeof orderStatusLabels] ?? order.status
   const itemCount = order.items.length
+  const hasDiscount = (order.discountTotal ?? 0) > 0
 
   const heroTitle = isMpPending ? 'Pago pendiente' : 'Pedido confirmado'
   const heroDescription = isMpPending
@@ -141,7 +142,11 @@ export default async function CheckoutSuccessPage({
                 <p className="mt-2 text-2xl font-black text-gray-950">
                   ${order.total.toLocaleString('es-AR')}
                 </p>
-                <p className="mt-1 text-sm text-gray-600">importe visible del pedido</p>
+                <p className="mt-1 text-sm text-gray-600">
+                  {hasDiscount
+                    ? `${order.discountTotal.toLocaleString('es-AR')} descontados en checkout`
+                    : 'importe visible del pedido'}
+                </p>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
@@ -529,6 +534,28 @@ export default async function CheckoutSuccessPage({
               </div>
 
               <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                {typeof order.subtotal === 'number' && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Subtotal</span>
+                    <span className="font-semibold text-white">
+                      ${order.subtotal.toLocaleString('es-AR')}
+                    </span>
+                  </div>
+                )}
+                {hasDiscount && (
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-sm">
+                    <span className="text-gray-400">Descuento</span>
+                    <span className="font-semibold text-emerald-300">
+                      -${order.discountTotal.toLocaleString('es-AR')}
+                    </span>
+                  </div>
+                )}
+                {order.couponCode && (
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-sm">
+                    <span className="text-gray-400">Cupon</span>
+                    <span className="font-semibold text-orange-300">{order.couponCode}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">Pago</span>
                   <span className="font-semibold text-white">{paymentLabel}</span>

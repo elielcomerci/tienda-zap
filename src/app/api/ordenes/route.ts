@@ -7,8 +7,8 @@ import {
   createOrderPublicAccessToken,
   hashOrderPublicAccessToken,
 } from '@/lib/order-access'
-import { resolveCheckoutOrderItems } from '@/lib/checkout-orders'
 import { buildDraftZapCreditPlan } from '@/lib/financing'
+import { evaluateCheckoutPricing, reserveCouponRedemptionForOrder } from '@/lib/coupons'
 
 // POST /api/ordenes - crear orden TRANSFER, CASH o ZAP_CREDIT
 export async function POST(req: NextRequest) {
@@ -30,14 +30,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { resolvedItems, total } = await resolveCheckoutOrderItems(data.items)
+    const pricing = await evaluateCheckoutPricing({
+      items: data.items,
+      couponCode: data.couponCode,
+      userId: session?.user?.id,
+    })
     const zapCreditPlan =
       data.paymentType === 'ZAP_CREDIT'
         ? await buildDraftZapCreditPlan({
-            baseAmount: total,
+            baseAmount: pricing.total,
             userId: session?.user?.id,
             selectedPlan: data.zapCreditConfig,
-            items: resolvedItems.map((item) => ({
+            items: pricing.resolvedItems.map((item) => ({
               unitPrice: item.unitPrice,
               quantity: item.quantity,
               creditDownPaymentPercent: item.creditDownPaymentPercent,
@@ -45,37 +49,55 @@ export async function POST(req: NextRequest) {
           })
         : null
 
-    const order = await prisma.order.create({
-      data: {
-        userId: session?.user?.id,
-        publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
-        guestName: data.name,
-        guestEmail: data.email,
-        guestPhone: data.phone,
-        
-        // New fields snapshot
-        documentId: data.documentId,
-        billingAddress: data.billingAddress,
-        billingCity: data.billingCity,
-        billingProvince: data.billingProvince,
-        shippingAddress: data.shippingAddress,
-        shippingCity: data.shippingCity,
-        shippingProvince: data.shippingProvince,
-        shippingPostalCode: data.shippingPostalCode,
+    const order = await prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.order.create({
+        data: {
+          userId: session?.user?.id,
+          publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
+          guestName: data.name,
+          guestEmail: data.email,
+          guestPhone: data.phone,
 
-        status: 'PENDING',
-        paymentType: data.paymentType as 'TRANSFER' | 'ZAP_CREDIT',
-        total,
-        notes: data.notes,
-        items: {
-          create: resolvedItems,
+          documentId: data.documentId,
+          billingAddress: data.billingAddress,
+          billingCity: data.billingCity,
+          billingProvince: data.billingProvince,
+          shippingAddress: data.shippingAddress,
+          shippingCity: data.shippingCity,
+          shippingProvince: data.shippingProvince,
+          shippingPostalCode: data.shippingPostalCode,
+
+          status: 'PENDING',
+          paymentType: data.paymentType as 'TRANSFER' | 'ZAP_CREDIT',
+          subtotal: pricing.subtotal,
+          discountTotal: pricing.discountTotal,
+          total: pricing.total,
+          couponCode: pricing.couponCode ?? null,
+          pricingSnapshot: pricing.pricingSnapshot,
+          notes: data.notes,
+          items: {
+            create: pricing.resolvedItems,
+          },
+          zapCreditPlan: zapCreditPlan
+            ? {
+                create: zapCreditPlan,
+              }
+            : undefined,
         },
-        zapCreditPlan: zapCreditPlan
-          ? {
-              create: zapCreditPlan,
-            }
-          : undefined,
-      },
+      })
+
+      if (pricing.couponCode && pricing.discountTotal > 0) {
+        await reserveCouponRedemptionForOrder({
+          tx,
+          orderId: createdOrder.id,
+          couponCode: pricing.couponCode,
+          subtotal: pricing.subtotal,
+          discountTotal: pricing.discountTotal,
+          userId: session?.user?.id,
+        })
+      }
+
+      return createdOrder
     })
 
     // Sync with User Profile if logged in

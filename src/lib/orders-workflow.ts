@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { orderItemIsProductionReady } from '@/lib/order-files'
+import { confirmCouponRedemptionForOrder } from '@/lib/coupons'
 
 export function getOrderDisplayCode(orderId: string) {
   return orderId.slice(-8).toUpperCase()
@@ -53,6 +54,8 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
       ...(paymentId ? { paymentId } : {}),
     },
   })
+
+  await confirmCouponRedemptionForOrder(orderId)
 
   revalidateOrderViews(orderId)
   return nextStatus

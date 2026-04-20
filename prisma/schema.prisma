@@ -63,7 +63,11 @@ model Order {
   guestEmail            String?
   guestName             String?
   guestPhone            String?
+  subtotal              Float?
+  discountTotal         Float           @default(0)
   total                 Float
+  couponCode            String?
+  pricingSnapshot       Json?
   status                OrderStatus     @default(PENDING)
   paymentType           PaymentType
   paymentId             String?
@@ -88,6 +92,7 @@ model Order {
   partnerAccount        PartnerAccount? @relation(fields: [partnerAccountId], references: [id])
   user                  User?           @relation(fields: [userId], references: [id])
   items                 OrderItem[]
+  couponRedemption      CouponRedemption?
   zapCreditPlan         ZapCreditPlan?
 }
 
@@ -333,6 +338,57 @@ model PartnerCampaign {
   @@index([zone, active])
 }
 
+model Promotion {
+  id            String             @id @default(cuid())
+  name          String
+  type          PromotionType      @default(COUPON)
+  status        PromotionStatus    @default(DRAFT)
+  priority      Int                @default(0)
+  stackable     Boolean            @default(false)
+  activeFrom    DateTime?
+  activeTo      DateTime?
+  discountKind  DiscountKind
+  discountValue Float
+  maxUses       Int?
+  perUserLimit  Int?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  coupons       PromotionCoupon[]
+  redemptions   CouponRedemption[]
+}
+
+model PromotionCoupon {
+  code        String                @id
+  promotionId String
+  status      CouponStatus          @default(AVAILABLE)
+  usesLeft    Int                   @default(1)
+  expiresAt   DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  promotion   Promotion             @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  redemptions CouponRedemption[]
+
+  @@index([promotionId, status])
+}
+
+model CouponRedemption {
+  id             String                 @id @default(cuid())
+  orderId        String                 @unique
+  promotionId    String
+  couponCode     String
+  status         CouponRedemptionStatus @default(RESERVED)
+  discountAmount Float
+  createdAt      DateTime               @default(now())
+  confirmedAt    DateTime?
+  releasedAt     DateTime?
+  order          Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  promotion      Promotion              @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  coupon         PromotionCoupon        @relation(fields: [couponCode], references: [code], onDelete: Cascade)
+
+  @@index([promotionId, status])
+  @@index([couponCode, status])
+}
+
 enum Role {
   ADMIN
   CUSTOMER
@@ -358,6 +414,36 @@ enum PaymentFrequency {
   DAILY
   WEEKLY
   MONTHLY
+}
+
+enum PromotionType {
+  COUPON
+  AUTOMATIC
+}
+
+enum PromotionStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  EXPIRED
+}
+
+enum DiscountKind {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum CouponStatus {
+  AVAILABLE
+  RESERVED
+  USED
+  EXPIRED
+}
+
+enum CouponRedemptionStatus {
+  RESERVED
+  CONFIRMED
+  RELEASED
 }
 
 enum FinancingRateSource {

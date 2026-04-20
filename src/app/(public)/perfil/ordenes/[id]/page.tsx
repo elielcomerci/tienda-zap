@@ -57,6 +57,7 @@ export default async function MiOrdenPage({
   const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
 
   const isMpPending = order.paymentType === 'MERCADOPAGO' && order.status === 'PENDING'
+  const hasDiscount = (order.discountTotal ?? 0) > 0
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
@@ -155,8 +156,30 @@ export default async function MiOrdenPage({
           })}
         </div>
         <div className="p-4 bg-gray-50 flex justify-between font-bold text-gray-900">
-          <span>Total</span>
-          <span className="text-orange-500">${order.total.toLocaleString('es-AR')}</span>
+          <div className="space-y-1">
+            {typeof order.subtotal === 'number' && (
+              <div className="flex items-center gap-3 text-sm font-medium text-gray-500">
+                <span>Subtotal</span>
+                <span>${order.subtotal.toLocaleString('es-AR')}</span>
+              </div>
+            )}
+            {hasDiscount && (
+              <div className="flex items-center gap-3 text-sm font-medium text-emerald-700">
+                <span>Descuento</span>
+                <span>-${order.discountTotal.toLocaleString('es-AR')}</span>
+              </div>
+            )}
+            {order.couponCode && (
+              <div className="flex items-center gap-3 text-sm font-medium text-orange-600">
+                <span>Cupon</span>
+                <span>{order.couponCode}</span>
+              </div>
+            )}
+          </div>
+          <div className="text-right">
+            <span className="block text-sm text-gray-500">Total</span>
+            <span className="text-orange-500">${order.total.toLocaleString('es-AR')}</span>
+          </div>
         </div>
       </div>
 

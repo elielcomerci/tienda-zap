@@ -133,6 +133,7 @@ export const orderCheckoutSchema = z.object({
   phone: z.string().min(8, 'Telefono invalido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'ZAP_CREDIT']), // Removed CASH
   notes: z.string().optional(),
+  couponCode: optionalTextField(4, 'Codigo de cupon invalido'),
 
   documentId: optionalTextField(7, 'Documento (DNI/CUIL/CUIT) invalido'),
   billingAddress: optionalTextField(3, 'Direccion de facturacion invalida'),
