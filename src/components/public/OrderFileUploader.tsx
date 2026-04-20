@@ -2,11 +2,14 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, Download, LoaderCircle, MessageSquare, UploadCloud } from 'lucide-react'
 import {
-  finalizeOrderItemUpload,
-  markOrderItemAsWhatsapp,
-} from '@/lib/actions/orders'
+  CheckCircle2,
+  Download,
+  LoaderCircle,
+  MessageSquare,
+  UploadCloud,
+} from 'lucide-react'
+import { finalizeOrderItemUpload, markOrderItemAsWhatsapp } from '@/lib/actions/orders'
 import { MAX_ARTWORK_FILE_SIZE_BYTES } from '@/lib/order-files'
 
 type UploadableOrderItem = {
@@ -198,48 +201,64 @@ export default function OrderFileUploader({
   }
 
   return (
-    <section className="card p-6 space-y-5">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-bold text-gray-900">Archivos de impresion</h2>
-        <p className="text-sm text-gray-600">
-          Cada item necesita su archivo final. Podes cargarlo ahora o marcar que lo vas a enviar
-          por WhatsApp.
+    <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+      <div className="flex flex-col gap-2 border-b border-gray-100 pb-6">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+          Archivos de impresion
+        </p>
+        <h2 className="text-3xl font-black tracking-tight text-gray-950">
+          Deja cada pieza lista para producir.
+        </h2>
+        <p className="max-w-3xl text-sm leading-7 text-gray-600">
+          Cada item necesita su archivo final. Puedes cargarlo ahora o marcar que lo vas a enviar
+          por WhatsApp con la orden ya identificada.
         </p>
       </div>
 
       {whatsappUrl && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-semibold text-emerald-900">Envio diferido por WhatsApp</p>
-            <p className="text-sm text-emerald-800">
-              Si preferis mandar los archivos mas tarde, podes abrir la conversacion ya armada con
-              tu numero de orden.
-            </p>
+        <div className="mt-6 rounded-[28px] border border-emerald-200 bg-emerald-50 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Envio diferido
+              </p>
+              <h3 className="mt-2 text-xl font-black text-emerald-950">
+                Si prefieres, abre WhatsApp con el mensaje ya preparado.
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-emerald-900">
+                Asi puedes mandar los archivos mas tarde sin perder el contexto de la orden.
+              </p>
+            </div>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-primary bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
+            >
+              <MessageSquare size={16} /> Abrir WhatsApp
+            </a>
           </div>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-primary !bg-[#25D366] !shadow-[#25D366]/30 hover:!bg-[#1ebc5a]"
-          >
-            <MessageSquare size={16} /> Abrir WhatsApp
-          </a>
         </div>
       )}
 
-      <div className="grid gap-4">
+      <div className="mt-6 grid gap-4">
         {uploadableItems.map((item) => {
           const state = itemState[item.id] || {}
           const hasUploadedFile = Boolean(item.fileObjectKey || item.fileUrl)
           const downloadHref = getDownloadHref(orderId, item.id, accessToken)
 
           return (
-            <div key={item.id} className="rounded-2xl border border-gray-100 bg-gray-50/70 p-5">
+            <div
+              key={item.id}
+              className="rounded-[28px] border border-gray-200 bg-gray-50/70 p-5"
+            >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div>
-                    <p className="font-semibold text-gray-900">{item.product.name}</p>
-                    <p className="text-xs text-gray-500">Cantidad: {item.quantity}</p>
+                    <p className="text-lg font-black tracking-tight text-gray-950">
+                      {item.product.name}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">Cantidad: {item.quantity}</p>
                   </div>
 
                   {hasUploadedFile ? (
@@ -332,7 +351,7 @@ export default function OrderFileUploader({
 
               {state.uploading && (
                 <div className="mt-4">
-                  <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-200">
                     <div
                       className="h-full bg-orange-500 transition-all"
                       style={{ width: `${state.progress || 0}%` }}
@@ -351,7 +370,7 @@ export default function OrderFileUploader({
         })}
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="mt-5 text-xs text-gray-500">
         Formatos permitidos: PDF, PNG, JPG, TIFF, ZIP, AI, PSD y EPS. Tamano maximo 150MB por
         archivo.
       </p>

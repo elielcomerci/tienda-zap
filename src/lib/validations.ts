@@ -1,5 +1,16 @@
 import { z } from 'zod'
 
+function optionalTextField(minLength: number, message: string) {
+  return z.preprocess(
+    (value) => {
+      if (typeof value !== 'string') return value
+      const trimmed = value.trim()
+      return trimmed === '' ? undefined : trimmed
+    },
+    z.string().min(minLength, message).optional()
+  )
+}
+
 export const productSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   slug: z
@@ -122,16 +133,15 @@ export const orderCheckoutSchema = z.object({
   phone: z.string().min(8, 'Telefono invalido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'ZAP_CREDIT']), // Removed CASH
   notes: z.string().optional(),
-  
-  // Extended Customer Information
-  documentId: z.string().min(7, 'Documento (DNI/CUIL/CUIT) invalido'),
-  billingAddress: z.string().min(3, 'Direccion de facturacion requerida'),
-  billingCity: z.string().min(2, 'Ciudad de facturacion requerida'),
-  billingProvince: z.string().min(2, 'Provincia de facturacion requerida'),
-  shippingAddress: z.string().min(3, 'Direccion de envio requerida'),
-  shippingCity: z.string().min(2, 'Ciudad de envio requerida'),
-  shippingProvince: z.string().min(2, 'Provincia de envio requerida'),
-  shippingPostalCode: z.string().min(4, 'Codigo postal invalido'),
+
+  documentId: optionalTextField(7, 'Documento (DNI/CUIL/CUIT) invalido'),
+  billingAddress: optionalTextField(3, 'Direccion de facturacion invalida'),
+  billingCity: optionalTextField(2, 'Ciudad de facturacion invalida'),
+  billingProvince: optionalTextField(2, 'Provincia de facturacion invalida'),
+  shippingAddress: optionalTextField(3, 'Direccion de envio invalida'),
+  shippingCity: optionalTextField(2, 'Ciudad de envio invalida'),
+  shippingProvince: optionalTextField(2, 'Provincia de envio invalida'),
+  shippingPostalCode: optionalTextField(4, 'Codigo postal invalido'),
 
   zapCreditConfig: z
     .object({
@@ -146,6 +156,7 @@ export const orderCheckoutSchema = z.object({
       unitPrice: z.number().min(0),
       notes: z.string().optional(),
       designRequested: z.boolean().optional(),
+      isService: z.boolean().optional(),
       selectedOptions: z.array(z.object({
         name: z.string(),
         value: z.string(),
@@ -159,6 +170,75 @@ export const orderCheckoutSchema = z.object({
       path: ['zapCreditConfig'],
       message: 'Configura el plan de Credito ZAP antes de continuar.',
     })
+  }
+
+  const billingFields = [
+    ['billingAddress', data.billingAddress],
+    ['billingCity', data.billingCity],
+    ['billingProvince', data.billingProvince],
+  ] as const
+  const shippingFields = [
+    ['shippingAddress', data.shippingAddress],
+    ['shippingCity', data.shippingCity],
+    ['shippingProvince', data.shippingProvince],
+    ['shippingPostalCode', data.shippingPostalCode],
+  ] as const
+
+  const hasAnyBillingField = billingFields.some(([, value]) => Boolean(value))
+  const hasAnyShippingField = shippingFields.some(([, value]) => Boolean(value))
+
+  if (data.paymentType === 'ZAP_CREDIT') {
+    if (!data.documentId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['documentId'],
+        message: 'El documento es requerido para solicitar Credito ZAP.',
+      })
+    }
+
+    for (const [fieldName, value] of billingFields) {
+      if (!value) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [fieldName],
+          message: 'Completa este dato para solicitar Credito ZAP.',
+        })
+      }
+    }
+
+    for (const [fieldName, value] of shippingFields) {
+      if (!value) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [fieldName],
+          message: 'Completa este dato para solicitar Credito ZAP.',
+        })
+      }
+    }
+  } else {
+    if (hasAnyBillingField) {
+      for (const [fieldName, value] of billingFields) {
+        if (!value) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [fieldName],
+            message: 'Si completas facturacion, carga todos los campos.',
+          })
+        }
+      }
+    }
+
+    if (hasAnyShippingField) {
+      for (const [fieldName, value] of shippingFields) {
+        if (!value) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [fieldName],
+            message: 'Si completas envio, carga todos los campos.',
+          })
+        }
+      }
+    }
   }
 })
 

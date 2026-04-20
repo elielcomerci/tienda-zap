@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingCart, Zap, Menu, X } from 'lucide-react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { Menu, ShoppingCart, X, Zap } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState } from 'react'
 
@@ -10,79 +11,135 @@ export default function PublicHeader({
 }: {
   user?: { name?: string | null } | null
 }) {
-  const itemCount = useCartStore((s) => s.itemCount())
+  const itemCount = useCartStore((state) => state.itemCount())
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const navLinks = [
     { href: '/productos', label: 'Productos' },
-    { href: '/productos?cat=cartelearia', label: 'Cartelería' },
+    { href: '/productos?cat=cartelearia', label: 'Carteleria' },
     { href: '/productos?cat=banners', label: 'Banners' },
     { href: '/productos?cat=stickers', label: 'Stickers' },
+    { href: '/credito-zap', label: 'Credito ZAP' },
   ]
 
+  const isLinkActive = (href: string) => {
+    const target = new URL(href, 'https://zap.local')
+    if (target.pathname !== pathname) return false
+
+    const targetCat = target.searchParams.get('cat')
+    const currentCat = searchParams.get('cat')
+
+    if (targetCat) {
+      return currentCat === targetCat
+    }
+
+    if (target.pathname === '/productos') {
+      return !currentCat
+    }
+
+    return true
+  }
+
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
-            <Zap size={18} className="text-white" />
+    <header className="sticky top-0 z-40 border-b border-gray-200/80 bg-white/95 backdrop-blur-md">
+      <div className="mx-auto flex h-[74px] max-w-[1380px] items-center justify-between gap-4 px-4 xl:px-8">
+        <Link href="/" className="flex shrink-0 items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-500 shadow-sm shadow-orange-200">
+            <Zap size={20} className="text-white" />
           </div>
-          <span>ZAP</span>
+          <div>
+            <p className="text-xl font-black tracking-tight text-gray-950">ZAP</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+              Impresion comercial
+            </p>
+          </div>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} className="text-sm text-gray-600 hover:text-orange-500 transition-colors font-medium">
-              {l.label}
-            </Link>
-          ))}
+        <nav className="hidden items-center rounded-full border border-gray-200 bg-white p-1 shadow-sm lg:flex">
+          {navLinks.map((link) => {
+            const active = isLinkActive(link.href)
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  active
+                    ? 'bg-gray-950 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-950'
+                }`}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </nav>
 
-        {/* Actions */}
         <div className="flex items-center gap-2">
           {user ? (
             <Link
               href="/perfil"
-              className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-2 mr-3"
+              className="hidden items-center gap-3 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-orange-600 md:flex"
             >
-              <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs uppercase">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-xs font-bold uppercase text-orange-600">
                 {user.name ? user.name.charAt(0) : 'U'}
               </div>
-              <span className="hidden sm:inline">Mi perfil</span>
+              <div className="text-left leading-tight">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                  Cuenta
+                </span>
+                <span className="block text-sm text-gray-800">Mi perfil</span>
+              </div>
             </Link>
           ) : (
             <Link
               href="/login"
-              className="text-sm font-medium text-gray-600 hover:text-orange-500 transition-colors mr-3"
+              className="hidden rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-orange-600 md:inline-flex"
             >
               Ingresar
             </Link>
           )}
 
-          <Link href="/carrito" className="relative p-2 rounded-xl hover:bg-orange-50 transition-colors">
-            <ShoppingCart size={22} className="text-gray-700" />
+          <Link
+            href="/carrito"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+            aria-label="Ir al carrito"
+          >
+            <ShoppingCart size={21} />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-bold">
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[11px] font-bold text-white">
                 {itemCount > 9 ? '9+' : itemCount}
               </span>
             )}
           </Link>
 
-          <button className="md:hidden p-2 rounded-xl hover:bg-gray-100" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:bg-gray-50 lg:hidden"
+            onClick={() => setMenuOpen((previous) => !previous)}
+            aria-label={menuOpen ? 'Cerrar menu' : 'Abrir menu'}
+          >
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <nav className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1">
-          {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
-              className="block py-2 text-sm font-medium text-gray-700 hover:text-orange-500">
-              {l.label}
+        <nav className="space-y-1 border-t border-gray-200 bg-white px-4 py-4 lg:hidden">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className={`block rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                isLinkActive(link.href)
+                  ? 'bg-gray-950 text-white'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-orange-600'
+              }`}
+            >
+              {link.label}
             </Link>
           ))}
         </nav>

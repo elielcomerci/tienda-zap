@@ -30,17 +30,17 @@ const zapCreditHighlights = [
   {
     icon: BadgePercent,
     title: 'Anticipo desde 30%',
-    desc: 'Confirmas el pedido y cubres el resto con pagos fijos.',
+    desc: 'Avanzas hoy y ordenas el resto en un plan claro.',
   },
   {
     icon: Store,
     title: 'Cuida tu caja',
-    desc: 'Resuelve impresos y exhibicion sin desarmar todo tu presupuesto.',
+    desc: 'Resuelve impresos y exhibicion sin desacomodar todo el mes.',
   },
   {
     icon: MessageCircleMore,
     title: 'Info en un solo lugar',
-    desc: 'Condiciones, privacidad y funcionamiento concentrados en una pagina dedicada.',
+    desc: 'Lo importante en la compra. El detalle completo, aparte y a mano.',
   },
 ]
 
@@ -64,13 +64,13 @@ export default async function HomePage() {
               <Zap size={12} /> Impresion digital profesional
             </div>
             <h1 className="mb-6 text-5xl font-black leading-tight md:text-7xl">
-              Tu imagen,
+              Tu marca,
               <br />
-              <span className="text-orange-400">impresa a la altura de tu negocio.</span>
+              <span className="text-orange-400">lista para hacerse notar.</span>
             </h1>
             <p className="mb-10 text-lg leading-relaxed text-gray-300 md:text-xl">
-              Carteleria, tarjetas, banners, stickers, exhibidores y servicios graficos para
-              locales que necesitan vender mejor.
+              Carteleria, stickers, banners, tarjetas y piezas graficas para negocios que quieren
+              verse mejor, vender mejor y resolver rapido.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/productos" className="btn-primary !px-7 !py-3.5 !text-base">
@@ -94,11 +94,11 @@ export default async function HomePage() {
               Credito ZAP
             </p>
             <h2 className="mt-2 text-3xl font-black text-gray-900 md:text-4xl">
-              Si necesitas resolverlo ahora, puedes pagarlo con mas aire
+              Cuando el trabajo no puede esperar, el pago tampoco te tiene que frenar
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-              Credito ZAP te deja confirmar con anticipo y distribuir el saldo en pagos fijos.
-              La explicacion completa vive aparte para que comprar siga siendo rapido.
+              Credito ZAP te da aire para avanzar: confirmas con anticipo y acomodas el resto en
+              pagos fijos. Sin vueltas raras y con el detalle completo siempre a mano.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -116,7 +116,7 @@ export default async function HomePage() {
                   className="btn-secondary"
                 >
                   <MessageCircleMore size={18} />
-                  Consultar mi plan por WhatsApp
+                  Hablarlo por WhatsApp
                 </Link>
               )}
             </div>

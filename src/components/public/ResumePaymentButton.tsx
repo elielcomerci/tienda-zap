@@ -10,11 +10,6 @@ interface ResumePaymentButtonProps {
   label?: string
 }
 
-/**
- * Botón para retomar un pago de MercadoPago pendiente.
- * Llama al endpoint /api/checkout/mercadopago/resume para recuperar
- * el initPoint de la preferencia existente (o crear una nueva si expiró).
- */
 export default function ResumePaymentButton({
   orderId,
   accessToken,
@@ -27,17 +22,21 @@ export default function ResumePaymentButton({
   const handleResume = async () => {
     setLoading(true)
     setError('')
+
     try {
-      const res = await fetch('/api/checkout/mercadopago/resume', {
+      const response = await fetch('/api/checkout/mercadopago/resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, token: accessToken }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error al recuperar el pago')
-      window.location.href = data.initPoint
-    } catch (err: any) {
-      setError(err.message || 'Ocurrió un error. Intenta de nuevo.')
+      const payload = await response.json()
+      if (!response.ok) {
+        throw new Error(payload.error || 'No pudimos recuperar el pago.')
+      }
+
+      window.location.href = payload.initPoint
+    } catch (resumeError: any) {
+      setError(resumeError.message || 'Ocurrio un error. Intenta de nuevo.')
       setLoading(false)
     }
   }
@@ -45,18 +44,15 @@ export default function ResumePaymentButton({
   return (
     <div className="space-y-2">
       <button
+        type="button"
         onClick={handleResume}
         disabled={loading}
         className={
           className ??
-          'btn-primary w-full justify-center'
+          'flex w-full items-center justify-center gap-2 rounded-[24px] bg-orange-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-0.5 hover:bg-orange-400 disabled:cursor-wait disabled:opacity-80'
         }
       >
-        {loading ? (
-          <Loader2 size={18} className="animate-spin" />
-        ) : (
-          <CreditCard size={18} />
-        )}
+        {loading ? <Loader2 size={18} className="animate-spin" /> : <CreditCard size={18} />}
         {loading ? 'Redirigiendo a MercadoPago...' : label}
       </button>
       {error && <p className="text-center text-xs text-red-600">{error}</p>}

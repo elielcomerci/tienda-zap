@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/cart-store'
-import { useForm } from 'react-hook-form'
+import { type Resolver, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertTriangle, CheckCircle2, CircleHelp, CreditCard, PencilLine, Smartphone, Wallet } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
@@ -21,19 +21,19 @@ const paymentOptions = [
   {
     value: 'MERCADOPAGO',
     label: 'Tarjeta / MercadoPago',
-    desc: 'Hasta 6 cuotas sin interes',
+    desc: 'Pagalo en el momento y deja la orden en marcha',
     icon: CreditCard,
   },
   {
     value: 'ZAP_CREDIT',
     label: 'Credito ZAP',
-    desc: 'Anticipo y saldo en cuotas fijas',
+    desc: 'Anticipo hoy y resto en pagos fijos',
     icon: Wallet,
   },
   {
     value: 'TRANSFER',
     label: 'Transferencia',
-    desc: 'CBU/CVU - subi tu comprobante',
+    desc: 'Nos envias el comprobante y seguimos',
     icon: Smartphone,
   },
 ] as const
@@ -107,6 +107,18 @@ const customerSections: readonly { title: string; fields: readonly CustomerField
   },
 ]
 
+const basicFieldNames = new Set<CustomerFieldConfig['name']>(['name', 'phone', 'email'])
+const creditExtraFieldNames = new Set<CustomerFieldConfig['name']>([
+  'documentId',
+  'billingAddress',
+  'billingCity',
+  'billingProvince',
+  'shippingAddress',
+  'shippingCity',
+  'shippingProvince',
+  'shippingPostalCode',
+])
+
 function hasTextValue(value: unknown) {
   return typeof value === 'string' ? value.trim().length > 0 : Boolean(value)
 }
@@ -149,17 +161,25 @@ export default function CheckoutPage() {
     watch,
     formState: { errors },
   } = useForm<OrderCheckoutData>({
-    resolver: zodResolver(orderCheckoutSchema),
+    resolver: zodResolver(orderCheckoutSchema) as Resolver<OrderCheckoutData>,
     defaultValues: { paymentType: 'MERCADOPAGO' },
   })
 
   const formValues = watch()
   const paymentType = formValues.paymentType
   const authenticatedUser = Boolean(creditEligibility?.authenticated)
-  const missingProfileFields = customerSections.flatMap((section) =>
-    section.fields.filter((field) => !hasTextValue(formValues[field.name]))
+  const isFieldRequired = (fieldName: CustomerFieldConfig['name']) =>
+    basicFieldNames.has(fieldName) ||
+    (paymentType === 'ZAP_CREDIT' && creditExtraFieldNames.has(fieldName))
+  const missingRequiredFields = customerSections.flatMap((section) =>
+    section.fields.filter(
+      (field) => isFieldRequired(field.name) && !hasTextValue(formValues[field.name])
+    )
   )
-  const hasMissingProfileFields = missingProfileFields.length > 0
+  const hasMissingRequiredFields = missingRequiredFields.length > 0
+  const selectedPaymentOption =
+    paymentOptions.find((option) => option.value === paymentType) ?? paymentOptions[0]
+  const SelectedPaymentIcon = selectedPaymentOption.icon
 
   const submitLabel = loading
     ? 'Procesando...'
@@ -205,10 +225,10 @@ export default function CheckoutPage() {
   }, [creditEligibility, setValue])
 
   useEffect(() => {
-    if (authenticatedUser && hasMissingProfileFields) {
+    if (authenticatedUser && hasMissingRequiredFields) {
       setShowProfileEditor(true)
     }
-  }, [authenticatedUser, hasMissingProfileFields])
+  }, [authenticatedUser, hasMissingRequiredFields])
 
   useEffect(() => {
     if (zapCreditSelection) {
@@ -227,6 +247,7 @@ export default function CheckoutPage() {
         unitPrice: item.price,
         notes: item.notes,
         designRequested: item.designRequested,
+        isService: item.isService,
         selectedOptions: item.selectedOptions,
       }))
     )
@@ -249,12 +270,13 @@ export default function CheckoutPage() {
     </div>
   )
 
-  const renderCustomerSections = (mode: 'all' | 'missing') =>
+  const renderCustomerSections = (mode: 'all' | 'required' | 'optional') =>
     customerSections.map((section) => {
-      const fields =
-        mode === 'missing'
-          ? section.fields.filter((field) => !hasTextValue(formValues[field.name]))
-          : section.fields
+      const fields = section.fields.filter((field) => {
+        if (mode === 'all') return true
+        if (mode === 'required') return isFieldRequired(field.name)
+        return !isFieldRequired(field.name)
+      })
 
       if (fields.length === 0) return null
 
@@ -334,338 +356,492 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="mb-8 text-2xl font-bold text-gray-900">Finalizar pedido</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start">
-          <div className="space-y-6">
-            <div className="card p-6">
-              <h2 className="mb-4 font-bold text-gray-900">Tus datos</h2>
-
-              {isLoadingCreditEligibility ? (
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                  Cargando tus datos y condiciones de compra...
+    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_18%,#f8fafc_100%)]">
+      <div className="mx-auto max-w-[1380px] px-4 pb-16 pt-8 sm:pt-10 xl:px-8">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+            <div className="space-y-6">
+              <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                    Checkout ZAP
+                  </span>
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                    {items.length} piezas en el pedido
+                  </span>
                 </div>
-              ) : authenticatedUser ? (
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
-                      <div>
-                        <p className="font-semibold">Usaremos los datos de tu cuenta para este pedido.</p>
-                        <p className="mt-1 text-emerald-800">
-                          No hace falta volver a cargar nombre y contacto si ya los tenemos.
-                        </p>
-                      </div>
-                    </div>
+
+                <h1 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
+                  Cierra tu pedido con una vista mas clara y mas profesional.
+                </h1>
+                <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
+                  Ordenamos datos, medios de pago y resumen final para que la experiencia se sienta
+                  estable en desktop, con menos ruido y mejores decisiones visibles.
+                </p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Paso 1
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      Confirmas tus datos y dejas notas si hacen falta.
+                    </p>
                   </div>
-
-                  {!hasMissingProfileFields && (
-                    <div className="grid gap-4 lg:grid-cols-3">
-                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Contacto
-                        </p>
-                        <p className="mt-2 text-sm font-semibold text-gray-900">{formValues.name}</p>
-                        <p className="mt-1 text-sm text-gray-600">{formValues.email}</p>
-                        <p className="mt-1 text-sm text-gray-600">{formValues.phone}</p>
-                        <p className="mt-1 text-sm text-gray-600">{formValues.documentId}</p>
-                      </div>
-
-                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Facturacion
-                        </p>
-                        <p className="mt-2 text-sm text-gray-600">{formValues.billingAddress}</p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {formValues.billingCity} - {formValues.billingProvince}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Envio
-                        </p>
-                        <p className="mt-2 text-sm text-gray-600">{formValues.shippingAddress}</p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {formValues.shippingCity} - {formValues.shippingProvince}
-                        </p>
-                        <p className="mt-1 text-sm text-gray-600">CP {formValues.shippingPostalCode}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {hasMissingProfileFields ? (
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                      <p className="text-sm font-semibold text-amber-900">
-                        Faltan algunos datos para cerrar este pedido.
-                      </p>
-                      <p className="mt-1 text-sm text-amber-800">
-                        Solo te pedimos completar lo que todavia no esta cargado.
-                      </p>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowProfileEditor((current) => !current)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
-                    >
-                      <PencilLine size={16} />
-                      {showProfileEditor ? 'Ocultar edicion manual' : 'Editar datos para este pedido'}
-                    </button>
-                  )}
-
-                  {(showProfileEditor || hasMissingProfileFields) && (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {renderCustomerSections(hasMissingProfileFields ? 'missing' : 'all')}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="label">Notas adicionales (opcional)</label>
-                    <textarea
-                      {...register('notes')}
-                      className="input resize-none"
-                      rows={2}
-                      placeholder="Instrucciones especiales, tipo de papel, etc."
-                    />
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Paso 2
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      Eliges el medio de pago con contexto claro.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Paso 3
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      {hasItemsRequiringArtwork
+                        ? 'Dejas archivos o pides diseno despues de confirmar.'
+                        : 'El pedido queda listo para seguir sin pasos extra.'}
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {renderCustomerSections('all')}
+              </section>
 
-                  <div className="sm:col-span-2">
-                    <label className="label">Notas adicionales (opcional)</label>
-                    <textarea
-                      {...register('notes')}
-                      className="input resize-none"
-                      rows={2}
-                      placeholder="Instrucciones especiales, tipo de papel, etc."
-                    />
-                  </div>
+              <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+                <div className="mb-6 border-b border-gray-100 pb-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+                    Paso 1
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+                    Tus datos
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
+                    Pedimos solo lo necesario para que la compra arranque prolija. Si tienes cuenta,
+                    usamos lo que ya sabemos para evitar friccion.
+                  </p>
                 </div>
-              )}
-            </div>
 
-            <div className="card p-6">
-              <h2 className="mb-4 font-bold text-gray-900">Metodo de pago</h2>
+                {isLoadingCreditEligibility ? (
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                    Cargando tus datos y condiciones de compra...
+                  </div>
+                ) : authenticatedUser ? (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
+                        <div>
+                          <p className="font-semibold">Ya tenemos buena parte de tus datos para este pedido.</p>
+                          <p className="mt-1 text-emerald-800">
+                            Asi comprar se siente mas simple y mas rapido.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                {paymentOptions.map((option) => {
-                  const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
+                    {!hasMissingRequiredFields && (
+                      <div className="grid gap-4 lg:grid-cols-3">
+                        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Contacto
+                          </p>
+                          <p className="mt-2 text-sm font-semibold text-gray-900">{formValues.name}</p>
+                          <p className="mt-1 text-sm text-gray-600">{formValues.email}</p>
+                          <p className="mt-1 text-sm text-gray-600">{formValues.phone}</p>
+                          <p className="mt-1 text-sm text-gray-600">{formValues.documentId}</p>
+                        </div>
 
-                  return (
-                    <label
-                      key={option.value}
-                      className={`flex min-h-23 items-center gap-4 rounded-xl border-2 p-4 transition-all ${
-                        optionDisabled
-                          ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
-                          : paymentType === option.value
-                            ? 'cursor-pointer border-orange-400 bg-orange-50'
-                            : 'cursor-pointer border-gray-100 hover:border-gray-200'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        value={option.value}
-                        {...register('paymentType')}
-                        className="sr-only"
-                        disabled={optionDisabled}
+                        {hasTextValue(formValues.billingAddress) && (
+                          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                              Facturacion
+                            </p>
+                            <p className="mt-2 text-sm text-gray-600">{formValues.billingAddress}</p>
+                            <p className="mt-1 text-sm text-gray-600">
+                              {formValues.billingCity} - {formValues.billingProvince}
+                            </p>
+                          </div>
+                        )}
+
+                        {hasTextValue(formValues.shippingAddress) && (
+                          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                              Envio
+                            </p>
+                            <p className="mt-2 text-sm text-gray-600">{formValues.shippingAddress}</p>
+                            <p className="mt-1 text-sm text-gray-600">
+                              {formValues.shippingCity} - {formValues.shippingProvince}
+                            </p>
+                            <p className="mt-1 text-sm text-gray-600">CP {formValues.shippingPostalCode}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {hasMissingRequiredFields ? (
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                        <p className="text-sm font-semibold text-amber-900">
+                          Faltan algunos datos para cerrar este pedido.
+                        </p>
+                        <p className="mt-1 text-sm text-amber-800">
+                          {paymentType === 'ZAP_CREDIT'
+                            ? 'Para moverlo con Credito ZAP necesitamos completar documento, facturacion y envio.'
+                            : 'Solo te pedimos lo minimo que falta para dejarlo bien cargado.'}
+                        </p>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowProfileEditor((current) => !current)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
+                      >
+                        <PencilLine size={16} />
+                        {showProfileEditor ? 'Ocultar edicion manual' : 'Editar datos de este pedido'}
+                      </button>
+                    )}
+
+                    {(showProfileEditor || hasMissingRequiredFields) && (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {renderCustomerSections(hasMissingRequiredFields ? 'required' : 'all')}
+                      </div>
+                    )}
+
+                    {!hasMissingRequiredFields && paymentType !== 'ZAP_CREDIT' && (
+                      <details className="rounded-2xl border border-gray-200 bg-gray-50">
+                        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-700 marker:hidden">
+                          Agregar datos de facturacion o entrega
+                        </summary>
+                        <div className="border-t border-gray-200 px-4 py-4">
+                          <p className="mb-4 text-sm text-gray-600">
+                            Si quieres dejar todo listo desde ahora, cargalos aca. Si no, lo vemos
+                            contigo despues de la compra.
+                          </p>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            {renderCustomerSections('optional')}
+                          </div>
+                        </div>
+                      </details>
+                    )}
+
+                    <div>
+                      <label className="label">Notas adicionales (opcional)</label>
+                      <textarea
+                        {...register('notes')}
+                        className="input resize-none"
+                        rows={2}
+                        placeholder="Instrucciones especiales, tipo de papel, etc."
                       />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {renderCustomerSections(paymentType === 'ZAP_CREDIT' ? 'all' : 'required')}
+                    </div>
 
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                          paymentType === option.value && !optionDisabled
-                            ? 'bg-orange-500 text-white'
-                            : 'bg-gray-100 text-gray-500'
+                    {paymentType !== 'ZAP_CREDIT' && (
+                      <details className="rounded-2xl border border-gray-200 bg-gray-50">
+                        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-700 marker:hidden">
+                          Agregar datos de facturacion o entrega
+                        </summary>
+                        <div className="border-t border-gray-200 px-4 py-4">
+                          <p className="mb-4 text-sm text-gray-600">
+                            Estos datos no frenan la compra comun. Puedes dejarlos ahora o resolverlos
+                            despues con nosotros.
+                          </p>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            {renderCustomerSections('optional')}
+                          </div>
+                        </div>
+                      </details>
+                    )}
+
+                    <div>
+                      <label className="label">Notas adicionales (opcional)</label>
+                      <textarea
+                        {...register('notes')}
+                        className="input resize-none"
+                        rows={2}
+                        placeholder="Instrucciones especiales, tipo de papel, etc."
+                      />
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+                <div className="mb-6 border-b border-gray-100 pb-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+                    Paso 2
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+                    Metodo de pago
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
+                    Mostramos cada opcion con el contexto justo para que no tengas que interpretar
+                    demasiado antes de decidir.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  {paymentOptions.map((option) => {
+                    const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
+
+                    return (
+                      <label
+                        key={option.value}
+                        className={`flex min-h-[132px] items-start gap-4 rounded-[24px] border-2 p-5 transition-all ${
+                          optionDisabled
+                            ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
+                            : paymentType === option.value
+                              ? 'cursor-pointer border-orange-400 bg-orange-50 shadow-sm shadow-orange-100'
+                              : 'cursor-pointer border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50/40'
                         }`}
                       >
-                        <option.icon size={20} />
-                      </div>
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register('paymentType')}
+                          className="sr-only"
+                          disabled={optionDisabled}
+                        />
 
+                        <div
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                            paymentType === option.value && !optionDisabled
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          <option.icon size={20} />
+                        </div>
+
+                        <div>
+                          <p className="text-base font-bold text-gray-900">{option.label}</p>
+                          <p className="mt-2 text-sm leading-7 text-gray-600">
+                            {optionDisabled
+                              ? 'Disponible solo para clientes con sesion iniciada'
+                              : option.desc}
+                          </p>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
+
+                {zapCreditDisabled && (
+                  <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                    <p className="font-semibold">Credito ZAP para usuarios registrados</p>
+                    <p className="mt-1 text-blue-800">
+                      Inicia sesion para pedir tu plan, seguir cuotas y tener todo ordenado desde tu
+                      cuenta.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link href="/login" className="btn-secondary !px-4 !py-2 !text-sm">
+                        Iniciar sesion
+                      </Link>
+                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                        Ver mas informacion
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
+                  <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50/60 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{option.label}</p>
-                        <p className="text-xs text-gray-500">
-                          {optionDisabled
-                            ? 'Disponible solo para clientes con sesion iniciada'
-                            : option.desc}
+                        <p className="text-sm font-semibold text-gray-900">
+                          Confirmas hoy con anticipo y el resto queda acomodado en pagos fijos.
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Aca te mostramos solo lo importante para decidir. El detalle completo queda
+                          aparte, siempre a mano.
                         </p>
                       </div>
-                    </label>
-                  )
-                })}
-              </div>
 
-              {zapCreditDisabled && (
-                <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-                  <p className="font-semibold">Credito ZAP para usuarios registrados</p>
-                  <p className="mt-1 text-blue-800">
-                    Inicia sesion para solicitar credito, seguir cuotas, cargar comprobantes y ver
-                    tu estado financiero desde el panel.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Link href="/login" className="btn-secondary !px-4 !py-2 !text-sm">
-                      Iniciar sesion
-                    </Link>
-                    <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
-                      Ver mas informacion
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
-                <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50/60 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        Confirmas con anticipo y el resto queda en pagos fijos.
-                      </p>
-                      <p className="mt-1 text-sm text-gray-600">
-                        Dejamos aqui solo el resumen rapido. El detalle completo de funcionamiento y
-                        privacidad esta en una pagina aparte.
-                      </p>
+                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                        Ver mas informacion
+                      </Link>
                     </div>
 
-                    <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
-                      Ver mas informacion
-                    </Link>
+                    <details className="mt-3 rounded-2xl border border-orange-100 bg-white/80">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
+                        <CircleHelp size={16} className="text-orange-500" />
+                        Resumen rapido de Credito ZAP
+                      </summary>
+                      <div className="border-t border-orange-100 px-4 py-3 text-sm text-gray-600">
+                        Disponible para clientes con cuenta. Simulas el plan, confirmas el pedido y
+                        despues sigues cuotas, comprobantes y estados desde tu panel.
+                      </div>
+                    </details>
                   </div>
+                )}
 
-                  <details className="mt-3 rounded-2xl border border-orange-100 bg-white/80">
-                    <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
-                      <CircleHelp size={16} className="text-orange-500" />
-                      Resumen rapido de Credito ZAP
-                    </summary>
-                    <div className="border-t border-orange-100 px-4 py-3 text-sm text-gray-600">
-                      Disponible para clientes con cuenta. Puedes simular el plan, confirmar el
-                      pedido y despues seguir cuotas, comprobantes y estados desde tu panel.
-                    </div>
-                  </details>
-                </div>
-              )}
-
-              {paymentType === 'ZAP_CREDIT' && creditEligibility?.hasDelinquency && (
-                <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
-                    <div>
-                      <p className="font-semibold">Tenes cuotas vencidas en otros creditos</p>
-                      <p className="mt-1 text-amber-800">
-                        La simulacion ya incluye el recargo vigente:{' '}
-                        <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
-                        <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
-                        el anticipo.
-                      </p>
+                {paymentType === 'ZAP_CREDIT' && creditEligibility?.hasDelinquency && (
+                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
+                      <div>
+                        <p className="font-semibold">Tenes cuotas vencidas en otros creditos</p>
+                        <p className="mt-1 text-amber-800">
+                          La simulacion ya incluye el recargo vigente:{' '}
+                          <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
+                          <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
+                          el anticipo.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {paymentType === 'ZAP_CREDIT' && (
-                <div className="mt-4">
-                  <CheckoutZapCreditConfigurator
-                    totalAmount={total()}
-                    items={items.map((item) => ({
-                      unitPrice: item.price,
-                      quantity: item.quantity,
-                      creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
-                    }))}
-                    eligibility={creditEligibility}
-                    isLoading={isLoadingCreditEligibility}
-                    minimumDownPaymentAmount={estimatedDownPaymentAmount}
-                    minimumDownPaymentPercent={estimatedDownPaymentPercent}
-                    onChange={setZapCreditSelection}
-                  />
+                {paymentType === 'ZAP_CREDIT' && (
+                  <div className="mt-4">
+                    <CheckoutZapCreditConfigurator
+                      totalAmount={total()}
+                      items={items.map((item) => ({
+                        unitPrice: item.price,
+                        quantity: item.quantity,
+                        creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
+                      }))}
+                      eligibility={creditEligibility}
+                      isLoading={isLoadingCreditEligibility}
+                      minimumDownPaymentAmount={estimatedDownPaymentAmount}
+                      minimumDownPaymentPercent={estimatedDownPaymentPercent}
+                      onChange={setZapCreditSelection}
+                    />
+                  </div>
+                )}
+              </section>
+
+              {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+
+              {Object.keys(errors).length > 0 && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                  <p className="mb-1 font-bold">Por favor, revisa los siguientes campos:</p>
+                  <ul className="list-disc list-inside space-y-0.5 opacity-80">
+                    {Object.entries(errors).map(([key, err]) => (
+                      <li key={key}>{(err as any)?.message}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
 
-            {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-
-            {Object.keys(errors).length > 0 && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                <p className="mb-1 font-bold">Por favor, revisa los siguientes campos:</p>
-                <ul className="list-disc list-inside space-y-0.5 opacity-80">
-                  {Object.entries(errors).map(([key, err]) => (
-                    <li key={key}>{(err as any)?.message}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="card p-5 xl:sticky xl:top-24">
-              <h2 className="mb-4 font-bold text-gray-900">
-                {hasItemsRequiringArtwork ? 'Resumen y archivos' : 'Resumen del pedido'}
-              </h2>
-
-              {hasUnavailableItems && (
-                <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
-                  Hay productos con precio 0 en tu carrito. Quitalos o elegi una variante
-                  disponible antes de confirmar.
+            <aside className="xl:sticky xl:top-24">
+              <div className="rounded-[32px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
+                <div className="border-b border-white/10 pb-5">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-400">
+                    Resumen final
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
+                    {hasItemsRequiringArtwork ? 'Pedido y produccion' : 'Pedido listo para confirmar'}
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-gray-300">
+                    Todo lo importante queda visible antes de enviar la orden.
+                  </p>
                 </div>
-              )}
 
-              <div className="mb-4 space-y-4 pr-1 xl:max-h-[calc(100vh-20rem)] xl:overflow-y-auto xl:pr-2">
-                {items.map((item) => (
-                  <div
-                    key={item.cartItemId || item.productId}
-                    className="flex flex-col border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="mb-2 flex flex-col">
-                      <div className="flex justify-between text-sm font-medium">
-                        <span className="mr-2 text-gray-800">
-                          {item.name} x{item.quantity}
-                        </span>
-                        <span className="shrink-0 text-orange-600">
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                      Medio elegido
+                    </p>
+                    <div className="mt-2 flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-orange-300">
+                        <SelectedPaymentIcon size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{selectedPaymentOption.label}</p>
+                        <p className="text-xs text-gray-400">{selectedPaymentOption.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                      Total visible
+                    </p>
+                    <p className="mt-2 text-3xl font-black text-white">
+                      ${total().toLocaleString('es-AR')}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-400">
+                      {items.length} linea{items.length === 1 ? '' : 's'} en este pedido
+                    </p>
+                  </div>
+                </div>
+
+                {hasUnavailableItems && (
+                  <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
+                    Hay productos con precio 0 en tu carrito. Quita esas piezas o elige una
+                    variante disponible antes de confirmar.
+                  </div>
+                )}
+
+                <div className="mt-5 space-y-3 pr-1 xl:max-h-[calc(100vh-26rem)] xl:overflow-y-auto xl:pr-2">
+                  {items.map((item) => (
+                    <div
+                      key={item.cartItemId || item.productId}
+                      className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white">
+                            {item.name} x{item.quantity}
+                          </p>
+                          {item.selectedOptions && item.selectedOptions.length > 0 && (
+                            <p className="mt-1 text-xs text-gray-400">
+                              {item.selectedOptions.map((option) => option.value).join(' - ')}
+                            </p>
+                          )}
+                        </div>
+                        <span className="shrink-0 text-sm font-semibold text-orange-300">
                           ${(item.price * item.quantity).toLocaleString('es-AR')}
                         </span>
                       </div>
 
-                      {item.selectedOptions && item.selectedOptions.length > 0 && (
-                        <span className="mt-0.5 text-xs text-gray-500">
-                          {item.selectedOptions.map((option) => option.value).join(' - ')}
-                        </span>
-                      )}
+                      <OrderItemOptions item={item} compact />
                     </div>
+                  ))}
+                </div>
 
-                    <OrderItemOptions item={item} compact />
+                <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between text-sm text-gray-300">
+                    <span>Subtotal</span>
+                    <span>${total().toLocaleString('es-AR')}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xl font-black text-white">
+                    <span>Total</span>
+                    <span>${total().toLocaleString('es-AR')}</span>
+                  </div>
+                </div>
 
-              <div className="mb-5 flex justify-between border-t pt-4 text-lg font-bold">
-                <span>Total</span>
-                <span className="text-orange-500">${total().toLocaleString('es-AR')}</span>
+                <button
+                  type="submit"
+                  disabled={
+                    loading ||
+                    hasUnavailableItems ||
+                    (paymentType === 'ZAP_CREDIT' &&
+                      (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
+                  }
+                  className={`mt-5 flex w-full items-center justify-center rounded-[24px] px-6 py-4 text-sm font-semibold transition-all ${
+                    loading ||
+                    hasUnavailableItems ||
+                    (paymentType === 'ZAP_CREDIT' &&
+                      (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
+                      ? 'cursor-not-allowed bg-white/10 text-gray-400'
+                      : 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 hover:bg-orange-400'
+                  }`}
+                >
+                  {submitLabel}
+                </button>
               </div>
-
-              <button
-                type="submit"
-                disabled={
-                  loading ||
-                  hasUnavailableItems ||
-                  (paymentType === 'ZAP_CREDIT' &&
-                    (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
-                }
-                className={`w-full justify-center py-3.5 ${
-                  loading ||
-                  hasUnavailableItems ||
-                  (paymentType === 'ZAP_CREDIT' &&
-                    (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
-                    ? 'btn-secondary cursor-not-allowed border-gray-200 bg-gray-200 text-gray-500 hover:bg-gray-200'
-                    : 'btn-primary'
-                }`}
-              >
-                {submitLabel}
-              </button>
-            </div>
+            </aside>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }
