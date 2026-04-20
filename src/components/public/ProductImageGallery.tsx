@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { X, ZoomIn } from 'lucide-react'
 
 export default function ProductImageGallery({
@@ -11,6 +10,7 @@ export default function ProductImageGallery({
   images: string[]
   productName: string
 }) {
+  const safeImages = images.filter((image) => typeof image === 'string' && image.trim().length > 0)
   const [activeIndex, setActiveIndex] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
 
@@ -26,7 +26,13 @@ export default function ProductImageGallery({
     }
   }, [zoomOpen])
 
-  if (!images || images.length === 0) {
+  useEffect(() => {
+    if (activeIndex > safeImages.length - 1) {
+      setActiveIndex(0)
+    }
+  }, [activeIndex, safeImages.length])
+
+  if (safeImages.length === 0) {
     return (
       <div className="flex aspect-square items-center justify-center rounded-[32px] border border-gray-200 bg-white text-3xl font-semibold text-gray-300 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
         IMG
@@ -43,9 +49,9 @@ export default function ProductImageGallery({
             Revisa detalles y terminaciones
           </p>
         </div>
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <p className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-            {activeIndex + 1} / {images.length}
+            {activeIndex + 1} / {safeImages.length}
           </p>
         )}
       </div>
@@ -56,22 +62,20 @@ export default function ProductImageGallery({
         onClick={() => setZoomOpen(true)}
         aria-label={`Ampliar imagen principal de ${productName}`}
       >
-        <Image
-          src={images[activeIndex]}
+        <img
+          src={safeImages[activeIndex]}
           alt={`${productName} - Vista principal`}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          sizes="(max-width: 1280px) 100vw, 60vw"
-          priority
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          loading="eager"
         />
         <div className="pointer-events-none absolute right-4 top-4 rounded-2xl bg-white/88 p-2.5 text-gray-700 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
           <ZoomIn size={20} />
         </div>
       </button>
 
-      {images.length > 1 && (
+      {safeImages.length > 1 && (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-          {images.map((img, i) => (
+          {safeImages.map((img, i) => (
             <button
               key={i}
               type="button"
@@ -86,12 +90,11 @@ export default function ProductImageGallery({
                 }
               `}
             >
-              <Image
+              <img
                 src={img}
                 alt={`${productName} thumbnail ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="120px"
+                className="h-full w-full object-cover"
+                loading="lazy"
               />
             </button>
           ))}
@@ -118,12 +121,10 @@ export default function ProductImageGallery({
             className="relative aspect-square w-full max-w-5xl overflow-hidden rounded-lg sm:aspect-video"
             onClick={(event) => event.stopPropagation()}
           >
-            <Image
-              src={images[activeIndex]}
+            <img
+              src={safeImages[activeIndex]}
               alt={`${productName} zoom`}
-              fill
-              className="object-contain"
-              sizes="100vw"
+              className="h-full w-full object-contain"
             />
           </div>
         </div>
