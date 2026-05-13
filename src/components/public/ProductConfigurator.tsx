@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useMemo, useState } from 'react'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -138,7 +138,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
         ? 'Agregar al carrito'
         : 'No disponible'
       : !allRequiredSelected
-        ? 'Elegi las opciones'
+        ? 'Elegí las opciones'
         : !activeVariant
           ? 'Completa la variante'
           : selectedVariantAvailable

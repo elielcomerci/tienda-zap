@@ -21,10 +21,11 @@ import { getAdminOrder } from '@/lib/orders'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 import OrderInvoiceUploader from '@/components/admin/OrderInvoiceUploader'
 import ReceiptDownloader from '@/components/admin/ReceiptDownloader'
+import ProofUploader from '@/components/admin/ProofUploader'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }
 
-const statuses = ['PENDING', 'PAID', 'PROCESSING', 'READY', 'DELIVERED', 'CANCELLED'] as const
+const statuses = ['PENDING', 'PAID', 'PROOF_SENT', 'IN_PRODUCTION', 'PROCESSING', 'READY', 'DELIVERED', 'CANCELLED'] as const
 
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -241,6 +242,22 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 voidedReason: r.voidedReason,
                 replacedByReceiptId: r.replacedByReceiptId,
                 createdAt: r.createdAt.toISOString(),
+              })) ?? []
+            }
+          />
+
+          <ProofUploader
+            orderId={order.id}
+            proofs={
+              order.proofs?.map((p) => ({
+                id: p.id,
+                fileName: p.fileName,
+                fileUrl: p.fileUrl,
+                note: p.note,
+                status: p.status,
+                reviewedAt: p.reviewedAt?.toISOString() ?? null,
+                reviewNote: p.reviewNote,
+                createdAt: p.createdAt.toISOString(),
               })) ?? []
             }
           />

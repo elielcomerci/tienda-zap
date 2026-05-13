@@ -2,6 +2,8 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { orderItemIsProductionReady } from '@/lib/order-files'
 import { confirmCouponRedemptionForOrder } from '@/lib/coupons'
+import { sendEmailAsync } from '@/lib/email'
+import { paymentConfirmedEmail, orderReadyEmail } from '@/lib/email-templates'
 
 export function getOrderDisplayCode(orderId: string) {
   return orderId.slice(-8).toUpperCase()
@@ -55,6 +57,23 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
     },
   })
 
+  // Log event
+  await prisma.orderEvent.create({
+    data: { orderId, status: nextStatus, note: 'Pago confirmado' },
+  })
+
+  // Send email
+  const orderData = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { guestEmail: true, guestName: true, user: { select: { email: true, name: true } } },
+  })
+  const email = orderData?.user?.email || orderData?.guestEmail
+  const name = orderData?.user?.name || orderData?.guestName || 'Cliente'
+  if (email) {
+    const template = paymentConfirmedEmail({ customerName: name, orderCode: getOrderDisplayCode(orderId) })
+    sendEmailAsync({ to: email, ...template })
+  }
+
   await confirmCouponRedemptionForOrder(orderId)
 
   revalidateOrderViews(orderId)
@@ -82,7 +101,7 @@ export async function syncOrderStatusAfterArtworkChange(orderId: string) {
     throw new Error('Orden no encontrada')
   }
 
-  if (['CANCELLED', 'READY', 'DELIVERED'].includes(order.status)) {
+  if (['CANCELLED', 'READY', 'DELIVERED', 'PROOF_SENT', 'IN_PRODUCTION'].includes(order.status)) {
     return order.status
   }
 

@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { forgotPasswordSchema, resetPasswordSchema } from '@/lib/validations'
+import { sendEmailAsync } from '@/lib/email'
+import { passwordResetEmail } from '@/lib/email-templates'
 
 function getAppBaseUrl() {
   const baseUrl =
@@ -12,7 +14,7 @@ function getAppBaseUrl() {
     (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null)
 
   if (!baseUrl) {
-    throw new Error('NEXTAUTH_URL no esta configurado.')
+    throw new Error('NEXTAUTH_URL no está configurado.')
   }
 
   return baseUrl
@@ -39,12 +41,13 @@ export async function requestPasswordReset(formData: FormData): Promise<void> {
       },
     })
 
-    // TODO: Integrar Resend u otro servicio de mailing para enviar este enlace.
-    // Nunca imprimimos el token completo en logs porque es un secreto de un solo uso.
     const resetLink = `${getAppBaseUrl()}/recuperar/${token}`
 
+    const template = passwordResetEmail({ resetLink })
+    sendEmailAsync({ to: email, ...template })
+
     if (process.env.NODE_ENV === 'development') {
-      console.log(`Enlace de recuperacion para ${email}: ${resetLink}`)
+      console.log(`Enlace de recuperación para ${email}: ${resetLink}`)
     }
   }
 

@@ -9,6 +9,9 @@ import {
 } from '@/lib/order-access'
 import { buildDraftZapCreditPlan } from '@/lib/financing'
 import { evaluateCheckoutPricing, reserveCouponRedemptionForOrder } from '@/lib/coupons'
+import { sendEmailAsync } from '@/lib/email'
+import { orderConfirmationEmail } from '@/lib/email-templates'
+import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
 // POST /api/ordenes - crear orden TRANSFER, CASH o ZAP_CREDIT
 export async function POST(req: NextRequest) {
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     if (data.paymentType === 'ZAP_CREDIT' && !session?.user?.id) {
       return Response.json(
-        { error: 'Inicia sesion para solicitar Crédito ZAP y seguir tus cuotas.' },
+        { error: 'Inicia sesión para solicitar Crédito ZAP y seguir tus cuotas.' },
         { status: 401 }
       )
     }
@@ -100,6 +103,24 @@ export async function POST(req: NextRequest) {
       return createdOrder
     })
 
+    // Log initial event
+    await prisma.orderEvent.create({
+      data: { orderId: order.id, status: 'PENDING', note: 'Pedido creado' },
+    })
+
+    // Send confirmation email
+    const email = data.email
+    if (email) {
+      const template = orderConfirmationEmail({
+        customerName: data.name,
+        orderCode: getOrderDisplayCode(order.id),
+        total: pricing.total,
+        itemCount: data.items.reduce((sum, i) => sum + i.quantity, 0),
+        paymentType: data.paymentType,
+      })
+      sendEmailAsync({ to: email, ...template })
+    }
+
     // Sync with User Profile if logged in
     if (session?.user?.id) {
       await prisma.user.update({
@@ -127,3 +148,4 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: error.message }, { status: 500 })
   }
 }
+

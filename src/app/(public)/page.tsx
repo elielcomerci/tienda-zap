@@ -24,7 +24,7 @@ const valueProps = [
   {
     icon: Package,
     title: 'Listo para producir',
-    desc: 'Elegi el formato, deja detalles importantes y prepara el trabajo con una lectura clara desde el inicio.',
+    desc: 'Elegí el formato, dejá detalles importantes y prepará el trabajo con una lectura clara desde el inicio.',
   },
   {
     icon: ShieldCheck,
@@ -124,10 +124,10 @@ export default async function HomePage() {
 
               <div>
                 <h1 className="max-w-4xl text-5xl font-black tracking-tight text-gray-950 sm:text-6xl xl:text-7xl">
-                  Tu marca lista para verse mejor, aparecer mas y moverse en serio.
+                  Tu marca lista para verse mejor, aparecer más y moverse en serio.
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-gray-600 sm:text-lg">
-                  Diseño, producción grafica, merchandising, exhibición, web y presencia digital
+                  Diseño, producción gráfica, merchandising, exhibición, web y presencia digital
                   para negocios que necesitan dejar de improvisar como se muestran.
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default async function HomePage() {
                 Empezá por lo que hoy puede mover tu marca.
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                Una seleccion curada de grafica, exhibición, merchandising y servicios digitales para resolver con criterio.
+                Una selección curada de gráfica, exhibición, merchandising y servicios digitales para resolver con criterio.
               </p>
             </div>
 
@@ -422,7 +422,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
           <div className="mb-8">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-              Elegi por objetivo
+              Elegí por objetivo
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
               Tres caminos para entender que necesita tu marca.
@@ -451,10 +451,10 @@ export default async function HomePage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
-                Tambien por rubro
+                También por rubro
               </p>
               <h2 className="mt-2 text-2xl font-black text-gray-950">
-                Si preferis entrar por rubro, las categorias quedan a mano sin quitarle protagonismo a las soluciones.
+                Si preferís entrar por rubro, las categorías quedan a mano sin quitarle protagonismo a las soluciones.
               </h2>
             </div>
 

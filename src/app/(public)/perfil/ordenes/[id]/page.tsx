@@ -6,6 +6,8 @@ import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getCustomerOrder } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
 import ResumePaymentButton from '@/components/public/ResumePaymentButton'
+import OrderTimeline from '@/components/public/OrderTimeline'
+import ProofReviewSection from '@/components/public/ProofReviewSection'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -14,7 +16,9 @@ export const dynamic = 'force-dynamic'
 const statusLabel: Record<string, string> = {
   PENDING: 'Pendiente',
   PAID: 'Pagado',
-  PROCESSING: 'En producción',
+  PROOF_SENT: 'Prueba enviada',
+  IN_PRODUCTION: 'En producción',
+  PROCESSING: 'En proceso',
   READY: 'Listo para retirar',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
@@ -23,6 +27,8 @@ const statusLabel: Record<string, string> = {
 const statusColor: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
   PAID: 'bg-blue-100 text-blue-700',
+  PROOF_SENT: 'bg-indigo-100 text-indigo-700',
+  IN_PRODUCTION: 'bg-purple-100 text-purple-700',
   PROCESSING: 'bg-purple-100 text-purple-700',
   READY: 'bg-green-100 text-green-700',
   DELIVERED: 'bg-gray-100 text-gray-700',
@@ -88,6 +94,34 @@ export default async function MiOrdenPage({
           </p>
           <ResumePaymentButton orderId={order.id} />
         </div>
+      )}
+
+      {/* Order Timeline */}
+      {order.events && order.events.length > 0 && (
+        <div className="card p-5">
+          <h3 className="font-bold text-gray-900 mb-4 text-sm">Seguimiento del pedido</h3>
+          <OrderTimeline
+            events={order.events.map((e) => ({ ...e, createdAt: e.createdAt.toISOString() }))}
+            currentStatus={order.status}
+          />
+        </div>
+      )}
+
+      {/* Proof Review */}
+      {order.proofs && order.proofs.length > 0 && (
+        <ProofReviewSection
+          proofs={order.proofs.map((p) => ({
+            id: p.id,
+            fileName: p.fileName,
+            fileUrl: p.fileUrl,
+            objectKey: p.objectKey,
+            note: p.note,
+            status: p.status,
+            reviewNote: p.reviewNote,
+            createdAt: p.createdAt.toISOString(),
+          }))}
+          orderId={order.id}
+        />
       )}
 
       <div className="card overflow-hidden">

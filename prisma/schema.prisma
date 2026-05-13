@@ -106,6 +106,8 @@ model Order {
   couponRedemption      CouponRedemption?
   zapCreditPlan         ZapCreditPlan?
   receipts              Receipt[]
+  events                OrderEvent[]
+  proofs                ProofFile[]
 }
 
 model OrderItem {
@@ -435,10 +437,45 @@ enum Role {
 enum OrderStatus {
   PENDING
   PAID
+  PROOF_SENT
+  IN_PRODUCTION
   PROCESSING
   READY
   DELIVERED
   CANCELLED
+}
+
+enum ProofStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  status    String
+  note      String?
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+model ProofFile {
+  id          String      @id @default(cuid())
+  orderId     String
+  fileUrl     String
+  fileName    String
+  objectKey   String?
+  note        String?
+  status      ProofStatus @default(PENDING)
+  reviewedAt  DateTime?
+  reviewNote  String?
+  createdAt   DateTime    @default(now())
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
 }
 
 enum PaymentType {

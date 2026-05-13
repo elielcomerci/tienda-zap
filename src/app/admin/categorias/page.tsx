@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'Categorias | ZAP Admin',
+  title: 'Categorías | ZAP Admin',
 }
 
 import { Plus, Tag, Trash2, Wrench } from 'lucide-react'
@@ -17,7 +17,7 @@ export default async function AdminCategoriesPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Categorias</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Categorías</h1>
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
@@ -48,7 +48,7 @@ export default async function AdminCategoriesPage() {
                   className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                 />
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Categoria de servicio</p>
+                  <p className="text-sm font-semibold text-gray-900">Categoría de servicio</p>
                   <p className="text-xs text-gray-500">
                     Oculta archivos y stock fisico en checkout.
                   </p>

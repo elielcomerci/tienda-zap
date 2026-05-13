@@ -5,6 +5,8 @@ import { findAccessibleOrder } from '@/lib/order-access'
 const validOrderStatuses = new Set([
   'PENDING',
   'PAID',
+  'PROOF_SENT',
+  'IN_PRODUCTION',
   'PROCESSING',
   'READY',
   'DELIVERED',
@@ -36,6 +38,12 @@ const viewerOrderInclude = {
   receipts: {
     where: { status: 'ACTIVE' as const },
     orderBy: { sequenceNumber: 'asc' as const },
+  },
+  events: {
+    orderBy: { createdAt: 'asc' as const },
+  },
+  proofs: {
+    orderBy: { createdAt: 'desc' as const },
   },
 }
 
@@ -71,6 +79,12 @@ export async function getAdminOrder(id: string) {
       },
       receipts: {
         orderBy: { sequenceNumber: 'asc' as const },
+      },
+      events: {
+        orderBy: { createdAt: 'asc' as const },
+      },
+      proofs: {
+        orderBy: { createdAt: 'desc' as const },
       },
     },
   })

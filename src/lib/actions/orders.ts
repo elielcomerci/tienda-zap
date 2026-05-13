@@ -14,7 +14,10 @@ import {
   revalidateOrderViews,
   syncOrderStatusAfterArtworkChange,
   syncOrderStatusAfterPayment,
+  getOrderDisplayCode,
 } from '@/lib/orders-workflow'
+import { sendEmailAsync } from '@/lib/email'
+import { orderReadyEmail } from '@/lib/email-templates'
 
 async function requireAdmin() {
   const session = await auth()
@@ -27,9 +30,30 @@ export async function updateOrderStatus(id: string, status: string) {
     where: { id },
     data: { status: status as any },
   })
+
+  // Log event
+  await prisma.orderEvent.create({
+    data: { orderId: id, status, note: null },
+  })
+
   if (status === 'CANCELLED') {
     await releaseCouponRedemptionForOrder(id)
   }
+
+  // Send email on READY
+  if (status === 'READY') {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { guestEmail: true, guestName: true, user: { select: { email: true, name: true } } },
+    })
+    const email = order?.user?.email || order?.guestEmail
+    const name = order?.user?.name || order?.guestName || 'Cliente'
+    if (email) {
+      const template = orderReadyEmail({ customerName: name, orderCode: getOrderDisplayCode(id) })
+      sendEmailAsync({ to: email, ...template })
+    }
+  }
+
   revalidateOrderViews(id)
 }
 

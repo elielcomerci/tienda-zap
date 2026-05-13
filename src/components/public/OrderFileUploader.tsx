@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -223,7 +223,7 @@ export default function OrderFileUploader({
                 Envio diferido
               </p>
               <h3 className="mt-2 text-xl font-black text-emerald-950">
-                Si preferis, abri WhatsApp con el mensaje ya preparado.
+                Si preferís, abrí WhatsApp con el mensaje ya preparado.
               </h3>
               <p className="mt-2 text-sm leading-7 text-emerald-900">
                 Asi podés mandar los archivos mas tarde sin perder el contexto del pedido.

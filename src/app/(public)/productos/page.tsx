@@ -1,4 +1,4 @@
-﻿import Image from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts } from '@/lib/products'
@@ -30,7 +30,7 @@ export default async function ProductsPage({
                 Todo lo que ayuda a que tu marca se vea, se entienda y aparezca mejor.
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                Grafica, cartelería, exhibidores, merchandising, web y presencia digital en una
+                Gráfica, cartelería, exhibidores, merchandising, web y presencia digital en una
                 seleccion pensada para negocios que quieren verse mas profesionales.
               </p>
             </div>
@@ -45,7 +45,7 @@ export default async function ProductsPage({
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Categoria
+                  Categoría
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
                   {selectedCategory?.name || 'Todas'}
@@ -54,10 +54,10 @@ export default async function ProductsPage({
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Busqueda
+                  Búsqueda
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
-                  {q?.trim() ? `"${q.trim()}"` : 'Sin termino'}
+                  {q?.trim() ? `"${q.trim()}"` : 'Sin término'}
                 </p>
                 <p className="mt-1 text-sm text-gray-600">busqueda actual</p>
               </div>
@@ -139,12 +139,12 @@ export default async function ProductsPage({
                 <div className="flex flex-wrap gap-2">
                   {selectedCategory && (
                     <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
-                      Categoria: {selectedCategory.name}
+                      Categoría: {selectedCategory.name}
                     </span>
                   )}
                   {q?.trim() && (
                     <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-700">
-                      Busqueda: {q.trim()}
+                      Búsqueda: {q.trim()}
                     </span>
                   )}
                 </div>

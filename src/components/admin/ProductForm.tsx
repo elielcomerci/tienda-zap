@@ -332,7 +332,7 @@ export default function ProductForm({
 
             <div className="space-y-4">
               <div>
-                <label className="label">Categoria *</label>
+                <label className="label">Categoría *</label>
                 <select
                   name="categoryId"
                   value={selectedCategoryId}
