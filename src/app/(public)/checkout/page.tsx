@@ -1,8 +1,8 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCartStore } from '@/lib/cart-store'
 import { type Resolver, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -148,6 +148,8 @@ type CouponPreviewState = {
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCartStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const loadedQueryCouponRef = useRef('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderCreated, setOrderCreated] = useState(false)
@@ -377,6 +379,15 @@ export default function CheckoutPage() {
       setCouponLoading(false)
     }
   }
+
+  useEffect(() => {
+    const queryCoupon = searchParams.get('coupon') || searchParams.get('code') || searchParams.get('c')
+    if (!queryCoupon || items.length === 0 || loadedQueryCouponRef.current === queryCoupon) return
+
+    loadedQueryCouponRef.current = queryCoupon
+    setCouponDraft(queryCoupon)
+    void reviewCoupon(queryCoupon)
+  }, [items.length, searchParams])
 
   const onSubmit = async (data: OrderCheckoutData) => {
     if (hasUnavailableItems) {
@@ -733,26 +744,28 @@ export default function CheckoutPage() {
                         Es opcional. Si no usas cupon, podes seguir con el pedido normalmente.
                       </p>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setScannerOpen(true)}
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors hover:border-orange-300 hover:text-orange-700"
-                    >
-                      <ScanLine size={16} />
-                      Escanear cupon
-                    </button>
                   </div>
 
                   <div className="mt-4 flex flex-col gap-3 lg:flex-row">
                     <div className="flex-1">
                       <label className="label">Codigo del cupon</label>
-                      <input
-                        value={couponDraft}
-                        onChange={(event) => setCouponDraft(event.target.value)}
-                        className="input"
-                        placeholder="Ej: ZAP-7F3K9Q-X2"
-                      />
+                      <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-orange-100">
+                        <input
+                          value={couponDraft}
+                          onChange={(event) => setCouponDraft(event.target.value)}
+                          className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm outline-none"
+                          placeholder="Ej: ZAP-7F3K9Q-X2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setScannerOpen(true)}
+                          className="flex h-12 w-12 shrink-0 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors hover:bg-orange-50 hover:text-orange-600"
+                          aria-label="Escanear cupon con la camara"
+                          title="Escanear cupon"
+                        >
+                          <ScanLine size={18} />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex gap-3 lg:pt-7">

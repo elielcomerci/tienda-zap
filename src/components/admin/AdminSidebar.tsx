@@ -95,7 +95,6 @@ export default function AdminSidebar() {
         <div className="space-y-1 border-t border-gray-800 px-3 py-4">
           <Link
             href="/"
-            target="_blank"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-400 transition-all hover:bg-gray-800 hover:text-white"
           >
             <Zap size={18} />

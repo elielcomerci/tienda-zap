@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Menu, ShoppingCart, X, Zap } from 'lucide-react'
+import { LayoutDashboard, Menu, ShoppingCart, X, Zap } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState } from 'react'
 
 export default function PublicHeader({
   user,
 }: {
-  user?: { name?: string | null } | null
+  user?: { name?: string | null; role?: string | null } | null
 }) {
   const itemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
@@ -78,6 +78,17 @@ export default function PublicHeader({
         </nav>
 
         <div className="flex items-center gap-2">
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/admin"
+              className="hidden h-11 w-11 items-center justify-center rounded-full border border-orange-200 bg-orange-50 text-orange-700 shadow-sm transition-colors hover:bg-orange-100 md:flex"
+              aria-label="Ir al admin"
+              title="Ir al admin"
+            >
+              <LayoutDashboard size={18} />
+            </Link>
+          )}
+
           {user ? (
             <Link
               href="/perfil"
@@ -142,6 +153,16 @@ export default function PublicHeader({
               {link.label}
             </Link>
           ))}
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/admin"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-orange-700 transition-colors hover:bg-orange-50"
+            >
+              <LayoutDashboard size={16} />
+              Ir al admin
+            </Link>
+          )}
         </nav>
       )}
     </header>

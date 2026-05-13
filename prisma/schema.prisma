@@ -58,17 +58,17 @@ model Product {
 }
 
 model Order {
-  id                    String          @id @default(cuid())
+  id                    String            @id @default(cuid())
   userId                String?
   guestEmail            String?
   guestName             String?
   guestPhone            String?
   subtotal              Float?
-  discountTotal         Float           @default(0)
+  discountTotal         Float             @default(0)
   total                 Float
   couponCode            String?
   pricingSnapshot       Json?
-  status                OrderStatus     @default(PENDING)
+  status                OrderStatus       @default(PENDING)
   paymentType           PaymentType
   paymentId             String?
   receiptUrl            String?
@@ -76,8 +76,8 @@ model Order {
   invoiceFileName       String?
   invoiceUploadedAt     DateTime?
   notes                 String?
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
   publicAccessTokenHash String?
   mpPreferenceId        String?
   partnerAccountId      String?
@@ -89,8 +89,8 @@ model Order {
   shippingCity          String?
   shippingPostalCode    String?
   shippingProvince      String?
-  partnerAccount        PartnerAccount? @relation(fields: [partnerAccountId], references: [id])
-  user                  User?           @relation(fields: [userId], references: [id])
+  partnerAccount        PartnerAccount?   @relation(fields: [partnerAccountId], references: [id])
+  user                  User?             @relation(fields: [userId], references: [id])
   items                 OrderItem[]
   couponRedemption      CouponRedemption?
   zapCreditPlan         ZapCreditPlan?
@@ -343,6 +343,9 @@ model Promotion {
   name          String
   type          PromotionType      @default(COUPON)
   status        PromotionStatus    @default(DRAFT)
+  campaignKind  String?
+  audienceLabel String?
+  qrBaseUrl     String?
   priority      Int                @default(0)
   stackable     Boolean            @default(false)
   activeFrom    DateTime?
@@ -358,17 +361,39 @@ model Promotion {
 }
 
 model PromotionCoupon {
-  code        String                @id
-  promotionId String
-  status      CouponStatus          @default(AVAILABLE)
-  usesLeft    Int                   @default(1)
-  expiresAt   DateTime?
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  promotion   Promotion             @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-  redemptions CouponRedemption[]
+  code              String             @id
+  promotionId       String
+  status            CouponStatus       @default(AVAILABLE)
+  usesLeft          Int                @default(1)
+  recipientName     String?
+  recipientBusiness String?
+  recipientEmail    String?
+  recipientPhone    String?
+  batchName         String?
+  qrPayload         String?
+  scanCount         Int                @default(0)
+  lastScannedAt     DateTime?
+  metadata          Json?
+  expiresAt         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  promotion         Promotion          @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  redemptions       CouponRedemption[]
+  scans             CouponScan[]
 
   @@index([promotionId, status])
+  @@index([batchName])
+}
+
+model CouponScan {
+  id         String          @id @default(cuid())
+  couponCode String
+  scannedAt  DateTime        @default(now())
+  userAgent  String?
+  referrer   String?
+  coupon     PromotionCoupon @relation(fields: [couponCode], references: [code], onDelete: Cascade)
+
+  @@index([couponCode, scannedAt])
 }
 
 model CouponRedemption {

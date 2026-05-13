@@ -254,9 +254,57 @@ export function normalizeCouponCode(rawValue?: string | null) {
   return rawValue ? extractCouponCode(rawValue) : ''
 }
 
+export function buildCouponLandingUrl(code: string, baseUrl?: string | null) {
+  const normalizedCode = normalizeCouponCode(code)
+  const path = `/cupon/${encodeURIComponent(normalizedCode)}`
+  const normalizedBaseUrl = baseUrl?.trim().replace(/\/+$/, '')
+
+  return normalizedBaseUrl ? `${normalizedBaseUrl}${path}` : path
+}
+
 export function isCouponCodeFormatValid(rawValue?: string | null) {
   const normalizedCode = normalizeCouponCode(rawValue)
   return looksLikeCouponCode(normalizedCode)
+}
+
+export async function recordCouponScan(input: {
+  couponCode: string
+  userAgent?: string | null
+  referrer?: string | null
+}) {
+  const normalizedCode = normalizeCouponCode(input.couponCode)
+
+  if (!looksLikeCouponCode(normalizedCode)) {
+    return null
+  }
+
+  const coupon = await prisma.promotionCoupon.findUnique({
+    where: { code: normalizedCode },
+    select: { code: true },
+  })
+
+  if (!coupon) {
+    return null
+  }
+
+  await prisma.$transaction([
+    prisma.couponScan.create({
+      data: {
+        couponCode: normalizedCode,
+        userAgent: input.userAgent?.slice(0, 300) || null,
+        referrer: input.referrer?.slice(0, 500) || null,
+      },
+    }),
+    prisma.promotionCoupon.update({
+      where: { code: normalizedCode },
+      data: {
+        scanCount: { increment: 1 },
+        lastScannedAt: new Date(),
+      },
+    }),
+  ])
+
+  return normalizedCode
 }
 
 export async function evaluateCheckoutPricing(input: {

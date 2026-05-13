@@ -3,6 +3,7 @@
 import crypto from 'crypto'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { buildCouponLandingUrl } from '@/lib/coupons'
 import { revalidatePath } from 'next/cache'
 
 async function requireAdmin() {
@@ -50,6 +51,61 @@ function buildCouponCode(prefix: string) {
   return `${prefix}-${randomSegment}-${checksum}`
 }
 
+type RecipientRow = {
+  recipientName?: string
+  recipientBusiness?: string
+  recipientEmail?: string
+  recipientPhone?: string
+  metadata?: Record<string, string>
+}
+
+function normalizeOptionalText(value?: string | null) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
+}
+
+function splitRecipientLine(line: string) {
+  return line
+    .split(/[;\t,]/)
+    .map((part) => part.trim())
+}
+
+function parseRecipientRows(rawValue?: string | null): RecipientRow[] {
+  const lines = rawValue
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  if (!lines?.length) return []
+
+  return lines
+    .filter((line, index) => {
+      if (index !== 0) return true
+      const lowered = line.toLowerCase()
+      return !(
+        lowered.includes('nombre') ||
+        lowered.includes('name') ||
+        lowered.includes('negocio') ||
+        lowered.includes('business')
+      )
+    })
+    .map((line) => {
+      const [name, business, email, phone, ...extra] = splitRecipientLine(line)
+      const metadata: Record<string, string> = {}
+      extra.forEach((value, index) => {
+        if (value) metadata[`variable${index + 1}`] = value
+      })
+
+      return {
+        recipientName: name || undefined,
+        recipientBusiness: business || undefined,
+        recipientEmail: email || undefined,
+        recipientPhone: phone || undefined,
+        metadata: Object.keys(metadata).length ? metadata : undefined,
+      }
+    })
+}
+
 async function generateUniqueCouponCodes(quantity: number, prefix: string) {
   const uniqueCodes = new Set<string>()
 
@@ -90,6 +146,14 @@ export async function getPromotions() {
       coupons: {
         orderBy: { createdAt: 'desc' },
         take: 8,
+        include: {
+          _count: {
+            select: {
+              scans: true,
+              redemptions: true,
+            },
+          },
+        },
       },
     },
     orderBy: { updatedAt: 'desc' },
@@ -99,6 +163,9 @@ export async function getPromotions() {
 export type PromotionInput = {
   name: string
   status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED'
+  campaignKind?: string | null
+  audienceLabel?: string | null
+  qrBaseUrl?: string | null
   priority?: number
   discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: number
@@ -131,6 +198,9 @@ function toPromotionData(data: PromotionInput) {
     name: data.name.trim(),
     type: 'COUPON' as const,
     status: data.status,
+    campaignKind: normalizeOptionalText(data.campaignKind),
+    audienceLabel: normalizeOptionalText(data.audienceLabel),
+    qrBaseUrl: normalizeOptionalText(data.qrBaseUrl),
     priority: Number.isFinite(data.priority) ? Math.floor(data.priority ?? 0) : 0,
     discountKind: data.discountKind,
     discountValue: Number(data.discountValue),
@@ -214,6 +284,9 @@ export async function generatePromotionCoupons(input: {
   promotionId: string
   quantity: number
   prefix: string
+  batchName?: string | null
+  recipients?: string | null
+  qrBaseUrl?: string | null
   expiresAt?: string | null
 }) {
   await requireAdmin()
@@ -224,19 +297,105 @@ export async function generatePromotionCoupons(input: {
   }
 
   const prefix = buildCouponPrefix(input.prefix)
+  const recipients = parseRecipientRows(input.recipients)
+  const totalToGenerate = recipients.length > 0 ? recipients.length : quantity
+  if (recipients.length > 0 && totalToGenerate > 500) {
+    throw new Error('El lote no puede superar 500 destinatarios.')
+  }
   const expiresAt = normalizeOptionalDate(input.expiresAt)
-  const codes = await generateUniqueCouponCodes(quantity, prefix)
+  const batchName = normalizeOptionalText(input.batchName)
+  const promotion = await prisma.promotion.findUnique({
+    where: { id: input.promotionId },
+    select: { qrBaseUrl: true },
+  })
+  const qrBaseUrl = normalizeOptionalText(input.qrBaseUrl) ?? promotion?.qrBaseUrl ?? null
+  const codes = await generateUniqueCouponCodes(totalToGenerate, prefix)
 
   await prisma.promotionCoupon.createMany({
-    data: codes.map((code) => ({
+    data: codes.map((code, index) => {
+      const recipient = recipients[index]
+      return {
       code,
       promotionId: input.promotionId,
+      recipientName: recipient?.recipientName,
+      recipientBusiness: recipient?.recipientBusiness,
+      recipientEmail: recipient?.recipientEmail,
+      recipientPhone: recipient?.recipientPhone,
+      batchName,
+      qrPayload: buildCouponLandingUrl(code, qrBaseUrl),
+      metadata: recipient?.metadata,
       expiresAt,
       status: 'AVAILABLE',
       usesLeft: 1,
-    })),
+      }
+    }),
   })
 
   revalidatePath('/admin/promociones')
-  return { quantity, prefix }
+  return { quantity: totalToGenerate, prefix }
+}
+
+export async function exportPromotionCouponsCsv(promotionId: string) {
+  await requireAdmin()
+
+  const promotion = await prisma.promotion.findUnique({
+    where: { id: promotionId },
+    include: {
+      coupons: {
+        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: {
+              scans: true,
+              redemptions: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!promotion) {
+    throw new Error('Promocion no encontrada.')
+  }
+
+  const escapeCsv = (value: unknown) => {
+    const rawValue = value == null ? '' : String(value)
+    return `"${rawValue.replace(/"/g, '""')}"`
+  }
+
+  const rows = [
+    [
+      'codigo',
+      'promocion',
+      'estado',
+      'destinatario',
+      'negocio',
+      'email',
+      'telefono',
+      'lote',
+      'qr',
+      'escaneos',
+      'redenciones',
+      'vence',
+      'creado',
+    ],
+    ...promotion.coupons.map((coupon) => [
+      coupon.code,
+      promotion.name,
+      coupon.status,
+      coupon.recipientName,
+      coupon.recipientBusiness,
+      coupon.recipientEmail,
+      coupon.recipientPhone,
+      coupon.batchName,
+      coupon.qrPayload,
+      coupon._count.scans,
+      coupon._count.redemptions,
+      coupon.expiresAt?.toISOString() ?? '',
+      coupon.createdAt.toISOString(),
+    ]),
+  ]
+
+  return rows.map((row) => row.map(escapeCsv).join(',')).join('\n')
 }

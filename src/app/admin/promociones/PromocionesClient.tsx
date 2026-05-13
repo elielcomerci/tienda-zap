@@ -5,9 +5,12 @@ import {
   BadgePercent,
   Check,
   Copy,
+  Download,
+  ExternalLink,
   PauseCircle,
   Pencil,
   Plus,
+  QrCode,
   Ticket,
   Trash2,
   X,
@@ -15,6 +18,7 @@ import {
 import {
   createPromotion,
   deletePromotion,
+  exportPromotionCouponsCsv,
   generatePromotionCoupons,
   togglePromotionStatus,
   updatePromotion,
@@ -24,6 +28,9 @@ type PromotionWithCounts = {
   id: string
   name: string
   status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED'
+  campaignKind: string | null
+  audienceLabel: string | null
+  qrBaseUrl: string | null
   priority: number
   discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: number
@@ -35,8 +42,20 @@ type PromotionWithCounts = {
   coupons: Array<{
     code: string
     status: 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED'
+    recipientName: string | null
+    recipientBusiness: string | null
+    recipientEmail: string | null
+    recipientPhone: string | null
+    batchName: string | null
+    qrPayload: string | null
+    scanCount: number
+    lastScannedAt: Date | null
     expiresAt: Date | null
     createdAt: Date
+    _count?: {
+      scans: number
+      redemptions: number
+    }
   }>
   _count: {
     coupons: number
@@ -48,6 +67,9 @@ type PromotionFormState = {
   id?: string
   name: string
   status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED'
+  campaignKind: string
+  audienceLabel: string
+  qrBaseUrl: string
   priority: string
   discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: string
@@ -62,12 +84,18 @@ type GenerateFormState = {
   promotionId: string
   quantity: string
   prefix: string
+  batchName: string
+  recipients: string
+  qrBaseUrl: string
   expiresAt: string
 }
 
 const DEFAULT_PROMOTION_FORM: PromotionFormState = {
   name: '',
   status: 'DRAFT',
+  campaignKind: '',
+  audienceLabel: '',
+  qrBaseUrl: '',
   priority: '0',
   discountKind: 'PERCENTAGE',
   discountValue: '',
@@ -82,6 +110,9 @@ const DEFAULT_GENERATE_FORM: GenerateFormState = {
   promotionId: '',
   quantity: '25',
   prefix: 'ZAP',
+  batchName: '',
+  recipients: '',
+  qrBaseUrl: '',
   expiresAt: '',
 }
 
@@ -95,6 +126,9 @@ function mapPromotionToForm(promotion: PromotionWithCounts): PromotionFormState 
     id: promotion.id,
     name: promotion.name,
     status: promotion.status,
+    campaignKind: promotion.campaignKind ?? '',
+    audienceLabel: promotion.audienceLabel ?? '',
+    qrBaseUrl: promotion.qrBaseUrl ?? '',
     priority: String(promotion.priority ?? 0),
     discountKind: promotion.discountKind,
     discountValue: String(promotion.discountValue),
@@ -160,6 +194,9 @@ export default function PromocionesClient({
     setGenerateForm({
       ...DEFAULT_GENERATE_FORM,
       promotionId: promotion.id,
+      qrBaseUrl:
+        promotion.qrBaseUrl ||
+        (typeof window !== 'undefined' ? window.location.origin : ''),
       prefix: promotion.name
         .trim()
         .toUpperCase()
@@ -181,6 +218,9 @@ export default function PromocionesClient({
       const payload = {
         name: promotionForm.name,
         status: promotionForm.status,
+        campaignKind: promotionForm.campaignKind || null,
+        audienceLabel: promotionForm.audienceLabel || null,
+        qrBaseUrl: promotionForm.qrBaseUrl || null,
         priority: Number(promotionForm.priority || '0'),
         discountKind: promotionForm.discountKind,
         discountValue: Number(promotionForm.discountValue || '0'),
@@ -214,6 +254,9 @@ export default function PromocionesClient({
         promotionId: generateForm.promotionId,
         quantity: Number(generateForm.quantity || '0'),
         prefix: generateForm.prefix,
+        batchName: generateForm.batchName || null,
+        recipients: generateForm.recipients || null,
+        qrBaseUrl: generateForm.qrBaseUrl || null,
         expiresAt: generateForm.expiresAt || null,
       })
 
@@ -240,6 +283,23 @@ export default function PromocionesClient({
       await navigator.clipboard.writeText(code)
     } catch {
       setError('No pudimos copiar el codigo al portapapeles.')
+    }
+  }
+
+  const handleExportCoupons = async (promotion: PromotionWithCounts) => {
+    try {
+      const csv = await exportPromotionCouponsCsv(promotion.id)
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${promotion.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'cupones'}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (exportError: any) {
+      setError(exportError.message || 'No pudimos exportar los cupones.')
     }
   }
 
@@ -330,6 +390,11 @@ export default function PromocionesClient({
                           ? `${promotion.discountValue}% OFF`
                           : `$${promotion.discountValue.toLocaleString('es-AR')} OFF`}
                       </span>
+                      {promotion.campaignKind && (
+                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                          {promotion.campaignKind}
+                        </span>
+                      )}
                     </div>
                     <h2 className="mt-3 text-xl font-black text-gray-900">{promotion.name}</h2>
                     <p className="mt-1 text-sm text-gray-500">
@@ -337,6 +402,11 @@ export default function PromocionesClient({
                       {promotion.maxUses ?? 'sin tope'} · limite por usuario:{' '}
                       {promotion.perUserLimit ?? 'sin limite'}
                     </p>
+                    {promotion.audienceLabel && (
+                      <p className="mt-1 text-sm font-medium text-gray-700">
+                        Audiencia: {promotion.audienceLabel}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -408,7 +478,7 @@ export default function PromocionesClient({
               </div>
 
               <div className="border-t border-gray-100 p-5">
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
                       Ultimos cupones
@@ -417,13 +487,22 @@ export default function PromocionesClient({
                       Puedes generar lotes nuevos sin tocar el checkout existente.
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleOpenGenerateModal(promotion)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
-                  >
-                    <BadgePercent size={16} />
-                    Generar lote
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleOpenGenerateModal(promotion)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
+                    >
+                      <BadgePercent size={16} />
+                      Generar lote
+                    </button>
+                    <button
+                      onClick={() => handleExportCoupons(promotion)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
+                    >
+                      <Download size={16} />
+                      CSV
+                    </button>
+                  </div>
                 </div>
 
                 {promotion.coupons.length === 0 ? (
@@ -441,11 +520,21 @@ export default function PromocionesClient({
                           <p className="truncate font-mono text-sm font-bold text-gray-900">
                             {coupon.code}
                           </p>
+                          {(coupon.recipientName || coupon.recipientBusiness || coupon.batchName) && (
+                            <p className="mt-1 truncate text-xs font-semibold text-gray-700">
+                              {[coupon.recipientName, coupon.recipientBusiness, coupon.batchName]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </p>
+                          )}
                           <p className="mt-1 text-xs text-gray-500">
                             {coupon.expiresAt
                               ? `vence ${coupon.expiresAt.toLocaleDateString('es-AR')}`
                               : 'sin vencimiento'}{' '}
                             · creado {coupon.createdAt.toLocaleDateString('es-AR')}
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            Escaneos: {coupon.scanCount ?? coupon._count?.scans ?? 0}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -463,6 +552,22 @@ export default function PromocionesClient({
                           >
                             <Copy size={16} />
                           </button>
+                          <a
+                            href={`/api/admin/coupons/${encodeURIComponent(coupon.code)}/qr`}
+                            target="_blank"
+                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                            title="Abrir QR"
+                          >
+                            <QrCode size={16} />
+                          </a>
+                          <a
+                            href={coupon.qrPayload || `/cupon/${encodeURIComponent(coupon.code)}`}
+                            target="_blank"
+                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                            title="Probar link del cupon"
+                          >
+                            <ExternalLink size={16} />
+                          </a>
                         </div>
                       </div>
                     ))}
@@ -499,6 +604,49 @@ export default function PromocionesClient({
                   }
                   className="input"
                   required
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="label">Tipo de campana</label>
+                  <input
+                    value={promotionForm.campaignKind}
+                    onChange={(event) =>
+                      setPromotionForm((current) => ({
+                        ...current,
+                        campaignKind: event.target.value,
+                      }))
+                    }
+                    className="input"
+                    placeholder="Ej: QR personalizado"
+                  />
+                </div>
+                <div>
+                  <label className="label">Audiencia</label>
+                  <input
+                    value={promotionForm.audienceLabel}
+                    onChange={(event) =>
+                      setPromotionForm((current) => ({
+                        ...current,
+                        audienceLabel: event.target.value,
+                      }))
+                    }
+                    className="input"
+                    placeholder="Ej: Comercios zona centro"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="label">URL base para QR</label>
+                <input
+                  value={promotionForm.qrBaseUrl}
+                  onChange={(event) =>
+                    setPromotionForm((current) => ({ ...current, qrBaseUrl: event.target.value }))
+                  }
+                  className="input"
+                  placeholder="Ej: https://tutienda.com"
                 />
               </div>
 
@@ -708,6 +856,31 @@ export default function PromocionesClient({
                 </div>
               </div>
 
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="label">Nombre del lote</label>
+                  <input
+                    value={generateForm.batchName}
+                    onChange={(event) =>
+                      setGenerateForm((current) => ({ ...current, batchName: event.target.value }))
+                    }
+                    className="input"
+                    placeholder="Ej: Expo mayo 2026"
+                  />
+                </div>
+                <div>
+                  <label className="label">URL base para QR</label>
+                  <input
+                    value={generateForm.qrBaseUrl}
+                    onChange={(event) =>
+                      setGenerateForm((current) => ({ ...current, qrBaseUrl: event.target.value }))
+                    }
+                    className="input"
+                    placeholder="https://tutienda.com"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="label">Vencimiento del lote (opcional)</label>
                 <input
@@ -720,9 +893,25 @@ export default function PromocionesClient({
                 />
               </div>
 
+              <div>
+                <label className="label">Destinatarios variables (opcional)</label>
+                <textarea
+                  value={generateForm.recipients}
+                  onChange={(event) =>
+                    setGenerateForm((current) => ({ ...current, recipients: event.target.value }))
+                  }
+                  className="input min-h-32"
+                  placeholder={'Nombre, Negocio, email, telefono\nAna Lopez, Grafica Norte, ana@mail.com, 341...'}
+                />
+                <p className="mt-2 text-xs leading-5 text-gray-500">
+                  Si cargas destinatarios, generamos un cupon unico por linea y la cantidad se toma
+                  de la lista. Las columnas extra quedan guardadas como variables de campana.
+                </p>
+              </div>
+
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                Generamos codigos no secuenciales del estilo <strong>ZAP-7F3K9Q2A-X</strong> con
-                checksum para que luego puedan escanearse o copiarse en checkout.
+                Generamos codigos no secuenciales del estilo <strong>ZAP-7F3K9Q2A-X</strong>, su
+                landing <strong>/cupon/codigo</strong> y un QR SVG descargable para cada registro.
               </div>
 
               <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
