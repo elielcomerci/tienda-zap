@@ -24,14 +24,14 @@ export default async function ProductsPage({
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-                Tienda ZAP
+                Soluciones ZAP
               </p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                Piezas gráficas para marcas que cuidan cómo se ven.
+                Todo lo que ayuda a que tu marca se vea, se entienda y aparezca mejor.
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                Productos gráficos seleccionados con criterio creativo, terminaciones cuidadas y
-                formatos listos para llevar tu comunicación al local, la calle o el mostrador.
+                Grafica, carteleria, exhibidores, merchandising, web y presencia digital en una
+                seleccion pensada para negocios que quieren verse mas profesionales.
               </p>
             </div>
 
@@ -41,7 +41,7 @@ export default async function ProductsPage({
                   Resultados
                 </p>
                 <p className="mt-2 text-2xl font-black text-gray-950">{products.length}</p>
-                <p className="mt-1 text-sm text-gray-600">piezas disponibles</p>
+                <p className="mt-1 text-sm text-gray-600">soluciones disponibles</p>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
@@ -112,11 +112,11 @@ export default async function ProductsPage({
                 Criterio ZAP
               </p>
               <p className="mt-3 text-lg font-black leading-tight text-gray-950">
-                Diseno, produccion y eleccion con una lectura clara.
+                Diseno, produccion y presencia digital con una lectura clara.
               </p>
               <p className="mt-3 text-sm leading-7 text-gray-600">
-                Cada producto muestra la información necesaria para elegir con seguridad, sin
-                perder el foco en lo visual ni en la calidad del resultado.
+                Cada producto o servicio muestra la informacion necesaria para elegir con seguridad,
+                sin perder el foco en la marca ni en la calidad del resultado.
               </p>
             </div>
           </aside>
@@ -217,7 +217,7 @@ export default async function ProductsPage({
                           <p className="mt-2 line-clamp-3 text-sm leading-7 text-gray-600">
                             {product.description?.trim()
                               ? product.description
-                              : 'Una pieza gráfica lista para sumar presencia visual con terminación profesional.'}
+                              : 'Una solucion ZAP lista para sumar presencia, criterio y terminacion profesional.'}
                           </p>
                         </div>
 

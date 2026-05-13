@@ -56,7 +56,16 @@ export async function getAdminOrder(id: string) {
 
   return prisma.order.findUnique({
     where: { id },
-    include: adminOrderInclude,
+    include: {
+      ...adminOrderInclude,
+      zapCreditPlan: {
+        include: {
+          scheduleItems: {
+            orderBy: { sequence: 'asc' as const },
+          },
+        },
+      },
+    },
   })
 }
 

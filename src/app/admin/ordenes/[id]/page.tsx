@@ -20,6 +20,7 @@ import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getAdminOrder } from '@/lib/orders'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 import OrderInvoiceUploader from '@/components/admin/OrderInvoiceUploader'
+import ReceiptDownloader from '@/components/admin/ReceiptDownloader'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }
 
@@ -215,6 +216,20 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             orderId={order.id}
             currentInvoiceUrl={order.invoiceUrl}
             currentInvoiceFileName={order.invoiceFileName}
+          />
+
+          <ReceiptDownloader
+            orderId={order.id}
+            orderTotal={order.total}
+            installments={
+              order.zapCreditPlan?.scheduleItems?.map((item) => ({
+                id: item.id,
+                sequence: item.sequence,
+                dueDate: item.dueDate.toISOString(),
+                amount: item.amount,
+                status: item.status,
+              })) ?? []
+            }
           />
         </div>
 

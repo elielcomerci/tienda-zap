@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   CircleHelp,
   CreditCard,
-  PencilLine,
+
   ScanLine,
   Smartphone,
   Tag,
@@ -153,7 +153,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderCreated, setOrderCreated] = useState(false)
-  const [showProfileEditor, setShowProfileEditor] = useState(false)
+
   const [couponDraft, setCouponDraft] = useState('')
   const [couponPreview, setCouponPreview] = useState<CouponPreviewState | null>(null)
   const [couponFeedback, setCouponFeedback] = useState('')
@@ -257,11 +257,7 @@ export default function CheckoutPage() {
     }
   }, [creditEligibility, setValue])
 
-  useEffect(() => {
-    if (authenticatedUser && hasMissingRequiredFields) {
-      setShowProfileEditor(true)
-    }
-  }, [authenticatedUser, hasMissingRequiredFields])
+
 
   useEffect(() => {
     if (zapCreditSelection) {
@@ -535,52 +531,13 @@ export default function CheckoutPage() {
                         <div>
                           <p className="font-semibold">Ya tenemos buena parte de tus datos para este pedido.</p>
                           <p className="mt-1 text-emerald-800">
-                            Asi avanzar se siente mas simple y mas rapido.
+                            Revisa que esten bien y modifica lo que necesites. Lo que no cambies se mantiene como esta.
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {!hasMissingRequiredFields && (
-                      <div className="grid gap-4 lg:grid-cols-3">
-                        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Contacto
-                          </p>
-                          <p className="mt-2 text-sm font-semibold text-gray-900">{formValues.name}</p>
-                          <p className="mt-1 text-sm text-gray-600">{formValues.email}</p>
-                          <p className="mt-1 text-sm text-gray-600">{formValues.phone}</p>
-                          <p className="mt-1 text-sm text-gray-600">{formValues.documentId}</p>
-                        </div>
-
-                        {hasTextValue(formValues.billingAddress) && (
-                          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                              Facturacion
-                            </p>
-                            <p className="mt-2 text-sm text-gray-600">{formValues.billingAddress}</p>
-                            <p className="mt-1 text-sm text-gray-600">
-                              {formValues.billingCity} - {formValues.billingProvince}
-                            </p>
-                          </div>
-                        )}
-
-                        {hasTextValue(formValues.shippingAddress) && (
-                          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                              Envio
-                            </p>
-                            <p className="mt-2 text-sm text-gray-600">{formValues.shippingAddress}</p>
-                            <p className="mt-1 text-sm text-gray-600">
-                              {formValues.shippingCity} - {formValues.shippingProvince}
-                            </p>
-                            <p className="mt-1 text-sm text-gray-600">CP {formValues.shippingPostalCode}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {hasMissingRequiredFields ? (
+                    {hasMissingRequiredFields && (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                         <p className="text-sm font-semibold text-amber-900">
                           Faltan algunos datos para cerrar este pedido.
@@ -591,24 +548,13 @@ export default function CheckoutPage() {
                             : 'Solo te pedimos lo minimo que falta para dejarlo bien cargado.'}
                         </p>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setShowProfileEditor((current) => !current)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
-                      >
-                        <PencilLine size={16} />
-                        {showProfileEditor ? 'Ocultar edicion manual' : 'Editar datos de este pedido'}
-                      </button>
                     )}
 
-                    {(showProfileEditor || hasMissingRequiredFields) && (
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {renderCustomerSections(hasMissingRequiredFields ? 'required' : 'all')}
-                      </div>
-                    )}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {renderCustomerSections(paymentType === 'ZAP_CREDIT' ? 'all' : 'required')}
+                    </div>
 
-                    {!hasMissingRequiredFields && paymentType !== 'ZAP_CREDIT' && (
+                    {paymentType !== 'ZAP_CREDIT' && (
                       <details className="rounded-2xl border border-gray-200 bg-gray-50">
                         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-700 marker:hidden">
                           Agregar datos de facturacion o entrega

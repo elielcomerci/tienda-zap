@@ -22,7 +22,7 @@ const valueProps = [
   {
     icon: Package,
     title: 'Listo para producir',
-    desc: 'Elegi variantes, deja detalles importantes y prepara la pieza con una lectura clara desde el inicio.',
+    desc: 'Elegi el formato, deja detalles importantes y prepara el trabajo con una lectura clara desde el inicio.',
   },
   {
     icon: ShieldCheck,
@@ -32,7 +32,7 @@ const valueProps = [
   {
     icon: Store,
     title: 'Criterio de agencia',
-    desc: 'Piezas pensadas para sostener la presencia de tu marca en el local, la calle o el mostrador.',
+    desc: 'Soluciones pensadas para sostener tu marca en la calle, el local, Google y cada punto de contacto.',
   },
 ]
 
@@ -81,7 +81,7 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-orange-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
-                  Grafica con criterio ZAP
+                  Marca, grafica y digital
                 </span>
                 <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600 shadow-sm">
                   Tienda ZAP
@@ -90,16 +90,17 @@ export default async function HomePage() {
 
               <div>
                 <h1 className="max-w-4xl text-5xl font-black tracking-tight text-gray-950 sm:text-6xl xl:text-7xl">
-                  Piezas graficas para marcas que cuidan como se ven.
+                  Tu marca lista para verse mejor, aparecer mas y moverse en serio.
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-gray-600 sm:text-lg">
-                  Carteleria, stickers, tarjetas, banners y material comercial con diseno, produccion y terminacion pensados para verse bien en el mundo real.
+                  Diseno, produccion grafica, merchandising, exhibicion, web y presencia digital
+                  para negocios que necesitan dejar de improvisar como se muestran.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Link href="/productos" className="btn-primary !px-7 !py-3.5 !text-base">
-                  Ver piezas <ArrowRight size={18} />
+                  Ver soluciones <ArrowRight size={18} />
                 </Link>
                 {salesWhatsappUrl && (
                   <Link
@@ -281,13 +282,13 @@ export default async function HomePage() {
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-                Productos destacados
+                Soluciones destacadas
               </p>
               <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                Empeza por la pieza que tu marca necesita.
+                Empeza por lo que hoy puede mover tu marca.
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                Una seleccion curada para resolver presencia, comunicacion y produccion sin perder criterio.
+                Una seleccion curada de grafica, exhibicion, merchandising y servicios digitales para resolver con criterio.
               </p>
             </div>
 
@@ -341,7 +342,7 @@ export default async function HomePage() {
                       <p className="mt-3 line-clamp-3 text-sm leading-7 text-gray-600">
                         {product.description?.trim()
                           ? product.description
-                          : 'Pieza grafica lista para definir y producir con criterio ZAP.'}
+                          : 'Solucion ZAP lista para definir, producir y mover tu marca con criterio.'}
                       </p>
                     </div>
 
@@ -390,7 +391,7 @@ export default async function HomePage() {
               Elegi por objetivo
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-              Tres entradas rapidas para elegir mejor.
+              Tres caminos para entender que necesita tu marca.
             </h2>
           </div>
 
@@ -419,7 +420,7 @@ export default async function HomePage() {
                 Tambien por rubro
               </p>
               <h2 className="mt-2 text-2xl font-black text-gray-950">
-                Si preferis entrar por rubro, las categorias quedan a mano sin quitarle protagonismo a las piezas.
+                Si preferis entrar por rubro, las categorias quedan a mano sin quitarle protagonismo a las soluciones.
               </h2>
             </div>
 
