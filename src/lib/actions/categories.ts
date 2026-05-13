@@ -22,7 +22,7 @@ export async function createCategory(formData: FormData) {
 
   const slug = slugify(name)
   if (!slug) {
-    throw new Error('No pudimos generar un slug valido para la categoria.')
+    throw new Error('No pudimos generar un slug válido para la categoria.')
   }
 
   const isService = formData.getAll('isService').includes('true')
@@ -45,7 +45,7 @@ export async function updateCategory(id: string, name: string, isService = false
 
   const slug = slugify(name)
   if (!slug) {
-    throw new Error('No pudimos generar un slug valido para la categoria.')
+    throw new Error('No pudimos generar un slug válido para la categoria.')
   }
 
   await prisma.category.update({

@@ -22,7 +22,7 @@ function parsePositiveInteger(value: unknown, fieldLabel: string, options?: { mi
   const parsedValue = Number(value)
 
   if (!Number.isInteger(parsedValue)) {
-    throw new Error(`${fieldLabel} debe ser un numero entero.`)
+    throw new Error(`${fieldLabel} debe ser un número entero.`)
   }
 
   if (options?.min != null && parsedValue < options.min) {
@@ -44,7 +44,7 @@ function parseOptionalNonNegativeNumber(value: unknown, fieldLabel: string) {
   const parsedValue = Number(value)
 
   if (!Number.isFinite(parsedValue) || parsedValue < 0) {
-    throw new Error(`${fieldLabel} debe ser un numero valido mayor o igual a 0.`)
+    throw new Error(`${fieldLabel} debe ser un número válido mayor o igual a 0.`)
   }
 
   return parsedValue
@@ -141,7 +141,7 @@ export async function saveFinancingSettings(formData: FormData) {
     },
   })
 
-  revalidatePath('/admin/financiacion')
+  revalidatePath('/admin/financiación')
   revalidatePath('/admin/ordenes')
   revalidatePath('/checkout')
   revalidatePath('/productos')
@@ -195,7 +195,7 @@ export async function saveOrderZapCreditPlan(input: {
   }
 
   if (order.paymentType !== 'ZAP_CREDIT') {
-    throw new Error('Solo podes guardar una propuesta sobre ordenes de Credito ZAP.')
+    throw new Error('Solo podés guardar una propuesta sobre ordenes de Crédito ZAP.')
   }
 
   if (
@@ -203,7 +203,7 @@ export async function saveOrderZapCreditPlan(input: {
       (item) => item.status === 'SUBMITTED' || item.status === 'APPROVED' || item.submissions.length > 0
     )
   ) {
-    throw new Error('Este credito ya tiene pagos cargados. No podemos regenerar el plan sin perder trazabilidad.')
+    throw new Error('Este crédito ya tiene pagos cargados. No podemos regenerar el plan sin perder trazabilidad.')
   }
 
   const ratePercent = parseOptionalNonNegativeNumber(input.ratePercent, 'La tasa') ?? 0
@@ -286,12 +286,12 @@ export async function saveOrderZapCreditPlan(input: {
 
   await replaceZapCreditSchedule(plan.id, summary)
 
-  revalidatePath('/admin/financiacion')
-  revalidatePath('/admin/creditos')
-  revalidatePath(`/admin/creditos/${plan.id}`)
+  revalidatePath('/admin/financiación')
+  revalidatePath('/admin/créditos')
+  revalidatePath(`/admin/créditos/${plan.id}`)
   revalidatePath('/admin/ordenes')
   revalidatePath(`/admin/ordenes/${order.id}`)
-  revalidatePath('/perfil/creditos')
-  revalidatePath(`/perfil/creditos/${plan.id}`)
+  revalidatePath('/perfil/créditos')
+  revalidatePath(`/perfil/créditos/${plan.id}`)
   revalidatePath('/checkout/success')
 }

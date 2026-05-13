@@ -16,14 +16,14 @@ export const productSchema = z.object({
   slug: z
     .string()
     .min(2, 'El slug es requerido')
-    .regex(/^[a-z0-9-]+$/, 'Solo minusculas, numeros y guiones'),
+    .regex(/^[a-z0-9-]+$/, 'Solo minusculas, números y guiones'),
   description: z.string().optional(),
   price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0'),
   creditDownPaymentPercent: z.coerce
     .number()
-    .int('El anticipo debe ser un numero entero')
-    .min(30, 'El anticipo minimo para Credito ZAP es 30%')
-    .max(50, 'El anticipo maximo para Credito ZAP es 50%'),
+    .int('El anticipo debe ser un número entero')
+    .min(30, 'El anticipo minimo para Crédito ZAP es 30%')
+    .max(50, 'El anticipo maximo para Crédito ZAP es 50%'),
   categoryId: z.string().min(1, 'Selecciona una categoria'),
   stock: z.coerce.number().int().min(0).default(0),
   images: z.array(z.string().url()).min(1, 'Agrega al menos una imagen'),
@@ -106,7 +106,7 @@ export const productSchema = z.object({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['variants', variantIndex, 'combinations'],
-          message: 'Hay variantes incompletas o con valores invalidos. Regenera la matriz.',
+          message: 'Hay variantes incompletas o con valores inválidos. Regenera la matriz.',
         })
       }
     })
@@ -129,20 +129,20 @@ export const productSchema = z.object({
 
 export const orderCheckoutSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
-  email: z.string().email('Email invalido'),
-  phone: z.string().min(8, 'Telefono invalido'),
+  email: z.string().email('Email inválido'),
+  phone: z.string().min(8, 'Teléfono inválido'),
   paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'ZAP_CREDIT']), // Removed CASH
   notes: z.string().optional(),
-  couponCode: optionalTextField(4, 'Codigo de cupon invalido'),
+  couponCode: optionalTextField(4, 'Codigo de cupon inválido'),
 
-  documentId: optionalTextField(7, 'Documento (DNI/CUIL/CUIT) invalido'),
-  billingAddress: optionalTextField(3, 'Direccion de facturacion invalida'),
-  billingCity: optionalTextField(2, 'Ciudad de facturacion invalida'),
-  billingProvince: optionalTextField(2, 'Provincia de facturacion invalida'),
-  shippingAddress: optionalTextField(3, 'Direccion de envio invalida'),
+  documentId: optionalTextField(7, 'Documento (DNI/CUIL/CUIT) inválido'),
+  billingAddress: optionalTextField(3, 'Dirección de facturación invalida'),
+  billingCity: optionalTextField(2, 'Ciudad de facturación invalida'),
+  billingProvince: optionalTextField(2, 'Provincia de facturación invalida'),
+  shippingAddress: optionalTextField(3, 'Dirección de envio invalida'),
   shippingCity: optionalTextField(2, 'Ciudad de envio invalida'),
   shippingProvince: optionalTextField(2, 'Provincia de envio invalida'),
-  shippingPostalCode: optionalTextField(4, 'Codigo postal invalido'),
+  shippingPostalCode: optionalTextField(4, 'Codigo postal inválido'),
 
   zapCreditConfig: z
     .object({
@@ -169,7 +169,7 @@ export const orderCheckoutSchema = z.object({
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['zapCreditConfig'],
-      message: 'Configura el plan de Credito ZAP antes de continuar.',
+      message: 'Configura el plan de Crédito ZAP antes de continuar.',
     })
   }
 
@@ -193,7 +193,7 @@ export const orderCheckoutSchema = z.object({
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['documentId'],
-        message: 'El documento es requerido para solicitar Credito ZAP.',
+        message: 'El documento es requerido para solicitar Crédito ZAP.',
       })
     }
 
@@ -202,7 +202,7 @@ export const orderCheckoutSchema = z.object({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: [fieldName],
-          message: 'Completa este dato para solicitar Credito ZAP.',
+          message: 'Completa este dato para solicitar Crédito ZAP.',
         })
       }
     }
@@ -212,7 +212,7 @@ export const orderCheckoutSchema = z.object({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: [fieldName],
-          message: 'Completa este dato para solicitar Credito ZAP.',
+          message: 'Completa este dato para solicitar Crédito ZAP.',
         })
       }
     }
@@ -223,7 +223,7 @@ export const orderCheckoutSchema = z.object({
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: [fieldName],
-            message: 'Si completas facturacion, carga todos los campos.',
+            message: 'Si completas facturación, carga todos los campos.',
           })
         }
       }
@@ -244,18 +244,19 @@ export const orderCheckoutSchema = z.object({
 })
 
 export const loginSchema = z.object({
-  email: z.string().email('Email invalido'),
-  password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 })
 
 export const registerSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
-  email: z.string().email('Email invalido'),
+  email: z.string().email('Email inválido'),
   phone: z.string().optional(),
-  password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
+  businessTypeId: z.string().optional(),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Las contrasenas no coinciden',
+  message: 'Las contraseñas no coinciden',
   path: ['confirmPassword'],
 })
 
@@ -275,14 +276,14 @@ export const updateProfileSchema = z.object({
 })
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Email invalido'),
+  email: z.string().email('Email inválido'),
 })
 
 export const resetPasswordSchema = z.object({
-  password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Las contrasenas no coinciden',
+  message: 'Las contraseñas no coinciden',
   path: ['confirmPassword'],
 })
 
@@ -301,5 +302,5 @@ export function getFirstValidationError(error: z.ZodError) {
     .flat()
     .find((message): message is string => Boolean(message))
 
-  return firstFieldError || flattened.formErrors[0] || 'Revisa los datos ingresados.'
+  return firstFieldError || flattened.formErrors[0] || 'Revisá los datos ingresados.'
 }

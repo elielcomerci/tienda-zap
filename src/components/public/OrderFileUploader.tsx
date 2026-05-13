@@ -204,7 +204,7 @@ export default function OrderFileUploader({
     <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
       <div className="flex flex-col gap-2 border-b border-gray-100 pb-6">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-          Archivos para produccion
+          Archivos para producción
         </p>
         <h2 className="text-3xl font-black tracking-tight text-gray-950">
           Deja cada pieza lista para producir.
@@ -226,7 +226,7 @@ export default function OrderFileUploader({
                 Si preferis, abri WhatsApp con el mensaje ya preparado.
               </h3>
               <p className="mt-2 text-sm leading-7 text-emerald-900">
-                Asi podes mandar los archivos mas tarde sin perder el contexto del pedido.
+                Asi podés mandar los archivos mas tarde sin perder el contexto del pedido.
               </p>
             </div>
             <a

@@ -8,13 +8,13 @@ datasource db {
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  email              String    @unique
+  id                 String        @id @default(cuid())
+  email              String        @unique
   password           String
-  role               Role      @default(CUSTOMER)
+  role               Role          @default(CUSTOMER)
   name               String?
   phone              String?
-  createdAt          DateTime  @default(now())
+  createdAt          DateTime      @default(now())
   billingAddress     String?
   billingCity        String?
   billingProvince    String?
@@ -23,17 +23,28 @@ model User {
   shippingCity       String?
   shippingPostalCode String?
   shippingProvince   String?
+  businessTypeId     String?
+  businessType       BusinessType? @relation(fields: [businessTypeId], references: [id])
   accounts           Account[]
   orders             Order[]
   sessions           Session[]
 }
 
+model BusinessType {
+  id         String     @id @default(cuid())
+  name       String
+  slug       String     @unique
+  categories Category[]
+  users      User[]
+}
+
 model Category {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  isService Boolean   @default(false)
-  products  Product[]
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  isService     Boolean        @default(false)
+  products      Product[]
+  businessTypes BusinessType[]
 }
 
 model Product {

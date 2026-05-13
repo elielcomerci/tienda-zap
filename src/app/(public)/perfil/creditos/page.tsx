@@ -13,7 +13,7 @@ import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'Mis creditos | ZAP Tienda',
+  title: 'Mis créditos | ZAP Tienda',
 }
 
 export default async function CustomerCreditsPage() {
@@ -40,7 +40,7 @@ export default async function CustomerCreditsPage() {
           <Wallet size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mis creditos</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Mis créditos</h1>
           <p className="text-sm text-gray-500">
             Estado de cartera, vencimientos y comprobantes cargados.
           </p>
@@ -54,7 +54,7 @@ export default async function CustomerCreditsPage() {
             <div>
               <p className="font-semibold">Tenes cuotas vencidas pendientes</p>
               <p className="mt-1 text-amber-800">
-                Podes seguir comprando, pero las nuevas solicitudes de Credito ZAP van a mostrar
+                Podes seguir comprando, pero las nuevas solicitudes de Crédito ZAP van a mostrar
                 tasa y anticipo mas altos hasta regularizar tu cuenta.
               </p>
             </div>
@@ -64,7 +64,7 @@ export default async function CustomerCreditsPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="card p-5">
-          <p className="text-sm font-medium text-gray-500">Creditos activos</p>
+          <p className="text-sm font-medium text-gray-500">Créditos activos</p>
           <p className="mt-2 text-2xl font-black text-gray-900">
             {eligibility.activeCreditsCount}
           </p>
@@ -76,7 +76,7 @@ export default async function CustomerCreditsPage() {
           </p>
         </div>
         <div className="card p-5">
-          <p className="text-sm font-medium text-gray-500">Creditos totales</p>
+          <p className="text-sm font-medium text-gray-500">Créditos totales</p>
           <p className="mt-2 text-2xl font-black text-gray-900">{plans.length}</p>
         </div>
       </div>
@@ -84,7 +84,7 @@ export default async function CustomerCreditsPage() {
       {plans.length === 0 ? (
         <div className="card p-12 text-center text-gray-400">
           <Wallet size={40} className="mx-auto mb-3 text-gray-200" />
-          <p className="font-medium">Todavia no tenes creditos activos</p>
+          <p className="font-medium">Todavia no tenés créditos activos</p>
           <Link
             href="/productos"
             className="mt-3 inline-block text-sm text-[#ED2C71] hover:underline"
@@ -101,7 +101,7 @@ export default async function CustomerCreditsPage() {
             return (
               <Link
                 key={plan.id}
-                href={`/perfil/creditos/${plan.id}`}
+                href={`/perfil/créditos/${plan.id}`}
                 className="group card flex items-center gap-4 p-4 transition-all hover:border-[#F66B9A]/25 hover:shadow-sm"
               >
                 <div className="min-w-0 flex-1">
@@ -130,7 +130,7 @@ export default async function CustomerCreditsPage() {
 
                   <div className="mt-3">
                     <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
-                      <span>Avance del credito</span>
+                      <span>Avance del crédito</span>
                       <span>{summary.paymentProgressPercent}% cobrado</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">

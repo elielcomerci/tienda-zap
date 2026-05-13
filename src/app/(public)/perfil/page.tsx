@@ -129,7 +129,7 @@ export default async function PerfilPage({
         {/* Orders */}
         <div className="md:col-span-3">
           <Link
-            href="/perfil/creditos"
+            href="/perfil/créditos"
             className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-[#F66B9A]/25 hover:shadow-sm group"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
@@ -137,7 +137,7 @@ export default async function PerfilPage({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-bold text-gray-900">Mis creditos</h2>
+                <h2 className="font-bold text-gray-900">Mis créditos</h2>
                 {overdueCreditsCount > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-800">
                     <AlertTriangle size={12} /> {overdueCreditsCount} vencida/s
@@ -145,7 +145,7 @@ export default async function PerfilPage({
                 )}
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                {creditsCount} credito/s registrados. Entra para ver cuotas, pagos y comprobantes.
+                {creditsCount} crédito/s registrados. Entra para ver cuotas, pagos y comprobantes.
               </p>
             </div>
             <ChevronRight size={18} className="shrink-0 text-gray-300 transition-colors group-hover:text-[#F66B9A]" />

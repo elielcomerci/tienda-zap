@@ -12,9 +12,9 @@ import {
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 export const metadata = {
-  title: 'Credito ZAP',
+  title: 'Crédito ZAP',
   description:
-    'Conoce como funciona Credito ZAP para resolver trabajos importantes con anticipo y seguimiento claro.',
+    'Conoce como funciona Crédito ZAP para resolver trabajos importantes con anticipo y seguimiento claro.',
 }
 
 const highlights = [
@@ -26,37 +26,37 @@ const highlights = [
   {
     icon: Wallet,
     title: 'Plan simple',
-    description: 'El saldo se acomoda en pagos fijos y podes seguirlo desde tu cuenta.',
+    description: 'El saldo se acomoda en pagos fijos y podés seguirlo desde tu cuenta.',
   },
   {
     icon: ShieldCheck,
     title: 'Condiciones visibles',
-    description: 'Ves simulacion, tasa y vencimientos antes de confirmar.',
+    description: 'Ves simulación, tasa y vencimientos antes de confirmar.',
   },
 ]
 
 const steps = [
-  'Elegis las piezas, revisas el anticipo estimado y simulas el plan antes de confirmar.',
-  'Confirmas el pedido con el anticipo y dejamos cerrado el esquema de pagos.',
-  'Desde tu cuenta seguis cuotas, comprobantes, estados y proximos vencimientos.',
+  'Elegís las piezas, revisas el anticipo estimado y simulas el plan antes de confirmar.',
+  'Confirmás el pedido con el anticipo y dejamos cerrado el esquema de pagos.',
+  'Desde tu cuenta seguís cuotas, comprobantes, estados y proximos vencimientos.',
 ]
 
 const requirements = [
-  'Cuenta iniciada para registrar el credito y asociarlo a tu historial.',
-  'Datos basicos del pedido, facturacion y envio completos para emitir y coordinar el trabajo.',
+  'Cuenta iniciada para registrar el crédito y asociarlo a tu historial.',
+  'Datos basicos del pedido, facturación y envio completos para emitir y coordinar el trabajo.',
   'Revision automatica de condiciones vigentes segun historial y situacion de cuotas.',
 ]
 
 const privacyPoints = [
-  'Usamos tus datos para identificar la compra, preparar facturacion, coordinar entrega y administrar el financiamiento.',
-  'La informacion del perfil y del pedido se muestra dentro de tu cuenta para que puedas seguir pagos, comprobantes y estado del trabajo.',
-  'No pedimos mas informacion de la necesaria al confirmar: el detalle completo vive en esta pagina para que la compra siga simple.',
+  'Usamos tus datos para identificar la compra, preparar facturación, coordinar entrega y administrar el financiamiento.',
+  'La información del perfil y del pedido se muestra dentro de tu cuenta para que puedas seguir pagos, comprobantes y estado del trabajo.',
+  'No pedimos mas información de la necesaria al confirmar: el detalle completo vive en esta página para que la compra siga simple.',
 ]
 
-export default function CreditoZapPage() {
+export default function CréditoZapPage() {
   const whatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    'Hola! Quiero conocer como funciona Credito ZAP para mi negocio.'
+    'Hola! Quiero conocer como funciona Crédito ZAP para mi negocio.'
   )
 
   return (
@@ -67,10 +67,10 @@ export default function CreditoZapPage() {
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-[#F66B9A]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200">
               <Wallet size={14} />
-              Credito ZAP
+              Crédito ZAP
             </p>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-6xl">
-              Credito ZAP para no frenar trabajos que tu marca necesita.
+              Crédito ZAP para no frenar trabajos que tu marca necesita.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-gray-300 md:text-lg">
               Aca reunimos como funciona, que datos usamos y como acompanamos cada pedido. En la
@@ -121,7 +121,7 @@ export default function CreditoZapPage() {
               Como funciona
             </p>
             <h2 className="mt-2 text-3xl font-black text-gray-900">
-              Confirmas hoy y ordenas el saldo con una propuesta clara.
+              Confirmás hoy y ordenas el saldo con una propuesta clara.
             </h2>
             <div className="mt-6 space-y-4">
               {steps.map((step, index) => (
@@ -161,9 +161,9 @@ export default function CreditoZapPage() {
             <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Quienes somos
             </p>
-            <h2 className="mt-2 text-3xl font-black text-gray-900">ZAP acompana trabajos que tienen que salir bien.</h2>
+            <h2 className="mt-2 text-3xl font-black text-gray-900">ZAP acompaña trabajos que tienen que salir bien.</h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-600">
-              ZAP combina criterio creativo, produccion grafica y una forma de pago mas ordenada
+              ZAP combina criterio creativo, producción gráfica y una forma de pago mas ordenada
               para negocios que necesitan resolver piezas importantes sin postergarlas.
             </p>
           </div>
@@ -180,8 +180,8 @@ export default function CreditoZapPage() {
             </p>
             <h2 className="mt-2 text-3xl font-black">Pedido simple, seguimiento claro.</h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-300">
-              Mostramos precio, anticipo, simulacion y resumen antes de confirmar. Cuando el
-              credito aplica, dejamos el detalle tecnico accesible sin convertir la compra en una
+              Mostramos precio, anticipo, simulación y resumen antes de confirmar. Cuando el
+              crédito aplica, dejamos el detalle tecnico accesible sin convertir la compra en una
               lectura eterna.
             </p>
           </div>

@@ -74,10 +74,10 @@ async function handleInstallmentPayment(installmentId: string, mpPaymentId: stri
   })
 
   // Revalidar vistas
-  revalidatePath('/perfil/creditos')
-  revalidatePath(`/perfil/creditos/${installment.plan.id}`)
-  revalidatePath('/admin/creditos')
-  revalidatePath(`/admin/creditos/${installment.plan.id}`)
+  revalidatePath('/perfil/créditos')
+  revalidatePath(`/perfil/créditos/${installment.plan.id}`)
+  revalidatePath('/admin/créditos')
+  revalidatePath(`/admin/créditos/${installment.plan.id}`)
   revalidatePath(`/admin/ordenes/${installment.plan.orderId}`)
 }
 

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     default: 'ZAP Tienda - Agencia Creativa',
     template: '%s | ZAP Tienda',
   },
-  description: 'Piezas graficas, diseno y produccion para marcas que cuidan como se ven.',
+  description: 'Piezas graficas, diseño y producción para marcas que cuidan como se ven.',
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
 }
 

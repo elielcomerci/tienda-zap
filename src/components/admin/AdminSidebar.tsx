@@ -3,7 +3,9 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  Briefcase,
   Building2,
+  FileText,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -23,11 +25,12 @@ import { signOut } from 'next-auth/react'
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/productos', label: 'Productos', icon: Package },
-  { href: '/admin/categorias', label: 'Categorias', icon: Tag },
-  { href: '/admin/ordenes', label: 'Ordenes', icon: ShoppingCart },
-  { href: '/admin/creditos', label: 'Creditos', icon: Wallet },
-  { href: '/admin/financiacion', label: 'Financiacion', icon: Percent },
+  { href: '/admin/categorias', label: 'Categorías', icon: Tag },
+  { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
+  { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
+  { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
   { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
+  { href: '/admin/rubros', label: 'Rubros', icon: Briefcase },
   { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
   { href: '/admin/campanas', label: 'Campañas Partner', icon: Megaphone },
 ]

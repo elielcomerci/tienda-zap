@@ -1,4 +1,5 @@
-﻿import { registerUser } from '@/lib/actions/auth'
+import { registerUser } from '@/lib/actions/auth'
+import { getActiveBusinessTypes } from '@/lib/business-types'
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
 import PasswordInput from '@/components/ui/PasswordInput'
@@ -11,6 +12,7 @@ export default async function RegistroPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
+  const businessTypes = await getActiveBusinessTypes()
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -46,6 +48,25 @@ export default async function RegistroPage({
             </label>
             <input name="phone" type="tel" className="input" placeholder="1134567890" />
           </div>
+
+          {businessTypes.length > 0 && (
+            <div>
+              <label className="label">
+                ¿Cuál es tu rubro? <span className="text-gray-400 font-normal">(opcional)</span>
+              </label>
+              <select name="businessTypeId" className="input" defaultValue="">
+                <option value="">Seleccioná tu rubro</option>
+                {businessTypes.map((bt) => (
+                  <option key={bt.id} value={bt.id}>
+                    {bt.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-400">
+                Te mostraremos productos relevantes para tu industria.
+              </p>
+            </div>
+          )}
 
           <PasswordInput
             name="password"

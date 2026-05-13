@@ -68,7 +68,7 @@ export function validateArtworkUpload(input: {
   }
 
   if (!Number.isFinite(input.sizeBytes) || input.sizeBytes <= 0) {
-    return { ok: false, error: 'El archivo es invalido.' as const }
+    return { ok: false, error: 'El archivo es inválido.' as const }
   }
 
   if (input.sizeBytes > MAX_ARTWORK_FILE_SIZE_BYTES) {

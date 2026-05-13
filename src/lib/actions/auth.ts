@@ -25,6 +25,7 @@ export async function registerUser(formData: FormData): Promise<void> {
       name: parsed.data.name,
       email: parsed.data.email,
       phone: parsed.data.phone || null,
+      businessTypeId: parsed.data.businessTypeId || null,
       password: hash,
       role: 'CUSTOMER',
     },

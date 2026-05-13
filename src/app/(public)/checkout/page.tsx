@@ -38,7 +38,7 @@ const paymentOptions = [
   },
   {
     value: 'ZAP_CREDIT',
-    label: 'Credito ZAP',
+    label: 'Crédito ZAP',
     desc: 'Anticipo hoy y resto en pagos fijos',
     icon: Wallet,
   },
@@ -74,7 +74,7 @@ const customerSections: readonly { title: string; fields: readonly CustomerField
     title: 'Datos principales',
     fields: [
       { name: 'name', label: 'Nombre completo', placeholder: 'Juan Garcia' },
-      { name: 'phone', label: 'Telefono / WhatsApp', placeholder: '1134567890' },
+      { name: 'phone', label: 'Teléfono / WhatsApp', placeholder: '1134567890' },
       {
         name: 'email',
         label: 'Email',
@@ -91,11 +91,11 @@ const customerSections: readonly { title: string; fields: readonly CustomerField
     ],
   },
   {
-    title: 'Datos de facturacion',
+    title: 'Datos de facturación',
     fields: [
       {
         name: 'billingAddress',
-        label: 'Direccion de facturacion',
+        label: 'Dirección de facturación',
         placeholder: 'Calle Falsa 123',
         fullWidth: true,
       },
@@ -108,7 +108,7 @@ const customerSections: readonly { title: string; fields: readonly CustomerField
     fields: [
       {
         name: 'shippingAddress',
-        label: 'Direccion de envio',
+        label: 'Dirección de envio',
         placeholder: 'Av. Pellegrini 1500',
         fullWidth: true,
       },
@@ -217,17 +217,17 @@ export default function CheckoutPage() {
   const submitLabel = loading
     ? 'Procesando...'
     : hasUnavailableItems
-      ? 'Revisa el carrito'
+      ? 'Revisá el carrito'
       : paymentType === 'ZAP_CREDIT' && isLoadingCreditEligibility
         ? 'Cargando condiciones...'
         : paymentType === 'ZAP_CREDIT' && zapCreditDisabled
-          ? 'Inicia sesion para solicitar credito'
+          ? 'Inicia sesion para solicitar crédito'
           : paymentType === 'ZAP_CREDIT' && !zapCreditSelection
             ? 'Configura tu plan'
             : paymentType === 'MERCADOPAGO'
               ? 'Pagar con MercadoPago'
               : paymentType === 'ZAP_CREDIT'
-                ? 'Solicitar Credito ZAP'
+                ? 'Solicitar Crédito ZAP'
                 : 'Confirmar pedido'
 
   useEffect(() => {
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
 
     if (!trimmedCouponCode) {
       setCouponPreview(null)
-      setCouponFeedback('Ingresa un codigo o escanea el QR para cargar el cupon.')
+      setCouponFeedback('Ingresa un código o escanea el QR para cargar el cupon.')
       setValue('couponCode', undefined, { shouldDirty: true, shouldValidate: true })
       return
     }
@@ -388,7 +388,7 @@ export default function CheckoutPage() {
   const onSubmit = async (data: OrderCheckoutData) => {
     if (hasUnavailableItems) {
       setError(
-        'Hay productos con precio 0 marcados como no disponibles. Revisa el carrito antes de continuar.'
+        'Hay productos con precio 0 marcados como no disponibles. Revisá el carrito antes de continuar.'
       )
       return
     }
@@ -398,7 +398,7 @@ export default function CheckoutPage() {
       creditEligibility &&
       !creditEligibility.canRequestCredit
     ) {
-      setError('Inicia sesion para solicitar Credito ZAP y seguir tus cuotas desde el panel.')
+      setError('Inicia sesion para solicitar Crédito ZAP y seguir tus cuotas desde el panel.')
       return
     }
 
@@ -460,7 +460,7 @@ export default function CheckoutPage() {
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-                    Confirmacion ZAP
+                    Confirmación ZAP
                   </span>
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
                     {items.length} piezas en el pedido
@@ -481,7 +481,7 @@ export default function CheckoutPage() {
                       Paso 1
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Confirmas tus datos y dejas notas si hacen falta.
+                      Confirmás tus datos y dejas notas si hacen falta.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -489,7 +489,7 @@ export default function CheckoutPage() {
                       Paso 2
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Elegis el medio de pago con contexto claro.
+                      Elegís el medio de pago con contexto claro.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -498,7 +498,7 @@ export default function CheckoutPage() {
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
                       {hasItemsRequiringArtwork
-                        ? 'Dejas archivos o pedis diseno despues de confirmar.'
+                        ? 'Dejas archivos o pedis diseño despues de confirmar.'
                         : 'El pedido queda listo para seguir sin pasos extra.'}
                     </p>
                   </div>
@@ -514,7 +514,7 @@ export default function CheckoutPage() {
                     Tus datos
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                    Pedimos solo lo necesario para que el trabajo arranque prolijo. Si tenes cuenta,
+                    Pedimos solo lo necesario para que el trabajo arranque prolijo. Si tenés cuenta,
                     usamos lo que ya sabemos para evitar friccion.
                   </p>
                 </div>
@@ -531,7 +531,7 @@ export default function CheckoutPage() {
                         <div>
                           <p className="font-semibold">Ya tenemos buena parte de tus datos para este pedido.</p>
                           <p className="mt-1 text-emerald-800">
-                            Revisa que esten bien y modifica lo que necesites. Lo que no cambies se mantiene como esta.
+                            Revisá que esten bien y modifica lo que necesites. Lo que no cambies se mantiene como esta.
                           </p>
                         </div>
                       </div>
@@ -544,7 +544,7 @@ export default function CheckoutPage() {
                         </p>
                         <p className="mt-1 text-sm text-amber-800">
                           {paymentType === 'ZAP_CREDIT'
-                            ? 'Para moverlo con Credito ZAP necesitamos completar documento, facturacion y envio.'
+                            ? 'Para moverlo con Crédito ZAP necesitamos completar documento, facturación y envio.'
                             : 'Solo te pedimos lo minimo que falta para dejarlo bien cargado.'}
                         </p>
                       </div>
@@ -557,7 +557,7 @@ export default function CheckoutPage() {
                     {paymentType !== 'ZAP_CREDIT' && (
                       <details className="rounded-2xl border border-gray-200 bg-gray-50">
                         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-700 marker:hidden">
-                          Agregar datos de facturacion o entrega
+                          Agregar datos de facturación o entrega
                         </summary>
                         <div className="border-t border-gray-200 px-4 py-4">
                           <p className="mb-4 text-sm text-gray-600">
@@ -590,7 +590,7 @@ export default function CheckoutPage() {
                     {paymentType !== 'ZAP_CREDIT' && (
                       <details className="rounded-2xl border border-gray-200 bg-gray-50">
                         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-700 marker:hidden">
-                          Agregar datos de facturacion o entrega
+                          Agregar datos de facturación o entrega
                         </summary>
                         <div className="border-t border-gray-200 px-4 py-4">
                           <p className="mb-4 text-sm text-gray-600">
@@ -684,10 +684,10 @@ export default function CheckoutPage() {
                         Cupon opcional
                       </p>
                       <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
-                        Escanea el QR o carga el codigo sin salir de la confirmacion.
+                        Escanea el QR o carga el código sin salir de la confirmación.
                       </h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                        Es opcional. Si no usas cupon, podes seguir con el pedido normalmente.
+                        Es opcional. Si no usas cupon, podés seguir con el pedido normalmente.
                       </p>
                     </div>
                   </div>
@@ -773,7 +773,7 @@ export default function CheckoutPage() {
 
                 {zapCreditDisabled && (
                   <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-                    <p className="font-semibold">Credito ZAP para usuarios registrados</p>
+                    <p className="font-semibold">Crédito ZAP para usuarios registrados</p>
                     <p className="mt-1 text-blue-800">
                       Inicia sesion para pedir tu plan, seguir cuotas y tener todo ordenado desde tu
                       cuenta.
@@ -782,8 +782,8 @@ export default function CheckoutPage() {
                       <Link href="/login" className="btn-secondary !px-4 !py-2 !text-sm">
                         Iniciar sesion
                       </Link>
-                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
-                        Ver mas informacion
+                      <Link href="/crédito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                        Ver mas información
                       </Link>
                     </div>
                   </div>
@@ -794,7 +794,7 @@ export default function CheckoutPage() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
-                          Confirmas hoy con anticipo y el resto queda acomodado en pagos fijos.
+                          Confirmás hoy con anticipo y el resto queda acomodado en pagos fijos.
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
                           Aca te mostramos solo lo importante para decidir. El detalle completo queda
@@ -802,19 +802,19 @@ export default function CheckoutPage() {
                         </p>
                       </div>
 
-                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
-                        Ver mas informacion
+                      <Link href="/crédito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                        Ver mas información
                       </Link>
                     </div>
 
                     <details className="mt-3 rounded-2xl border border-[#F66B9A]/15 bg-white/80">
                       <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
                         <CircleHelp size={16} className="text-[#ED2C71]" />
-                        Resumen rapido de Credito ZAP
+                        Resumen rapido de Crédito ZAP
                       </summary>
                       <div className="border-t border-[#F66B9A]/15 px-4 py-3 text-sm text-gray-600">
                         Disponible para clientes con cuenta. Simulas el plan, confirmas el pedido y
-                        despues seguis cuotas, comprobantes y estados desde tu panel.
+                        despues seguís cuotas, comprobantes y estados desde tu panel.
                       </div>
                     </details>
                   </div>
@@ -825,9 +825,9 @@ export default function CheckoutPage() {
                     <div className="flex items-start gap-3">
                       <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
                       <div>
-                        <p className="font-semibold">Tenes cuotas vencidas en otros creditos</p>
+                        <p className="font-semibold">Tenes cuotas vencidas en otros créditos</p>
                         <p className="mt-1 text-amber-800">
-                          La simulacion ya incluye el recargo vigente:{' '}
+                          La simulación ya incluye el recargo vigente:{' '}
                           <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
                           <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
                           el anticipo.
@@ -877,7 +877,7 @@ export default function CheckoutPage() {
                     Resumen final
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
-                    {hasItemsRequiringArtwork ? 'Pedido y produccion' : 'Pedido listo para confirmar'}
+                    {hasItemsRequiringArtwork ? 'Pedido y producción' : 'Pedido listo para confirmar'}
                   </h2>
                   <p className="mt-2 text-sm leading-7 text-gray-300">
                     Todo lo importante queda visible antes de confirmar.
@@ -917,7 +917,7 @@ export default function CheckoutPage() {
                             <p className="text-xs text-gray-400">
                               {previewDiscountAmount > 0
                                 ? `${previewDiscountAmount.toLocaleString('es-AR')} de descuento aplicado`
-                                : 'cargado en esta confirmacion'}
+                                : 'cargado en esta confirmación'}
                             </p>
                           </div>
                         </div>

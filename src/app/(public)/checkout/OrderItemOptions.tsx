@@ -56,7 +56,7 @@ export default function OrderItemOptions({
           <span
             className={`text-gray-400 ${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'}`}
           >
-            Desde la pagina de exito o desde tu perfil
+            Desde la página de exito o desde tu perfil
           </span>
         </div>
 
@@ -74,7 +74,7 @@ export default function OrderItemOptions({
           {item.designRequested ? (
             <>
               <CheckCircle2 size={compact ? 18 : 24} className="mb-1 text-[#ED2C71]" />
-              <span className="text-center text-xs font-semibold">Diseno solicitado</span>
+              <span className="text-center text-xs font-semibold">Diseño solicitado</span>
               <span
                 className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} text-[#ED2C71]`}
               >
@@ -87,7 +87,7 @@ export default function OrderItemOptions({
                 size={compact ? 18 : 24}
                 className={`text-gray-400 ${compact ? 'mb-1.5' : 'mb-2'}`}
               />
-              <span className="text-xs font-medium">Necesito diseno</span>
+              <span className="text-xs font-medium">Necesito diseño</span>
               <span
                 className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-0.5 text-[10px]'} text-gray-400`}
               >

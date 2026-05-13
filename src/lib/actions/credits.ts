@@ -14,13 +14,13 @@ async function requireAdmin() {
 }
 
 function revalidateCreditViews(orderId: string, planId: string) {
-  revalidatePath('/admin/creditos')
-  revalidatePath(`/admin/creditos/${planId}`)
+  revalidatePath('/admin/créditos')
+  revalidatePath(`/admin/créditos/${planId}`)
   revalidatePath('/admin/ordenes')
   revalidatePath(`/admin/ordenes/${orderId}`)
   revalidatePath('/perfil')
-  revalidatePath('/perfil/creditos')
-  revalidatePath(`/perfil/creditos/${planId}`)
+  revalidatePath('/perfil/créditos')
+  revalidatePath(`/perfil/créditos/${planId}`)
 }
 
 export async function syncZapCreditPlanStatus(planId: string) {
@@ -39,7 +39,7 @@ export async function syncZapCreditPlanStatus(planId: string) {
   })
 
   if (!plan) {
-    throw new Error('Credito no encontrado.')
+    throw new Error('Crédito no encontrado.')
   }
 
   if (plan.status === 'REJECTED' || plan.status === 'CANCELLED') {

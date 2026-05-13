@@ -21,7 +21,7 @@ function parseJsonField<T>(formData: FormData, key: string, fallback: T) {
   try {
     return JSON.parse(value as string) as T
   } catch {
-    throw new Error(`No pudimos interpretar el campo ${key}. Recarga la pagina e intenta de nuevo.`)
+    throw new Error(`No pudimos interpretar el campo ${key}. Recarga la página e intenta de nuevo.`)
   }
 }
 
@@ -61,7 +61,7 @@ async function assertRelatedProductsExist(relatedProductIds: string[], excludePr
   })
 
   if (relatedProducts.length !== relatedProductIds.length) {
-    throw new Error('Uno o mas productos relacionados ya no existen. Recarga la pagina e intenta de nuevo.')
+    throw new Error('Uno o mas productos relacionados ya no existen. Recarga la página e intenta de nuevo.')
   }
 }
 
@@ -71,7 +71,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
   const normalizedSlug = slugify(requestedSlug)
 
   if (!normalizedSlug) {
-    throw new Error('El nombre del producto debe incluir letras o numeros para generar un slug valido.')
+    throw new Error('El nombre del producto debe incluir letras o números para generar un slug válido.')
   }
 
   const raw = {
@@ -103,7 +103,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
   })
 
   if (!category) {
-    throw new Error('La categoria seleccionada ya no existe. Recarga la pagina e intenta de nuevo.')
+    throw new Error('La categoria seleccionada ya no existe. Recarga la página e intenta de nuevo.')
   }
 
   if (data.options.length > 0 && data.variants.length > 0) {

@@ -59,7 +59,7 @@ export default function ZapCreditSimulationCard({
   compact = false,
   installmentsOverride,
   paymentFrequencyOverride,
-  title = 'Simula tu Credito ZAP',
+  title = 'Simula tu Crédito ZAP',
   description = 'La tasa se congela al cerrar la venta y no cambia durante el plan.',
 }: {
   totalAmount: number
@@ -76,7 +76,7 @@ export default function ZapCreditSimulationCard({
     return (
       <div className="rounded-3xl border border-gray-200 bg-white p-5">
         <p className="text-sm font-semibold text-gray-900">{title}</p>
-        <p className="mt-2 text-sm text-gray-500">Cargando simulacion de financiamiento...</p>
+        <p className="mt-2 text-sm text-gray-500">Cargando simulación de financiamiento...</p>
       </div>
     )
   }
@@ -86,7 +86,7 @@ export default function ZapCreditSimulationCard({
       <div className="rounded-3xl border border-red-200 bg-red-50 p-5">
         <p className="text-sm font-semibold text-red-900">{title}</p>
         <p className="mt-2 text-sm text-red-700">
-          No pudimos cargar la simulacion del credito en este momento.
+          No pudimos cargar la simulación del crédito en este momento.
         </p>
       </div>
     )
@@ -120,7 +120,7 @@ export default function ZapCreditSimulationCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-              Credito ZAP
+              Crédito ZAP
             </p>
             <h3 className="mt-1 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">{title}</h3>
           </div>
@@ -205,7 +205,7 @@ export default function ZapCreditSimulationCard({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
             <span className="font-semibold text-gray-900">Composicion del pedido</span>
             <span className="text-gray-500 text-xs sm:text-sm">
-              Anticipo {summary.downPaymentPercent}% - Credito {financedSharePercent}%
+              Anticipo {summary.downPaymentPercent}% - Crédito {financedSharePercent}%
             </span>
           </div>
           <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-[#FEF1F6]">
@@ -282,14 +282,14 @@ export default function ZapCreditSimulationCard({
 
       {!eligibility.authenticated && (
         <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-3 sm:p-4 text-xs sm:text-sm text-blue-900">
-          Inicia sesion para solicitar este credito y despues seguir tus cuotas, comprobantes y
+          Inicia sesion para solicitar este crédito y despues seguir tus cuotas, comprobantes y
           vencimientos desde tu panel.
         </div>
       )}
 
       {eligibility.hasDelinquency && (
         <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 sm:p-4 text-xs sm:text-sm text-amber-900">
-          Esta simulacion ya incluye el recargo por mora vigente:{' '}
+          Esta simulación ya incluye el recargo por mora vigente:{' '}
           <strong>+{eligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
           <strong>+{eligibility.downPaymentPenaltyPercent}</strong> puntos sobre el anticipo.
         </div>

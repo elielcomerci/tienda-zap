@@ -72,7 +72,7 @@ export default function CartPage() {
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
                 Revisamos cantidad, variantes, notas y preparacion del archivo antes de pasar al
-                pago. La idea es que cada pieza llegue bien definida antes de pasar a produccion.
+                pago. La idea es que cada pieza llegue bien definida antes de pasar a producción.
               </p>
             </div>
 
@@ -91,7 +91,7 @@ export default function CartPage() {
                   Preparacion
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
-                  Archivos o diseno
+                  Archivos o diseño
                 </p>
                 <p className="mt-1 text-sm text-gray-600">queda definido desde ahora</p>
               </div>
@@ -114,11 +114,11 @@ export default function CartPage() {
                   Tu carrito
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
-                  Revisa cada pieza seleccionada.
+                  Revisá cada pieza seleccionada.
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
                   Podes ajustar cantidades, sumar observaciones y definir si el trabajo llega con
-                  archivo final o con diseno a coordinar.
+                  archivo final o con diseño a coordinar.
                 </p>
               </div>
 
@@ -164,11 +164,11 @@ export default function CartPage() {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                              {item.isService ? 'Servicio' : 'Produccion'}
+                              {item.isService ? 'Servicio' : 'Producción'}
                             </span>
                             {item.creditDownPaymentPercent ? (
                               <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-                                Credito ZAP {item.creditDownPaymentPercent}%
+                                Crédito ZAP {item.creditDownPaymentPercent}%
                               </span>
                             ) : null}
                           </div>
@@ -307,7 +307,7 @@ export default function CartPage() {
                   <div className="mt-2 flex items-center gap-2 text-white">
                     <Wallet size={18} className="text-[#F66B9A]" />
                     <span className="text-sm font-semibold">
-                      Tarjeta, transferencia o Credito ZAP
+                      Tarjeta, transferencia o Crédito ZAP
                     </span>
                   </div>
                 </div>
@@ -365,7 +365,7 @@ export default function CartPage() {
                     disabled
                     className="flex w-full cursor-not-allowed items-center justify-center rounded-[24px] bg-white/10 px-6 py-4 text-sm font-semibold text-gray-400"
                   >
-                    Revisa el carrito
+                    Revisá el carrito
                   </button>
                 ) : (
                   <Link
@@ -400,7 +400,7 @@ export default function CartPage() {
             }))}
             eligibility={eligibility}
             isLoading={isLoading}
-            title="Asi podria resolverse con Credito ZAP"
+            title="Asi podria resolverse con Crédito ZAP"
             description="Una referencia rapida para saber si te conviene ordenar el pago con mas aire."
           />
         </div>

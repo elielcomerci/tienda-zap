@@ -11,7 +11,7 @@ function getMPClient() {
 }
 
 /**
- * POST /api/creditos/cuotas/[installmentId]/mp-payment
+ * POST /api/créditos/cuotas/[installmentId]/mp-payment
  *
  * Genera (o recupera) un link de pago MercadoPago para el importe exacto
  * de una cuota de Crédito ZAP. El external_reference usa el prefijo
@@ -61,7 +61,7 @@ export async function POST(
 
     if (!['ACTIVE', 'APPROVED'].includes(installment.plan.status)) {
       return Response.json(
-        { error: 'Este credito todavia no esta habilitado para pagos.' },
+        { error: 'Este crédito todavia no esta habilitado para pagos.' },
         { status: 400 }
       )
     }
@@ -81,12 +81,12 @@ export async function POST(
     const preferenceApi = new Preference(client)
 
     const baseUrl = req.nextUrl.origin
-    const successUrl = new URL('/perfil/creditos', baseUrl)
+    const successUrl = new URL('/perfil/créditos', baseUrl)
     successUrl.searchParams.set('pago', 'ok')
     successUrl.searchParams.set('cuota', installment.sequence.toString())
-    const failureUrl = new URL(`/perfil/creditos/${installment.plan.id}`, baseUrl)
+    const failureUrl = new URL(`/perfil/créditos/${installment.plan.id}`, baseUrl)
     failureUrl.searchParams.set('error', 'pago_fallido')
-    const pendingUrl = new URL(`/perfil/creditos/${installment.plan.id}`, baseUrl)
+    const pendingUrl = new URL(`/perfil/créditos/${installment.plan.id}`, baseUrl)
     pendingUrl.searchParams.set('pago', 'pendiente')
 
     const payerEmail =
@@ -111,7 +111,7 @@ export async function POST(
         items: [
           {
             id: installmentId,
-            title: `Credito ZAP — Cuota #${installment.sequence}`,
+            title: `Crédito ZAP — Cuota #${installment.sequence}`,
             quantity: 1,
             unit_price: installment.amount,
             currency_id: 'ARS',
@@ -135,7 +135,7 @@ export async function POST(
       data: { mpPreferenceId: preference.id },
     })
 
-    revalidatePath(`/perfil/creditos/${installment.plan.id}`)
+    revalidatePath(`/perfil/créditos/${installment.plan.id}`)
 
     return Response.json({ initPoint: preference.init_point })
   } catch (error: any) {

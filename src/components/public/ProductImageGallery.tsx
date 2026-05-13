@@ -46,7 +46,7 @@ export default function ProductImageGallery({
         <div>
           <p className="text-sm font-semibold text-gray-900">Vista del producto</p>
           <p className="text-xs uppercase tracking-[0.16em] text-gray-500">
-            Revisa detalles y terminaciones
+            Revisá detalles y terminaciones
           </p>
         </div>
         {safeImages.length > 1 && (

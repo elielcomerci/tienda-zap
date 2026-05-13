@@ -21,7 +21,7 @@ function getAppBaseUrl() {
 export async function requestPasswordReset(formData: FormData): Promise<void> {
   const parsed = forgotPasswordSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
-    redirect('/recuperar?error=Email+invalido')
+    redirect('/recuperar?error=Email+inválido')
   }
 
   const { email } = parsed.data
@@ -54,11 +54,11 @@ export async function requestPasswordReset(formData: FormData): Promise<void> {
 
 export async function resetPassword(formData: FormData): Promise<void> {
   const token = formData.get('token') as string
-  if (!token) redirect('/login?error=Token+invalido')
+  if (!token) redirect('/login?error=Token+inválido')
 
   const parsed = resetPasswordSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
-    const msg = Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Datos invalidos'
+    const msg = Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Datos inválidos'
     redirect(`/recuperar/${token}?error=${encodeURIComponent(msg)}`)
   }
 
@@ -67,7 +67,7 @@ export async function resetPassword(formData: FormData): Promise<void> {
   })
 
   if (!verificationToken) {
-    redirect('/login?error=El+enlace+es+invalido+o+ya+fue+usado')
+    redirect('/login?error=El+enlace+es+inválido+o+ya+fue+usado')
   }
 
   if (new Date() > verificationToken.expires) {

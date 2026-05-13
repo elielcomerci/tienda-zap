@@ -158,14 +158,14 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
         ? 'Esta combinacion no esta disponible ahora mismo.'
         : minPrice === null && !activeVariant
           ? 'Este producto no tiene variantes disponibles para pedir online en este momento.'
-          : 'Podes pagarlo con tarjeta o resolverlo con Credito ZAP desde el anticipo indicado.'
+          : 'Podes pagarlo con tarjeta o resolverlo con Crédito ZAP desde el anticipo indicado.'
 
   const summaryStateLabel = !allRequiredSelected
     ? 'Completa los campos requeridos'
     : activeVariant && selectedVariantAvailable
       ? 'Listo para sumar'
       : activeVariant
-        ? 'Revisa esta combinacion'
+        ? 'Revisá esta combinacion'
         : 'Falta definir una opcion'
 
   const availabilityLabel = isServiceProduct
@@ -226,7 +226,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
               Pedido directo
             </span>
             <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-              Credito ZAP {creditDownPaymentPercent}%
+              Crédito ZAP {creditDownPaymentPercent}%
             </span>
           </div>
 
@@ -275,7 +275,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                   Pago flexible
                 </p>
                 <p className="mt-2 text-sm font-semibold text-white">
-                  Tarjeta o Credito ZAP desde {creditDownPaymentPercent}% de anticipo.
+                  Tarjeta o Crédito ZAP desde {creditDownPaymentPercent}% de anticipo.
                 </p>
               </div>
             </div>
@@ -313,7 +313,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
               Configura tu pieza
             </span>
             <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-              Credito ZAP {creditDownPaymentPercent}%
+              Crédito ZAP {creditDownPaymentPercent}%
             </span>
           </div>
 
@@ -443,7 +443,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                 Pago flexible
               </p>
               <p className="mt-2 text-sm font-semibold text-white">
-                Tarjeta o Credito ZAP desde {creditDownPaymentPercent}% de anticipo.
+                Tarjeta o Crédito ZAP desde {creditDownPaymentPercent}% de anticipo.
               </p>
             </div>
           </div>

@@ -35,7 +35,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const creditWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    `Hola! Vi el producto "${product.name}" en la tienda y quiero evaluarlo con Credito ZAP para mi negocio.`
+    `Hola! Vi el producto "${product.name}" en la tienda y quiero evaluarlo con Crédito ZAP para mi negocio.`
   )
 
   return (
@@ -85,7 +85,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     Eleccion acompanada
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Definis medidas, variantes y cantidades con la informacion justa.
+                    Definis medidas, variantes y cantidades con la información justa.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -151,7 +151,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Pago flexible</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Tarjeta, transferencia o Credito ZAP segun como prefieras resolverlo.
+                    Tarjeta, transferencia o Crédito ZAP segun como prefieras resolverlo.
                   </p>
                 </div>
               </div>

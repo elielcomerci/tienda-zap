@@ -39,11 +39,11 @@ export function useCreditEligibility() {
 
     setIsLoading(true)
 
-    fetch('/api/creditos/eligibility')
+    fetch('/api/créditos/eligibility')
       .then(async (response) => {
         const payload = await response.json()
         if (!response.ok) {
-          throw new Error(payload.error || 'No pudimos validar Credito ZAP.')
+          throw new Error(payload.error || 'No pudimos validar Crédito ZAP.')
         }
 
         if (active) {

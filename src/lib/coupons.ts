@@ -71,7 +71,7 @@ function roundCurrency(value: number) {
 
 function buildInvalidCouponPreview(
   originalTotal: number,
-  detail = 'No encontramos un cupon valido con ese codigo.'
+  detail = 'No encontramos un cupon válido con ese código.'
 ): CouponPreviewResult {
   return {
     status: 'invalid',
@@ -334,13 +334,13 @@ export async function evaluateCheckoutPricing(input: {
 
   if (!looksLikeCouponCode(normalizedCode)) {
     throw new Error(
-      'El codigo de cupon no tiene un formato valido. Revisa letras, numeros y guiones.'
+      'El código de cupon no tiene un formato válido. Revisá letras, números y guiones.'
     )
   }
 
   const coupon = await loadCouponRecord(db, normalizedCode)
   if (!coupon) {
-    throw new Error('No encontramos un cupon activo con ese codigo.')
+    throw new Error('No encontramos un cupon activo con ese código.')
   }
 
   const evaluation = await evaluateCouponRecord({
@@ -383,7 +383,7 @@ export async function previewCheckoutCoupon(input: {
   if (!looksLikeCouponCode(normalizedCode)) {
     return buildInvalidCouponPreview(
       total,
-      'Prueba escanear de nuevo o ingresa el codigo manualmente con letras, numeros y guiones.'
+      'Prueba escanear de nuevo o ingresa el código manualmente con letras, números y guiones.'
     )
   }
 
@@ -401,13 +401,13 @@ export async function previewCheckoutCoupon(input: {
       detail:
         pricing.discountTotal > 0
           ? `Aplicamos ${pricing.appliedCoupon?.promotionName ?? 'la promocion'} a este pedido.`
-          : 'El codigo quedo cargado, pero no genero descuento para este pedido.',
+          : 'El código quedo cargado, pero no genero descuento para este pedido.',
       originalTotal: pricing.subtotal,
       finalTotal: pricing.total,
       discountAmount: pricing.discountTotal,
     }
   } catch (error: any) {
-    return buildInvalidCouponPreview(total, error.message || 'No encontramos un cupon valido.')
+    return buildInvalidCouponPreview(total, error.message || 'No encontramos un cupon válido.')
   }
 }
 
@@ -438,7 +438,7 @@ export async function reserveCouponRedemptionForOrder(input: {
   }
 
   if (roundCurrency(evaluation.discountAmount) !== roundCurrency(input.discountTotal)) {
-    throw new Error('El valor del cupon cambio mientras confirmabamos el pedido. Revisa el checkout.')
+    throw new Error('El valor del cupon cambio mientras confirmabamos el pedido. Revisá el checkout.')
   }
 
   const reservedCoupon = await input.tx.promotionCoupon.updateMany({
@@ -455,7 +455,7 @@ export async function reserveCouponRedemptionForOrder(input: {
   })
 
   if (reservedCoupon.count !== 1) {
-    throw new Error('Otro pedido reservo este cupon antes. Prueba con otro codigo.')
+    throw new Error('Otro pedido reservo este cupon antes. Prueba con otro código.')
   }
 
   await input.tx.couponRedemption.create({

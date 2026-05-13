@@ -133,7 +133,7 @@ export default function CheckoutZapCreditConfigurator({
             </h3>
             <p className="mt-2 max-w-2xl text-sm text-gray-600">
               {eligibility?.hasDelinquency
-                ? 'Ya aplicamos las condiciones vigentes a tu simulacion para que arranques con un plan realista.'
+                ? 'Ya aplicamos las condiciones vigentes a tu simulación para que arranques con un plan realista.'
                 : 'Mostramos anticipo, cuota y total estimado primero. El resto queda disponible si queres revisarlo.'}
             </p>
           </div>

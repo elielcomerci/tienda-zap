@@ -12,6 +12,8 @@ import { getCategories } from '@/lib/categories'
 import { getProducts } from '@/lib/products'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
+import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
 import AddToCartButton from '@/components/public/AddToCartButton'
 
 export const metadata = {
@@ -52,10 +54,42 @@ const buyingMoments = [
 ]
 
 export default async function HomePage() {
-  const [categories, featuredProducts] = await Promise.all([
+  // Get user's business type for personalized products
+  const session = await auth()
+  let priorityCategorySlugs: string[] = []
+
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        businessType: {
+          include: { categories: { select: { slug: true } } },
+        },
+      },
+    })
+    if (user?.businessType?.categories) {
+      priorityCategorySlugs = user.businessType.categories.map((c) => c.slug)
+    }
+  }
+
+  const [categories, allProducts] = await Promise.all([
     getCategories(),
-    getProducts(undefined, undefined, { take: 8 }),
+    getProducts(undefined, undefined, { take: 16 }),
   ])
+
+  // Prioritize products from the user's rubro categories
+  let featuredProducts = allProducts
+  if (priorityCategorySlugs.length > 0) {
+    const prioritized = allProducts.filter((p) =>
+      priorityCategorySlugs.includes(p.category.slug)
+    )
+    const rest = allProducts.filter(
+      (p) => !priorityCategorySlugs.includes(p.category.slug)
+    )
+    featuredProducts = [...prioritized, ...rest].slice(0, 8)
+  } else {
+    featuredProducts = allProducts.slice(0, 8)
+  }
 
   const heroProducts = featuredProducts.slice(0, 3)
   const primaryHeroProduct = heroProducts[0]
@@ -81,7 +115,7 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-                  Marca, grafica y digital
+                  Marca, gráfica y digital
                 </span>
                 <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600 shadow-sm">
                   Tienda ZAP
@@ -93,7 +127,7 @@ export default async function HomePage() {
                   Tu marca lista para verse mejor, aparecer mas y moverse en serio.
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-gray-600 sm:text-lg">
-                  Diseno, produccion grafica, merchandising, exhibicion, web y presencia digital
+                  Diseño, producción grafica, merchandising, exhibición, web y presencia digital
                   para negocios que necesitan dejar de improvisar como se muestran.
                 </p>
               </div>
@@ -253,12 +287,12 @@ export default async function HomePage() {
                 Crédito ZAP
               </p>
               <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                Resolve trabajos importantes con anticipo y seguimiento claro.
+                Resolvé trabajos importantes con anticipo y seguimiento claro.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/credito-zap" className="btn-secondary !py-2.5">
+              <Link href="/crédito-zap" className="btn-secondary !py-2.5">
                 Ver crédito
               </Link>
               {creditWhatsappUrl && (
@@ -285,10 +319,10 @@ export default async function HomePage() {
                 Soluciones destacadas
               </p>
               <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                Empeza por lo que hoy puede mover tu marca.
+                Empezá por lo que hoy puede mover tu marca.
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                Una seleccion curada de grafica, exhibicion, merchandising y servicios digitales para resolver con criterio.
+                Una seleccion curada de grafica, exhibición, merchandising y servicios digitales para resolver con criterio.
               </p>
             </div>
 
@@ -329,7 +363,7 @@ export default async function HomePage() {
                         {product.category.name}
                       </span>
                       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                        Credito ZAP
+                        Crédito ZAP
                       </span>
                     </div>
 
@@ -357,7 +391,7 @@ export default async function HomePage() {
                             : 'Consultar'}
                         </p>
                         <p className="mt-1 text-xs text-gray-500">
-                          Anticipo sugerido {product.creditDownPaymentPercent}% con Credito ZAP
+                          Anticipo sugerido {product.creditDownPaymentPercent}% con Crédito ZAP
                         </p>
                       </div>
 
@@ -425,7 +459,7 @@ export default async function HomePage() {
             </div>
 
             <Link href="/productos" className="text-sm font-semibold text-[#ED2C71] hover:text-[#C91F5B]">
-              Abrir catalogo completo
+              Abrir catálogo completo
             </Link>
           </div>
 

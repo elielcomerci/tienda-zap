@@ -47,7 +47,7 @@ export async function POST(
     }
 
     if (!['TRANSFER', 'CASH', 'OTHER'].includes(paymentMethod)) {
-      return Response.json({ error: 'El medio de pago no es valido.' }, { status: 400 })
+      return Response.json({ error: 'El medio de pago no es válido.' }, { status: 400 })
     }
 
     const installment = await prisma.zapCreditInstallment.findFirst({
@@ -86,7 +86,7 @@ export async function POST(
 
     if (!['ACTIVE', 'APPROVED'].includes(installment.plan.status)) {
       return Response.json(
-        { error: 'Este credito todavia no esta habilitado para registrar pagos.' },
+        { error: 'Este crédito todavia no esta habilitado para registrar pagos.' },
         { status: 400 }
       )
     }
@@ -125,7 +125,7 @@ export async function POST(
     })
 
     const blob = await put(
-      `creditos/${installment.plan.id}/${installmentId}-${Date.now()}-${file.name}`,
+      `créditos/${installment.plan.id}/${installmentId}-${Date.now()}-${file.name}`,
       file,
       { access: 'public' }
     )
@@ -158,10 +158,10 @@ export async function POST(
     ])
 
     revalidatePath('/perfil')
-    revalidatePath('/perfil/creditos')
-    revalidatePath(`/perfil/creditos/${installment.plan.id}`)
-    revalidatePath('/admin/creditos')
-    revalidatePath(`/admin/creditos/${installment.plan.id}`)
+    revalidatePath('/perfil/créditos')
+    revalidatePath(`/perfil/créditos/${installment.plan.id}`)
+    revalidatePath('/admin/créditos')
+    revalidatePath(`/admin/créditos/${installment.plan.id}`)
     revalidatePath(`/admin/ordenes/${installment.plan.orderId}`)
 
     return Response.json({ ok: true })

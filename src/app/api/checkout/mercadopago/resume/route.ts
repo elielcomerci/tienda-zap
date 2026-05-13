@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
         ? [
             {
               id: `anticipo-${order.id}`,
-              title: 'Anticipo Credito ZAP',
+              title: 'Anticipo Crédito ZAP',
               quantity: 1,
               unit_price: order.zapCreditPlan.downPaymentAmount,
               currency_id: 'ARS',

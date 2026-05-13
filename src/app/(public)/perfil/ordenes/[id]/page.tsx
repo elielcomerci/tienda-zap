@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 const statusLabel: Record<string, string> = {
   PENDING: 'Pendiente',
   PAID: 'Pagado',
-  PROCESSING: 'En produccion',
+  PROCESSING: 'En producción',
   READY: 'Listo para retirar',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
@@ -46,7 +46,7 @@ export default async function MiOrdenPage({
     MERCADOPAGO: 'MercadoPago',
     TRANSFER: 'Transferencia bancaria',
     CASH: 'Efectivo',
-    ZAP_CREDIT: 'Credito ZAP',
+    ZAP_CREDIT: 'Crédito ZAP',
   }
 
   const orderCode = getOrderDisplayCode(order.id)
@@ -129,7 +129,7 @@ export default async function MiOrdenPage({
                     )}
                     {item.designRequested && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded">
-                        <Palette size={14} /> Requiere diseno
+                        <Palette size={14} /> Requiere diseño
                       </span>
                     )}
                     {item.isService && (
@@ -217,8 +217,8 @@ export default async function MiOrdenPage({
               </span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-gray-500">Panel de credito</span>
-              <Link href={`/perfil/creditos/${order.zapCreditPlan.id}`} className="font-medium text-[#ED2C71] hover:underline">
+              <span className="text-gray-500">Panel de crédito</span>
+              <Link href={`/perfil/créditos/${order.zapCreditPlan.id}`} className="font-medium text-[#ED2C71] hover:underline">
                 Ver detalle
               </Link>
             </div>

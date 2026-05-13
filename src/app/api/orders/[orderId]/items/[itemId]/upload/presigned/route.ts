@@ -45,7 +45,7 @@ export async function POST(
 
     if (item.designRequested) {
       return Response.json(
-        { error: 'Este item esta marcado como diseno solicitado.' },
+        { error: 'Este item esta marcado como diseño solicitado.' },
         { status: 400 }
       )
     }

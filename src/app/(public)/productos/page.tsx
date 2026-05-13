@@ -30,7 +30,7 @@ export default async function ProductsPage({
                 Todo lo que ayuda a que tu marca se vea, se entienda y aparezca mejor.
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                Grafica, carteleria, exhibidores, merchandising, web y presencia digital en una
+                Grafica, cartelería, exhibidores, merchandising, web y presencia digital en una
                 seleccion pensada para negocios que quieren verse mas profesionales.
               </p>
             </div>
@@ -112,10 +112,10 @@ export default async function ProductsPage({
                 Criterio ZAP
               </p>
               <p className="mt-3 text-lg font-black leading-tight text-gray-950">
-                Diseno, produccion y presencia digital con una lectura clara.
+                Diseño, producción y presencia digital con una lectura clara.
               </p>
               <p className="mt-3 text-sm leading-7 text-gray-600">
-                Cada producto o servicio muestra la informacion necesaria para elegir con seguridad,
+                Cada producto o servicio muestra la información necesaria para elegir con seguridad,
                 sin perder el foco en la marca ni en la calidad del resultado.
               </p>
             </div>
@@ -160,12 +160,12 @@ export default async function ProductsPage({
                   No encontramos productos con este filtro.
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-600">
-                  Proba otra categoria, quita la busqueda actual o volve al catalogo completo
+                  Proba otra categoria, quita la busqueda actual o volve al catálogo completo
                   para mirar la seleccion con mas aire.
                 </p>
                 <div className="mt-6 flex justify-center">
                   <Link href="/productos" className="btn-primary">
-                    Ver todo el catalogo <ArrowRight size={16} />
+                    Ver todo el catálogo <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -187,7 +187,7 @@ export default async function ProductsPage({
                               {product.category.name}
                             </span>
                             <span className="rounded-full bg-[#ED2C71] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-[#ED2C71]/20">
-                              Credito ZAP
+                              Crédito ZAP
                             </span>
                           </div>
 
@@ -234,7 +234,7 @@ export default async function ProductsPage({
                                 : 'Consultar'}
                             </p>
                             <p className="mt-1 text-xs text-gray-500">
-                              {product.creditDownPaymentPercent}% de anticipo sugerido con Credito ZAP
+                              {product.creditDownPaymentPercent}% de anticipo sugerido con Crédito ZAP
                             </p>
                           </div>
 

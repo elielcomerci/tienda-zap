@@ -116,7 +116,7 @@ function requestIndecPayload(url: URL, redirectCount = 0): Promise<IndecSeriesRe
             response.headers.location
           ) {
             if (redirectCount >= 5) {
-              reject(new Error('Demasiadas redirecciones consultando IPC INDEC'))
+              reject(new Error('Demasiadas redirecciónes consultando IPC INDEC'))
               return
             }
 
@@ -141,7 +141,7 @@ function requestIndecPayload(url: URL, redirectCount = 0): Promise<IndecSeriesRe
             reject(
               new Error(
                 `No pudimos parsear la respuesta del IPC INDEC: ${
-                  error instanceof Error ? error.message : 'JSON invalido'
+                  error instanceof Error ? error.message : 'JSON inválido'
                 }`
               )
             )
@@ -462,7 +462,7 @@ export async function buildDraftZapCreditPlan(input: {
 
   if (!Number.isInteger(installments) || installments < minInstallments || installments > maxInstallments) {
     throw new Error(
-      `Para pagos ${paymentFrequency === 'MONTHLY' ? 'mensuales' : paymentFrequency === 'WEEKLY' ? 'semanales' : 'diarios'} podes elegir entre ${minInstallments} y ${maxInstallments} pagos.`
+      `Para pagos ${paymentFrequency === 'MONTHLY' ? 'mensuales' : paymentFrequency === 'WEEKLY' ? 'semanales' : 'diarios'} podés elegir entre ${minInstallments} y ${maxInstallments} pagos.`
     )
   }
 
@@ -497,7 +497,7 @@ export async function buildDraftZapCreditPlan(input: {
     totalInterest: summary.totalInterest,
     notes: eligibility.hasDelinquency
       ? `Cliente con mora activa: recargo +${eligibility.ratePenaltyPercent}% y anticipo +${eligibility.downPaymentPenaltyPercent} puntos. Plan elegido: ${planLabel}.`
-      : `Credito aprobado automaticamente por historial de pagos saludable. Plan elegido: ${planLabel}.`,
+      : `Crédito aprobado automaticamente por historial de pagos saludable. Plan elegido: ${planLabel}.`,
     scheduleItems:
       summary.schedule.length > 0
         ? {

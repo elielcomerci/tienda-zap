@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { Scanner } from '@yudiel/react-qr-scanner'
-import { Camera, ScanLine, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
 export default function CouponScannerModal({
   open,
@@ -31,101 +31,97 @@ export default function CouponScannerModal({
     }
   }, [open])
 
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/80 p-4 backdrop-blur-sm sm:p-6">
-      <div className="w-full max-w-2xl overflow-hidden rounded-[32px] border border-white/10 bg-gray-950 text-white shadow-[0_30px_90px_-40px_rgba(15,23,42,0.9)]">
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F66B9A]">
-              Escaner de cupon
-            </p>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
-              Apunta al QR y capturamos el codigo al instante.
-            </h2>
-            <p className="mt-2 text-sm leading-7 text-gray-300">
-              Usamos la camara trasera si esta disponible. Si el QR trae una URL, intentamos extraer
-              el codigo automaticamente.
-            </p>
-          </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={(e) => {
+        // Close on backdrop click
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      {/* Close button — always visible, top-right, outside the card */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="fixed top-4 right-4 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-white text-gray-900 shadow-xl transition-transform hover:scale-110 active:scale-95"
+        aria-label="Cerrar escáner"
+      >
+        <X size={24} />
+      </button>
 
+      <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-gray-950 text-white shadow-2xl">
+        {/* Header — compact */}
+        <div className="px-5 pt-5 pb-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#F66B9A]">
+            Escáner de cupón
+          </p>
+          <p className="mt-1 text-sm text-gray-300">
+            Apuntá al QR para capturar el código.
+          </p>
+        </div>
+
+        {/* Scanner view — constrained height */}
+        <div className="mx-5 overflow-hidden rounded-2xl border border-white/10 bg-black">
+          <Scanner
+            onScan={(detectedCodes) => {
+              const rawValue = detectedCodes.find((code) => code.rawValue?.trim())?.rawValue?.trim()
+              if (!rawValue || lastDetectedRef.current === rawValue) return
+              lastDetectedRef.current = rawValue
+              onDetected(rawValue)
+            }}
+            onError={(error) => {
+              console.error('Coupon scanner error:', error)
+              setCameraError(
+                'No pudimos abrir la cámara. Revisá permisos o usá el ingreso manual.'
+              )
+            }}
+            allowMultiple={false}
+            components={{ finder: true, onOff: true, torch: true, zoom: false }}
+            constraints={{ facingMode: 'environment' }}
+            formats={['qr_code']}
+            scanDelay={350}
+            sound={false}
+            styles={{
+              container: { width: '100%', maxHeight: 280 },
+              video: { objectFit: 'cover' },
+            }}
+          />
+        </div>
+
+        {/* Error or hint */}
+        <div className="px-5 py-4">
+          {cameraError ? (
+            <div className="rounded-xl border border-amber-300/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              {cameraError}
+            </div>
+          ) : (
+            <p className="text-center text-xs text-gray-500">
+              Si no funciona, cerrá y usá el ingreso manual.
+            </p>
+          )}
+        </div>
+
+        {/* Bottom close button — always accessible */}
+        <div className="px-5 pb-5">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-200 transition-colors hover:bg-white/10"
-            aria-label="Cerrar escaner de cupon"
+            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
           >
-            <X size={20} />
+            Cerrar escáner
           </button>
-        </div>
-
-        <div className="space-y-4 p-5 sm:p-6">
-          <div className="overflow-hidden rounded-[28px] border border-white/10 bg-black">
-            <Scanner
-              onScan={(detectedCodes) => {
-                const rawValue = detectedCodes.find((code) => code.rawValue?.trim())?.rawValue?.trim()
-                if (!rawValue || lastDetectedRef.current === rawValue) return
-
-                lastDetectedRef.current = rawValue
-                onDetected(rawValue)
-              }}
-              onError={(error) => {
-                console.error('Coupon scanner error:', error)
-                setCameraError(
-                  'No pudimos abrir la camara. Revisa permisos del navegador o usa el ingreso manual.'
-                )
-              }}
-              allowMultiple={false}
-              components={{ finder: true, onOff: true, torch: true, zoom: false }}
-              constraints={{ facingMode: 'environment' }}
-              formats={['qr_code']}
-              scanDelay={350}
-              sound={false}
-              styles={{
-                container: { width: '100%', minHeight: 360 },
-                video: { objectFit: 'cover' },
-              }}
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-[#F66B9A]">
-                <Camera size={16} />
-                <span className="text-xs font-semibold uppercase tracking-[0.18em]">Camara</span>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
-                Priorizamos la camara trasera para que leer el QR sea mas rapido y mas estable.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-[#F66B9A]">
-                <ScanLine size={16} />
-                <span className="text-xs font-semibold uppercase tracking-[0.18em]">Lectura</span>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
-                Si el codigo trae un link, intentamos quedarnos con el cupón real en vez de la URL completa.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-[#F66B9A]">
-                <X size={16} />
-                <span className="text-xs font-semibold uppercase tracking-[0.18em]">Salida</span>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
-                Si algo falla, salis rapido y seguis con el codigo manual sin perder la confirmacion.
-              </p>
-            </div>
-          </div>
-
-          {cameraError && (
-            <div className="rounded-2xl border border-amber-300/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-              {cameraError}
-            </div>
-          )}
         </div>
       </div>
     </div>

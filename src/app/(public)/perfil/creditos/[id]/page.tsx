@@ -22,7 +22,7 @@ import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'Detalle de credito | ZAP Tienda',
+  title: 'Detalle de crédito | ZAP Tienda',
 }
 
 function getPaymentPlanLabel(paymentFrequency: string) {
@@ -55,16 +55,16 @@ export default async function CustomerCreditDetailPage({
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
   const receiptWhatsappUrl = buildWhatsappUrl(
     whatsappNumber,
-    `Hola! Te envio el comprobante del anticipo de mi credito #${orderCode}.`
+    `Hola! Te envio el comprobante del anticipo de mi crédito #${orderCode}.`
   )
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
       <Link
-        href="/perfil/creditos"
+        href="/perfil/créditos"
         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
       >
-        <ArrowLeft size={16} /> Volver a mis creditos
+        <ArrowLeft size={16} /> Volver a mis créditos
       </Link>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -73,7 +73,7 @@ export default async function CustomerCreditDetailPage({
             <Wallet size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Credito #{orderCode}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Crédito #{orderCode}</h1>
             <p className="text-sm text-gray-500">Pedido asociado #{orderCode}</p>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default async function CustomerCreditDetailPage({
           <div className="flex items-start gap-3">
             <AlertTriangle size={18} className="mt-0.5 shrink-0 text-rose-600" />
             <div>
-              <p className="font-semibold">Tenes cuotas vencidas en este credito</p>
+              <p className="font-semibold">Tenes cuotas vencidas en este crédito</p>
               <p className="mt-1 text-rose-800">
                 Subi el comprobante correspondiente para que podamos revisarlo y normalizar el
                 estado de tu cuenta.
@@ -165,7 +165,7 @@ export default async function CustomerCreditDetailPage({
         <div className="card p-5">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Avance del credito</h2>
+              <h2 className="text-lg font-bold text-gray-900">Avance del crédito</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Seguimiento de dinero cobrado y cuotas aprobadas.
               </p>
@@ -249,7 +249,7 @@ export default async function CustomerCreditDetailPage({
           </div>
 
           <p className="mt-4 rounded-2xl border border-[#F66B9A]/15 bg-[#FEF1F6] px-4 py-3 text-xs text-[#C91F5B]">
-            La tasa quedo congelada cuando se genero este credito. Aunque cambie el IPC despues,
+            La tasa quedo congelada cuando se genero este crédito. Aunque cambie el IPC despues,
             este plan conserva las condiciones pactadas.
           </p>
         </div>

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     if (data.paymentType === 'ZAP_CREDIT' && !session?.user?.id) {
       return Response.json(
-        { error: 'Inicia sesion para solicitar Credito ZAP y seguir tus cuotas.' },
+        { error: 'Inicia sesion para solicitar Crédito ZAP y seguir tus cuotas.' },
         { status: 401 }
       )
     }

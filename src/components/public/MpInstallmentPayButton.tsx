@@ -25,7 +25,7 @@ export default function MpInstallmentPayButton({
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`/api/creditos/cuotas/${installmentId}/mp-payment`, {
+      const res = await fetch(`/api/créditos/cuotas/${installmentId}/mp-payment`, {
         method: 'POST',
       })
       const data = await res.json()

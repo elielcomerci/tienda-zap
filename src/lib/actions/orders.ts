@@ -68,7 +68,7 @@ export async function finalizeOrderItemUpload(input: {
   }
 
   if (item.designRequested) {
-    throw new Error('Este item esta marcado como diseno solicitado.')
+    throw new Error('Este item esta marcado como diseño solicitado.')
   }
 
   if (item.isService) {
@@ -139,7 +139,7 @@ export async function markOrderItemAsWhatsapp(input: {
   }
 
   if (item.designRequested) {
-    throw new Error('Este item ya esta marcado para diseno.')
+    throw new Error('Este item ya esta marcado para diseño.')
   }
 
   if (item.isService) {

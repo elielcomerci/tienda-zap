@@ -23,13 +23,13 @@ const paymentTypeLabels = {
   MERCADOPAGO: 'Tarjeta / MercadoPago',
   TRANSFER: 'Transferencia',
   CASH: 'Efectivo',
-  ZAP_CREDIT: 'Credito ZAP',
+  ZAP_CREDIT: 'Crédito ZAP',
 } as const
 
 const orderStatusLabels = {
   PENDING: 'Pendiente',
   PAID: 'Pagado',
-  PROCESSING: 'En produccion',
+  PROCESSING: 'En producción',
   READY: 'Listo para entregar',
   DELIVERED: 'Entregado',
   CANCELLED: 'Cancelado',
@@ -46,7 +46,7 @@ export default async function CheckoutSuccessPage({
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <h1 className="mb-4 text-2xl font-bold text-red-500">Error</h1>
-        <p className="mb-8">No encontramos el numero de orden.</p>
+        <p className="mb-8">No encontramos el número de orden.</p>
         <Link href="/" className="btn-primary">
           Volver al inicio
         </Link>
@@ -60,7 +60,7 @@ export default async function CheckoutSuccessPage({
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <h1 className="mb-4 text-2xl font-bold text-red-500">Acceso no disponible</h1>
         <p className="mb-8">
-          Este enlace ya no es valido o la orden no pertenece a tu sesion actual.
+          Este enlace ya no es válido o la orden no pertenece a tu sesion actual.
         </p>
         <Link href="/" className="btn-primary">
           Volver al inicio
@@ -81,7 +81,7 @@ export default async function CheckoutSuccessPage({
   )
   const designWhatsappUrl = buildWhatsappUrl(
     whatsappNumber,
-    `Hola! Acabo de confirmar la orden #${orderCode} y necesito coordinar el diseno.`
+    `Hola! Acabo de confirmar la orden #${orderCode} y necesito coordinar el diseño.`
   )
   const needsDesign = order.items.some((item) => item.designRequested)
   const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
@@ -212,8 +212,8 @@ export default async function CheckoutSuccessPage({
                     <div className="flex-1">
                       <h3 className="text-xl font-black text-[#C91F5B]">
                         {isAutoApprovedCredit
-                          ? 'Credito ZAP aprobado automaticamente'
-                          : 'Solicitud de Credito ZAP en revision'}
+                          ? 'Crédito ZAP aprobado automaticamente'
+                          : 'Solicitud de Crédito ZAP en revision'}
                       </h3>
                       <p className="mt-2 text-sm leading-7 text-[#C91F5B]">
                         {isAutoApprovedCredit
@@ -297,7 +297,7 @@ export default async function CheckoutSuccessPage({
                         Falta el comprobante de pago
                       </h3>
                       <p className="mt-2 text-sm leading-7 text-[#C91F5B]">
-                        Hace la transferencia y envianos el comprobante con tu numero de orden:
+                        Hace la transferencia y envianos el comprobante con tu número de orden:
                         <strong> #{orderCode}</strong>.
                       </p>
                     </div>
@@ -359,9 +359,9 @@ export default async function CheckoutSuccessPage({
                       <Package size={22} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-blue-950">Pedido en produccion</h3>
+                      <h3 className="text-xl font-black text-blue-950">Pedido en producción</h3>
                       <p className="mt-2 text-sm leading-7 text-blue-900">
-                        Ya tenemos todo lo necesario. Tu pedido paso a produccion.
+                        Ya tenemos todo lo necesario. Tu pedido paso a producción.
                       </p>
                     </div>
                   </div>
@@ -388,7 +388,7 @@ export default async function CheckoutSuccessPage({
                     Pedido recibido
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
-                    El pedido ya quedo generado con codigo #{orderCode}.
+                    El pedido ya quedo generado con código #{orderCode}.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
@@ -401,12 +401,12 @@ export default async function CheckoutSuccessPage({
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Produccion
+                    Producción
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
                     {hasUploadableItems || needsDesign
-                      ? 'Si faltan archivos o diseno, lo resolvemos en esta misma pantalla.'
-                      : 'Todo esta encaminado para pasar a produccion sin pasos extra.'}
+                      ? 'Si faltan archivos o diseño, lo resolvemos en esta misma pantalla.'
+                      : 'Todo esta encaminado para pasar a producción sin pasos extra.'}
                   </p>
                 </div>
               </div>
@@ -415,7 +415,7 @@ export default async function CheckoutSuccessPage({
             {order.paymentType === 'ZAP_CREDIT' && creditPlan && order.status !== 'PENDING' && (
               <section className="rounded-[32px] border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.35)] sm:p-8">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                  Credito ZAP
+                  Crédito ZAP
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
                   Plan activo
@@ -445,7 +445,7 @@ export default async function CheckoutSuccessPage({
                   </div>
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                      Diseno solicitado
+                      Diseño solicitado
                     </p>
                     <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
                       Coordinamos referencias y detalles.
@@ -463,7 +463,7 @@ export default async function CheckoutSuccessPage({
                     rel="noreferrer"
                     className="btn-primary bg-[#25D366] shadow-[#25D366]/30 hover:bg-[#1ebc5a]"
                   >
-                    Coordinar diseno por WhatsApp
+                    Coordinar diseño por WhatsApp
                   </a>
                 </div>
               </section>
@@ -512,7 +512,7 @@ export default async function CheckoutSuccessPage({
                   {heroTitle}
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-gray-300">
-                  Codigo, importe, estado y piezas del pedido en una sola lectura.
+                  Código, importe, estado y piezas del pedido en una sola lectura.
                 </p>
               </div>
 
@@ -590,7 +590,7 @@ export default async function CheckoutSuccessPage({
                           {item.isService
                             ? 'Servicio'
                             : item.designRequested
-                              ? 'Diseno solicitado'
+                              ? 'Diseño solicitado'
                               : item.fileUrl || item.fileObjectKey
                                 ? 'Archivo cargado'
                                 : 'Archivo pendiente'}

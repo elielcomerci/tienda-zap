@@ -41,7 +41,7 @@ export default function CreditPaymentUploader({
           formData.append('notes', notes.trim())
         }
 
-        const response = await fetch(`/api/creditos/cuotas/${installmentId}/comprobante`, {
+        const response = await fetch(`/api/créditos/cuotas/${installmentId}/comprobante`, {
           method: 'POST',
           body: formData,
         })
