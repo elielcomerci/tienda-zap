@@ -52,7 +52,7 @@ export default function PublicHeader({
           <div>
             <p className="text-xl font-black tracking-tight text-gray-950">ZAP</p>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-              Impresion comercial
+              Agencia Creativa
             </p>
           </div>
         </Link>

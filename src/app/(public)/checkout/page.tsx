@@ -33,7 +33,7 @@ const paymentOptions = [
   {
     value: 'MERCADOPAGO',
     label: 'Tarjeta / MercadoPago',
-    desc: 'Pagalo en el momento y deja la orden en marcha',
+    desc: 'Pagalo en el momento y dejamos el trabajo en marcha',
     icon: CreditCard,
   },
   {
@@ -453,7 +453,7 @@ export default function CheckoutPage() {
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
-                    Checkout ZAP
+                    Confirmacion ZAP
                   </span>
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
                     {items.length} piezas en el pedido
@@ -461,11 +461,11 @@ export default function CheckoutPage() {
                 </div>
 
                 <h1 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                  Cierra tu pedido con una vista mas clara y mas profesional.
+                  Ultimo repaso antes de poner tu pieza en marcha.
                 </h1>
                 <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                  Ordenamos datos, medios de pago y resumen final para que la experiencia se sienta
-                  estable en desktop, con menos ruido y mejores decisiones visibles.
+                  Confirmamos datos, pago, archivos y detalles para que el trabajo arranque prolijo
+                  y sin dudas importantes.
                 </p>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -482,7 +482,7 @@ export default function CheckoutPage() {
                       Paso 2
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Eliges el medio de pago con contexto claro.
+                      Elegis el medio de pago con contexto claro.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -491,7 +491,7 @@ export default function CheckoutPage() {
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
                       {hasItemsRequiringArtwork
-                        ? 'Dejas archivos o pides diseno despues de confirmar.'
+                        ? 'Dejas archivos o pedis diseno despues de confirmar.'
                         : 'El pedido queda listo para seguir sin pasos extra.'}
                     </p>
                   </div>
@@ -507,14 +507,14 @@ export default function CheckoutPage() {
                     Tus datos
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                    Pedimos solo lo necesario para que la compra arranque prolija. Si tienes cuenta,
+                    Pedimos solo lo necesario para que el trabajo arranque prolijo. Si tenes cuenta,
                     usamos lo que ya sabemos para evitar friccion.
                   </p>
                 </div>
 
                 {isLoadingCreditEligibility ? (
                   <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                    Cargando tus datos y condiciones de compra...
+                    Cargando tus datos y condiciones...
                   </div>
                 ) : authenticatedUser ? (
                   <div className="space-y-4">
@@ -524,7 +524,7 @@ export default function CheckoutPage() {
                         <div>
                           <p className="font-semibold">Ya tenemos buena parte de tus datos para este pedido.</p>
                           <p className="mt-1 text-emerald-800">
-                            Asi comprar se siente mas simple y mas rapido.
+                            Asi avanzar se siente mas simple y mas rapido.
                           </p>
                         </div>
                       </div>
@@ -604,8 +604,8 @@ export default function CheckoutPage() {
                         </summary>
                         <div className="border-t border-gray-200 px-4 py-4">
                           <p className="mb-4 text-sm text-gray-600">
-                            Si quieres dejar todo listo desde ahora, cargalos aca. Si no, lo vemos
-                            contigo despues de la compra.
+                            Si queres dejar todo listo desde ahora, cargalos aca. Si no, lo vemos
+                            con vos despues de confirmar.
                           </p>
                           <div className="grid gap-4 sm:grid-cols-2">
                             {renderCustomerSections('optional')}
@@ -637,7 +637,7 @@ export default function CheckoutPage() {
                         </summary>
                         <div className="border-t border-gray-200 px-4 py-4">
                           <p className="mb-4 text-sm text-gray-600">
-                            Estos datos no frenan la compra comun. Puedes dejarlos ahora o resolverlos
+                            Estos datos no frenan la compra comun. Podes dejarlos ahora o resolverlos
                             despues con nosotros.
                           </p>
                           <div className="grid gap-4 sm:grid-cols-2">
@@ -727,10 +727,10 @@ export default function CheckoutPage() {
                         Cupon opcional
                       </p>
                       <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
-                        Escanea el QR o carga el codigo sin salir del checkout.
+                        Escanea el QR o carga el codigo sin salir de la confirmacion.
                       </h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                        Esta capa es opcional. Si no usas cupon, el flujo sigue exactamente como hoy.
+                        Es opcional. Si no usas cupon, podes seguir con el pedido normalmente.
                       </p>
                     </div>
 
@@ -855,7 +855,7 @@ export default function CheckoutPage() {
                       </summary>
                       <div className="border-t border-orange-100 px-4 py-3 text-sm text-gray-600">
                         Disponible para clientes con cuenta. Simulas el plan, confirmas el pedido y
-                        despues sigues cuotas, comprobantes y estados desde tu panel.
+                        despues seguis cuotas, comprobantes y estados desde tu panel.
                       </div>
                     </details>
                   </div>
@@ -921,7 +921,7 @@ export default function CheckoutPage() {
                     {hasItemsRequiringArtwork ? 'Pedido y produccion' : 'Pedido listo para confirmar'}
                   </h2>
                   <p className="mt-2 text-sm leading-7 text-gray-300">
-                    Todo lo importante queda visible antes de enviar la orden.
+                    Todo lo importante queda visible antes de confirmar.
                   </p>
                 </div>
 
@@ -958,7 +958,7 @@ export default function CheckoutPage() {
                             <p className="text-xs text-gray-400">
                               {previewDiscountAmount > 0
                                 ? `${previewDiscountAmount.toLocaleString('es-AR')} de descuento aplicado`
-                                : 'cargado en este checkout'}
+                                : 'cargado en esta confirmacion'}
                             </p>
                           </div>
                         </div>
@@ -974,7 +974,7 @@ export default function CheckoutPage() {
                           Sin cupon cargado
                         </p>
                         <p className="mt-1 text-xs text-gray-400">
-                          Puedes seguir normal o cargarlo desde el bloque de pago.
+                          Podes seguir normal o cargarlo desde el bloque de pago.
                         </p>
                       </>
                     )}

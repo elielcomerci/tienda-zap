@@ -151,25 +151,25 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
     : 0
 
   const guidanceMessage = !allRequiredSelected
-    ? 'Elige las opciones principales y te mostramos la combinacion que mejor encaja.'
+    ? 'Elegi las opciones principales y te mostramos la combinacion que corresponde.'
     : allRequiredSelected && !activeVariant
-      ? 'Afina una opcion mas y lo dejas listo para sumar al carrito.'
+      ? 'Ajusta una opcion mas y dejamos la pieza lista para sumar.'
       : activeVariant && !selectedVariantAvailable
         ? 'Esta combinacion no esta disponible ahora mismo.'
         : minPrice === null && !activeVariant
-          ? 'Este producto no tiene variantes disponibles para compra online en este momento.'
-          : 'Pagalo con tarjeta o muevelo con Credito ZAP desde el anticipo indicado.'
+          ? 'Este producto no tiene variantes disponibles para pedir online en este momento.'
+          : 'Podes pagarlo con tarjeta o resolverlo con Credito ZAP desde el anticipo indicado.'
 
   const summaryStateLabel = !allRequiredSelected
     ? 'Completa los campos requeridos'
     : activeVariant && selectedVariantAvailable
-      ? 'Todo listo para comprar'
+      ? 'Listo para sumar'
       : activeVariant
         ? 'Revisa esta combinacion'
         : 'Falta definir una opcion'
 
   const availabilityLabel = isServiceProduct
-    ? 'Servicio coordinado contigo despues de comprar'
+    ? 'Servicio coordinado con ZAP'
     : product.stock && product.stock > 0
       ? `${product.stock} unidades disponibles`
       : 'Sin stock online por ahora'
@@ -223,7 +223,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
         <div className="border-b border-gray-100 pb-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              Compra directa
+              Pedido directo
             </span>
             <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
               Credito ZAP {creditDownPaymentPercent}%
@@ -231,11 +231,10 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
           </div>
 
           <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
-            Listo para cerrar desde esta misma ficha.
+            Listo para sumar desde esta ficha.
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-            Agrupamos precio, condiciones y accion principal para que la decision se sienta clara
-            y profesional tambien en desktop.
+            Reunimos precio, condiciones y accion principal para que puedas decidir con claridad.
           </p>
         </div>
 
@@ -259,7 +258,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
               <>
                 <p className="mt-3 text-3xl font-black text-orange-300">No disponible</p>
                 <p className="mt-2 text-sm text-gray-300">
-                  Este producto todavia no esta listo para compra online.
+                  Este producto todavia no esta listo para pedir online.
                 </p>
               </>
             )}
@@ -311,7 +310,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              Configura tu pedido
+              Configura tu pieza
             </span>
             <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
               Credito ZAP {creditDownPaymentPercent}%
@@ -319,11 +318,11 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
           </div>
 
           <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
-            Elige variantes con una lectura mas ordenada.
+            Defini variantes con una lectura clara.
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
             Marcamos lo obligatorio, desactivamos combinaciones que no aplican y actualizamos el
-            precio sin esconder informacion clave.
+            precio segun cada eleccion.
           </p>
         </div>
 

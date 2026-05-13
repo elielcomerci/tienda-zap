@@ -38,8 +38,8 @@ export default function CartPage() {
               Todavia no elegiste tus piezas.
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-gray-600">
-              Cuando empieces a sumar productos, aca vas a ver el pedido armado con cantidades,
-              variantes y una salida clara al checkout.
+              Cuando empieces a sumar piezas, aca vas a ver cantidades, variantes y detalles para
+              revisar antes de avanzar.
             </p>
             <div className="mt-8 flex justify-center">
               <Link href="/productos" className="btn-primary !px-6 !py-3.5">
@@ -72,7 +72,7 @@ export default function CartPage() {
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
                 Revisamos cantidad, variantes, notas y preparacion del archivo antes de pasar al
-                checkout. La idea es que todo se vea claro tambien en desktop.
+                pago. La idea es que cada pieza llegue bien definida antes de pasar a produccion.
               </p>
             </div>
 
@@ -93,14 +93,14 @@ export default function CartPage() {
                 <p className="mt-2 text-base font-bold text-gray-950">
                   Archivos o diseno
                 </p>
-                <p className="mt-1 text-sm text-gray-600">lo dejas marcado desde ahora</p>
+                <p className="mt-1 text-sm text-gray-600">queda definido desde ahora</p>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Checkout
+                  Siguiente paso
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">Datos y pago</p>
-                <p className="mt-1 text-sm text-gray-600">en una sola vista ordenada</p>
+                <p className="mt-1 text-sm text-gray-600">datos, pago y archivos</p>
               </div>
             </div>
           </div>
@@ -114,11 +114,11 @@ export default function CartPage() {
                   Tu carrito
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
-                  Revisa cada linea del pedido.
+                  Revisa cada pieza seleccionada.
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                  Puedes ajustar cantidades, sumar observaciones y dejar definido si el trabajo va
-                  con archivo final o con pedido de diseno.
+                  Podes ajustar cantidades, sumar observaciones y definir si el trabajo llega con
+                  archivo final o con diseno a coordinar.
                 </p>
               </div>
 
@@ -264,7 +264,7 @@ export default function CartPage() {
                             Preparacion
                           </p>
                           <p className="mt-2 text-sm font-semibold text-gray-900">
-                            Define si envias archivo final o si prefieres que lo coordinemos.
+                            Defini si envias archivo final o si preferis que lo coordinemos.
                           </p>
                           <OrderItemOptions item={item} compact />
                         </div>
@@ -283,11 +283,10 @@ export default function CartPage() {
                   Resumen del pedido
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
-                  Todo listo para pasar al checkout.
+                  Todo listo para avanzar.
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-gray-300">
-                  Revisamos el total, detectamos piezas no disponibles y te damos una salida clara
-                  para seguir.
+                  Revisamos total, disponibilidad y preparacion para que el pedido avance prolijo.
                 </p>
               </div>
 
@@ -321,7 +320,7 @@ export default function CartPage() {
                 </div>
               ) : (
                 <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-                  El pedido esta en condiciones de pasar al checkout.
+                  El pedido esta en condiciones de avanzar.
                 </div>
               )}
 
@@ -381,8 +380,8 @@ export default function CartPage() {
                   <div className="flex items-start gap-3">
                     <ShieldCheck size={18} className="mt-0.5 shrink-0 text-orange-300" />
                     <p className="text-sm leading-7 text-gray-300">
-                      En el checkout confirmas datos, eliges medio de pago y dejas el pedido listo
-                      para avanzar sin friccion.
+                      En el siguiente paso confirmas datos, elegis medio de pago y dejamos el
+                      trabajo listo para empezar.
                     </p>
                   </div>
                 </div>
@@ -401,8 +400,8 @@ export default function CartPage() {
             }))}
             eligibility={eligibility}
             isLoading={isLoading}
-            title="Asi podria moverse con Credito ZAP"
-            description="Una vista rapida para saber si hoy te conviene resolverlo con mas aire."
+            title="Asi podria resolverse con Credito ZAP"
+            description="Una referencia rapida para saber si te conviene ordenar el pago con mas aire."
           />
         </div>
       </div>

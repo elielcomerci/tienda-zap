@@ -204,14 +204,14 @@ export default function OrderFileUploader({
     <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
       <div className="flex flex-col gap-2 border-b border-gray-100 pb-6">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-          Archivos de impresion
+          Archivos para produccion
         </p>
         <h2 className="text-3xl font-black tracking-tight text-gray-950">
           Deja cada pieza lista para producir.
         </h2>
         <p className="max-w-3xl text-sm leading-7 text-gray-600">
-          Cada item necesita su archivo final. Puedes cargarlo ahora o marcar que lo vas a enviar
-          por WhatsApp con la orden ya identificada.
+          Cada pieza necesita su archivo final. Podes cargarlo ahora o marcar que lo vas a enviar
+          por WhatsApp con el pedido ya identificado.
         </p>
       </div>
 
@@ -223,10 +223,10 @@ export default function OrderFileUploader({
                 Envio diferido
               </p>
               <h3 className="mt-2 text-xl font-black text-emerald-950">
-                Si prefieres, abre WhatsApp con el mensaje ya preparado.
+                Si preferis, abri WhatsApp con el mensaje ya preparado.
               </h3>
               <p className="mt-2 text-sm leading-7 text-emerald-900">
-                Asi puedes mandar los archivos mas tarde sin perder el contexto de la orden.
+                Asi podes mandar los archivos mas tarde sin perder el contexto del pedido.
               </p>
             </div>
             <a

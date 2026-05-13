@@ -116,7 +116,7 @@ export default function CouponScannerModal({
                 <span className="text-xs font-semibold uppercase tracking-[0.18em]">Salida</span>
               </div>
               <p className="mt-2 text-sm leading-6 text-gray-300">
-                Si algo falla, sales rapido y sigues con el codigo manual sin perder el checkout.
+                Si algo falla, salis rapido y seguis con el codigo manual sin perder la confirmacion.
               </p>
             </div>
           </div>

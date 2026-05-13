@@ -3,10 +3,10 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'ZAP Tienda — Impresión y Gráfica',
+    default: 'ZAP Tienda - Agencia Creativa',
     template: '%s | ZAP Tienda',
   },
-  description: 'Cartelería, tarjetas personales, banners, stickers, imanes y más. Calidad de imprenta al alcance de todos.',
+  description: 'Piezas graficas, diseno y produccion para marcas que cuidan como se ven.',
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
 }
 

@@ -129,12 +129,12 @@ export default function CheckoutZapCreditConfigurator({
               Plan sugerido
             </p>
             <h3 className="mt-1 text-xl font-black text-gray-900">
-              Arma el plan sin salirte del checkout
+              Arma el plan antes de confirmar
             </h3>
             <p className="mt-2 max-w-2xl text-sm text-gray-600">
               {eligibility?.hasDelinquency
                 ? 'Ya aplicamos las condiciones vigentes a tu simulacion para que arranques con un plan realista.'
-                : 'Mostramos anticipo, cuota y total estimado primero. El resto queda disponible solo si quieres revisarlo.'}
+                : 'Mostramos anticipo, cuota y total estimado primero. El resto queda disponible si queres revisarlo.'}
             </p>
           </div>
 

@@ -15,39 +15,39 @@ import { buildWhatsappUrl } from '@/lib/whatsapp'
 import AddToCartButton from '@/components/public/AddToCartButton'
 
 export const metadata = {
-  title: 'ZAP Tienda - Impresion y grafica',
+  title: 'ZAP Tienda - Agencia Creativa',
 }
 
 const valueProps = [
   {
     icon: Package,
-    title: 'Piezas listas para pedir',
-    desc: 'Configuras variantes, cantidad y notas sin irte a un formulario eterno.',
+    title: 'Listo para producir',
+    desc: 'Elegi variantes, deja detalles importantes y prepara la pieza con una lectura clara desde el inicio.',
   },
   {
     icon: ShieldCheck,
-    title: 'Precio claro',
-    desc: 'Ves el valor real del trabajo o el minimo desde la primera mirada.',
+    title: 'Precio definido',
+    desc: 'Medidas, terminaciones y valores visibles para decidir con seguridad antes de avanzar.',
   },
   {
     icon: Store,
-    title: 'Hecho para negocios',
-    desc: 'Carteleria, mostrador, promociones y exhibicion con foco comercial.',
+    title: 'Criterio de agencia',
+    desc: 'Piezas pensadas para sostener la presencia de tu marca en el local, la calle o el mostrador.',
   },
 ]
 
 const buyingMoments = [
   {
     title: 'Vidriera y fachada',
-    desc: 'Banners, carteles y piezas para que el local se vea firme desde afuera.',
+    desc: 'Carteles, banners y piezas visuales para que tu negocio se haga notar desde la calle.',
   },
   {
     title: 'Mostrador y punto de venta',
-    desc: 'Tarjetas, stickers, precios y piezas cortas para vender mejor en el momento.',
+    desc: 'Etiquetas, stickers, tarjetas y piezas que ayudan a vender mejor en el momento exacto.',
   },
   {
-    title: 'Campanas y promos',
-    desc: 'Material rapido para lanzamientos, fechas clave o activaciones de marca.',
+    title: 'Promos y lanzamientos',
+    desc: 'Material gráfico ágil para campañas, fechas especiales y movimientos rápidos de marca.',
   },
 ]
 
@@ -64,11 +64,11 @@ export default async function HomePage() {
 
   const salesWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    'Hola! Estoy viendo la tienda y quiero elegir la mejor pieza grafica para mi negocio.'
+    'Hola! Estoy viendo la tienda y quiero elegir lo mejor para mi negocio.'
   )
   const creditWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    'Hola! Quiero evaluar un pedido con Credito ZAP.'
+    'Hola! Quiero evaluar un pedido con Crédito ZAP.'
   )
 
   return (
@@ -81,26 +81,25 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-orange-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
-                  Grafica para vender mejor
+                  Grafica con criterio ZAP
                 </span>
                 <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600 shadow-sm">
-                  Catalogo ZAP
+                  Tienda ZAP
                 </span>
               </div>
 
               <div>
                 <h1 className="max-w-4xl text-5xl font-black tracking-tight text-gray-950 sm:text-6xl xl:text-7xl">
-                  Piezas graficas pensadas para mover negocio, no para llenar una landing.
+                  Piezas graficas para marcas que cuidan como se ven.
                 </h1>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-gray-600 sm:text-lg">
-                  Carteleria, tarjetas, stickers, banners y material comercial con una entrada
-                  rapida al producto. Menos vueltas, mas piezas listas para pedir.
+                  Carteleria, stickers, tarjetas, banners y material comercial con diseno, produccion y terminacion pensados para verse bien en el mundo real.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Link href="/productos" className="btn-primary !px-7 !py-3.5 !text-base">
-                  Ver catalogo <ArrowRight size={18} />
+                  Ver piezas <ArrowRight size={18} />
                 </Link>
                 {salesWhatsappUrl && (
                   <Link
@@ -110,7 +109,7 @@ export default async function HomePage() {
                     className="btn-secondary !px-7 !py-3.5 !text-base"
                   >
                     <MessageCircleMore size={18} />
-                    Elegir por WhatsApp
+                    Hablar con ZAP
                   </Link>
                 )}
               </div>
@@ -163,7 +162,7 @@ export default async function HomePage() {
                       <p className="text-sm leading-7 text-gray-600">
                         {primaryHeroProduct.description?.trim()
                           ? primaryHeroProduct.description
-                          : 'Una de las piezas que mas rapido resuelven presencia comercial.'}
+                          : 'Una pieza creada para sumar presencia visual con terminacion profesional.'}
                       </p>
                       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
                         {primaryHeroProduct.variants.length > 0 &&
@@ -250,16 +249,16 @@ export default async function HomePage() {
           <div className="flex flex-col gap-4 rounded-[30px] border border-orange-200 bg-gradient-to-r from-orange-50 via-white to-amber-50 p-5 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.28)] sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-                Credito ZAP
+                Crédito ZAP
               </p>
               <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                Si necesitas mover un trabajo hoy, puedes activarlo con anticipo desde 30%.
+                Resolve trabajos importantes con anticipo y seguimiento claro.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <Link href="/credito-zap" className="btn-secondary !py-2.5">
-                Ver credito
+                Ver crédito
               </Link>
               {creditWhatsappUrl && (
                 <Link
@@ -269,7 +268,7 @@ export default async function HomePage() {
                   className="btn-primary !py-2.5"
                 >
                   <BadgePercent size={18} />
-                  Consultarlo
+                  Consultar
                 </Link>
               )}
             </div>
@@ -285,16 +284,15 @@ export default async function HomePage() {
                 Productos destacados
               </p>
               <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                Entra por la pieza, no por la categoria.
+                Empeza por la pieza que tu marca necesita.
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                Una seleccion directa para arrancar por trabajos concretos y llegar mas rapido al
-                pedido.
+                Una seleccion curada para resolver presencia, comunicacion y produccion sin perder criterio.
               </p>
             </div>
 
             <Link href="/productos" className="btn-secondary !py-2.5">
-              Ver todo el catalogo <ArrowRight size={16} />
+              Ver todo el catálogo <ArrowRight size={16} />
             </Link>
           </div>
 
@@ -343,7 +341,7 @@ export default async function HomePage() {
                       <p className="mt-3 line-clamp-3 text-sm leading-7 text-gray-600">
                         {product.description?.trim()
                           ? product.description
-                          : 'Pieza grafica lista para configurar y pedir desde la tienda.'}
+                          : 'Pieza grafica lista para definir y producir con criterio ZAP.'}
                       </p>
                     </div>
 
@@ -389,7 +387,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
           <div className="mb-8">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-              Compra por objetivo
+              Elegi por objetivo
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
               Tres entradas rapidas para elegir mejor.
@@ -403,7 +401,7 @@ export default async function HomePage() {
                 className="rounded-[30px] border border-gray-200 bg-[linear-gradient(180deg,#ffffff_0%,#fffaf5_100%)] p-6 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.16)]"
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-600">
-                  Contexto de compra
+                  Contexto de uso
                 </p>
                 <h3 className="mt-3 text-2xl font-black text-gray-950">{moment.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-gray-600">{moment.desc}</p>
@@ -421,7 +419,7 @@ export default async function HomePage() {
                 Tambien por rubro
               </p>
               <h2 className="mt-2 text-2xl font-black text-gray-950">
-                Si prefieres entrar por categoria, la dejamos a mano sin robarse la home.
+                Si preferis entrar por rubro, las categorias quedan a mano sin quitarle protagonismo a las piezas.
               </h2>
             </div>
 
@@ -446,3 +444,4 @@ export default async function HomePage() {
     </div>
   )
 }
+

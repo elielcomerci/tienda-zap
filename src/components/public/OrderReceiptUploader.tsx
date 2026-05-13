@@ -72,8 +72,8 @@ export default function OrderReceiptUploader({
             Comprobante
           </p>
           <p className="mt-1 text-sm leading-7 text-gray-600">
-            Si ya realizaste el pago por transferencia u otro medio, puedes subir el archivo aca y
-            lo vinculamos a la orden.
+            Si ya realizaste el pago por transferencia u otro medio, podes subir el archivo aca y
+            lo vinculamos al pedido.
           </p>
         </div>
       </div>

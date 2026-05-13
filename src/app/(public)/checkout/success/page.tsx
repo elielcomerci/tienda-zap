@@ -97,7 +97,7 @@ export default async function CheckoutSuccessPage({
   const heroTitle = isMpPending ? 'Pago pendiente' : 'Pedido confirmado'
   const heroDescription = isMpPending
     ? 'Tu orden ya fue registrada, pero el pago todavia no se completo.'
-    : 'Tu pedido ya quedo en marcha.'
+    : 'Ya tenemos tu pedido. Ahora coordinamos lo necesario para producirlo bien.'
 
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_18%,#f8fafc_100%)]">
@@ -144,7 +144,7 @@ export default async function CheckoutSuccessPage({
                 </p>
                 <p className="mt-1 text-sm text-gray-600">
                   {hasDiscount
-                    ? `${order.discountTotal.toLocaleString('es-AR')} descontados en checkout`
+                    ? `${order.discountTotal.toLocaleString('es-AR')} descontados al confirmar`
                     : 'importe visible del pedido'}
                 </p>
               </div>
@@ -153,7 +153,7 @@ export default async function CheckoutSuccessPage({
                   Pago
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">{paymentLabel}</p>
-                <p className="mt-1 text-sm text-gray-600">medio elegido en checkout</p>
+                <p className="mt-1 text-sm text-gray-600">medio elegido al confirmar</p>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
@@ -174,11 +174,11 @@ export default async function CheckoutSuccessPage({
                   Estado principal
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
-                  Seguimiento inmediato de la orden.
+                  Lo que sigue ahora.
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                  Aca concentramos lo urgente: pago, anticipo, comprobantes y el siguiente paso
-                  real para que no tengas que buscarlo.
+                  Dejamos a mano pago, anticipo, comprobantes y archivos para que el trabajo avance
+                  sin perder contexto.
                 </p>
               </div>
 
@@ -193,7 +193,7 @@ export default async function CheckoutSuccessPage({
                         El pago quedo a mitad de camino
                       </h3>
                       <p className="mt-2 text-sm leading-7 text-yellow-900">
-                        Tu orden esta reservada. Puedes retomarlo desde aca cuando quieras, sin
+                        Tu orden esta reservada. Podes retomarlo desde aca cuando quieras, sin
                         generar una orden nueva.
                       </p>
                     </div>
@@ -297,7 +297,7 @@ export default async function CheckoutSuccessPage({
                         Falta el comprobante de pago
                       </h3>
                       <p className="mt-2 text-sm leading-7 text-orange-900">
-                        Haz la transferencia y envianos el comprobante con tu numero de orden:
+                        Hace la transferencia y envianos el comprobante con tu numero de orden:
                         <strong> #{orderCode}</strong>.
                       </p>
                     </div>
@@ -388,7 +388,7 @@ export default async function CheckoutSuccessPage({
                     Pedido recibido
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
-                    La orden ya quedo generada con codigo #{orderCode}.
+                    El pedido ya quedo generado con codigo #{orderCode}.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
@@ -512,7 +512,7 @@ export default async function CheckoutSuccessPage({
                   {heroTitle}
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-gray-300">
-                  Codigo, importe, estado y composicion del pedido en una sola lectura.
+                  Codigo, importe, estado y piezas del pedido en una sola lectura.
                 </p>
               </div>
 

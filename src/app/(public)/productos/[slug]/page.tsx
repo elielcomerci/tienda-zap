@@ -65,7 +65,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   {product.category.name}
                 </span>
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                  {product.category.isService ? 'Servicio coordinado' : 'Produccion fisica'}
+                  {product.category.isService ? 'Servicio ZAP' : 'Pieza producida'}
                 </span>
               </div>
 
@@ -82,26 +82,26 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Compra guiada
+                    Eleccion acompanada
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Configuras medidas, variantes y cantidades sin perderte.
+                    Definis medidas, variantes y cantidades con la informacion justa.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Precio claro
+                    Precio definido
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Mostramos el valor final o el minimo real segun la combinacion elegida.
+                    Ves el valor final o el minimo real segun la combinacion elegida.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Produccion ordenada
+                    Listo para producir
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Dejas notas, archivos y condiciones listas desde el arranque.
+                    Dejas notas, archivos y referencias antes de poner el trabajo en marcha.
                   </p>
                 </div>
               </div>
@@ -119,10 +119,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
           <aside className="rounded-[28px] border border-orange-200 bg-white/95 p-6 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.55)]">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
-              Antes de producir
+              Antes de avanzar
             </p>
             <h2 className="mt-2 text-2xl font-black leading-tight text-gray-950">
-              Dejamos el pedido bien definido desde la ficha.
+              Dejamos cada detalle importante bien definido.
             </h2>
 
             <div className="mt-6 space-y-4">
@@ -131,7 +131,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Notas y detalles</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Puedes dejarnos textos, nombres, medidas o referencias apenas confirmas.
+                    Podes dejarnos textos, nombres, medidas o referencias al confirmar.
                   </p>
                 </div>
               </div>
@@ -139,9 +139,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-orange-500" />
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Condiciones visibles</p>
+                  <p className="text-sm font-semibold text-gray-900">Condiciones claras</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Precio, anticipo y pasos siguientes quedan claros antes de avanzar.
+                    Precio, anticipo y pasos siguientes quedan visibles antes de avanzar.
                   </p>
                 </div>
               </div>
@@ -149,9 +149,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
                 <Wallet size={18} className="mt-0.5 shrink-0 text-orange-500" />
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Pago mas flexible</p>
+                  <p className="text-sm font-semibold text-gray-900">Pago flexible</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Tarjeta, transferencia o Credito ZAP segun como mejor te convenga cerrar.
+                    Tarjeta, transferencia o Credito ZAP segun como prefieras resolverlo.
                   </p>
                 </div>
               </div>

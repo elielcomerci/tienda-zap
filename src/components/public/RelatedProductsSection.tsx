@@ -31,9 +31,9 @@ export default function RelatedProductsSection({ products }: { products: Related
           <Link2 size={18} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Tambien te puede interesar</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Piezas que pueden acompanar</h2>
           <p className="text-sm text-gray-500">
-            Productos vinculados para completar este trabajo.
+            Seleccionadas para completar mejor este trabajo.
           </p>
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function RelatedProductsSection({ products }: { products: Related
                   </div>
 
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-orange-600">
-                    Ver producto
+                    Ver pieza
                     <ArrowRight size={16} />
                   </span>
                 </div>

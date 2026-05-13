@@ -13,14 +13,14 @@ export default async function PublicLayout({ children }: { children: React.React
         <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]">
           <div>
             <div className="text-lg font-bold text-white">
-              ZAP <span className="text-orange-500">Tienda</span>
+              ZAP <span className="text-orange-500">Agencia Creativa</span>
             </div>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-gray-400">
-              Impresion y grafica para negocios que necesitan resolver rapido y comprar con mas
-              claridad.
+              Diseno, grafica y produccion para marcas que necesitan verse bien en cada punto de
+              contacto.
             </p>
             <p className="mt-4 text-xs text-gray-500">
-              (c) {new Date().getFullYear()} ZAP Imprenta. Todos los derechos reservados.
+              (c) {new Date().getFullYear()} ZAP Agencia Creativa. Todos los derechos reservados.
             </p>
           </div>
 
