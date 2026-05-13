@@ -1,4 +1,4 @@
-import Image from 'next/image'
+﻿import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Link2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
@@ -27,7 +27,7 @@ export default function RelatedProductsSection({ products }: { products: Related
   return (
     <section className="mt-14">
       <div className="mb-6 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FEF1F6] text-[#ED2C71]">
           <Link2 size={18} />
         </div>
         <div>
@@ -66,7 +66,7 @@ export default function RelatedProductsSection({ products }: { products: Related
 
               <div className="space-y-3 p-4">
                 <div>
-                  <p className="mb-1 text-xs font-semibold text-orange-500">{product.category.name}</p>
+                  <p className="mb-1 text-xs font-semibold text-[#ED2C71]">{product.category.name}</p>
                   <h3 className="line-clamp-2 text-base font-bold text-gray-900">{product.name}</h3>
                 </div>
 
@@ -86,7 +86,7 @@ export default function RelatedProductsSection({ products }: { products: Related
                     </p>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-orange-600">
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#ED2C71]">
                     Ver pieza
                     <ArrowRight size={16} />
                   </span>

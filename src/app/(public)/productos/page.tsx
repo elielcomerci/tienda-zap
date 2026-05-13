@@ -1,4 +1,4 @@
-import Image from 'next/image'
+﻿import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts } from '@/lib/products'
@@ -23,7 +23,7 @@ export default async function ProductsPage({
         <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:items-end">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                 Soluciones ZAP
               </p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
@@ -69,7 +69,7 @@ export default async function ProductsPage({
           <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
             <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
               <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
                   <SlidersHorizontal size={18} />
                 </div>
                 <div>
@@ -86,7 +86,7 @@ export default async function ProductsPage({
                   className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                     !cat
                       ? 'bg-gray-950 text-white shadow-sm'
-                      : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700'
+                      : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
                   }`}
                 >
                   Todos los productos
@@ -97,8 +97,8 @@ export default async function ProductsPage({
                     href={`/productos?cat=${category.slug}`}
                     className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                       cat === category.slug
-                        ? 'bg-orange-500 text-white shadow-sm shadow-orange-200'
-                        : 'border border-gray-200 bg-white text-gray-700 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700'
+                        ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
+                        : 'border border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
                     }`}
                   >
                     {category.name}
@@ -107,8 +107,8 @@ export default async function ProductsPage({
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-5 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.55)]">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+            <div className="rounded-[28px] border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.55)]">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                 Criterio ZAP
               </p>
               <p className="mt-3 text-lg font-black leading-tight text-gray-950">
@@ -138,7 +138,7 @@ export default async function ProductsPage({
 
                 <div className="flex flex-wrap gap-2">
                   {selectedCategory && (
-                    <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-800">
+                    <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
                       Categoria: {selectedCategory.name}
                     </span>
                   )}
@@ -178,7 +178,7 @@ export default async function ProductsPage({
                   return (
                     <article
                       key={product.id}
-                      className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition-all hover:-translate-y-1 hover:border-orange-200 hover:shadow-[0_28px_70px_-44px_rgba(249,115,22,0.28)]"
+                      className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition-all hover:-translate-y-1 hover:border-[#F66B9A]/25 hover:shadow-[0_28px_70px_-44px_rgba(237,44,113,0.28)]"
                     >
                       <Link href={`/productos/${product.slug}`} className="block">
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
@@ -186,7 +186,7 @@ export default async function ProductsPage({
                             <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
                               {product.category.name}
                             </span>
-                            <span className="rounded-full bg-orange-500 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-orange-200">
+                            <span className="rounded-full bg-[#ED2C71] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-[#ED2C71]/20">
                               Credito ZAP
                             </span>
                           </div>
@@ -210,7 +210,7 @@ export default async function ProductsPage({
                       <div className="space-y-4 p-5">
                         <div>
                           <Link href={`/productos/${product.slug}`}>
-                            <h2 className="line-clamp-2 text-xl font-black tracking-tight text-gray-950 transition-colors hover:text-orange-600">
+                            <h2 className="line-clamp-2 text-xl font-black tracking-tight text-gray-950 transition-colors hover:text-[#ED2C71]">
                               {product.name}
                             </h2>
                           </Link>

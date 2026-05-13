@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { BadgePercent, MessageCircleMore, ShieldCheck, Wallet } from 'lucide-react'
 
 export default function ProductZapCreditPromo({
@@ -9,10 +9,10 @@ export default function ProductZapCreditPromo({
   whatsappUrl: string | null
 }) {
   return (
-    <section className="overflow-hidden rounded-[32px] border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.55)]">
+    <section className="overflow-hidden rounded-[32px] border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] shadow-[0_18px_50px_-42px_rgba(237,44,113,0.55)]">
       <div className="grid gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center xl:p-8">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
             Credito ZAP
           </p>
           <h2 className="mt-3 max-w-3xl text-3xl font-black leading-tight text-gray-950">
@@ -22,7 +22,7 @@ export default function ProductZapCreditPromo({
           <div className="mt-6 grid gap-3 lg:grid-cols-3">
             <div className="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-sm">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                <BadgePercent size={15} className="text-orange-500" />
+                <BadgePercent size={15} className="text-[#ED2C71]" />
                 Anticipo
               </div>
               <p className="mt-2 text-lg font-black text-gray-900">Desde {downPaymentPercent}%</p>
@@ -31,7 +31,7 @@ export default function ProductZapCreditPromo({
 
             <div className="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-sm">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                <Wallet size={15} className="text-orange-500" />
+                <Wallet size={15} className="text-[#ED2C71]" />
                 Seguimiento
               </div>
               <p className="mt-2 text-lg font-black text-gray-900">Todo en tu cuenta</p>
@@ -40,7 +40,7 @@ export default function ProductZapCreditPromo({
 
             <div className="rounded-3xl border border-white/80 bg-white/90 p-5 shadow-sm">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                <ShieldCheck size={15} className="text-orange-500" />
+                <ShieldCheck size={15} className="text-[#ED2C71]" />
                 Condiciones
               </div>
               <p className="mt-2 text-lg font-black text-gray-900">A la vista</p>
@@ -49,7 +49,7 @@ export default function ProductZapCreditPromo({
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-orange-100 bg-white/90 p-5 shadow-sm xl:p-6">
+        <div className="rounded-[28px] border border-[#F66B9A]/15 bg-white/90 p-5 shadow-sm xl:p-6">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-900">
             Siguiente paso
           </p>

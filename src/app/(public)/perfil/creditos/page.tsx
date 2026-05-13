@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { AlertTriangle, ArrowLeft, ChevronRight, Wallet } from 'lucide-react'
 import { auth } from '@/auth'
@@ -36,7 +36,7 @@ export default async function CustomerCreditsPage() {
       </Link>
 
       <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
           <Wallet size={24} />
         </div>
         <div>
@@ -87,7 +87,7 @@ export default async function CustomerCreditsPage() {
           <p className="font-medium">Todavia no tenes creditos activos</p>
           <Link
             href="/productos"
-            className="mt-3 inline-block text-sm text-orange-500 hover:underline"
+            className="mt-3 inline-block text-sm text-[#ED2C71] hover:underline"
           >
             Ver productos
           </Link>
@@ -102,7 +102,7 @@ export default async function CustomerCreditsPage() {
               <Link
                 key={plan.id}
                 href={`/perfil/creditos/${plan.id}`}
-                className="group card flex items-center gap-4 p-4 transition-all hover:border-orange-200 hover:shadow-sm"
+                className="group card flex items-center gap-4 p-4 transition-all hover:border-[#F66B9A]/25 hover:shadow-sm"
               >
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -135,7 +135,7 @@ export default async function CustomerCreditsPage() {
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
+                        className="h-full rounded-full bg-gradient-to-r from-[#ED2C71] to-[#4576B9]"
                         style={{ width: `${summary.paymentProgressPercent}%` }}
                       />
                     </div>
@@ -154,7 +154,7 @@ export default async function CustomerCreditsPage() {
                   </p>
                   <ChevronRight
                     size={16}
-                    className="ml-auto mt-1 text-gray-300 transition-colors group-hover:text-orange-400"
+                    className="ml-auto mt-1 text-gray-300 transition-colors group-hover:text-[#F66B9A]"
                   />
                 </div>
               </Link>

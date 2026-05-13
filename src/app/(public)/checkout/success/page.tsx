@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import {
   ArrowRight,
   CheckCircle2,
@@ -170,7 +170,7 @@ export default async function CheckoutSuccessPage({
           <div className="space-y-6">
             <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
               <div className="mb-6 border-b border-gray-100 pb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                   Estado principal
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
@@ -204,18 +204,18 @@ export default async function CheckoutSuccessPage({
                   </div>
                 </div>
               ) : order.paymentType === 'ZAP_CREDIT' && order.status === 'PENDING' ? (
-                <div className="rounded-[28px] border border-orange-200 bg-orange-50 p-5">
+                <div className="rounded-[28px] border border-[#F66B9A]/25 bg-[#FEF1F6] p-5">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#C91F5B]">
                       <Wallet size={22} />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-black text-orange-950">
+                      <h3 className="text-xl font-black text-[#C91F5B]">
                         {isAutoApprovedCredit
                           ? 'Credito ZAP aprobado automaticamente'
                           : 'Solicitud de Credito ZAP en revision'}
                       </h3>
-                      <p className="mt-2 text-sm leading-7 text-orange-900">
+                      <p className="mt-2 text-sm leading-7 text-[#C91F5B]">
                         {isAutoApprovedCredit
                           ? 'Tu plan ya quedo aprobado. Solo falta acreditar el anticipo para activar la orden y poner el trabajo en marcha.'
                           : 'Tu solicitud ya quedo cargada. Ahora revisamos las condiciones para confirmarte el siguiente paso.'}
@@ -225,34 +225,34 @@ export default async function CheckoutSuccessPage({
 
                   {creditPlan && (
                     <div className="mt-5 grid gap-3 md:grid-cols-3">
-                      <div className="rounded-2xl border border-orange-200 bg-white/80 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                      <div className="rounded-2xl border border-[#F66B9A]/25 bg-white/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                           Anticipo
                         </p>
-                        <p className="mt-2 text-lg font-black text-orange-950">
+                        <p className="mt-2 text-lg font-black text-[#C91F5B]">
                           ${creditPlan.downPaymentAmount.toLocaleString('es-AR')}
                         </p>
-                        <p className="mt-1 text-xs text-orange-800">
+                        <p className="mt-1 text-xs text-[#C91F5B]">
                           {creditPlan.downPaymentPercent.toLocaleString('es-AR')}% del pedido
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-orange-200 bg-white/80 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                      <div className="rounded-2xl border border-[#F66B9A]/25 bg-white/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                           Plan
                         </p>
-                        <p className="mt-2 text-lg font-black text-orange-950">
+                        <p className="mt-2 text-lg font-black text-[#C91F5B]">
                           {creditPlan.installments} pagos
                         </p>
-                        <p className="mt-1 text-xs text-orange-800">
+                        <p className="mt-1 text-xs text-[#C91F5B]">
                           {getPaymentFrequencyLabel(creditPlan.paymentFrequency)}
                         </p>
                       </div>
-                      <div className="rounded-2xl border border-orange-200 bg-white/80 p-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                      <div className="rounded-2xl border border-[#F66B9A]/25 bg-white/80 p-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                           Estado del plan
                         </p>
-                        <p className="mt-2 text-lg font-black text-orange-950">{creditPlan.status}</p>
-                        <p className="mt-1 text-xs text-orange-800">seguimiento centralizado</p>
+                        <p className="mt-2 text-lg font-black text-[#C91F5B]">{creditPlan.status}</p>
+                        <p className="mt-1 text-xs text-[#C91F5B]">seguimiento centralizado</p>
                       </div>
                     </div>
                   )}
@@ -287,16 +287,16 @@ export default async function CheckoutSuccessPage({
                   </div>
                 </div>
               ) : order.paymentType === 'TRANSFER' && order.status === 'PENDING' ? (
-                <div className="rounded-[28px] border border-orange-200 bg-orange-50 p-5">
+                <div className="rounded-[28px] border border-[#F66B9A]/25 bg-[#FEF1F6] p-5">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#C91F5B]">
                       <ReceiptText size={22} />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-black text-orange-950">
+                      <h3 className="text-xl font-black text-[#C91F5B]">
                         Falta el comprobante de pago
                       </h3>
-                      <p className="mt-2 text-sm leading-7 text-orange-900">
+                      <p className="mt-2 text-sm leading-7 text-[#C91F5B]">
                         Hace la transferencia y envianos el comprobante con tu numero de orden:
                         <strong> #{orderCode}</strong>.
                       </p>
@@ -413,8 +413,8 @@ export default async function CheckoutSuccessPage({
             </section>
 
             {order.paymentType === 'ZAP_CREDIT' && creditPlan && order.status !== 'PENDING' && (
-              <section className="rounded-[32px] border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-6 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.35)] sm:p-8">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+              <section className="rounded-[32px] border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.35)] sm:p-8">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                   Credito ZAP
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
@@ -438,13 +438,13 @@ export default async function CheckoutSuccessPage({
             )}
 
             {needsDesign && designWhatsappUrl && (
-              <section className="rounded-[32px] border border-orange-200 bg-white p-6 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.28)] sm:p-8">
+              <section className="rounded-[32px] border border-[#F66B9A]/25 bg-white p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.28)] sm:p-8">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
                     <MessageSquare size={22} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                       Diseno solicitado
                     </p>
                     <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
@@ -505,7 +505,7 @@ export default async function CheckoutSuccessPage({
           <aside className="xl:sticky xl:top-24">
             <div className="rounded-[32px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
               <div className="border-b border-white/10 pb-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-400">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F66B9A]">
                   Resumen de la orden
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
@@ -553,7 +553,7 @@ export default async function CheckoutSuccessPage({
                 {order.couponCode && (
                   <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-sm">
                     <span className="text-gray-400">Cupon</span>
-                    <span className="font-semibold text-orange-300">{order.couponCode}</span>
+                    <span className="font-semibold text-[#F66B9A]">{order.couponCode}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between text-sm">
@@ -596,7 +596,7 @@ export default async function CheckoutSuccessPage({
                                 : 'Archivo pendiente'}
                         </p>
                       </div>
-                      <span className="shrink-0 text-sm font-semibold text-orange-300">
+                      <span className="shrink-0 text-sm font-semibold text-[#F66B9A]">
                         ${(item.unitPrice * item.quantity).toLocaleString('es-AR')}
                       </span>
                     </div>
@@ -608,14 +608,14 @@ export default async function CheckoutSuccessPage({
                 {order.userId ? (
                   <Link
                     href={`/perfil/ordenes/${order.id}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-orange-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-0.5 hover:bg-orange-400"
+                    className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED2C71] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-[#ED2C71]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F66B9A]"
                   >
                     Ver detalle de la compra <ArrowRight size={18} />
                   </Link>
                 ) : (
                   <Link
                     href="/"
-                    className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-orange-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-0.5 hover:bg-orange-400"
+                    className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED2C71] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-[#ED2C71]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F66B9A]"
                   >
                     Volver a la tienda <ArrowRight size={18} />
                   </Link>

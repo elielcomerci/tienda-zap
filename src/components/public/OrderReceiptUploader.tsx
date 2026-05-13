@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -64,11 +64,11 @@ export default function OrderReceiptUploader({
       className="space-y-4 rounded-[28px] border border-gray-200 bg-white p-5 text-left shadow-[0_18px_50px_-42px_rgba(15,23,42,0.18)]"
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
           <ReceiptText size={20} />
         </div>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
             Comprobante
           </p>
           <p className="mt-1 text-sm leading-7 text-gray-600">

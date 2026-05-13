@@ -61,7 +61,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="space-y-6">
             <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                   {product.category.name}
                 </span>
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
@@ -117,8 +117,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             whatsappUrl={creditWhatsappUrl}
           />
 
-          <aside className="rounded-[28px] border border-orange-200 bg-white/95 p-6 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.55)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+          <aside className="rounded-[28px] border border-[#F66B9A]/25 bg-white/95 p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.55)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Antes de avanzar
             </p>
             <h2 className="mt-2 text-2xl font-black leading-tight text-gray-950">
@@ -127,7 +127,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
             <div className="mt-6 space-y-4">
               <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-                <Package size={18} className="mt-0.5 shrink-0 text-orange-500" />
+                <Package size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Notas y detalles</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
@@ -137,7 +137,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
 
               <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-orange-500" />
+                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Condiciones claras</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
@@ -147,7 +147,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
 
               <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-                <Wallet size={18} className="mt-0.5 shrink-0 text-orange-500" />
+                <Wallet size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Pago flexible</p>
                   <p className="mt-1 text-sm leading-6 text-gray-600">

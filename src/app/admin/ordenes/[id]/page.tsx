@@ -230,6 +230,19 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 status: item.status,
               })) ?? []
             }
+            existingReceipts={
+              order.receipts?.map((r) => ({
+                id: r.id,
+                receiptCode: r.receiptCode,
+                amount: r.amount,
+                concept: r.concept,
+                pdfUrl: r.pdfUrl,
+                status: r.status as 'ACTIVE' | 'VOIDED',
+                voidedReason: r.voidedReason,
+                replacedByReceiptId: r.replacedByReceiptId,
+                createdAt: r.createdAt.toISOString(),
+              })) ?? []
+            }
           />
         </div>
 

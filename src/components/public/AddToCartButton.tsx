@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCartStore, CartItem } from '@/lib/cart-store'
 import { ShoppingCart, Check, ArrowRight } from 'lucide-react'
@@ -30,7 +30,7 @@ export default function AddToCartButton({
     return (
       <Link
         href={`/productos/${slug}`}
-        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-700 transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-orange-100"
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6] px-4 py-3 text-sm font-semibold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F6]"
       >
         Configurar <ArrowRight size={15} />
       </Link>
@@ -47,7 +47,7 @@ export default function AddToCartButton({
           ? 'bg-green-500 shadow-lg shadow-green-200'
           : disabled
             ? 'cursor-not-allowed bg-gray-300 shadow-sm shadow-gray-200'
-            : 'bg-gray-950 shadow-lg shadow-gray-200 hover:-translate-y-0.5 hover:bg-orange-500 hover:shadow-orange-200'
+            : 'bg-gray-950 shadow-lg shadow-gray-200 hover:-translate-y-0.5 hover:bg-[#ED2C71] hover:shadow-[#ED2C71]/20'
       }`}
     >
       {added ? <Check size={16} /> : <ShoppingCart size={16} />}

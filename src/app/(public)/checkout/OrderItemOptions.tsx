@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCartStore } from '@/lib/cart-store'
 import { CheckCircle2, MessageSquare, UploadCloud } from 'lucide-react'
@@ -67,16 +67,16 @@ export default function OrderItemOptions({
             compact ? 'p-3' : 'p-4'
           } ${
             item.designRequested
-              ? 'border-orange-500 bg-orange-50 text-orange-700'
+              ? 'border-[#ED2C71] bg-[#FEF1F6] text-[#C91F5B]'
               : 'border-gray-200 bg-white text-gray-600 hover:border-orange-400'
           }`}
         >
           {item.designRequested ? (
             <>
-              <CheckCircle2 size={compact ? 18 : 24} className="mb-1 text-orange-500" />
+              <CheckCircle2 size={compact ? 18 : 24} className="mb-1 text-[#ED2C71]" />
               <span className="text-center text-xs font-semibold">Diseno solicitado</span>
               <span
-                className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} text-orange-600`}
+                className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} text-[#ED2C71]`}
               >
                 Lo coordinamos por WhatsApp
               </span>

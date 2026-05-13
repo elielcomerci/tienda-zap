@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -46,7 +46,7 @@ export default function PublicHeader({
     <header className="sticky top-0 z-40 border-b border-gray-200/80 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex h-[74px] max-w-[1380px] items-center justify-between gap-4 px-4 xl:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-500 shadow-sm shadow-orange-200">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ED2C71] shadow-sm shadow-[#ED2C71]/20">
             <Zap size={20} className="text-white" />
           </div>
           <div>
@@ -81,7 +81,7 @@ export default function PublicHeader({
           {user?.role === 'ADMIN' && (
             <Link
               href="/admin"
-              className="hidden h-11 w-11 items-center justify-center rounded-full border border-orange-200 bg-orange-50 text-orange-700 shadow-sm transition-colors hover:bg-orange-100 md:flex"
+              className="hidden h-11 w-11 items-center justify-center rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] text-[#C91F5B] shadow-sm transition-colors hover:bg-[#FEF1F6] md:flex"
               aria-label="Ir al admin"
               title="Ir al admin"
             >
@@ -92,9 +92,9 @@ export default function PublicHeader({
           {user ? (
             <Link
               href="/perfil"
-              className="hidden items-center gap-3 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-orange-600 md:flex"
+              className="hidden items-center gap-3 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-[#F66B9A]/25 hover:text-[#ED2C71] md:flex"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-xs font-bold uppercase text-orange-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FEF1F6] text-xs font-bold uppercase text-[#ED2C71]">
                 {user.name ? user.name.charAt(0) : 'U'}
               </div>
               <div className="text-left leading-tight">
@@ -107,7 +107,7 @@ export default function PublicHeader({
           ) : (
             <Link
               href="/login"
-              className="hidden rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:text-orange-600 md:inline-flex"
+              className="hidden rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-[#F66B9A]/25 hover:text-[#ED2C71] md:inline-flex"
             >
               Ingresar
             </Link>
@@ -115,12 +115,12 @@ export default function PublicHeader({
 
           <Link
             href="/carrito"
-            className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#ED2C71]"
             aria-label="Ir al carrito"
           >
             <ShoppingCart size={21} />
             {itemCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[11px] font-bold text-white">
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#ED2C71] text-[11px] font-bold text-white">
                 {itemCount > 9 ? '9+' : itemCount}
               </span>
             )}
@@ -147,7 +147,7 @@ export default function PublicHeader({
               className={`block rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
                 isLinkActive(link.href)
                   ? 'bg-gray-950 text-white'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-[#ED2C71]'
               }`}
             >
               {link.label}
@@ -157,7 +157,7 @@ export default function PublicHeader({
             <Link
               href="/admin"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-orange-700 transition-colors hover:bg-orange-50"
+              className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-[#C91F5B] transition-colors hover:bg-[#FEF1F6]"
             >
               <LayoutDashboard size={16} />
               Ir al admin

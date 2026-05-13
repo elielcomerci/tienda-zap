@@ -72,15 +72,15 @@ export default async function HomePage() {
   )
 
   return (
-    <div className="bg-[linear-gradient(180deg,#fffdf8_0%,#fff7ed_12%,#f8fafc_100%)]">
-      <section className="relative overflow-hidden border-b border-orange-100">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.14),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.08),transparent_32%)]" />
+    <div className="bg-[linear-gradient(180deg,#fffbfd_0%,#FEF1F6_12%,#f8fafc_100%)]">
+      <section className="relative overflow-hidden border-b border-[#F66B9A]/20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(237,44,113,0.1),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(69,118,185,0.08),transparent_32%)]" />
 
         <div className="relative mx-auto max-w-[1380px] px-4 pb-14 pt-8 sm:pt-10 xl:px-8 xl:pb-18">
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] xl:items-start">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-orange-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                   Marca, grafica y digital
                 </span>
                 <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600 shadow-sm">
@@ -121,7 +121,7 @@ export default async function HomePage() {
                     key={item.title}
                     className="rounded-[28px] border border-gray-200 bg-white/90 p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.18)]"
                   >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
                       <item.icon size={20} />
                     </div>
                     <p className="mt-4 text-base font-black text-gray-950">{item.title}</p>
@@ -148,7 +148,7 @@ export default async function HomePage() {
                         </div>
                       )}
                       <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(15,23,42,0.78))] p-6">
-                        <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-700">
+                        <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#C91F5B]">
                           {primaryHeroProduct.category.name}
                         </span>
                         <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
@@ -209,7 +209,7 @@ export default async function HomePage() {
                       <Link
                         key={product.id}
                         href={`/productos/${product.slug}`}
-                        className="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)] transition-all hover:-translate-y-1 hover:border-orange-200"
+                        className="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)] transition-all hover:-translate-y-1 hover:border-[#F66B9A]/30"
                       >
                         <div className="relative aspect-[1.2/1] overflow-hidden bg-gray-100">
                           {product.images[0] ? (
@@ -225,7 +225,7 @@ export default async function HomePage() {
                           )}
                         </div>
                         <div className="p-5">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-600">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                             {product.category.name}
                           </p>
                           <h3 className="mt-2 text-lg font-black text-gray-950">{product.name}</h3>
@@ -245,11 +245,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-orange-100 bg-white">
+      <section className="border-b border-[#F66B9A]/20 bg-white">
         <div className="mx-auto max-w-[1380px] px-4 py-6 xl:px-8">
-          <div className="flex flex-col gap-4 rounded-[30px] border border-orange-200 bg-gradient-to-r from-orange-50 via-white to-amber-50 p-5 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.28)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-[30px] border border-[#F66B9A]/25 bg-gradient-to-r from-[#FEF1F6] via-white to-[#F0F5FA] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.18)] sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                 Crédito ZAP
               </p>
               <p className="mt-1 text-sm text-gray-700 sm:text-base">
@@ -281,7 +281,7 @@ export default async function HomePage() {
         <section className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                 Soluciones destacadas
               </p>
               <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
@@ -305,7 +305,7 @@ export default async function HomePage() {
               return (
                 <article
                   key={product.id}
-                  className="group overflow-hidden rounded-[30px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] transition-all hover:-translate-y-1 hover:border-orange-200 hover:shadow-[0_28px_70px_-44px_rgba(249,115,22,0.22)]"
+                  className="group overflow-hidden rounded-[30px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] transition-all hover:-translate-y-1 hover:border-[#F66B9A]/30 hover:shadow-[0_28px_70px_-44px_rgba(237,44,113,0.18)]"
                 >
                   <Link href={`/productos/${product.slug}`} className="block">
                     <div className="relative aspect-[1.16/1] overflow-hidden bg-gray-100">
@@ -325,7 +325,7 @@ export default async function HomePage() {
 
                   <div className="space-y-4 p-5">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+                      <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                         {product.category.name}
                       </span>
                       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
@@ -335,7 +335,7 @@ export default async function HomePage() {
 
                     <div>
                       <Link href={`/productos/${product.slug}`}>
-                        <h3 className="text-2xl font-black tracking-tight text-gray-950 transition-colors hover:text-orange-600">
+                        <h3 className="text-2xl font-black tracking-tight text-gray-950 transition-colors hover:text-[#ED2C71]">
                           {product.name}
                         </h3>
                       </Link>
@@ -387,7 +387,7 @@ export default async function HomePage() {
       <section className="border-y border-gray-100 bg-white">
         <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
           <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Elegi por objetivo
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
@@ -399,9 +399,9 @@ export default async function HomePage() {
             {buyingMoments.map((moment) => (
               <div
                 key={moment.title}
-                className="rounded-[30px] border border-gray-200 bg-[linear-gradient(180deg,#ffffff_0%,#fffaf5_100%)] p-6 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.16)]"
+                className="rounded-[30px] border border-gray-200 bg-[linear-gradient(180deg,#ffffff_0%,#fef8fb_100%)] p-6 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.16)]"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-600">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
                   Contexto de uso
                 </p>
                 <h3 className="mt-3 text-2xl font-black text-gray-950">{moment.title}</h3>
@@ -424,7 +424,7 @@ export default async function HomePage() {
               </h2>
             </div>
 
-            <Link href="/productos" className="text-sm font-semibold text-orange-600 hover:text-orange-700">
+            <Link href="/productos" className="text-sm font-semibold text-[#ED2C71] hover:text-[#C91F5B]">
               Abrir catalogo completo
             </Link>
           </div>
@@ -434,7 +434,7 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/productos?cat=${category.slug}`}
-                className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#F66B9A]/30 hover:bg-[#FEF1F6] hover:text-[#C91F5B]"
               >
                 {category.name}
               </Link>

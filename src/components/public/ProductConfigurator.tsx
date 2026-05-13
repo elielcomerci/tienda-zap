@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useMemo, useState } from 'react'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -225,7 +225,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
               Pedido directo
             </span>
-            <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+            <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
               Credito ZAP {creditDownPaymentPercent}%
             </span>
           </div>
@@ -256,7 +256,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
               </>
             ) : (
               <>
-                <p className="mt-3 text-3xl font-black text-orange-300">No disponible</p>
+                <p className="mt-3 text-3xl font-black text-[#F66B9A]">No disponible</p>
                 <p className="mt-2 text-sm text-gray-300">
                   Este producto todavia no esta listo para pedir online.
                 </p>
@@ -291,7 +291,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                 added
                   ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
                   : canAddToCart
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 hover:bg-orange-400'
+                    ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
                     : 'cursor-not-allowed bg-gray-200 text-gray-500'
               }
             `}
@@ -312,7 +312,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
               Configura tu pieza
             </span>
-            <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700">
+            <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
               Credito ZAP {creditDownPaymentPercent}%
             </span>
           </div>
@@ -352,7 +352,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                 </p>
               </div>
               {option.isRequired && (
-                <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+                <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-xs font-semibold text-[#C91F5B]">
                   Requerido
                 </span>
               )}
@@ -373,9 +373,9 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                       relative rounded-2xl border-2 p-3.5 text-left transition-all duration-150
                       ${
                         isSelected
-                          ? 'border-orange-500 bg-orange-50 shadow-md shadow-orange-100/50 ring-2 ring-orange-100'
+                          ? 'border-[#ED2C71] bg-[#FEF1F6] shadow-md shadow-[#ED2C71]/10/50 ring-2 ring-[#FEF1F6]'
                           : isAvailable
-                            ? 'border-gray-200 bg-white hover:border-orange-200 hover:bg-orange-50/40'
+                            ? 'border-gray-200 bg-white hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6]/40'
                             : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300 opacity-55'
                       }
                     `}
@@ -383,7 +383,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                     <span
                       className={`block text-sm font-semibold ${
                         isSelected
-                          ? 'text-orange-900'
+                          ? 'text-[#C91F5B]'
                           : isAvailable
                             ? 'text-gray-700'
                             : 'text-gray-400'
@@ -392,7 +392,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                       {value.value}
                     </span>
                     {isSelected && (
-                      <div className="absolute right-2.5 top-2.5 text-orange-500">
+                      <div className="absolute right-2.5 top-2.5 text-[#ED2C71]">
                         <Check size={14} strokeWidth={3} />
                       </div>
                     )}
@@ -424,7 +424,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                   <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                 </>
               ) : (
-                <span className="text-3xl font-black text-orange-300">Consultar</span>
+                <span className="text-3xl font-black text-[#F66B9A]">Consultar</span>
               )}
             </div>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-gray-300">{guidanceMessage}</p>
@@ -458,7 +458,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                 added
                   ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
                   : canAddToCart
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 hover:bg-orange-400'
+                    ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
                     : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
               }
             `}

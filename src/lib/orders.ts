@@ -33,6 +33,10 @@ const viewerOrderInclude = {
   },
   user: { select: { name: true, email: true, phone: true } },
   zapCreditPlan: true,
+  receipts: {
+    where: { status: 'ACTIVE' as const },
+    orderBy: { sequenceNumber: 'asc' as const },
+  },
 }
 
 export async function getOrders(status?: string, paymentType?: string) {
@@ -64,6 +68,9 @@ export async function getAdminOrder(id: string) {
             orderBy: { sequence: 'asc' as const },
           },
         },
+      },
+      receipts: {
+        orderBy: { sequenceNumber: 'asc' as const },
       },
     },
   })

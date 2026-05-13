@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import {
   BadgePercent,
@@ -115,21 +115,21 @@ export default function ZapCreditSimulationCard({
   const financedSharePercent = Math.max(0, 100 - summary.downPaymentPercent)
 
   return (
-    <div className="rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 sm:p-5 shadow-sm">
+    <div className="rounded-3xl border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-4 sm:p-5 shadow-sm">
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Credito ZAP
             </p>
             <h3 className="mt-1 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">{title}</h3>
           </div>
 
-          <div className="rounded-2xl border border-orange-200 bg-white/80 px-3 py-2 text-right shrink-0">
+          <div className="rounded-2xl border border-[#F66B9A]/25 bg-white/80 px-3 py-2 text-right shrink-0">
             <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
               Tasa mensual fija
             </p>
-            <p className="mt-1 text-lg sm:text-xl md:text-2xl font-black text-orange-600">
+            <p className="mt-1 text-lg sm:text-xl md:text-2xl font-black text-[#ED2C71]">
               {monthlyRatePercent.toLocaleString('es-AR')}%
             </p>
           </div>
@@ -141,7 +141,7 @@ export default function ZapCreditSimulationCard({
       <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <CircleDollarSign size={14} className="text-orange-500" />
+            <CircleDollarSign size={14} className="text-[#ED2C71]" />
             Anticipo
           </div>
           <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
@@ -152,7 +152,7 @@ export default function ZapCreditSimulationCard({
 
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <WalletCards size={14} className="text-orange-500" />
+            <WalletCards size={14} className="text-[#ED2C71]" />
             Saldo financiado
           </div>
           <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
@@ -163,7 +163,7 @@ export default function ZapCreditSimulationCard({
 
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <CalendarClock size={14} className="text-orange-500" />
+            <CalendarClock size={14} className="text-[#ED2C71]" />
             Cuota estimada
           </div>
           <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
@@ -176,7 +176,7 @@ export default function ZapCreditSimulationCard({
 
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <BadgePercent size={14} className="text-orange-500" />
+            <BadgePercent size={14} className="text-[#ED2C71]" />
             Total proyectado
           </div>
           <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
@@ -190,7 +190,7 @@ export default function ZapCreditSimulationCard({
 
       {compact ? (
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="rounded-full border border-orange-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-orange-800">
+          <span className="rounded-full border border-[#F66B9A]/25 bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
             Anticipo {summary.downPaymentPercent}%
           </span>
           <span className="rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-700">
@@ -201,28 +201,28 @@ export default function ZapCreditSimulationCard({
           </span>
         </div>
       ) : (
-        <div className="mt-4 rounded-2xl border border-orange-100 bg-white/85 p-3 sm:p-4">
+        <div className="mt-4 rounded-2xl border border-[#F66B9A]/15 bg-white/85 p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
             <span className="font-semibold text-gray-900">Composicion del pedido</span>
             <span className="text-gray-500 text-xs sm:text-sm">
               Anticipo {summary.downPaymentPercent}% - Credito {financedSharePercent}%
             </span>
           </div>
-          <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-orange-100">
+          <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-[#FEF1F6]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
+              className="h-full rounded-full bg-gradient-to-r from-[#ED2C71] to-[#4576B9]"
               style={{ width: `${summary.downPaymentPercent}%` }}
             />
           </div>
         </div>
       )}
 
-      <details className="mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-white/70">
+      <details className="mt-4 overflow-hidden rounded-2xl border border-[#F66B9A]/25 bg-white/70">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
           Ver detalle tecnico del plan
         </summary>
 
-        <div className="border-t border-orange-100 px-4 pb-4 pt-4">
+        <div className="border-t border-[#F66B9A]/15 px-4 pb-4 pt-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -263,7 +263,7 @@ export default function ZapCreditSimulationCard({
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-dashed border-orange-200 bg-white/70 p-3 sm:p-4 text-sm text-gray-700">
+          <div className="mt-4 rounded-2xl border border-dashed border-[#F66B9A]/25 bg-white/70 p-3 sm:p-4 text-sm text-gray-700">
             <p className="font-semibold text-gray-900">Como se calcula este plan</p>
             <p className="mt-2 text-xs sm:text-sm">
               1. Se toma el total del carrito y se define el anticipo minimo segun los productos.

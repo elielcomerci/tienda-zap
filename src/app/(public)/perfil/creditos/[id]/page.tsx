@@ -69,7 +69,7 @@ export default async function CustomerCreditDetailPage({
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
             <Wallet size={24} />
           </div>
           <div>
@@ -170,7 +170,7 @@ export default async function CustomerCreditDetailPage({
                 Seguimiento de dinero cobrado y cuotas aprobadas.
               </p>
             </div>
-            <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700">
+            <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1 text-sm font-semibold text-[#C91F5B]">
               {summary.paymentProgressPercent}% cobrado
             </span>
           </div>
@@ -186,7 +186,7 @@ export default async function CustomerCreditDetailPage({
               </div>
               <div className="h-3 overflow-hidden rounded-full bg-gray-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500"
+                  className="h-full rounded-full bg-gradient-to-r from-[#ED2C71] to-[#4576B9]"
                   style={{ width: `${summary.paymentProgressPercent}%` }}
                 />
               </div>
@@ -248,7 +248,7 @@ export default async function CustomerCreditDetailPage({
             </div>
           </div>
 
-          <p className="mt-4 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-xs text-orange-900">
+          <p className="mt-4 rounded-2xl border border-[#F66B9A]/15 bg-[#FEF1F6] px-4 py-3 text-xs text-[#C91F5B]">
             La tasa quedo congelada cuando se genero este credito. Aunque cambie el IPC despues,
             este plan conserva las condiciones pactadas.
           </p>
@@ -328,7 +328,7 @@ export default async function CustomerCreditDetailPage({
                           href={latestSubmission.proofUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-orange-600 hover:text-orange-700"
+                          className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#ED2C71] hover:text-[#C91F5B]"
                         >
                           <Receipt size={14} /> Ver comprobante
                         </a>

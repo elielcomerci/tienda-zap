@@ -33,8 +33,8 @@ export default async function NuevaPasswordPage({
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div className="p-8 pb-6 bg-gradient-to-br from-gray-900 via-gray-800 to-orange-950 text-white text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-500 shadow-lg shadow-orange-500/20 mb-4">
+        <div className="p-8 pb-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#C91F5B]/30 text-white text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#ED2C71] shadow-lg shadow-[#ED2C71]/20 mb-4">
             <KeyRound size={32} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold">Nueva contraseña</h1>

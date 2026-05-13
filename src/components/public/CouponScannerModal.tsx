@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { Scanner } from '@yudiel/react-qr-scanner'
@@ -38,7 +38,7 @@ export default function CouponScannerModal({
       <div className="w-full max-w-2xl overflow-hidden rounded-[32px] border border-white/10 bg-gray-950 text-white shadow-[0_30px_90px_-40px_rgba(15,23,42,0.9)]">
         <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F66B9A]">
               Escaner de cupon
             </p>
             <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
@@ -91,7 +91,7 @@ export default function CouponScannerModal({
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-orange-300">
+              <div className="flex items-center gap-2 text-[#F66B9A]">
                 <Camera size={16} />
                 <span className="text-xs font-semibold uppercase tracking-[0.18em]">Camara</span>
               </div>
@@ -101,7 +101,7 @@ export default function CouponScannerModal({
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-orange-300">
+              <div className="flex items-center gap-2 text-[#F66B9A]">
                 <ScanLine size={16} />
                 <span className="text-xs font-semibold uppercase tracking-[0.18em]">Lectura</span>
               </div>
@@ -111,7 +111,7 @@ export default function CouponScannerModal({
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-orange-300">
+              <div className="flex items-center gap-2 text-[#F66B9A]">
                 <X size={16} />
                 <span className="text-xs font-semibold uppercase tracking-[0.18em]">Salida</span>
               </div>

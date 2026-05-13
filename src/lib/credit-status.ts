@@ -1,4 +1,4 @@
-type InstallmentLike = {
+﻿type InstallmentLike = {
   dueDate: Date
   amount: number
   status: 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
@@ -37,7 +37,7 @@ export function getCreditPlanStatusTheme(status: CreditPlanLike['status']) {
     case 'REQUESTED':
       return 'bg-yellow-100 text-yellow-800'
     case 'QUOTED':
-      return 'bg-orange-100 text-orange-800'
+      return 'bg-[#FEF1F6] text-[#C91F5B]'
     case 'APPROVED':
       return 'bg-sky-100 text-sky-800'
     case 'ACTIVE':
@@ -82,7 +82,7 @@ export function getInstallmentDisplayStatus(
   }
 
   if (planStatus === 'REQUESTED' || planStatus === 'QUOTED') {
-    return { key: 'WAITING', label: 'Pendiente de activar', theme: 'bg-orange-100 text-orange-800' }
+    return { key: 'WAITING', label: 'Pendiente de activar', theme: 'bg-[#FEF1F6] text-[#C91F5B]' }
   }
 
   return { key: 'PENDING', label: 'Pendiente', theme: 'bg-amber-100 text-amber-800' }

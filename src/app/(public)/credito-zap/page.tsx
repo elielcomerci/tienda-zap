@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import {
   ArrowRight,
   BadgePercent,
@@ -61,11 +61,11 @@ export default function CreditoZapPage() {
 
   return (
     <div className="bg-white">
-      <section className="relative overflow-hidden border-b border-orange-100 bg-gradient-to-br from-gray-950 via-gray-900 to-orange-950 text-white">
+      <section className="relative overflow-hidden border-b border-[#F66B9A]/15 bg-gradient-to-br from-gray-950 via-gray-900 to-[#C91F5B]/30 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(251,146,60,0.24),_transparent_38%)]" />
         <div className="relative mx-auto max-w-6xl px-4 py-20 md:py-24">
           <div className="max-w-3xl">
-            <p className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200">
+            <p className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-[#F66B9A]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200">
               <Wallet size={14} />
               Credito ZAP
             </p>
@@ -102,9 +102,9 @@ export default function CreditoZapPage() {
           {highlights.map((item) => (
             <div
               key={item.title}
-              className="rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-5 shadow-sm"
+              className="rounded-3xl border border-[#F66B9A]/15 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-5 shadow-sm"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-orange-500 shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#ED2C71] shadow-sm">
                 <item.icon size={20} />
               </div>
               <p className="mt-4 text-lg font-black text-gray-900">{item.title}</p>
@@ -117,7 +117,7 @@ export default function CreditoZapPage() {
       <section id="como-funciona" className="border-y border-gray-100 bg-gray-50">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Como funciona
             </p>
             <h2 className="mt-2 text-3xl font-black text-gray-900">
@@ -126,7 +126,7 @@ export default function CreditoZapPage() {
             <div className="mt-6 space-y-4">
               {steps.map((step, index) => (
                 <div key={step} className="flex gap-4 rounded-3xl border border-white bg-white p-5 shadow-sm">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-orange-100 font-black text-orange-600">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F6] font-black text-[#ED2C71]">
                     {index + 1}
                   </div>
                   <p className="text-sm leading-relaxed text-gray-600">{step}</p>
@@ -135,15 +135,15 @@ export default function CreditoZapPage() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-orange-100 bg-white p-6 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+          <div className="rounded-[2rem] border border-[#F66B9A]/15 bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Que necesitas
             </p>
             <h3 className="mt-2 text-2xl font-black text-gray-900">Requisitos practicos</h3>
             <div className="mt-5 space-y-3">
               {requirements.map((item) => (
                 <div key={item} className="flex gap-3 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
-                  <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-orange-500" />
+                  <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
                   <p className="text-sm text-gray-600">{item}</p>
                 </div>
               ))}
@@ -154,11 +154,11 @@ export default function CreditoZapPage() {
 
       <section id="quienes-somos" className="mx-auto max-w-6xl px-4 py-14">
         <div className="grid gap-8 lg:grid-cols-2">
-          <div className="rounded-[2rem] border border-orange-100 bg-white p-7 shadow-sm">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+          <div className="rounded-[2rem] border border-[#F66B9A]/15 bg-white p-7 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
               <Building2 size={22} />
             </div>
-            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
               Quienes somos
             </p>
             <h2 className="mt-2 text-3xl font-black text-gray-900">ZAP acompana trabajos que tienen que salir bien.</h2>
@@ -172,10 +172,10 @@ export default function CreditoZapPage() {
             id="como-trabajamos"
             className="rounded-[2rem] border border-gray-200 bg-gray-950 p-7 text-white shadow-sm"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-orange-300">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-[#F66B9A]">
               <FileText size={22} />
             </div>
-            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-orange-300">
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#F66B9A]">
               Como trabajamos
             </p>
             <h2 className="mt-2 text-3xl font-black">Pedido simple, seguimiento claro.</h2>
@@ -188,16 +188,16 @@ export default function CreditoZapPage() {
         </div>
       </section>
 
-      <section id="privacidad" className="border-t border-gray-100 bg-orange-50/40">
+      <section id="privacidad" className="border-t border-gray-100 bg-[#FEF1F6]/40">
         <div className="mx-auto max-w-6xl px-4 py-14">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
             Privacidad
           </p>
           <h2 className="mt-2 text-3xl font-black text-gray-900">Usamos tus datos para mover tu pedido, no para marearte.</h2>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             {privacyPoints.map((item) => (
-              <div key={item} className="rounded-3xl border border-orange-100 bg-white p-5 shadow-sm">
+              <div key={item} className="rounded-3xl border border-[#F66B9A]/15 bg-white p-5 shadow-sm">
                 <p className="text-sm leading-relaxed text-gray-600">{item}</p>
               </div>
             ))}

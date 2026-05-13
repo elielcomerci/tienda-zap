@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { CreditCard, Loader2 } from 'lucide-react'
@@ -49,7 +49,7 @@ export default function ResumePaymentButton({
         disabled={loading}
         className={
           className ??
-          'flex w-full items-center justify-center gap-2 rounded-[24px] bg-orange-500 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-0.5 hover:bg-orange-400 disabled:cursor-wait disabled:opacity-80'
+          'flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED2C71] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-[#ED2C71]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F66B9A] disabled:cursor-wait disabled:opacity-80'
         }
       >
         {loading ? <Loader2 size={18} className="animate-spin" /> : <CreditCard size={18} />}

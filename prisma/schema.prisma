@@ -94,6 +94,7 @@ model Order {
   items                 OrderItem[]
   couponRedemption      CouponRedemption?
   zapCreditPlan         ZapCreditPlan?
+  receipts              Receipt[]
 }
 
 model OrderItem {
@@ -176,6 +177,7 @@ model ZapCreditInstallment {
   mpPreferenceId       String?
   plan                 ZapCreditPlan                @relation(fields: [planId], references: [id], onDelete: Cascade)
   submissions          ZapCreditPaymentSubmission[]
+  receipts             Receipt[]
 
   @@unique([planId, sequence])
 }
@@ -511,4 +513,38 @@ enum ZapCreditPaymentMethod {
   TRANSFER
   CASH
   OTHER
+}
+
+enum ReceiptStatus {
+  ACTIVE
+  VOIDED
+}
+
+model Receipt {
+  id                    String                @id @default(cuid())
+  orderId               String
+  installmentId         String?
+  sequenceNumber        Int
+  receiptCode           String
+
+  amount                Float
+  concept               String?
+  paymentMethod         String?
+
+  pdfUrl                String
+  pdfFileName           String
+
+  status                ReceiptStatus         @default(ACTIVE)
+  voidedAt              DateTime?
+  voidedReason          String?
+  replacedByReceiptId   String?
+
+  generatedByUserId     String
+  createdAt             DateTime              @default(now())
+
+  order                 Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  installment           ZapCreditInstallment? @relation(fields: [installmentId], references: [id])
+
+  @@unique([orderId, sequenceNumber])
+  @@index([orderId, status])
 }

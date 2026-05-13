@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -203,7 +203,7 @@ export default function OrderFileUploader({
   return (
     <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
       <div className="flex flex-col gap-2 border-b border-gray-100 pb-6">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
           Archivos para produccion
         </p>
         <h2 className="text-3xl font-black tracking-tight text-gray-950">
@@ -353,7 +353,7 @@ export default function OrderFileUploader({
                 <div className="mt-4">
                   <div className="h-2 overflow-hidden rounded-full bg-gray-200">
                     <div
-                      className="h-full bg-orange-500 transition-all"
+                      className="h-full bg-[#ED2C71] transition-all"
                       style={{ width: `${state.progress || 0}%` }}
                     />
                   </div>

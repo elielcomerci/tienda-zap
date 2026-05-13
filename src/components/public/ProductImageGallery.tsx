@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { X, ZoomIn } from 'lucide-react'
@@ -85,7 +85,7 @@ export default function ProductImageGallery({
                 relative aspect-square overflow-hidden rounded-2xl border-2 transition-all
                 ${
                   i === activeIndex
-                    ? 'border-orange-500 shadow-md shadow-orange-100/70 ring-4 ring-orange-50'
+                    ? 'border-[#ED2C71] shadow-md shadow-[#ED2C71]/10/70 ring-4 ring-[#FEF1F6]'
                     : 'border-transparent opacity-70 hover:opacity-100'
                 }
               `}

@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { updateProfile } from '@/lib/actions/auth'
@@ -80,8 +80,8 @@ export default async function PerfilPage({
         <div className="md:col-span-2">
           <div className="card p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
-                <User size={24} className="text-orange-500" />
+              <div className="w-12 h-12 rounded-2xl bg-[#FEF1F6] flex items-center justify-center">
+                <User size={24} className="text-[#ED2C71]" />
               </div>
               <div>
                 <p className="font-bold text-gray-900">{user.name || 'Sin nombre'}</p>
@@ -130,9 +130,9 @@ export default async function PerfilPage({
         <div className="md:col-span-3">
           <Link
             href="/perfil/creditos"
-            className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-orange-200 hover:shadow-sm group"
+            className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-[#F66B9A]/25 hover:shadow-sm group"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
               <Wallet size={22} />
             </div>
             <div className="min-w-0 flex-1">
@@ -148,11 +148,11 @@ export default async function PerfilPage({
                 {creditsCount} credito/s registrados. Entra para ver cuotas, pagos y comprobantes.
               </p>
             </div>
-            <ChevronRight size={18} className="shrink-0 text-gray-300 transition-colors group-hover:text-orange-400" />
+            <ChevronRight size={18} className="shrink-0 text-gray-300 transition-colors group-hover:text-[#F66B9A]" />
           </Link>
 
           <div className="flex items-center gap-2 mb-4">
-            <Package size={20} className="text-orange-500" />
+            <Package size={20} className="text-[#ED2C71]" />
             <h2 className="font-bold text-gray-900">Mis pedidos</h2>
             <span className="ml-auto text-sm text-gray-400">{orders.length} pedidos</span>
           </div>
@@ -161,7 +161,7 @@ export default async function PerfilPage({
             <div className="card p-12 text-center text-gray-400">
               <Package size={40} className="mx-auto mb-3 text-gray-200" />
               <p className="font-medium">Todavía no tenés pedidos</p>
-              <Link href="/productos" className="mt-3 inline-block text-sm text-orange-500 hover:underline">
+              <Link href="/productos" className="mt-3 inline-block text-sm text-[#ED2C71] hover:underline">
                 Ver productos
               </Link>
             </div>
@@ -171,7 +171,7 @@ export default async function PerfilPage({
                 <Link
                   key={order.id}
                   href={`/perfil/ordenes/${order.id}`}
-                  className="card p-4 flex items-center gap-4 hover:border-orange-200 hover:shadow-sm transition-all group"
+                  className="card p-4 flex items-center gap-4 hover:border-[#F66B9A]/25 hover:shadow-sm transition-all group"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -188,7 +188,7 @@ export default async function PerfilPage({
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-bold text-gray-900">${order.total.toLocaleString('es-AR')}</p>
-                    <ChevronRight size={16} className="text-gray-300 group-hover:text-orange-400 transition-colors ml-auto mt-1" />
+                    <ChevronRight size={16} className="text-gray-300 group-hover:text-[#F66B9A] transition-colors ml-auto mt-1" />
                   </div>
                 </Link>
               ))}
