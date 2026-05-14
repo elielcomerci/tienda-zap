@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useCartStore, CartItem } from '@/lib/cart-store'
-import { ShoppingCart, Check, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Check, ArrowRight, MessageCircleMore } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 
@@ -10,11 +10,15 @@ export default function AddToCartButton({
   hasVariants,
   slug,
   disabled = false,
+  consultUrl,
+  consultLabel = 'Consultar',
 }: {
   product: CartItem
   hasVariants?: boolean
   slug?: string
   disabled?: boolean
+  consultUrl?: string | null
+  consultLabel?: string
 }) {
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
@@ -33,6 +37,20 @@ export default function AddToCartButton({
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6] px-4 py-3 text-sm font-semibold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F6]"
       >
         Configurar <ArrowRight size={15} />
+      </Link>
+    )
+  }
+
+  if (disabled && consultUrl) {
+    return (
+      <Link
+        href={consultUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6] px-4 py-3 text-sm font-semibold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F6]"
+      >
+        <MessageCircleMore size={16} />
+        {consultLabel}
       </Link>
     )
   }

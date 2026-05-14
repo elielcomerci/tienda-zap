@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { getActiveProductSlugs, getProduct } from '@/lib/products'
-import { buildWhatsappUrl } from '@/lib/whatsapp'
+import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import ProductZapCreditPromo from '@/components/public/ProductZapCreditPromo'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
+import { getProductDisplayPrice } from '@/lib/product-pricing'
 
 export const revalidate = 300
 
@@ -32,6 +33,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const relatedProducts = product.outgoingRelations
     .map((relation) => relation.relatedProduct)
     .filter((relatedProduct) => relatedProduct.active)
+  const displayPrice = getProductDisplayPrice(product)
+  const inquiryUrl = buildWhatsappUrl(
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+    buildProductInquiryMessage({
+      name: product.name,
+      categoryName: product.category.name,
+      price: displayPrice,
+      creditDownPaymentPercent: product.creditDownPaymentPercent || 30,
+      slug: product.slug,
+      intent: displayPrice === null ? 'cotizar' : 'consultar',
+    })
+  )
 
   const creditWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
@@ -107,7 +120,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </dl>
             </section>
 
-            <ProductConfigurator product={product} />
+            <ProductConfigurator product={product} inquiryUrl={inquiryUrl} />
           </div>
         </div>
 

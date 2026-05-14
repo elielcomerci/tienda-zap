@@ -11,7 +11,7 @@ import {
 import { getCategories } from '@/lib/categories'
 import { getProducts } from '@/lib/products'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { buildWhatsappUrl } from '@/lib/whatsapp'
+import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import AddToCartButton from '@/components/public/AddToCartButton'
@@ -95,6 +95,9 @@ export default async function HomePage() {
   const primaryHeroProduct = heroProducts[0]
   const secondaryHeroProducts = heroProducts.slice(1)
   const catalogProducts = featuredProducts.slice(0, 6)
+  const primaryHeroDisplayPrice = primaryHeroProduct
+    ? getProductDisplayPrice(primaryHeroProduct)
+    : null
 
   const salesWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
@@ -104,6 +107,22 @@ export default async function HomePage() {
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     'Hola! Quiero evaluar un pedido con Crédito ZAP.'
   )
+
+  const buildProductInquiryUrl = (
+    product: (typeof featuredProducts)[number],
+    price: number | null
+  ) =>
+    buildWhatsappUrl(
+      process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+      buildProductInquiryMessage({
+        name: product.name,
+        categoryName: product.category.name,
+        price,
+        creditDownPaymentPercent: product.creditDownPaymentPercent,
+        slug: product.slug,
+        intent: price === null ? 'cotizar' : 'consultar',
+      })
+    )
 
   return (
     <div className="bg-[linear-gradient(180deg,#fffbfd_0%,#FEF1F6_12%,#f8fafc_100%)]">
@@ -201,34 +220,50 @@ export default async function HomePage() {
                       </p>
                       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
                         {primaryHeroProduct.variants.length > 0 &&
-                        getProductDisplayPrice(primaryHeroProduct) !== null
+                        primaryHeroDisplayPrice !== null
                           ? 'Desde'
                           : 'Precio'}
                       </p>
                       <p className="mt-1 text-3xl font-black text-gray-950">
-                        {getProductDisplayPrice(primaryHeroProduct) !== null
-                          ? `$${getProductDisplayPrice(primaryHeroProduct)!.toLocaleString('es-AR')}`
+                        {primaryHeroDisplayPrice !== null
+                          ? `$${primaryHeroDisplayPrice.toLocaleString('es-AR')}`
                           : 'Consultar'}
                       </p>
                     </div>
 
-                    <AddToCartButton
-                      product={{
-                        productId: primaryHeroProduct.id,
-                        name: primaryHeroProduct.name,
-                        price: getProductDisplayPrice(primaryHeroProduct) ?? 0,
-                        creditDownPaymentPercent: primaryHeroProduct.creditDownPaymentPercent,
-                        image: primaryHeroProduct.images[0] || '',
-                        quantity: 1,
-                        isService: primaryHeroProduct.category.isService,
-                      }}
-                      hasVariants={primaryHeroProduct.variants.length > 0}
-                      slug={primaryHeroProduct.slug}
-                      disabled={
-                        primaryHeroProduct.variants.length === 0 &&
-                        getProductDisplayPrice(primaryHeroProduct) === null
-                      }
-                    />
+                    <div className="flex flex-wrap gap-2 sm:justify-end">
+                      <AddToCartButton
+                        product={{
+                          productId: primaryHeroProduct.id,
+                          name: primaryHeroProduct.name,
+                          price: primaryHeroDisplayPrice ?? 0,
+                          creditDownPaymentPercent: primaryHeroProduct.creditDownPaymentPercent,
+                          image: primaryHeroProduct.images[0] || '',
+                          quantity: 1,
+                          isService: primaryHeroProduct.category.isService,
+                        }}
+                        hasVariants={primaryHeroProduct.variants.length > 0}
+                        slug={primaryHeroProduct.slug}
+                        disabled={
+                          primaryHeroProduct.variants.length === 0 &&
+                          primaryHeroDisplayPrice === null
+                        }
+                        consultUrl={buildProductInquiryUrl(primaryHeroProduct, primaryHeroDisplayPrice)}
+                        consultLabel="Cotizar"
+                      />
+                      {primaryHeroDisplayPrice !== null &&
+                        buildProductInquiryUrl(primaryHeroProduct, primaryHeroDisplayPrice) && (
+                          <Link
+                            href={buildProductInquiryUrl(primaryHeroProduct, primaryHeroDisplayPrice)!}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]"
+                          >
+                            <MessageCircleMore size={16} />
+                            Consultar
+                          </Link>
+                        )}
+                    </div>
                   </div>
                 </article>
               ) : null}
@@ -335,6 +370,7 @@ export default async function HomePage() {
             {catalogProducts.map((product) => {
               const displayPrice = getProductDisplayPrice(product)
               const hasVariants = product.variants.length > 0
+              const inquiryUrl = buildProductInquiryUrl(product, displayPrice)
 
               return (
                 <article
@@ -380,7 +416,7 @@ export default async function HomePage() {
                       </p>
                     </div>
 
-                    <div className="flex items-end justify-between gap-4 border-t border-gray-100 pt-4">
+                    <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                           {hasVariants && displayPrice !== null ? 'Desde' : 'Precio'}
@@ -395,20 +431,35 @@ export default async function HomePage() {
                         </p>
                       </div>
 
-                      <AddToCartButton
-                        product={{
-                          productId: product.id,
-                          name: product.name,
-                          price: displayPrice ?? 0,
-                          creditDownPaymentPercent: product.creditDownPaymentPercent,
-                          image: product.images[0] || '',
-                          quantity: 1,
-                          isService: product.category.isService,
-                        }}
-                        hasVariants={hasVariants}
-                        slug={product.slug}
-                        disabled={!hasVariants && displayPrice === null}
-                      />
+                      <div className="flex flex-wrap gap-2 sm:justify-end">
+                        <AddToCartButton
+                          product={{
+                            productId: product.id,
+                            name: product.name,
+                            price: displayPrice ?? 0,
+                            creditDownPaymentPercent: product.creditDownPaymentPercent,
+                            image: product.images[0] || '',
+                            quantity: 1,
+                            isService: product.category.isService,
+                          }}
+                          hasVariants={hasVariants}
+                          slug={product.slug}
+                          disabled={!hasVariants && displayPrice === null}
+                          consultUrl={inquiryUrl}
+                          consultLabel="Cotizar"
+                        />
+                        {inquiryUrl && displayPrice !== null && (
+                          <Link
+                            href={inquiryUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]"
+                          >
+                            <MessageCircleMore size={16} />
+                            Consultar
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </article>

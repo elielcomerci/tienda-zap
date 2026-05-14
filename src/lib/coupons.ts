@@ -257,7 +257,21 @@ export function normalizeCouponCode(rawValue?: string | null) {
 export function buildCouponLandingUrl(code: string, baseUrl?: string | null) {
   const normalizedCode = normalizeCouponCode(code)
   const path = `/cupon/${encodeURIComponent(normalizedCode)}`
-  const normalizedBaseUrl = baseUrl?.trim().replace(/\/+$/, '')
+  const trimmedBaseUrl = baseUrl?.trim()
+
+  if (trimmedBaseUrl) {
+    try {
+      const url = new URL(trimmedBaseUrl)
+      url.pathname = path
+      url.search = ''
+      url.hash = ''
+      return url.toString()
+    } catch {
+      // If the admin entered a relative base, fall through to the safe string join.
+    }
+  }
+
+  const normalizedBaseUrl = trimmedBaseUrl?.replace(/\/+$/, '')
 
   return normalizedBaseUrl ? `${normalizedBaseUrl}${path}` : path
 }

@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Check, ShoppingCart } from 'lucide-react'
+import Link from 'next/link'
+import { Check, MessageCircleMore, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 
@@ -40,7 +41,13 @@ type ProductWithOptions = {
   [key: string]: any
 }
 
-export default function ProductConfigurator({ product }: { product: ProductWithOptions }) {
+export default function ProductConfigurator({
+  product,
+  inquiryUrl,
+}: {
+  product: ProductWithOptions
+  inquiryUrl?: string | null
+}) {
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [added, setAdded] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
@@ -276,24 +283,38 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={!canAddToCart || added}
-            className={`
-              flex min-h-[88px] w-full items-center justify-center gap-2 rounded-[28px] px-6 py-5 text-center font-bold transition-all
-              ${
-                added
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                  : canAddToCart
-                    ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
-                    : 'cursor-not-allowed bg-gray-200 text-gray-500'
-              }
-            `}
-          >
-            {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-            {added ? 'Agregado al carrito' : addToCartLabel}
-          </button>
+          <div className="grid gap-3">
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!canAddToCart || added}
+              className={`
+                flex min-h-[74px] w-full items-center justify-center gap-2 rounded-[28px] px-6 py-5 text-center font-bold transition-all
+                ${
+                  added
+                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                    : canAddToCart
+                      ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
+                      : 'cursor-not-allowed bg-gray-200 text-gray-500'
+                }
+              `}
+            >
+              {added ? <Check size={20} /> : <ShoppingCart size={20} />}
+              {added ? 'Agregado al carrito' : addToCartLabel}
+            </button>
+
+            {inquiryUrl && (
+              <Link
+                href={inquiryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[24px] border border-[#F66B9A]/25 bg-[#FEF1F6] px-6 py-4 text-center font-bold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300"
+              >
+                <MessageCircleMore size={20} />
+                Consultar
+              </Link>
+            )}
+          </div>
         </div>
       </section>
     )
@@ -437,24 +458,38 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={!canAddToCart || added}
-            className={`
-              flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
-              ${
-                added
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                  : canAddToCart
-                    ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
-                    : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
-              }
-            `}
-          >
-            {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-            {added ? 'Agregado al carrito' : addToCartLabel}
-          </button>
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!canAddToCart || added}
+              className={`
+                flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
+                ${
+                  added
+                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                    : canAddToCart
+                      ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
+                      : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
+                }
+              `}
+            >
+              {added ? <Check size={20} /> : <ShoppingCart size={20} />}
+              {added ? 'Agregado al carrito' : addToCartLabel}
+            </button>
+
+            {inquiryUrl && (
+              <Link
+                href={inquiryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
+              >
+                <MessageCircleMore size={20} />
+                Consultar
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </section>

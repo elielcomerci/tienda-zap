@@ -1,10 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts } from '@/lib/products'
 import { getCategories } from '@/lib/categories'
 import AddToCartButton from '@/components/public/AddToCartButton'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
 
@@ -163,6 +164,18 @@ export default async function ProductsPage({
                 {products.map((product) => {
                   const hasVariants = product.variants && product.variants.length > 0
                   const displayPrice = getProductDisplayPrice(product)
+                  const productIntent = displayPrice === null ? 'cotizar' : 'consultar'
+                  const inquiryUrl = buildWhatsappUrl(
+                    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+                    buildProductInquiryMessage({
+                      name: product.name,
+                      categoryName: product.category.name,
+                      price: displayPrice,
+                      creditDownPaymentPercent: product.creditDownPaymentPercent,
+                      slug: product.slug,
+                      intent: productIntent,
+                    })
+                  )
 
                   return (
                     <article
@@ -210,7 +223,7 @@ export default async function ProductsPage({
                           )}
                         </div>
 
-                        <div className="flex items-end justify-between gap-4 border-t border-gray-100 pt-4">
+                        <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
                           <div>
                             {hasVariants && displayPrice !== null && (
                               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
@@ -227,20 +240,35 @@ export default async function ProductsPage({
                             </p>
                           </div>
 
-                          <AddToCartButton
-                            product={{
-                              productId: product.id,
-                              name: product.name,
-                              price: displayPrice ?? 0,
-                              creditDownPaymentPercent: product.creditDownPaymentPercent,
-                              image: product.images[0] || '',
-                              quantity: 1,
-                              isService: product.category.isService,
-                            }}
-                            hasVariants={hasVariants}
-                            slug={product.slug}
-                            disabled={!hasVariants && displayPrice === null}
-                          />
+                          <div className="flex flex-wrap gap-2 sm:justify-end">
+                            <AddToCartButton
+                              product={{
+                                productId: product.id,
+                                name: product.name,
+                                price: displayPrice ?? 0,
+                                creditDownPaymentPercent: product.creditDownPaymentPercent,
+                                image: product.images[0] || '',
+                                quantity: 1,
+                                isService: product.category.isService,
+                              }}
+                              hasVariants={hasVariants}
+                              slug={product.slug}
+                              disabled={!hasVariants && displayPrice === null}
+                              consultUrl={inquiryUrl}
+                              consultLabel="Cotizar"
+                            />
+                            {inquiryUrl && displayPrice !== null && (
+                              <Link
+                                href={inquiryUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]"
+                              >
+                                <MessageCircleMore size={16} />
+                                Consultar
+                              </Link>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </article>
