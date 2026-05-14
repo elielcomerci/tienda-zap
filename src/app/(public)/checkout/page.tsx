@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Fragment, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -324,6 +324,7 @@ export default function CheckoutPage() {
     setCouponPreview(null)
     setCouponFeedback('')
     setValue('couponCode', undefined, { shouldDirty: true, shouldValidate: true })
+    if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
   }
 
   const reviewCoupon = async (rawCouponCode: string) => {
@@ -378,11 +379,18 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const queryCoupon = searchParams.get('coupon') || searchParams.get('code') || searchParams.get('c')
-    if (!queryCoupon || items.length === 0 || loadedQueryCouponRef.current === queryCoupon) return
+    
+    if (queryCoupon && typeof window !== 'undefined') {
+      localStorage.setItem('saved_coupon', queryCoupon)
+    }
 
-    loadedQueryCouponRef.current = queryCoupon
-    setCouponDraft(queryCoupon)
-    void reviewCoupon(queryCoupon)
+    const couponToUse = queryCoupon || (typeof window !== 'undefined' ? localStorage.getItem('saved_coupon') : null)
+
+    if (!couponToUse || items.length === 0 || loadedQueryCouponRef.current === couponToUse) return
+
+    loadedQueryCouponRef.current = couponToUse
+    setCouponDraft(couponToUse)
+    void reviewCoupon(couponToUse)
   }, [items.length, searchParams])
 
   const onSubmit = async (data: OrderCheckoutData) => {
@@ -430,6 +438,7 @@ export default function CheckoutPage() {
         if (!response.ok) throw new Error(result.error)
         setOrderCreated(true)
         clearCart()
+        if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
         router.push(result.initPoint)
       } else {
         const response = await fetch('/api/ordenes', {
@@ -441,6 +450,7 @@ export default function CheckoutPage() {
         if (!response.ok) throw new Error(result.error)
         setOrderCreated(true)
         clearCart()
+        if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
         router.push(`/checkout/success?${result.successQuery || `orderId=${result.orderId}`}`)
       }
     } catch (submitError: any) {

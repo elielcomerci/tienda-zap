@@ -242,30 +242,32 @@ export default function ProductConfigurator({
           </h2>
         </div>
 
-        <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-stretch">
-          <div className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
-              Precio final
-            </p>
+        <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-6">
+          <div className="flex flex-col gap-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+                Precio final
+              </p>
 
-            {simpleProductAvailable ? (
-              <>
-                <div className="mt-3 flex items-end gap-2">
-                  <span className="text-4xl font-black tracking-tight sm:text-5xl">
-                    ${product.price.toLocaleString('es-AR')}
-                  </span>
-                  <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
-                </div>
-                <p className="mt-2 text-sm text-gray-300">Precio unitario final.</p>
-              </>
-            ) : (
-              <>
-                <p className="mt-3 text-3xl font-black text-[#F66B9A]">No disponible</p>
-                <p className="mt-2 text-sm text-gray-300">Sin pedido online por ahora.</p>
-              </>
-            )}
+              {simpleProductAvailable ? (
+                <>
+                  <div className="mt-3 flex items-end gap-2">
+                    <span className="text-4xl font-black tracking-tight sm:text-5xl">
+                      ${product.price.toLocaleString('es-AR')}
+                    </span>
+                    <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-300">Precio unitario final.</p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-3 text-3xl font-black text-[#F66B9A]">No disponible</p>
+                  <p className="mt-2 text-sm text-gray-300">Sin pedido online por ahora.</p>
+                </>
+              )}
+            </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                   Disponibilidad
@@ -281,39 +283,39 @@ export default function ProductConfigurator({
                 </p>
               </div>
             </div>
-          </div>
 
-          <div className="grid gap-3">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!canAddToCart || added}
-              className={`
-                flex min-h-[74px] w-full items-center justify-center gap-2 rounded-[28px] px-6 py-5 text-center font-bold transition-all
-                ${
-                  added
-                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                    : canAddToCart
-                      ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
-                      : 'cursor-not-allowed bg-gray-200 text-gray-500'
-                }
-              `}
-            >
-              {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-              {added ? 'Agregado al carrito' : addToCartLabel}
-            </button>
-
-            {inquiryUrl && (
-              <Link
-                href={inquiryUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[24px] border border-[#F66B9A]/25 bg-[#FEF1F6] px-6 py-4 text-center font-bold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300"
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || added}
+                className={`
+                  flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
+                  ${
+                    added
+                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                      : canAddToCart
+                        ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
+                        : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
+                  }
+                `}
               >
-                <MessageCircleMore size={20} />
-                Consultar
-              </Link>
-            )}
+                {added ? <Check size={20} /> : <ShoppingCart size={20} />}
+                {added ? 'Agregado al carrito' : addToCartLabel}
+              </button>
+
+              {inquiryUrl && (
+                <Link
+                  href={inquiryUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
+                >
+                  <MessageCircleMore size={20} />
+                  Consultar
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>

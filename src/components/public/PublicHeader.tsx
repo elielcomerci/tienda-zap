@@ -79,13 +79,11 @@ export default function PublicHeader({
       >
         <div className="mx-auto flex items-center justify-between h-full max-w-[1380px] px-4 xl:px-8">
           {/* Logo — same as zap.com.ar */}
-          <Link href="/" className="flex items-center h-full" aria-label="Ir al inicio">
+          <Link href="/" className="flex items-center h-full py-3" aria-label="Ir al inicio">
             <img
               src="https://res.cloudinary.com/dip14vkem/image/upload/v1756568241/logo_t37blz.png"
               alt="ZAP Logo"
-              className="h-full w-auto"
-              width={NAV_HEIGHT}
-              height={NAV_HEIGHT}
+              className="h-full w-auto object-contain"
             />
           </Link>
 
