@@ -175,36 +175,37 @@ export function generateOrderReceiptPdf(
     y += 5
   }
 
-  // ─── HEADER BAR ───
-  doc.setFillColor(...DARK)
-  doc.rect(0, 0, pageWidth, 38, 'F')
+  // ─── HEADER BAR (Clean modern look) ───
+  y = 12
 
-  // Orange accent bar -> Pink accent bar
-  doc.setFillColor(...BRAND_PRIMARY)
-  doc.rect(0, 38, pageWidth, 2.5, 'F')
+  // ZAP logo image (top left)
+  // Assuming a 25x16 dimension for the logo to avoid stretching
+  doc.addImage(ZAP_LOGO_B64, 'PNG', margin, y, 25, 16, undefined, 'FAST')
 
-  // ZAP logo image
-  doc.addImage(ZAP_LOGO_B64, 'PNG', margin, 8, 30, 20, undefined, 'FAST')
-
-  // Subtitle
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(180, 185, 195) // simulated 70% white on dark bg — jsPDF has no RGBA
-  doc.text(isPartialPayment ? 'RECIBO DE PAGO PARCIAL' : 'RECIBO DE PAGO', margin, 26)
-
-  // Receipt number
-  doc.setFontSize(10)
+  // Title (top right)
+  doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...WHITE)
-  doc.text(receiptNumber, pageWidth - margin, 14, { align: 'right' })
+  doc.setTextColor(...BRAND_PRIMARY)
+  doc.text(isPartialPayment ? 'RECIBO PARCIAL' : 'RECIBO DE PAGO', pageWidth - margin, y + 4, { align: 'right' })
 
-  // Date & order
+  // Receipt details (top right, below title)
+  doc.setFontSize(9)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...DARK)
+  doc.text(receiptNumber, pageWidth - margin, y + 10, { align: 'right' })
+
   doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
-  doc.text(`Fecha: ${fmtDate(now)} · ${fmtTime(now)}`, pageWidth - margin, 22, { align: 'right' })
-  doc.text(`Orden #${order.orderCode}`, pageWidth - margin, 29, { align: 'right' })
+  doc.setTextColor(...GRAY_500)
+  doc.text(`Fecha: ${fmtDate(now)} · ${fmtTime(now)}`, pageWidth - margin, y + 15, { align: 'right' })
+  doc.text(`Orden #${order.orderCode}`, pageWidth - margin, y + 19, { align: 'right' })
 
-  y = 48
+  y += 24
+
+  // Pink accent separator
+  doc.setFillColor(...BRAND_PRIMARY)
+  doc.rect(margin, y, contentWidth, 0.5, 'F')
+  y += 6
 
   // ─── CUSTOMER DATA ───
   sectionTitle('Datos del cliente')
@@ -266,11 +267,11 @@ export function generateOrderReceiptPdf(
     total: margin + contentWidth,
   }
 
-  doc.setFillColor(...DARK)
+  doc.setFillColor(253, 242, 248) // Very soft pink background for table header
   doc.roundedRect(margin, y - 3.5, contentWidth, 7, 1.5, 1.5, 'F')
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...WHITE)
+  doc.setTextColor(...BRAND_PRIMARY)
   doc.text('PRODUCTO', colX.product + 3, y)
   doc.text('CANT', colX.qty, y, { align: 'right' })
   doc.text('UNITARIO', colX.unit, y, { align: 'right' })
@@ -392,8 +393,8 @@ export function generateOrderReceiptPdf(
   y += 4
   doc.text(`Generado el ${fmtDate(now)} a las ${fmtTime(now)}`, margin, y)
 
-  // Right-aligned brand
-  doc.addImage(ZAP_LOGO_B64, 'PNG', pageWidth - margin - 20, y - 6, 20, 13, undefined, 'FAST')
+  // Right-aligned brand logo in footer
+  doc.addImage(ZAP_LOGO_B64, 'PNG', pageWidth - margin - 20, y - 6, 20, 12.8, undefined, 'FAST')
   doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...GRAY_500)
