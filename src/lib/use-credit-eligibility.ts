@@ -39,7 +39,7 @@ export function useCreditEligibility() {
 
     setIsLoading(true)
 
-    fetch('/api/créditos/eligibility')
+    fetch('/api/creditos/eligibility')
       .then(async (response) => {
         const payload = await response.json()
         if (!response.ok) {
