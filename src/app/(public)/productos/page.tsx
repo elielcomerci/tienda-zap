@@ -35,7 +35,7 @@ export default async function ProductsPage({
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            <div className={`grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-${q?.trim() ? '3' : '2'}`}>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Resultados
@@ -50,20 +50,22 @@ export default async function ProductsPage({
                   {selectedCategory?.name || 'Todas'}
                 </p>
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Búsqueda
-                </p>
-                <p className="mt-2 text-base font-bold text-gray-950">
-                  {q?.trim() ? `"${q.trim()}"` : 'Sin término'}
-                </p>
-              </div>
+              {q?.trim() && (
+                <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                    Búsqueda
+                  </p>
+                  <p className="mt-2 text-base font-bold text-gray-950">
+                    &quot;{q.trim()}&quot;
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </section>
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start min-w-0">
             <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
               <div className="flex items-center gap-2">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
@@ -112,10 +114,10 @@ export default async function ProductsPage({
             </div>
           </aside>
 
-          <div className="space-y-5">
+          <div className="space-y-5 min-w-0">
             <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <form className="flex flex-1 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <form className="flex flex-1 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 min-w-0">
                   <Search size={18} className="text-gray-400" />
                   <input
                     type="text"
