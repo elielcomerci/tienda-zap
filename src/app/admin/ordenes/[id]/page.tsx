@@ -246,21 +246,42 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             }
           />
 
-          <ProofUploader
-            orderId={order.id}
-            proofs={
-              order.proofs?.map((p) => ({
+         {hasDesignItems && (
+          <div className="space-y-6">
+            <ProofUploader
+              orderId={order.id}
+              proofs={designProofs.map((p) => ({
                 id: p.id,
                 fileName: p.fileName,
                 fileUrl: p.fileUrl,
                 note: p.note,
                 status: p.status,
-                reviewedAt: p.reviewedAt?.toISOString() ?? null,
+                reviewedAt: p.reviewedAt ? p.reviewedAt.toISOString() : null,
                 reviewNote: p.reviewNote,
                 createdAt: p.createdAt.toISOString(),
-              })) ?? []
-            }
-          />
+              }))}
+            />
+            
+            {(order.status === 'PAID' || order.status === 'PROCESSING' || order.status === 'IN_PRODUCTION' || order.status === 'READY' || order.status === 'DELIVERED') && (
+              <ProofUploader
+                orderId={order.id}
+                title="Archivos Finales (Entregables)"
+                buttonText="Subir archivo final"
+                type="DELIVERABLE"
+                proofs={deliverables.map((p) => ({
+                  id: p.id,
+                  fileName: p.fileName,
+                  fileUrl: p.fileUrl,
+                  note: p.note,
+                  status: p.status,
+                  reviewedAt: p.reviewedAt ? p.reviewedAt.toISOString() : null,
+                  reviewNote: p.reviewNote,
+                  createdAt: p.createdAt.toISOString(),
+                }))}
+              />
+            )}
+          </div>
+        )}
         </div>
 
         <div className="md:col-span-2 space-y-6">

@@ -22,6 +22,13 @@ export async function POST(req: NextRequest) {
 
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
+
+    let sellerId = null
+    if (session?.user?.id) {
+      const userDb = await prisma.user.findUnique({ where: { id: session.user.id }, select: { sellerId: true } })
+      sellerId = userDb?.sellerId || null
+    }
+
     const pricing = await evaluateCheckoutPricing({
       items: data.items,
       couponCode: data.couponCode,
@@ -33,6 +40,7 @@ export async function POST(req: NextRequest) {
       const createdOrder = await tx.order.create({
         data: {
           userId: session?.user?.id,
+          sellerId,
           publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
           guestName: data.name,
           guestEmail: data.email,

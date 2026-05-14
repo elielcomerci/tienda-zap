@@ -49,6 +49,13 @@ export default async function RegistroPage({
             <input name="phone" type="tel" className="input" placeholder="1134567890" />
           </div>
 
+          <div>
+            <label className="label">
+              Documento (DNI/CUIT) <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            <input name="documentId" type="text" className="input" placeholder="Opcional para facturación/crédito" />
+          </div>
+
           {businessTypes.length > 0 && (
             <div>
               <label className="label">

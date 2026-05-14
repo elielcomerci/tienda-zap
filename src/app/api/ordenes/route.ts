@@ -26,6 +26,12 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
 
+    let sellerId = null
+    if (session?.user?.id) {
+      const userDb = await prisma.user.findUnique({ where: { id: session.user.id }, select: { sellerId: true } })
+      sellerId = userDb?.sellerId || null
+    }
+
     if (data.paymentType === 'ZAP_CREDIT' && !session?.user?.id) {
       return Response.json(
         { error: 'Inicia sesión para solicitar Crédito ZAP y seguir tus cuotas.' },
@@ -56,6 +62,7 @@ export async function POST(req: NextRequest) {
       const createdOrder = await tx.order.create({
         data: {
           userId: session?.user?.id,
+          sellerId,
           publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),
           guestName: data.name,
           guestEmail: data.email,

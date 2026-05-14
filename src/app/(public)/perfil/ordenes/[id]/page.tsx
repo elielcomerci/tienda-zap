@@ -108,9 +108,9 @@ export default async function MiOrdenPage({
       )}
 
       {/* Proof Review */}
-      {order.proofs && order.proofs.length > 0 && (
+      {order.proofs && order.proofs.filter(p => p.type === 'PROOF').length > 0 && (
         <ProofReviewSection
-          proofs={order.proofs.map((p) => ({
+          proofs={order.proofs.filter(p => p.type === 'PROOF').map((p) => ({
             id: p.id,
             fileName: p.fileName,
             fileUrl: p.fileUrl,
@@ -122,6 +122,36 @@ export default async function MiOrdenPage({
           }))}
           orderId={order.id}
         />
+      )}
+
+      {/* Deliverables Section */}
+      {order.proofs && order.proofs.filter(p => p.type === 'DELIVERABLE').length > 0 && (
+        <div className="card border-emerald-200 bg-emerald-50 overflow-hidden">
+          <div className="p-4 border-b border-emerald-100 bg-emerald-100/50 flex items-center justify-between">
+            <h3 className="font-bold text-emerald-900 flex items-center gap-2">
+              <Package size={18} className="text-emerald-600" />
+              Archivos Finales
+            </h3>
+          </div>
+          <div className="p-4 space-y-3">
+            {order.proofs.filter(p => p.type === 'DELIVERABLE').map((file) => (
+              <div key={file.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-xl border border-emerald-100 shadow-sm">
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm truncate">{file.fileName}</p>
+                  {file.note && <p className="text-xs text-gray-500 mt-1 italic">&quot;{file.note}&quot;</p>}
+                </div>
+                <a
+                  href={file.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors shrink-0"
+                >
+                  <Download size={14} /> Descargar
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="card overflow-hidden">

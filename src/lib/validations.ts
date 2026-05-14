@@ -252,6 +252,7 @@ export const registerSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   email: z.string().email('Email inválido'),
   phone: z.string().optional(),
+  documentId: optionalTextField(7, 'Documento (DNI/CUIL/CUIT) inválido'),
   businessTypeId: z.string().optional(),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   confirmPassword: z.string(),

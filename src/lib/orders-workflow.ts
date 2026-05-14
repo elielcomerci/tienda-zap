@@ -40,6 +40,10 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
           fileUrl: true,
         },
       },
+      sellerId: true,
+      subtotal: true,
+      discountTotal: true,
+      commissionAmount: true,
     },
   })
 
@@ -49,11 +53,25 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
 
   const nextStatus = allItemsReadyForProduction(order.items) ? 'PROCESSING' : 'PAID'
 
+  let commissionAmount = order.commissionAmount
+
+  if (order.sellerId && commissionAmount === null) {
+    const sellerProfile = await prisma.sellerProfile.findUnique({
+      where: { userId: order.sellerId }
+    })
+    
+    if (sellerProfile && sellerProfile.active) {
+      const baseForCommission = (order.subtotal || 0) - (order.discountTotal || 0)
+      commissionAmount = baseForCommission * (sellerProfile.defaultCommissionRate / 100)
+    }
+  }
+
   await prisma.order.update({
     where: { id: orderId },
     data: {
       status: nextStatus,
       ...(paymentId ? { paymentId } : {}),
+      ...(commissionAmount !== null ? { commissionAmount } : {}),
     },
   })
 

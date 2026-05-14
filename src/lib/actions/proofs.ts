@@ -27,6 +27,7 @@ export async function createProof(input: {
   objectKey: string
   fileName: string
   note?: string
+  type?: 'PROOF' | 'DELIVERABLE'
 }) {
   await requireAdmin()
 
@@ -42,24 +43,36 @@ export async function createProof(input: {
       fileName: input.fileName,
       objectKey: input.objectKey,
       note: input.note || null,
-      status: 'PENDING',
+      type: input.type || 'PROOF',
+      status: input.type === 'DELIVERABLE' ? 'APPROVED' : 'PENDING', // Entregables no se rechazan
     },
   })
 
-  // Update order status to PROOF_SENT
-  await prisma.order.update({
-    where: { id: input.orderId },
-    data: { status: 'PROOF_SENT' },
-  })
+  if (input.type === 'DELIVERABLE') {
+    // Solo loggear el evento para entregables
+    await prisma.orderEvent.create({
+      data: {
+        orderId: input.orderId,
+        status: 'DELIVERED', // Asumimos que el admin lo marca como entregado
+        note: `Archivo final entregado: ${input.fileName}`,
+      },
+    })
+  } else {
+    // Update order status to PROOF_SENT for proofs
+    await prisma.order.update({
+      where: { id: input.orderId },
+      data: { status: 'PROOF_SENT' },
+    })
 
-  // Log event
-  await prisma.orderEvent.create({
-    data: {
-      orderId: input.orderId,
-      status: 'PROOF_SENT',
-      note: `Prueba de diseño enviada: ${input.fileName}`,
-    },
-  })
+    // Log event
+    await prisma.orderEvent.create({
+      data: {
+        orderId: input.orderId,
+        status: 'PROOF_SENT',
+        note: `Prueba de diseño enviada: ${input.fileName}`,
+      },
+    })
+  }
 
   // Send email
   const order = await prisma.order.findUnique({

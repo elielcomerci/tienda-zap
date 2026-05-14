@@ -18,9 +18,15 @@ type ProofData = {
 export default function ProofUploader({
   orderId,
   proofs,
+  title = 'Pruebas de diseño',
+  buttonText = 'Subir prueba',
+  type = 'PROOF'
 }: {
   orderId: string
   proofs: ProofData[]
+  title?: string
+  buttonText?: string
+  type?: 'PROOF' | 'DELIVERABLE'
 }) {
   const [uploading, setUploading] = useState(false)
   const [note, setNote] = useState('')
@@ -53,6 +59,7 @@ export default function ProofUploader({
         objectKey,
         fileName: file.name,
         note: note.trim() || undefined,
+        type,
       })
 
       setNote('')
@@ -75,14 +82,14 @@ export default function ProofUploader({
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4 border-b pb-2">
-        <h3 className="font-bold text-gray-900">Pruebas de diseño</h3>
+        <h3 className="font-bold text-gray-900">{title}</h3>
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-1.5 rounded-lg bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B] transition-colors hover:bg-[#FCE4EC]"
           >
             <Upload size={14} />
-            Subir prueba
+            {buttonText}
           </button>
         )}
       </div>
@@ -140,7 +147,7 @@ export default function ProofUploader({
 
       {/* Existing proofs */}
       {proofs.length === 0 ? (
-        <p className="text-sm text-gray-400 italic">No se enviaron pruebas todavía.</p>
+        <p className="text-sm text-gray-400 italic">No hay archivos cargados todavía.</p>
       ) : (
         <div className="space-y-3">
           {proofs.map((proof) => {
@@ -160,10 +167,12 @@ export default function ProofUploader({
                     <p className="text-xs text-gray-500 mt-0.5 italic">&quot;{proof.note}&quot;</p>
                   )}
                   <div className="flex items-center gap-2 mt-1.5">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${sc.cls}`}>
-                      <sc.icon size={12} />
-                      {sc.label}
-                    </span>
+                    {type === 'PROOF' && (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${sc.cls}`}>
+                        <sc.icon size={12} />
+                        {sc.label}
+                      </span>
+                    )}
                     <span className="text-[11px] text-gray-400">
                       {new Date(proof.createdAt).toLocaleString('es-AR', {
                         day: 'numeric',

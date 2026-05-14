@@ -14,9 +14,28 @@ export async function registerUser(formData: FormData): Promise<void> {
     redirect(`/registro?error=${encodeURIComponent(msg)}`)
   }
 
-  const exists = await prisma.user.findUnique({ where: { email: parsed.data.email } })
+  if (parsed.data.documentId) {
+    const isBannedDoc = await prisma.user.findFirst({
+      where: { documentId: parsed.data.documentId, isBanned: true },
+    })
+    if (isBannedDoc) {
+      redirect('/registro?error=No+puedes+registrarte+con+este+documento')
+    }
+  }
+
+  const exists = await prisma.user.findFirst({ 
+    where: { 
+      OR: [
+        { email: parsed.data.email },
+        ...(parsed.data.documentId ? [{ documentId: parsed.data.documentId }] : []),
+      ]
+    } 
+  })
   if (exists) {
-    redirect('/registro?error=Este+email+ya+está+registrado')
+    if (exists.isBanned) {
+      redirect('/registro?error=Cuenta+bloqueada')
+    }
+    redirect('/registro?error=Email+o+documento+ya+registrado')
   }
 
   const hash = await bcrypt.hash(parsed.data.password, 12)
@@ -25,6 +44,7 @@ export async function registerUser(formData: FormData): Promise<void> {
       name: parsed.data.name,
       email: parsed.data.email,
       phone: parsed.data.phone || null,
+      documentId: parsed.data.documentId || null,
       businessTypeId: parsed.data.businessTypeId || null,
       password: hash,
       role: 'CUSTOMER',
