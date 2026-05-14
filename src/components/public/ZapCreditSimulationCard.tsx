@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import {
   BadgePercent,
@@ -48,7 +48,7 @@ function getPaymentLabel(installments: number, paymentFrequency: PaymentFrequenc
 function getPeriodUnitLabel(paymentFrequency: PaymentFrequency) {
   if (paymentFrequency === 'MONTHLY') return 'mes'
   if (paymentFrequency === 'WEEKLY') return 'semana'
-  return 'dia'
+  return 'día'
 }
 
 export default function ZapCreditSimulationCard({
@@ -59,8 +59,8 @@ export default function ZapCreditSimulationCard({
   compact = false,
   installmentsOverride,
   paymentFrequencyOverride,
-  title = 'Simula tu Crédito ZAP',
-  description = 'La tasa se congela al cerrar la venta y no cambia durante el plan.',
+  title = 'Simulación Crédito ZAP',
+  description = 'Tasa fija al confirmar.',
 }: {
   totalAmount: number
   items: CreditSimulationItem[]
@@ -76,7 +76,7 @@ export default function ZapCreditSimulationCard({
     return (
       <div className="rounded-3xl border border-gray-200 bg-white p-5">
         <p className="text-sm font-semibold text-gray-900">{title}</p>
-        <p className="mt-2 text-sm text-gray-500">Cargando simulación de financiamiento...</p>
+        <p className="mt-2 text-sm text-gray-500">Cargando simulación...</p>
       </div>
     )
   }
@@ -85,9 +85,7 @@ export default function ZapCreditSimulationCard({
     return (
       <div className="rounded-3xl border border-red-200 bg-red-50 p-5">
         <p className="text-sm font-semibold text-red-900">{title}</p>
-        <p className="mt-2 text-sm text-red-700">
-          No pudimos cargar la simulación del crédito en este momento.
-        </p>
+        <p className="mt-2 text-sm text-red-700">No pudimos cargar la simulación.</p>
       </div>
     )
   }
@@ -115,75 +113,78 @@ export default function ZapCreditSimulationCard({
   const financedSharePercent = Math.max(0, 100 - summary.downPaymentPercent)
 
   return (
-    <div className="rounded-3xl border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-4 sm:p-5 shadow-sm">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-              Crédito ZAP
-            </p>
-            <h3 className="mt-1 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">{title}</h3>
-          </div>
-
-          <div className="rounded-2xl border border-[#F66B9A]/25 bg-white/80 px-3 py-2 text-right shrink-0">
-            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Tasa mensual fija
-            </p>
-            <p className="mt-1 text-lg sm:text-xl md:text-2xl font-black text-[#ED2C71]">
-              {monthlyRatePercent.toLocaleString('es-AR')}%
-            </p>
-          </div>
+    <div className="rounded-3xl border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-4 shadow-sm sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+            Crédito ZAP
+          </p>
+          <h3 className="mt-1 break-words text-base font-black text-gray-900 sm:text-lg md:text-xl">
+            {title}
+          </h3>
+          {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
         </div>
-        
-        <p className="text-sm text-gray-600">{description}</p>
+
+        <div className="shrink-0 rounded-2xl border border-[#F66B9A]/25 bg-white/80 px-3 py-2 text-right">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
+            Tasa mensual
+          </p>
+          <p className="mt-1 text-lg font-black text-[#ED2C71] sm:text-xl md:text-2xl">
+            {monthlyRatePercent.toLocaleString('es-AR')}%
+          </p>
+        </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
             <CircleDollarSign size={14} className="text-[#ED2C71]" />
             Anticipo
           </div>
-          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 break-words text-base font-black text-gray-900 sm:text-lg md:text-xl">
             {formatMoney(summary.downPaymentAmount)}
           </p>
-          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">{summary.downPaymentPercent}% del pedido</p>
+          <p className="mt-0.5 text-[10px] text-gray-500 sm:text-xs">
+            {summary.downPaymentPercent}% del pedido
+          </p>
         </div>
 
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
             <WalletCards size={14} className="text-[#ED2C71]" />
-            Saldo financiado
+            Financiado
           </div>
-          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 break-words text-base font-black text-gray-900 sm:text-lg md:text-xl">
             {formatMoney(summary.financedAmount)}
           </p>
-          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">{financedSharePercent}% del pedido</p>
+          <p className="mt-0.5 text-[10px] text-gray-500 sm:text-xs">
+            {financedSharePercent}% del pedido
+          </p>
         </div>
 
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
             <CalendarClock size={14} className="text-[#ED2C71]" />
-            Cuota estimada
+            Cuota
           </div>
-          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 break-words text-base font-black text-gray-900 sm:text-lg md:text-xl">
             {formatMoney(summary.installmentAmount)}
           </p>
-          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">
+          <p className="mt-0.5 text-[10px] text-gray-500 sm:text-xs">
             {getPaymentLabel(summary.installments, summary.paymentFrequency)}
           </p>
         </div>
 
         <div className="rounded-2xl border border-white/70 bg-white/90 p-3 sm:p-4">
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">
             <BadgePercent size={14} className="text-[#ED2C71]" />
-            Total proyectado
+            Total
           </div>
-          <p className="mt-1.5 text-base sm:text-lg md:text-xl font-black text-gray-900 break-words">
+          <p className="mt-1.5 break-words text-base font-black text-gray-900 sm:text-lg md:text-xl">
             {formatMoney(summary.totalRepayable)}
           </p>
-          <p className="mt-0.5 text-[10px] sm:text-xs text-gray-500">
-            Interes {formatMoney(summary.totalInterest)}
+          <p className="mt-0.5 text-[10px] text-gray-500 sm:text-xs">
+            Interés {formatMoney(summary.totalInterest)}
           </p>
         </div>
       </div>
@@ -196,16 +197,13 @@ export default function ZapCreditSimulationCard({
           <span className="rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-700">
             {summary.installments} pagos {getPaymentFrequencyLabel(summary.paymentFrequency).toLowerCase()}
           </span>
-          <span className="rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-700">
-            {formatMoney(summary.financedAmount)} financiados
-          </span>
         </div>
       ) : (
         <div className="mt-4 rounded-2xl border border-[#F66B9A]/15 bg-white/85 p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
-            <span className="font-semibold text-gray-900">Composicion del pedido</span>
-            <span className="text-gray-500 text-xs sm:text-sm">
-              Anticipo {summary.downPaymentPercent}% - Crédito {financedSharePercent}%
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <span className="font-semibold text-gray-900">Pedido</span>
+            <span className="text-xs text-gray-500 sm:text-sm">
+              Anticipo {summary.downPaymentPercent}% / Crédito {financedSharePercent}%
             </span>
           </div>
           <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-[#FEF1F6]">
@@ -219,79 +217,55 @@ export default function ZapCreditSimulationCard({
 
       <details className="mt-4 overflow-hidden rounded-2xl border border-[#F66B9A]/25 bg-white/70">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
-          Ver detalle tecnico del plan
+          Ver detalle técnico
         </summary>
 
         <div className="border-t border-[#F66B9A]/15 px-4 pb-4 pt-4">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Tasa base
               </p>
-              <p className="mt-2 text-lg sm:text-xl font-black text-gray-900 break-words">
-                {eligibility.baseRatePercent.toLocaleString('es-AR')}% mensual
-              </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Promedio mensual IPC de los ultimos 12 meses.
+              <p className="mt-2 break-words text-lg font-black text-gray-900 sm:text-xl">
+                {eligibility.baseRatePercent.toLocaleString('es-AR')}%
               </p>
             </div>
 
             <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                TNA estimada
+                TNA
               </p>
-              <p className="mt-2 text-lg sm:text-xl font-black text-gray-900 break-words">
+              <p className="mt-2 break-words text-lg font-black text-gray-900 sm:text-xl">
                 {nominalAnnualRatePercent.toLocaleString('es-AR')}%
               </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Equivale a sumar la tasa mensual fija durante 12 meses.
-              </p>
             </div>
 
             <div className="rounded-2xl border border-gray-100 bg-white/90 p-3 sm:p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                TEA estimada
+                TEA
               </p>
-              <p className="mt-2 text-lg sm:text-xl font-black text-gray-900 break-words">
+              <p className="mt-2 break-words text-lg font-black text-gray-900 sm:text-xl">
                 {effectiveAnnualRatePercent.toLocaleString('es-AR')}%
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                Con capitalizacion mensual y cuota equivalente de{' '}
                 {periodicRatePercent.toLocaleString('es-AR')}% por{' '}
-                {getPeriodUnitLabel(summary.paymentFrequency)}.
+                {getPeriodUnitLabel(summary.paymentFrequency)}
               </p>
             </div>
-          </div>
-
-          <div className="mt-4 rounded-2xl border border-dashed border-[#F66B9A]/25 bg-white/70 p-3 sm:p-4 text-sm text-gray-700">
-            <p className="font-semibold text-gray-900">Como se calcula este plan</p>
-            <p className="mt-2 text-xs sm:text-sm">
-              1. Se toma el total del carrito y se define el anticipo minimo segun los productos.
-            </p>
-            <p className="mt-1 text-xs sm:text-sm">
-              2. Sobre el saldo restante se aplica una tasa fija mensual cerrada al momento de la
-              venta.
-            </p>
-            <p className="mt-1 text-xs sm:text-sm">
-              3. El sistema proyecta {getPaymentLabel(summary.installments, summary.paymentFrequency)}{' '}
-              y te muestra el costo final estimado antes de confirmar.
-            </p>
           </div>
         </div>
       </details>
 
       {!eligibility.authenticated && (
-        <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-3 sm:p-4 text-xs sm:text-sm text-blue-900">
-          Inicia sesion para solicitar este crédito y despues seguir tus cuotas, comprobantes y
-          vencimientos desde tu panel.
+        <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900 sm:p-4 sm:text-sm">
+          Iniciá sesión para solicitar el crédito y seguir tus cuotas.
         </div>
       )}
 
       {eligibility.hasDelinquency && (
-        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 sm:p-4 text-xs sm:text-sm text-amber-900">
-          Esta simulación ya incluye el recargo por mora vigente:{' '}
-          <strong>+{eligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
-          <strong>+{eligibility.downPaymentPenaltyPercent}</strong> puntos sobre el anticipo.
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 sm:p-4 sm:text-sm">
+          Incluye recargo por mora: <strong>+{eligibility.ratePenaltyPercent}%</strong> tasa y{' '}
+          <strong>+{eligibility.downPaymentPenaltyPercent}</strong> puntos de anticipo.
         </div>
       )}
     </div>

@@ -140,7 +140,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
       : !allRequiredSelected
         ? 'Elegí las opciones'
         : !activeVariant
-          ? 'Completa la variante'
+          ? 'Completá la variante'
           : selectedVariantAvailable
             ? 'Agregar al carrito'
             : 'Variante no disponible'
@@ -151,28 +151,28 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
     : 0
 
   const guidanceMessage = !allRequiredSelected
-    ? 'Elegi las opciones principales y te mostramos la combinacion que corresponde.'
+    ? 'Elegí las opciones requeridas.'
     : allRequiredSelected && !activeVariant
-      ? 'Ajusta una opcion mas y dejamos la pieza lista para sumar.'
+      ? 'Falta una combinación válida.'
       : activeVariant && !selectedVariantAvailable
-        ? 'Esta combinacion no esta disponible ahora mismo.'
+        ? 'Esta combinación no está disponible.'
         : minPrice === null && !activeVariant
-          ? 'Este producto no tiene variantes disponibles para pedir online en este momento.'
-          : 'Podes pagarlo con tarjeta o resolverlo con Crédito ZAP desde el anticipo indicado.'
+          ? 'Sin variantes disponibles online.'
+          : 'Disponible con tarjeta o Crédito ZAP.'
 
   const summaryStateLabel = !allRequiredSelected
-    ? 'Completa los campos requeridos'
+    ? 'Faltan requeridas'
     : activeVariant && selectedVariantAvailable
       ? 'Listo para sumar'
       : activeVariant
-        ? 'Revisá esta combinacion'
-        : 'Falta definir una opcion'
+        ? 'Revisá la combinación'
+        : 'Falta una opción'
 
   const availabilityLabel = isServiceProduct
     ? 'Servicio coordinado con ZAP'
     : product.stock && product.stock > 0
-      ? `${product.stock} unidades disponibles`
-      : 'Sin stock online por ahora'
+      ? `${product.stock} disponibles`
+      : 'Sin stock online'
 
   const isOptionValueAvailable = (optionName: string, value: string) => {
     if (!hasOptions || variantCombinations.length === 0) return true
@@ -219,8 +219,8 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
 
   if (!hasOptions) {
     return (
-      <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
-        <div className="border-b border-gray-100 pb-6">
+      <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
+        <div className="border-b border-gray-100 pb-5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
               Pedido directo
@@ -231,15 +231,12 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
           </div>
 
           <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
-            Listo para sumar desde esta ficha.
+            Precio y pedido
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-            Reunimos precio, condiciones y accion principal para que puedas decidir con claridad.
-          </p>
         </div>
 
         <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-stretch">
-          <div className="rounded-[28px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
+          <div className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
               Precio final
             </p>
@@ -252,14 +249,12 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                   </span>
                   <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                 </div>
-                <p className="mt-2 text-sm text-gray-300">Precio unitario final con IVA incluido.</p>
+                <p className="mt-2 text-sm text-gray-300">Precio unitario final.</p>
               </>
             ) : (
               <>
                 <p className="mt-3 text-3xl font-black text-[#F66B9A]">No disponible</p>
-                <p className="mt-2 text-sm text-gray-300">
-                  Este producto todavia no esta listo para pedir online.
-                </p>
+                <p className="mt-2 text-sm text-gray-300">Sin pedido online por ahora.</p>
               </>
             )}
 
@@ -272,10 +267,10 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                  Pago flexible
+                  Pago
                 </p>
                 <p className="mt-2 text-sm font-semibold text-white">
-                  Tarjeta o Crédito ZAP desde {creditDownPaymentPercent}% de anticipo.
+                  Crédito ZAP desde {creditDownPaymentPercent}%.
                 </p>
               </div>
             </div>
@@ -305,12 +300,12 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
   }
 
   return (
-    <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
-      <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
+      <div className="flex flex-col gap-4 border-b border-gray-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              Configura tu pieza
+              Configurá tu pieza
             </span>
             <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
               Crédito ZAP {creditDownPaymentPercent}%
@@ -318,12 +313,8 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
           </div>
 
           <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
-            Defini variantes con una lectura clara.
+            Elegí las variantes
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-            Marcamos lo obligatorio, desactivamos combinaciones que no aplican y actualizamos el
-            precio segun cada eleccion.
-          </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -340,15 +331,13 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
         {product.options.map((option) => (
           <div
             key={option.id}
-            className="rounded-[28px] border border-gray-200 bg-gray-50/70 p-4 sm:p-5"
+            className="rounded-[24px] border border-gray-200 bg-gray-50/70 p-4 sm:p-5"
           >
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-gray-900">{option.name}</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {option.isRequired
-                    ? 'Necesaria para calcular la variante exacta.'
-                    : 'Opcional para ajustar el resultado final.'}
+                  {option.isRequired ? 'Requerida' : 'Opcional'}
                 </p>
               </div>
               {option.isRequired && (
@@ -373,7 +362,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                       relative rounded-2xl border-2 p-3.5 text-left transition-all duration-150
                       ${
                         isSelected
-                          ? 'border-[#ED2C71] bg-[#FEF1F6] shadow-md shadow-[#ED2C71]/10/50 ring-2 ring-[#FEF1F6]'
+                          ? 'border-[#ED2C71] bg-[#FEF1F6] shadow-md shadow-[#ED2C71]/10 ring-2 ring-[#FEF1F6]'
                           : isAvailable
                             ? 'border-gray-200 bg-white hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6]/40'
                             : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300 opacity-55'
@@ -404,7 +393,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
         ))}
       </div>
 
-      <div className="mt-6 rounded-[28px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
+      <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-6">
         <div className="flex flex-col gap-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
@@ -427,7 +416,7 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
                 <span className="text-3xl font-black text-[#F66B9A]">Consultar</span>
               )}
             </div>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-gray-300">{guidanceMessage}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">{guidanceMessage}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
@@ -440,10 +429,10 @@ export default function ProductConfigurator({ product }: { product: ProductWithO
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                Pago flexible
+                Pago
               </p>
               <p className="mt-2 text-sm font-semibold text-white">
-                Tarjeta o Crédito ZAP desde {creditDownPaymentPercent}% de anticipo.
+                Crédito ZAP desde {creditDownPaymentPercent}%.
               </p>
             </div>
           </div>

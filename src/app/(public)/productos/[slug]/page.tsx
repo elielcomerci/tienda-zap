@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronRight, Package, ShieldCheck, Wallet } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { getActiveProductSlugs, getProduct } from '@/lib/products'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
@@ -59,104 +59,63 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="space-y-6">
-            <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+            <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                   {product.category.name}
                 </span>
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                  {product.category.isService ? 'Servicio ZAP' : 'Pieza producida'}
+                  {product.category.isService ? 'Servicio' : 'Producto'}
                 </span>
               </div>
 
-              <h1 className="mt-4 max-w-3xl text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
+              <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-gray-950 sm:text-5xl">
                 {product.name}
               </h1>
 
               {product.description && (
-                <p className="mt-4 max-w-2xl text-base leading-8 text-gray-600">
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-gray-600 sm:text-base">
                   {product.description}
                 </p>
               )}
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <dl className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Eleccion acompanada
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Definis medidas, variantes y cantidades con la información justa.
-                  </p>
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                    Tipo
+                  </dt>
+                  <dd className="mt-2 text-sm font-semibold text-gray-900">
+                    {product.category.isService ? 'Servicio coordinado' : 'Pieza producida'}
+                  </dd>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Precio definido
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Ves el valor final o el minimo real segun la combinacion elegida.
-                  </p>
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                    Crédito ZAP
+                  </dt>
+                  <dd className="mt-2 text-sm font-semibold text-gray-900">
+                    Desde {product.creditDownPaymentPercent || 30}% de anticipo
+                  </dd>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Listo para producir
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">
-                    Dejas notas, archivos y referencias antes de poner el trabajo en marcha.
-                  </p>
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                    Siguiente paso
+                  </dt>
+                  <dd className="mt-2 text-sm font-semibold text-gray-900">
+                    Configurar y agregar
+                  </dd>
                 </div>
-              </div>
+              </dl>
             </section>
 
             <ProductConfigurator product={product} />
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="mt-8">
           <ProductZapCreditPromo
             downPaymentPercent={product.creditDownPaymentPercent || 30}
             whatsappUrl={creditWhatsappUrl}
           />
-
-          <aside className="rounded-[28px] border border-[#F66B9A]/25 bg-white/95 p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.55)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-              Antes de avanzar
-            </p>
-            <h2 className="mt-2 text-2xl font-black leading-tight text-gray-950">
-              Dejamos cada detalle importante bien definido.
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-                <Package size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Notas y detalles</p>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Podes dejarnos textos, nombres, medidas o referencias al confirmar.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Condiciones claras</p>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Precio, anticipo y pasos siguientes quedan visibles antes de avanzar.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-4">
-                <Wallet size={18} className="mt-0.5 shrink-0 text-[#ED2C71]" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Pago flexible</p>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Tarjeta, transferencia o Crédito ZAP segun como prefieras resolverlo.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </aside>
         </div>
 
         <RelatedProductsSection products={relatedProducts} />

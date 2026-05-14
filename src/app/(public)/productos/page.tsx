@@ -20,46 +20,42 @@ export default async function ProductsPage({
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_20%,#f8fafc_100%)]">
       <div className="mx-auto max-w-[1380px] px-4 pb-16 pt-8 sm:pt-10 xl:px-8">
-        <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:items-end">
+        <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                Soluciones ZAP
+                Catálogo
               </p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                Todo lo que ayuda a que tu marca se vea, se entienda y aparezca mejor.
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
+                Productos y servicios ZAP
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                Gráfica, cartelería, exhibidores, merchandising, web y presencia digital en una
-                seleccion pensada para negocios que quieren verse mas profesionales.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+                Gráfica, cartelería, exhibidores, merchandising, web y presencia digital.
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Resultados
                 </p>
                 <p className="mt-2 text-2xl font-black text-gray-950">{products.length}</p>
-                <p className="mt-1 text-sm text-gray-600">soluciones disponibles</p>
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Categoría
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
                   {selectedCategory?.name || 'Todas'}
                 </p>
-                <p className="mt-1 text-sm text-gray-600">selección actual</p>
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Búsqueda
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
                   {q?.trim() ? `"${q.trim()}"` : 'Sin término'}
                 </p>
-                <p className="mt-1 text-sm text-gray-600">busqueda actual</p>
               </div>
             </div>
           </div>
@@ -73,10 +69,8 @@ export default async function ProductsPage({
                   <SlidersHorizontal size={18} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Explora por rubro</p>
-                  <p className="text-xs uppercase tracking-[0.16em] text-gray-500">
-                    Seleccion principal
-                  </p>
+                  <p className="text-sm font-semibold text-gray-900">Explorá por rubro</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Filtros</p>
                 </div>
               </div>
 
@@ -107,16 +101,12 @@ export default async function ProductsPage({
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-[#F66B9A]/25 bg-gradient-to-br from-[#FEF1F6] via-white to-[#F0F5FA] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.55)]">
+            <div className="rounded-[28px] border border-[#F66B9A]/25 bg-[#FEF1F6] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.45)]">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                Criterio ZAP
+                Crédito ZAP
               </p>
-              <p className="mt-3 text-lg font-black leading-tight text-gray-950">
-                Diseño, producción y presencia digital con una lectura clara.
-              </p>
-              <p className="mt-3 text-sm leading-7 text-gray-600">
-                Cada producto o servicio muestra la información necesaria para elegir con seguridad,
-                sin perder el foco en la marca ni en la calidad del resultado.
+              <p className="mt-2 text-sm font-semibold leading-6 text-gray-900">
+                Anticipo visible en cada producto. Simulación completa antes de confirmar.
               </p>
             </div>
           </aside>
@@ -152,7 +142,7 @@ export default async function ProductsPage({
             </div>
 
             {products.length === 0 ? (
-              <div className="rounded-[32px] border border-dashed border-gray-300 bg-white/80 px-6 py-20 text-center shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)]">
+              <div className="rounded-[32px] border border-dashed border-gray-300 bg-white/80 px-6 py-16 text-center shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)]">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Sin resultados
                 </p>
@@ -160,8 +150,7 @@ export default async function ProductsPage({
                   No encontramos productos con este filtro.
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-600">
-                  Proba otra categoria, quita la busqueda actual o volve al catálogo completo
-                  para mirar la seleccion con mas aire.
+                  Probá otra categoría, quitá la búsqueda actual o volvé al catálogo completo.
                 </p>
                 <div className="mt-6 flex justify-center">
                   <Link href="/productos" className="btn-primary">
@@ -214,11 +203,11 @@ export default async function ProductsPage({
                               {product.name}
                             </h2>
                           </Link>
-                          <p className="mt-2 line-clamp-3 text-sm leading-7 text-gray-600">
-                            {product.description?.trim()
-                              ? product.description
-                              : 'Una solucion ZAP lista para sumar presencia, criterio y terminacion profesional.'}
-                          </p>
+                          {product.description?.trim() && (
+                            <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600">
+                              {product.description}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex items-end justify-between gap-4 border-t border-gray-100 pt-4">
@@ -234,7 +223,7 @@ export default async function ProductsPage({
                                 : 'Consultar'}
                             </p>
                             <p className="mt-1 text-xs text-gray-500">
-                              {product.creditDownPaymentPercent}% de anticipo sugerido con Crédito ZAP
+                              Crédito ZAP desde {product.creditDownPaymentPercent}% de anticipo
                             </p>
                           </div>
 
