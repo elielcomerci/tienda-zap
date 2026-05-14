@@ -294,6 +294,22 @@ function CheckoutContent() {
     )
   }, [items, setValue])
 
+  useEffect(() => {
+    const queryCoupon = searchParams.get('coupon') || searchParams.get('code') || searchParams.get('c')
+    
+    if (queryCoupon && typeof window !== 'undefined') {
+      localStorage.setItem('saved_coupon', queryCoupon)
+    }
+
+    const couponToUse = queryCoupon || (typeof window !== 'undefined' ? localStorage.getItem('saved_coupon') : null)
+
+    if (!couponToUse || items.length === 0 || loadedQueryCouponRef.current === couponToUse) return
+
+    loadedQueryCouponRef.current = couponToUse
+    setCouponDraft(couponToUse)
+    void reviewCoupon(couponToUse)
+  }, [items.length, searchParams])
+
   if (items.length === 0) return null
 
   const renderCustomerField = (field: CustomerFieldConfig) => (
@@ -389,21 +405,7 @@ function CheckoutContent() {
     }
   }
 
-  useEffect(() => {
-    const queryCoupon = searchParams.get('coupon') || searchParams.get('code') || searchParams.get('c')
-    
-    if (queryCoupon && typeof window !== 'undefined') {
-      localStorage.setItem('saved_coupon', queryCoupon)
-    }
 
-    const couponToUse = queryCoupon || (typeof window !== 'undefined' ? localStorage.getItem('saved_coupon') : null)
-
-    if (!couponToUse || items.length === 0 || loadedQueryCouponRef.current === couponToUse) return
-
-    loadedQueryCouponRef.current = couponToUse
-    setCouponDraft(couponToUse)
-    void reviewCoupon(couponToUse)
-  }, [items.length, searchParams])
 
   const onSubmit = async (data: OrderCheckoutData) => {
     if (hasUnavailableItems) {
