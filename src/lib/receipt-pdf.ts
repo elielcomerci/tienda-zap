@@ -1,8 +1,11 @@
 import { jsPDF } from 'jspdf'
 
+import { ZAP_LOGO_B64 } from './logo-base64'
+
 // ─── Brand Colors ───
 type RGB = readonly [number, number, number]
-const ORANGE: RGB = [249, 115, 22]    // #f97316
+const BRAND_PRIMARY: RGB = [237, 44, 113]   // #ED2C71 (Pink)
+const BRAND_SECONDARY: RGB = [69, 118, 185] // #4576B9 (Blue)
 const DARK: RGB = [15, 23, 42]        // #0f172a
 const GRAY_700: RGB = [55, 65, 81]
 const GRAY_500: RGB = [107, 114, 128]
@@ -153,10 +156,10 @@ export function generateOrderReceiptPdf(
     y += 8
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...ORANGE)
+    doc.setTextColor(...BRAND_PRIMARY)
     doc.text(title.toUpperCase(), margin, y)
     y += 1.5
-    drawLine(y, ORANGE)
+    drawLine(y, BRAND_PRIMARY)
     y += 5
   }
 
@@ -176,15 +179,12 @@ export function generateOrderReceiptPdf(
   doc.setFillColor(...DARK)
   doc.rect(0, 0, pageWidth, 38, 'F')
 
-  // Orange accent bar
-  doc.setFillColor(...ORANGE)
+  // Orange accent bar -> Pink accent bar
+  doc.setFillColor(...BRAND_PRIMARY)
   doc.rect(0, 38, pageWidth, 2.5, 'F')
 
-  // ZAP logo text
-  doc.setFontSize(28)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...WHITE)
-  doc.text('ZAP', margin, 18)
+  // ZAP logo image
+  doc.addImage(ZAP_LOGO_B64, 'PNG', margin, 8, 30, 20, undefined, 'FAST')
 
   // Subtitle
   doc.setFontSize(9)
@@ -350,7 +350,7 @@ export function generateOrderReceiptPdf(
 
   // Highlighted payment amount box
   ensureSpace(30)
-  doc.setFillColor(...ORANGE)
+  doc.setFillColor(...BRAND_PRIMARY)
   doc.roundedRect(margin, y - 1, contentWidth, 14, 2, 2, 'F')
   doc.setFontSize(9)
   doc.setFont('helvetica', 'bold')
@@ -393,14 +393,11 @@ export function generateOrderReceiptPdf(
   doc.text(`Generado el ${fmtDate(now)} a las ${fmtTime(now)}`, margin, y)
 
   // Right-aligned brand
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...ORANGE)
-  doc.setFontSize(10)
-  doc.text('ZAP', pageWidth - margin, y - 2, { align: 'right' })
+  doc.addImage(ZAP_LOGO_B64, 'PNG', pageWidth - margin - 20, y - 6, 20, 13, undefined, 'FAST')
   doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...GRAY_500)
-  doc.text('zapgrafica.com', pageWidth - margin, y + 3, { align: 'right' })
+  doc.text('tienda.zap.com.ar', pageWidth - margin, y + 10, { align: 'right' })
 
   return doc.output('arraybuffer')
 }
