@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCartStore } from '@/lib/cart-store'
@@ -146,6 +146,18 @@ type CouponPreviewState = {
 }
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_18%,#f8fafc_100%)]">
+        <div className="text-gray-500 font-medium">Cargando checkout...</div>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
+  )
+}
+
+function CheckoutContent() {
   const { items, total, clearCart } = useCartStore()
   const router = useRouter()
   const searchParams = useSearchParams()
