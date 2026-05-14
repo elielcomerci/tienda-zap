@@ -27,6 +27,7 @@ const navItems = [
   { href: '/admin/productos', label: 'Productos', icon: Package },
   { href: '/admin/categorias', label: 'Categorías', icon: Tag },
   { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
+  { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
   { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
   { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
   { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
