@@ -50,10 +50,10 @@ export default async function PublicLayout({ children }: { children: React.React
                 Crédito ZAP
               </p>
               <div className="mt-4 flex flex-col gap-3 text-sm">
-                <Link href="/crédito-zap" className="text-gray-500 transition-colors hover:text-[#ED2C71]">
+                <Link href="/credito-zap" className="text-gray-500 transition-colors hover:text-[#ED2C71]">
                   Resumen general
                 </Link>
-                <Link href="/crédito-zap#como-funciona" className="text-gray-500 transition-colors hover:text-[#ED2C71]">
+                <Link href="/credito-zap#como-funciona" className="text-gray-500 transition-colors hover:text-[#ED2C71]">
                   Cómo funciona
                 </Link>
               </div>

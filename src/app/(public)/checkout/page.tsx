@@ -782,7 +782,7 @@ export default function CheckoutPage() {
                       <Link href="/login" className="btn-secondary !px-4 !py-2 !text-sm">
                         Iniciar sesion
                       </Link>
-                      <Link href="/crédito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
                         Ver mas información
                       </Link>
                     </div>
@@ -802,7 +802,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
 
-                      <Link href="/crédito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
                         Ver mas información
                       </Link>
                     </div>

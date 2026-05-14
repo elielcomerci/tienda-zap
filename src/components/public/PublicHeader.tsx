@@ -10,7 +10,7 @@ const NAV_HEIGHT = 70
 
 const navLinks = [
   { href: '/productos', label: 'Productos' },
-  { href: '/crédito-zap', label: 'Crédito ZAP' },
+  { href: '/credito-zap', label: 'Crédito ZAP' },
 ]
 
 export default function PublicHeader({

@@ -44,7 +44,7 @@ export default function ProductZapCreditPromo({
       >
         <div className="overflow-hidden">
           <div className="flex flex-wrap gap-3 border-t border-[#F66B9A]/10 px-5 pb-5 pt-4">
-            <Link href="/crédito-zap" className="btn-secondary !py-2 !px-4 !text-xs">
+            <Link href="/credito-zap" className="btn-secondary !py-2 !px-4 !text-xs">
               Ver detalle
             </Link>
             {whatsappUrl && (

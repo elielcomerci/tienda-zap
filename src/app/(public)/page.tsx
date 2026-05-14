@@ -327,7 +327,7 @@ export default async function HomePage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/crédito-zap" className="btn-secondary !py-2.5">
+              <Link href="/credito-zap" className="btn-secondary !py-2.5">
                 Ver crédito
               </Link>
               {creditWhatsappUrl && (
