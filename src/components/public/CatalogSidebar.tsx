@@ -28,6 +28,7 @@ export default function CatalogSidebar({
         <div className="flex bg-gray-200/60 p-1 rounded-xl">
           <Link
             href="/productos?mode=product"
+            scroll={false}
             className={`flex-1 flex justify-center items-center py-2 text-sm font-semibold rounded-lg transition-all ${
               currentMode === 'product'
                 ? 'bg-[#ED2C71] text-white shadow-sm'
@@ -38,6 +39,7 @@ export default function CatalogSidebar({
           </Link>
           <Link
             href="/productos?mode=objective"
+            scroll={false}
             className={`flex-1 flex justify-center items-center py-2 text-sm font-semibold rounded-lg transition-all ${
               currentMode === 'objective'
                 ? 'bg-[#ED2C71] text-white shadow-sm'
@@ -58,6 +60,7 @@ export default function CatalogSidebar({
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=product"
+              scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !cat
                   ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
@@ -71,6 +74,7 @@ export default function CatalogSidebar({
               <Link
                 key={category.id}
                 href={`/productos?mode=product&cat=${category.slug}`}
+                scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   cat === category.slug
                     ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
@@ -86,6 +90,7 @@ export default function CatalogSidebar({
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=objective"
+              scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !intent
                   ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
@@ -99,6 +104,7 @@ export default function CatalogSidebar({
               <Link
                 key={intention.id}
                 href={`/productos?mode=objective&intent=${intention.slug}`}
+                scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   intent === intention.slug
                     ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'

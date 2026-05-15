@@ -1,3 +1,5 @@
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 import { registerUser } from '@/lib/actions/auth'
 import { getActiveBusinessTypes } from '@/lib/business-types'
 import Link from 'next/link'
@@ -12,6 +14,12 @@ export default async function RegistroPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
+  
+  const session = await auth()
+  if (session?.user) {
+    redirect('/perfil')
+  }
+
   const businessTypes = await getActiveBusinessTypes()
 
   return (
