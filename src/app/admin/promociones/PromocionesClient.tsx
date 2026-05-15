@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, ChangeEvent, FormEvent } from 'react'
 import {
   BadgePercent,
   Check,
@@ -196,7 +196,7 @@ export default function PromocionesClient({
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const activeCount = useMemo(
     () => promotions.filter((promotion) => promotion.status === 'ACTIVE').length,
@@ -228,7 +228,7 @@ export default function PromocionesClient({
 
   const refreshPage = () => window.location.reload()
 
-  const handleSavePromotion = async (event: React.FormEvent) => {
+  const handleSavePromotion = async (event: FormEvent) => {
     event.preventDefault()
     setIsSaving(true)
     setError('')
@@ -267,7 +267,7 @@ export default function PromocionesClient({
     }
   }
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -294,7 +294,7 @@ export default function PromocionesClient({
     }
   }
 
-  const handleGenerateCoupons = async (event: React.FormEvent) => {
+  const handleGenerateCoupons = async (event: FormEvent) => {
     event.preventDefault()
     setIsSaving(true)
     setError('')
@@ -515,7 +515,7 @@ export default function PromocionesClient({
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
                     Ventana
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">
+                  <p suppressHydrationWarning className="mt-2 text-sm font-semibold text-gray-900">
                     {promotion.activeFrom
                       ? promotion.activeFrom.toLocaleDateString('es-AR')
                       : 'sin inicio'}{' '}
@@ -577,7 +577,7 @@ export default function PromocionesClient({
                                 .join(' · ')}
                             </p>
                           )}
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p suppressHydrationWarning className="mt-1 text-xs text-gray-500">
                             {coupon.expiresAt
                               ? `vence ${coupon.expiresAt.toLocaleDateString('es-AR')}`
                               : 'sin vencimiento'}{' '}
