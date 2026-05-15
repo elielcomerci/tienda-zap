@@ -21,7 +21,9 @@ import {
   Megaphone,
   Target,
   Gift,
-  HandCoins
+  HandCoins,
+  Layers,
+  Scissors
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -42,6 +44,11 @@ const navItems = [
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
   { href: '/admin/campanas', label: 'Campañas Partner', icon: Megaphone },
+]
+
+const cotizadorItems = [
+  { href: '/admin/cotizador/materiales', label: 'Materias Primas', icon: Layers },
+  { href: '/admin/cotizador/terminaciones', label: 'Terminaciones', icon: Scissors },
 ]
 
 export default function AdminSidebar() {
@@ -82,10 +89,32 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
           {navItems.map((item) => {
             const active = isActive(item.href, item.exact)
 
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                  active
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </Link>
+            )
+          })}
+          
+          <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider px-3">
+            Cotizador
+          </div>
+          {cotizadorItems.map((item) => {
+            const active = isActive(item.href)
             return (
               <Link
                 key={item.href}

@@ -64,6 +64,54 @@ export default function ProductOptionsConfigurator({
     setVariants((current) => current.map((variant) => ({ ...variant, stock: undefined })))
   }, [disableStock])
 
+  useEffect(() => {
+    const handleApplyVariants = (e: Event) => {
+      const customEvent = e as CustomEvent<{ name: string; price: number }[]>
+      const incomingVariants = customEvent.detail
+
+      if (!incomingVariants || incomingVariants.length === 0) return
+
+      // Create an option "Cantidad" if it doesn't exist
+      const existingOptionIndex = options.findIndex(o => o.name.toLowerCase() === 'cantidad')
+      const newValues = incomingVariants.map(v => v.name)
+
+      let nextOptions = [...options]
+      if (existingOptionIndex >= 0) {
+        // Merge values
+        const currentValues = nextOptions[existingOptionIndex].values
+        nextOptions[existingOptionIndex].values = Array.from(new Set([...currentValues, ...newValues]))
+      } else {
+        // Create new option
+        nextOptions.push({ name: 'Cantidad', isRequired: true, values: newValues })
+      }
+      setOptions(nextOptions)
+
+      // We need to update variants after state settles, but React state is async.
+      // Easiest is to generate them and update prices.
+      const combinations = cartesianProduct(nextOptions)
+      const nextVariants = combinations.map((combination) => {
+        // Did we just receive this exact combination from Quoter?
+        // Quoter produces { "Cantidad": "100 unidades" } essentially.
+        const incoming = incomingVariants.find(v => combination['Cantidad'] === v.name)
+        
+        const existing = variants.find((variant) => {
+          const variantKeys = Object.keys(variant.combinations)
+          const combinationKeys = Object.keys(combination)
+          if (variantKeys.length !== combinationKeys.length) return false
+          return variantKeys.every((key) => variant.combinations[key] === combination[key])
+        })
+
+        return existing 
+          ? { ...existing, price: incoming ? incoming.price : existing.price }
+          : { combinations: combination, price: incoming ? incoming.price : basePrice }
+      })
+      setVariants(nextVariants)
+    }
+
+    window.addEventListener('apply-quoter-variants', handleApplyVariants)
+    return () => window.removeEventListener('apply-quoter-variants', handleApplyVariants)
+  }, [options, variants, basePrice])
+
   const addOption = () => {
     setOptions([...options, { name: '', isRequired: true, values: [''] }])
   }

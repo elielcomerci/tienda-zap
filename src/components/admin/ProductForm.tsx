@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, UploadCloud, X, Save, AlertCircle } from 'lucide-react'
+import { ArrowLeft, UploadCloud, X, Save, AlertCircle, Calculator } from 'lucide-react'
 import ProductOptionsConfigurator from './ProductOptionsConfigurator'
 import ProductRelationsPicker from './ProductRelationsPicker'
+import ProductQuoterModal from './ProductQuoterModal'
 import { slugify } from '@/lib/slug'
 import { getFirstValidationError, productSchema } from '@/lib/validations'
 
@@ -60,6 +61,8 @@ export default function ProductForm({
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(
     Boolean(product?.slug && product.slug !== generatedInitialSlug)
   )
+  const [isQuoterOpen, setIsQuoterOpen] = useState(false)
+  
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
   const isServiceCategory = Boolean(selectedCategory?.isService)
 
@@ -165,13 +168,33 @@ export default function ProductForm({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/productos" className="btn-secondary !p-2">
-          <ArrowLeft size={20} />
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {product ? 'Editar producto' : 'Nuevo producto'}
-        </h1>
+      <ProductQuoterModal 
+        isOpen={isQuoterOpen} 
+        onClose={() => setIsQuoterOpen(false)} 
+        onApplyVariants={(variants) => {
+          const event = new CustomEvent('apply-quoter-variants', { detail: variants })
+          window.dispatchEvent(event)
+        }}
+      />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/admin/productos" className="btn-secondary !p-2">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {product ? 'Editar Producto' : 'Nuevo Producto'}
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setIsQuoterOpen(true)}
+            className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600 transition-colors hover:bg-orange-100 flex items-center gap-2"
+          >
+            <Calculator size={18} />
+            Cotizador Automático
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">

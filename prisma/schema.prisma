@@ -104,6 +104,7 @@ model Product {
   incomingRelations        ProductRelation[] @relation("ProductIncomingRelations")
   variants                 ProductVariant[]
   intentions               Intention[]       @relation("ProductIntentions")
+  quoterConfig             ProductQuoterConfig?
 }
 
 model Order {
@@ -693,4 +694,101 @@ model SellerPayout {
   seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
   @@index([sellerId])
+}
+
+// ==========================================
+// SISTEMA DE COTIZACIONES Y COSTOS
+// ==========================================
+
+model RawMaterial {
+  id        String            @id @default(cuid())
+  name      String
+  width     Float             // Ancho del pliego/material en cm
+  height    Float             // Alto del pliego/material en cm
+  unit      String            @default("PLIEGO") // PLIEGO, M2, METRO LINEAL, etc.
+  active    Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  tiers     RawMaterialTier[]
+  configs   ProductQuoterConfig[]
+
+  @@map("raw_materials")
+}
+
+model RawMaterialTier {
+  id            String      @id @default(cuid())
+  rawMaterialId String
+  minQty        Int
+  maxQty        Int?
+  unitPrice     Float       // Costo por unidad en este rango de cantidades
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id], onDelete: Cascade)
+
+  @@index([rawMaterialId])
+  @@map("raw_material_tiers")
+}
+
+enum FinishingCostType {
+  FIXED_SETUP
+  PER_SHEET
+  PER_UNIT
+}
+
+model FinishingOperation {
+  id        String                  @id @default(cuid())
+  name      String
+  costType  FinishingCostType
+  active    Boolean                 @default(true)
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+  tiers     FinishingTier[]
+  configs   QuoterConfigFinishing[]
+
+  @@map("finishing_operations")
+}
+
+model FinishingTier {
+  id            String             @id @default(cuid())
+  finishingId   String
+  minQty        Int
+  maxQty        Int?
+  unitPrice     Float
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  finishing     FinishingOperation @relation(fields: [finishingId], references: [id], onDelete: Cascade)
+
+  @@index([finishingId])
+  @@map("finishing_tiers")
+}
+
+model ProductQuoterConfig {
+  id            String                  @id @default(cuid())
+  productId     String                  @unique
+  rawMaterialId String
+  itemWidth     Float                   // Ancho del producto en cm
+  itemHeight    Float                   // Alto del producto en cm
+  margin        Float                   @default(0) // Margen de corte/agarre (cm)
+  bleed         Float                   @default(0) // Demasía (cm)
+  profitMargin  Float                   @default(150) // Porcentaje de ganancia (ej: 150 = +150%)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  product       Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rawMaterial   RawMaterial             @relation(fields: [rawMaterialId], references: [id])
+  finishings    QuoterConfigFinishing[]
+
+  @@index([rawMaterialId])
+  @@map("product_quoter_configs")
+}
+
+model QuoterConfigFinishing {
+  configId    String
+  finishingId String
+  createdAt   DateTime            @default(now())
+  config      ProductQuoterConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  finishing   FinishingOperation  @relation(fields: [finishingId], references: [id], onDelete: Cascade)
+
+  @@id([configId, finishingId])
+  @@index([finishingId])
+  @@map("quoter_config_finishings")
 }

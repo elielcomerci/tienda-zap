@@ -31,10 +31,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         return {
           id: user.id,
-          email: user.email,
           name: user.name,
+          email: user.email,
           role: user.role,
-        }
+        } as any
       },
     }),
   ],
