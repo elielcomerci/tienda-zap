@@ -410,6 +410,12 @@ model Promotion {
   discountValue Float
   maxUses       Int?
   perUserLimit  Int?
+  
+  welcomeTitle      String?
+  welcomeMessage    String?
+  welcomeConditions String?
+  welcomeLogoUrl    String?
+
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   coupons       PromotionCoupon[]

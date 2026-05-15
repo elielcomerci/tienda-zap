@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { buildCouponLandingUrl } from '@/lib/coupons'
+import { createPresignedR2UploadUrl } from '@/lib/r2'
 import { revalidatePath } from 'next/cache'
 
 async function requireAdmin() {
@@ -174,6 +175,11 @@ export type PromotionInput = {
   activeTo?: string | null
   maxUses?: number | null
   perUserLimit?: number | null
+
+  welcomeTitle?: string | null
+  welcomeMessage?: string | null
+  welcomeConditions?: string | null
+  welcomeLogoUrl?: string | null
 }
 
 function assertPromotionInput(data: PromotionInput) {
@@ -209,6 +215,10 @@ function toPromotionData(data: PromotionInput) {
     activeTo: normalizeOptionalDate(data.activeTo),
     maxUses: normalizeOptionalInt(data.maxUses),
     perUserLimit: normalizeOptionalInt(data.perUserLimit),
+    welcomeTitle: normalizeOptionalText(data.welcomeTitle),
+    welcomeMessage: normalizeOptionalText(data.welcomeMessage),
+    welcomeConditions: normalizeOptionalText(data.welcomeConditions),
+    welcomeLogoUrl: normalizeOptionalText(data.welcomeLogoUrl),
   }
 }
 
@@ -269,8 +279,8 @@ export async function deletePromotion(id: string) {
 
   if (!promotion) return
 
-  if (promotion._count.coupons > 0 || promotion._count.redemptions > 0) {
-    throw new Error('Esta promocion ya tiene cupones o redenciones. Mejor pausarla que borrarla.')
+  if (promotion._count.redemptions > 0) {
+    throw new Error('Esta promocion ya fue usada por un cliente. No se puede borrar, debes pausarla.')
   }
 
   await prisma.promotion.delete({
@@ -278,6 +288,18 @@ export async function deletePromotion(id: string) {
   })
 
   revalidatePath('/admin/promociones')
+}
+
+export async function getPromoLogoUploadUrl(fileName: string, contentType: string) {
+  await requireAdmin()
+
+  const objectKey = `promos/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+  const uploadUrl = await createPresignedR2UploadUrl({ objectKey, contentType })
+
+  // Usamos el endpoint interno para servir la imagen (cacheada inmutable)
+  const publicUrl = `/api/r2/public/${objectKey}`
+
+  return { uploadUrl, publicUrl }
 }
 
 export async function generatePromotionCoupons(input: {

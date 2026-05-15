@@ -22,6 +22,7 @@ import {
   generatePromotionCoupons,
   togglePromotionStatus,
   updatePromotion,
+  getPromoLogoUploadUrl,
 } from './actions'
 
 type PromotionWithCounts = {
@@ -39,6 +40,10 @@ type PromotionWithCounts = {
   activeTo: Date | null
   maxUses: number | null
   perUserLimit: number | null
+  welcomeTitle: string | null
+  welcomeMessage: string | null
+  welcomeConditions: string | null
+  welcomeLogoUrl: string | null
   coupons: Array<{
     code: string
     status: 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED'
@@ -78,6 +83,10 @@ type PromotionFormState = {
   activeTo: string
   maxUses: string
   perUserLimit: string
+  welcomeTitle: string
+  welcomeMessage: string
+  welcomeConditions: string
+  welcomeLogoUrl: string
 }
 
 type GenerateFormState = {
@@ -104,6 +113,10 @@ const DEFAULT_PROMOTION_FORM: PromotionFormState = {
   activeTo: '',
   maxUses: '',
   perUserLimit: '',
+  welcomeTitle: '',
+  welcomeMessage: '',
+  welcomeConditions: '',
+  welcomeLogoUrl: '',
 }
 
 const DEFAULT_GENERATE_FORM: GenerateFormState = {
@@ -137,6 +150,10 @@ function mapPromotionToForm(promotion: PromotionWithCounts): PromotionFormState 
     activeTo: formatDateInputValue(promotion.activeTo),
     maxUses: promotion.maxUses != null ? String(promotion.maxUses) : '',
     perUserLimit: promotion.perUserLimit != null ? String(promotion.perUserLimit) : '',
+    welcomeTitle: promotion.welcomeTitle ?? '',
+    welcomeMessage: promotion.welcomeMessage ?? '',
+    welcomeConditions: promotion.welcomeConditions ?? '',
+    welcomeLogoUrl: promotion.welcomeLogoUrl ?? '',
   }
 }
 
@@ -178,6 +195,8 @@ export default function PromocionesClient({
   const [generateForm, setGenerateForm] = useState<GenerateFormState>(DEFAULT_GENERATE_FORM)
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const activeCount = useMemo(
     () => promotions.filter((promotion) => promotion.status === 'ACTIVE').length,
@@ -229,6 +248,10 @@ export default function PromocionesClient({
         activeTo: promotionForm.activeTo || null,
         maxUses: promotionForm.maxUses ? Number(promotionForm.maxUses) : null,
         perUserLimit: promotionForm.perUserLimit ? Number(promotionForm.perUserLimit) : null,
+        welcomeTitle: promotionForm.welcomeTitle || null,
+        welcomeMessage: promotionForm.welcomeMessage || null,
+        welcomeConditions: promotionForm.welcomeConditions || null,
+        welcomeLogoUrl: promotionForm.welcomeLogoUrl || null,
       }
 
       if (promotionForm.id) {
@@ -241,6 +264,33 @@ export default function PromocionesClient({
     } catch (saveError: any) {
       setError(saveError.message || 'No pudimos guardar la promocion.')
       setIsSaving(false)
+    }
+  }
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingLogo(true)
+    setError('')
+
+    try {
+      const { uploadUrl, publicUrl } = await getPromoLogoUploadUrl(file.name, file.type)
+      
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      })
+
+      setPromotionForm((current) => ({ ...current, welcomeLogoUrl: publicUrl }))
+    } catch (err: any) {
+      setError(err.message || 'No pudimos subir el logo.')
+    } finally {
+      setIsUploadingLogo(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -792,6 +842,79 @@ export default function PromocionesClient({
                 />
                 Permitir stacking futuro
               </label>
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Modal de Bienvenida Premium</h3>
+                <p className="text-xs text-gray-500">
+                  Completar estos campos activará un modal automático cuando el cliente ingrese por una campaña o escanee un QR.
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="label">Título</label>
+                    <input
+                      value={promotionForm.welcomeTitle}
+                      onChange={(event) =>
+                        setPromotionForm((current) => ({ ...current, welcomeTitle: event.target.value }))
+                      }
+                      className="input"
+                      placeholder="Ej: Beneficio Exclusivo REMAX"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="label">URL Logo (opcional)</label>
+                    <div className="flex gap-2">
+                      <input
+                        value={promotionForm.welcomeLogoUrl}
+                        onChange={(event) =>
+                          setPromotionForm((current) => ({ ...current, welcomeLogoUrl: event.target.value }))
+                        }
+                        className="input flex-1"
+                        placeholder="https://..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingLogo}
+                        className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {isUploadingLogo ? 'Subiendo...' : 'Subir'}
+                      </button>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleLogoUpload} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">Mensaje</label>
+                  <textarea
+                    value={promotionForm.welcomeMessage}
+                    onChange={(event) =>
+                      setPromotionForm((current) => ({ ...current, welcomeMessage: event.target.value }))
+                    }
+                    className="input min-h-[80px]"
+                    placeholder="Ej: Tenés un 20% de descuento por los próximos 30 días..."
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Condiciones (letra chica)</label>
+                  <input
+                    value={promotionForm.welcomeConditions}
+                    onChange={(event) =>
+                      setPromotionForm((current) => ({ ...current, welcomeConditions: event.target.value }))
+                    }
+                    className="input"
+                    placeholder="Ej: Válido hasta el 31/12. No acumulable."
+                  />
+                </div>
+              </div>
 
               <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
                 <button

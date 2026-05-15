@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import PublicHeader from '@/components/public/PublicHeader'
+import WelcomePromoModal from '@/components/WelcomePromoModal'
 import { auth } from '@/auth'
 import { Heart } from 'lucide-react'
 
@@ -8,6 +9,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <WelcomePromoModal />
       <PublicHeader user={session?.user || null} />
       <main className="flex-1">{children}</main>
 
