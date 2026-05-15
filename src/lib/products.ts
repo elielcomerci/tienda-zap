@@ -12,12 +12,13 @@ async function requireAdmin() {
 export async function getProducts(
   categorySlug?: string,
   search?: string,
-  options?: { take?: number }
+  options?: { take?: number; intentSlug?: string }
 ) {
   return prisma.product.findMany({
     where: {
       active: true,
       ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      ...(options?.intentSlug ? { intentions: { some: { slug: options.intentSlug } } } : {}),
       ...(search
         ? {
             OR: [

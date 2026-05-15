@@ -87,6 +87,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     options: parseJsonField(formData, 'options', []),
     variants: parseJsonField(formData, 'variants', []),
     relatedProductIds: parseJsonField<string[]>(formData, 'relatedProductIds', []),
+    intentionIds: formData.getAll('intentionIds') as string[],
   }
 
   const parsed = productSchema.safeParse(raw)
@@ -126,7 +127,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
 
   await assertRelatedProductsExist(relatedProductIds, excludeProductId)
 
-  return { ...data, variants, relatedProductIds, categoryIsService: category.isService }
+  return { ...data, variants, relatedProductIds, categoryIsService: category.isService, intentionIds: data.intentionIds }
 }
 
 function buildVariantOptionValueIds(
@@ -184,6 +185,9 @@ export async function createProduct(formData: FormData) {
             })),
           }
         : undefined,
+      intentions: {
+        connect: data.intentionIds.map(id => ({ id }))
+      }
     },
     include: {
       options: { include: { values: true } },
@@ -249,14 +253,17 @@ export async function updateProduct(id: string, formData: FormData) {
           },
         })),
       },
-      outgoingRelations: data.relatedProductIds.length > 0
-        ? {
-            create: data.relatedProductIds.map((relatedProductId) => ({
-              relatedProductId,
-            })),
-          }
-        : undefined,
-    },
+        outgoingRelations: data.relatedProductIds.length > 0
+          ? {
+              create: data.relatedProductIds.map((relatedProductId) => ({
+                relatedProductId,
+              })),
+            }
+          : undefined,
+        intentions: {
+          set: data.intentionIds.map(id => ({ id }))
+        }
+      },
     include: {
       options: { include: { values: true } },
     },

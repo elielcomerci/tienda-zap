@@ -4,6 +4,7 @@ import ProductForm from '@/components/admin/ProductForm'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getProductRelationOptions } from '@/lib/products'
+import { getIntentions } from '@/lib/intentions'
 
 export const metadata = { title: 'Editar Producto | ZAP Admin' }
 
@@ -30,13 +31,17 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           relatedProductId: true,
         },
       },
+      intentions: {
+        select: { id: true }
+      }
     },
   })
   if (!product) notFound()
 
-  const [categories, availableProducts] = await Promise.all([
+  const [categories, availableProducts, availableIntentions] = await Promise.all([
     getCategories(),
     getProductRelationOptions(id),
+    getIntentions()
   ])
   const updateAction = updateProduct.bind(null, id)
 
@@ -78,6 +83,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       initialVariants={initialVariants}
       availableProducts={availableProducts}
       initialRelatedProductIds={initialRelatedProductIds}
+      availableIntentions={availableIntentions}
+      initialIntentionIds={product.intentions.map(i => i.id)}
     />
   )
 }

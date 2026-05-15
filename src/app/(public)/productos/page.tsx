@@ -3,7 +3,11 @@ import Link from 'next/link'
 import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts } from '@/lib/products'
 import { getCategories } from '@/lib/categories'
+import { getIntentions } from '@/lib/intentions'
 import AddToCartButton from '@/components/public/AddToCartButton'
+import CatalogSidebar from '@/components/public/CatalogSidebar'
+import IntentionHero from '@/components/public/IntentionHero'
+import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 
@@ -12,10 +16,21 @@ export const dynamic = 'force-dynamic'
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string; q?: string }>
+  searchParams: Promise<{ cat?: string; q?: string; mode?: 'product' | 'objective'; intent?: string }>
 }) {
-  const { cat, q } = await searchParams
-  const [products, categories] = await Promise.all([getProducts(cat, q), getCategories()])
+  const { cat, q, mode, intent } = await searchParams
+  
+  const intentions = await getIntentions()
+  const selectedIntention = intent ? intentions.find(i => i.slug === intent) : undefined
+
+  const [products, categories] = await Promise.all([
+    getProducts(
+      mode === 'objective' ? undefined : cat, 
+      q, 
+      { intentSlug: mode === 'objective' ? intent : undefined }
+    ), 
+    getCategories()
+  ])
   const selectedCategory = categories.find((category) => category.slug === cat)
 
   return (
@@ -44,10 +59,12 @@ export default async function ProductsPage({
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Categoría
+                  Filtro Activo
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
-                  {selectedCategory?.name || 'Todas'}
+                  {mode === 'objective' && selectedIntention 
+                    ? selectedIntention.name 
+                    : selectedCategory?.name || 'Todos'}
                 </p>
               </div>
               {q?.trim() && (
@@ -65,54 +82,13 @@ export default async function ProductsPage({
         </section>
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start min-w-0">
-            <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
-              <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
-                  <SlidersHorizontal size={18} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Explorá por rubro</p>
-                  <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Filtros</p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-row gap-2 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
-                <Link
-                  href="/productos"
-                  className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
-                    !cat
-                      ? 'bg-gray-950 text-white shadow-sm'
-                      : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
-                  }`}
-                >
-                  Todos los productos
-                </Link>
-                {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/productos?cat=${category.slug}`}
-                    className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
-                      cat === category.slug
-                        ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
-                        : 'border border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
-                    }`}
-                  >
-                    {category.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-[#F66B9A]/25 bg-[#FEF1F6] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.45)]">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                Crédito ZAP
-              </p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-gray-900">
-                Anticipo visible en cada producto. Simulación completa antes de confirmar.
-              </p>
-            </div>
-          </aside>
+          <CatalogSidebar 
+            categories={categories}
+            intentions={intentions}
+            cat={cat} 
+            mode={mode} 
+            intent={intent} 
+          />
 
           <div className="space-y-5 min-w-0">
             <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
@@ -127,10 +103,18 @@ export default async function ProductsPage({
                     className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
                   />
                   {cat ? <input type="hidden" name="cat" value={cat} /> : null}
+                  {mode ? <input type="hidden" name="mode" value={mode} /> : null}
+                  {intent ? <input type="hidden" name="intent" value={intent} /> : null}
                 </form>
 
-                <div className="flex flex-wrap gap-2">
-                  {selectedCategory && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <ShareModal />
+                  {selectedIntention && mode === 'objective' && (
+                    <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
+                      Objetivo: {selectedIntention.name}
+                    </span>
+                  )}
+                  {selectedCategory && mode !== 'objective' && (
                     <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
                       Categoría: {selectedCategory.name}
                     </span>
@@ -143,6 +127,10 @@ export default async function ProductsPage({
                 </div>
               </div>
             </div>
+
+            {selectedIntention && mode === 'objective' && (
+              <IntentionHero intention={selectedIntention} />
+            )}
 
             {products.length === 0 ? (
               <div className="rounded-[32px] border border-dashed border-gray-300 bg-white/80 px-6 py-16 text-center shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)]">

@@ -17,6 +17,8 @@ export default function ProductForm({
   initialVariants,
   availableProducts,
   initialRelatedProductIds,
+  availableIntentions,
+  initialIntentionIds,
 }: {
   product?: any
   categories: Array<{
@@ -37,6 +39,8 @@ export default function ProductForm({
     category: { name: string }
   }>
   initialRelatedProductIds?: string[]
+  availableIntentions?: Array<{ id: string; name: string }>
+  initialIntentionIds?: string[]
 }) {
   const [images, setImages] = useState<string[]>(product?.images || [])
   const [uploading, setUploading] = useState(false)
@@ -142,6 +146,7 @@ export default function ProductForm({
         relatedProductIds: formData.get('relatedProductIds')
           ? JSON.parse(formData.get('relatedProductIds') as string)
           : [],
+        intentionIds: formData.getAll('intentionIds'),
       }
 
       const parsed = productSchema.safeParse(raw)
@@ -369,6 +374,31 @@ export default function ProductForm({
               </div>
             </div>
           </div>
+
+          {availableIntentions && availableIntentions.length > 0 && (
+            <div className="card p-6">
+              <h2 className="mb-4 border-b border-gray-100 pb-3 font-bold text-gray-900">
+                Objetivos (Intenciones)
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {availableIntentions.map((intention) => (
+                  <label key={intention.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      name="intentionIds"
+                      value={intention.id}
+                      defaultChecked={initialIntentionIds?.includes(intention.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                    />
+                    <span className="text-sm font-semibold text-gray-700">{intention.name}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-gray-500">
+                Seleccioná a qué objetivos comerciales responde este producto para que aparezca en la navegación por "Objetivos".
+              </p>
+            </div>
+          )}
 
           <div className="card p-6">
             <h2 className="mb-4 border-b border-gray-100 pb-3 font-bold text-gray-900">

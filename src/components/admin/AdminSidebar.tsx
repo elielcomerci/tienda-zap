@@ -18,7 +18,8 @@ import {
   Wallet,
   X,
   Zap,
-  Megaphone
+  Megaphone,
+  Target
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -31,6 +32,7 @@ const navItems = [
   { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
   { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
   { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
+  { href: '/admin/intenciones', label: 'Objetivos', icon: Target },
   { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
   { href: '/admin/rubros', label: 'Rubros', icon: Briefcase },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
