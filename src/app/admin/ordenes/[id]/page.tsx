@@ -35,6 +35,10 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const orderCode = getOrderDisplayCode(order.id)
   const hasDiscount = (order.discountTotal ?? 0) > 0
 
+  const hasDesignItems = order.items.some((item) => item.designRequested)
+  const designProofs = order.proofs?.filter((p) => p.type === 'DESIGN_PROOF') ?? []
+  const deliverables = order.proofs?.filter((p) => p.type === 'DELIVERABLE') ?? []
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
