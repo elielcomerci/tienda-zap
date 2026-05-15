@@ -277,11 +277,15 @@ export default function PromocionesClient({
     try {
       const { uploadUrl, publicUrl } = await getPromoLogoUploadUrl(file.name, file.type)
       
-      await fetch(uploadUrl, {
+      const response = await fetch(uploadUrl, {
         method: 'PUT',
         body: file,
         headers: { 'Content-Type': file.type },
       })
+      
+      if (!response.ok) {
+        throw new Error('Error de red al subir la imagen a R2 (revisa los permisos CORS o env vars).')
+      }
 
       setPromotionForm((current) => ({ ...current, welcomeLogoUrl: publicUrl }))
     } catch (err: any) {
@@ -888,6 +892,19 @@ export default function PromocionesClient({
                         className="hidden" 
                       />
                     </div>
+                    {promotionForm.welcomeLogoUrl && (
+                      <div className="mt-2 rounded-xl border border-gray-100 bg-gray-50 p-2 flex items-center justify-center h-20 w-32 relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={promotionForm.welcomeLogoUrl} 
+                          alt="Preview" 
+                          className="max-h-full max-w-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2EzYWYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMiAxMmw1LjI1LTUuMjVhMi4yNSAyLjI1IDAgMCAxMy4xOCAwTDExIDEwIi8+PHBhdGggZD0iTTExIDEwbDQuMjUtNC4yNWEyLjI1IDIuMjUgMCAwIDEzLjE4IDBMMjIgMTIiLz48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSIvPjxwb2x5Z29uIHBvaW50cz0iMyAzIDIxIDIxIi8+PC9zdmc+'
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
