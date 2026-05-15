@@ -7,6 +7,12 @@ import { calculateNesting, calculateQuote } from '@/lib/pricing/nesting'
 
 type QuoterData = Awaited<ReturnType<typeof getQuoterData>>
 
+const roundPsychological = (price: number) => {
+  if (price < 100) return Math.ceil(price / 10) * 10;
+  const rounded = Math.ceil(price / 100) * 100 - 10;
+  return rounded < price ? rounded + 100 : rounded;
+}
+
 export default function ProductQuoterModal({
   isOpen,
   onClose,
@@ -100,7 +106,7 @@ export default function ProductQuoterModal({
   const handleApply = () => {
     const validVariants = matrix.filter(Boolean).map(m => ({
       name: `${m!.qty} unidades`,
-      price: Math.round(m!.totalPrice)
+      price: roundPsychological(m!.totalPrice)
     }))
     onApplyVariants(validVariants)
     onClose()
@@ -246,8 +252,8 @@ export default function ProductQuoterModal({
                         <div>Costo: <span className="font-medium text-gray-700">${m.totalCost.toFixed(2)}</span></div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-green-600">${Math.round(m.totalPrice)}</div>
-                        <div className="text-xs text-green-700/70">${m.unitPrice.toFixed(2)} c/u</div>
+                        <div className="text-lg font-bold text-green-600">${roundPsychological(m.totalPrice)}</div>
+                        <div className="text-xs text-green-700/70">${(roundPsychological(m.totalPrice) / m.qty).toFixed(2)} c/u</div>
                       </div>
                     </>
                   ) : (

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Edit2, Trash2, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { createFinishing, updateFinishing, deleteFinishing } from '../actions'
 import { FinishingCostType } from '@prisma/client'
 
@@ -31,6 +32,7 @@ export default function TerminacionesClient({
 }: {
   initialFinishings: Finishing[]
 }) {
+  const router = useRouter()
   const [finishings] = useState<Finishing[]>(initialFinishings)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -89,6 +91,7 @@ export default function TerminacionesClient({
       } else {
         await createFinishing({ ...form, tiers })
       }
+      router.refresh()
       setIsModalOpen(false)
     } catch (err) {
       alert('Error guardando terminación')
@@ -100,6 +103,7 @@ export default function TerminacionesClient({
   const handleDelete = async (id: string) => {
     if (confirm('¿Seguro que deseas eliminar esta terminación?')) {
       await deleteFinishing(id)
+      router.refresh()
     }
   }
 

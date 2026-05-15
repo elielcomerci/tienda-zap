@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Edit2, Trash2, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { createRawMaterial, updateRawMaterial, deleteRawMaterial } from '../actions'
 
 type Tier = {
@@ -26,6 +27,7 @@ export default function MaterialesClient({
 }: {
   initialMateriales: Material[]
 }) {
+  const router = useRouter()
   const [materiales] = useState<Material[]>(initialMateriales)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -82,6 +84,7 @@ export default function MaterialesClient({
       } else {
         await createRawMaterial({ ...form, tiers })
       }
+      router.refresh()
       setIsModalOpen(false)
     } catch (err) {
       alert('Error guardando material')
@@ -93,6 +96,7 @@ export default function MaterialesClient({
   const handleDelete = async (id: string) => {
     if (confirm('¿Seguro que deseas eliminar este material?')) {
       await deleteRawMaterial(id)
+      router.refresh()
     }
   }
 
