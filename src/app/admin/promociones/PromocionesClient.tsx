@@ -22,7 +22,7 @@ import {
   generatePromotionCoupons,
   togglePromotionStatus,
   updatePromotion,
-  getPromoLogoUploadUrl,
+  uploadPromoLogoToServer,
 } from './actions'
 
 type PromotionWithCounts = {
@@ -275,17 +275,10 @@ export default function PromocionesClient({
     setError('')
 
     try {
-      const { uploadUrl, publicUrl } = await getPromoLogoUploadUrl(file.name, file.type)
-      
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      })
-      
-      if (!response.ok) {
-        throw new Error('Error de red al subir la imagen a R2 (revisa los permisos CORS o env vars).')
-      }
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const { publicUrl } = await uploadPromoLogoToServer(formData)
 
       setPromotionForm((current) => ({ ...current, welcomeLogoUrl: publicUrl }))
     } catch (err: any) {

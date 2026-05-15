@@ -4,7 +4,8 @@ import crypto from 'crypto'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { buildCouponLandingUrl } from '@/lib/coupons'
-import { createPresignedR2UploadUrl } from '@/lib/r2'
+import { createPresignedR2UploadUrl, getR2BucketName, getR2Client } from '@/lib/r2'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { revalidatePath } from 'next/cache'
 
 async function requireAdmin() {
@@ -290,16 +291,29 @@ export async function deletePromotion(id: string) {
   revalidatePath('/admin/promociones')
 }
 
-export async function getPromoLogoUploadUrl(fileName: string, contentType: string) {
+export async function uploadPromoLogoToServer(formData: FormData) {
   await requireAdmin()
 
-  const objectKey = `promos/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-  const uploadUrl = await createPresignedR2UploadUrl({ objectKey, contentType })
+  const file = formData.get('file') as File | null
+  if (!file) throw new Error('No se encontro el archivo')
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const fileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+  const objectKey = `promos/${Date.now()}-${fileName}`
+
+  const command = new PutObjectCommand({
+    Bucket: getR2BucketName(),
+    Key: objectKey,
+    Body: buffer,
+    ContentType: file.type,
+  })
+
+  await getR2Client().send(command)
 
   // Usamos el endpoint interno para servir la imagen (cacheada inmutable)
   const publicUrl = `/api/r2/public/${objectKey}`
 
-  return { uploadUrl, publicUrl }
+  return { publicUrl }
 }
 
 export async function generatePromotionCoupons(input: {
