@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SlidersHorizontal, Package, Target } from 'lucide-react'
+import { LayoutGrid, PackageOpen } from 'lucide-react'
 import { Intention } from '@/lib/intentions'
 
 export default function CatalogSidebar({
@@ -18,91 +18,98 @@ export default function CatalogSidebar({
   const currentMode = mode || 'product'
 
   return (
-    <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start min-w-0">
-      <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
-            <SlidersHorizontal size={18} />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">Explorá nuestro catálogo</p>
-            <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Navegación</p>
-          </div>
-        </div>
-
+    <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start min-w-0">
+      <div>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
+          Navegación
+        </p>
+        
         {/* Toggle Mode */}
-        <div className="flex bg-gray-100 p-1 rounded-2xl mb-5">
+        <div className="flex bg-gray-200/60 p-1 rounded-xl">
           <Link
             href="/productos?mode=product"
-            className={`flex-1 flex justify-center items-center gap-2 py-2 text-sm font-semibold rounded-xl transition-all ${
+            className={`flex-1 flex justify-center items-center py-2 text-sm font-semibold rounded-lg transition-all ${
               currentMode === 'product'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-[#ED2C71] text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
-            <Package size={16} /> Por Producto
+            Producto
           </Link>
           <Link
             href="/productos?mode=objective"
-            className={`flex-1 flex justify-center items-center gap-2 py-2 text-sm font-semibold rounded-xl transition-all ${
+            className={`flex-1 flex justify-center items-center py-2 text-sm font-semibold rounded-lg transition-all ${
               currentMode === 'objective'
-                ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-[#ED2C71] text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
-            <Target size={16} /> Por Objetivo
+            Objetivo
           </Link>
         </div>
+      </div>
+
+      <div>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
+          {currentMode === 'product' ? 'Categorías' : 'Objetivos'}
+        </p>
 
         {currentMode === 'product' ? (
-          <div className="flex flex-row gap-2 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
+          <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=product"
-              className={`flex items-center whitespace-nowrap xl:whitespace-normal rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+              className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !cat
-                  ? 'bg-gray-950 text-white shadow-sm'
-                  : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
+                  ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                  : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              Todos los productos
+              <LayoutGrid size={18} className={!cat ? 'text-[#ED2C71]' : 'text-gray-400'} />
+              <span className="leading-tight">Todos los productos</span>
             </Link>
             {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/productos?mode=product&cat=${category.slug}`}
-                className={`flex items-center whitespace-nowrap xl:whitespace-normal text-left rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   cat === category.slug
-                    ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
-                    : 'border border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
+                    ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                    : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                {category.name}
+                <PackageOpen size={18} className={cat === category.slug ? 'text-[#ED2C71]' : 'text-gray-400'} />
+                <span className="leading-tight">{category.name}</span>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="flex flex-row gap-2 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
+          <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=objective"
-              className={`flex items-center whitespace-nowrap xl:whitespace-normal rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+              className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !intent
-                  ? 'bg-gray-950 text-white shadow-sm'
-                  : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
+                  ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                  : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              Todos los objetivos
+              <LayoutGrid size={18} className={!intent ? 'text-[#ED2C71]' : 'text-gray-400'} />
+              <span className="leading-tight">Todos los objetivos</span>
             </Link>
             {intentions.map((intention) => (
               <Link
                 key={intention.id}
                 href={`/productos?mode=objective&intent=${intention.slug}`}
-                className={`flex items-center gap-2 whitespace-nowrap xl:whitespace-normal text-left rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   intent === intention.slug
-                    ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
-                    : 'border border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
+                    ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                    : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                {intention.icon && <span className="shrink-0 text-lg">{intention.icon}</span>}
+                {intention.icon ? (
+                  <span className={`shrink-0 text-lg ${intent === intention.slug ? 'opacity-100' : 'opacity-70 grayscale'}`}>{intention.icon}</span>
+                ) : (
+                  <span className="w-[18px]" />
+                )}
                 <span className="leading-tight">{intention.name}</span>
               </Link>
             ))}
@@ -110,11 +117,11 @@ export default function CatalogSidebar({
         )}
       </div>
 
-      <div className="rounded-[28px] border border-[#F66B9A]/25 bg-[#FEF1F6] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.45)]">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+      <div className="rounded-2xl border border-pink-100 bg-pink-50/50 p-4">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#ED2C71]">
           Crédito ZAP
         </p>
-        <p className="mt-2 text-sm font-semibold leading-6 text-gray-900">
+        <p className="mt-1.5 text-xs font-medium leading-5 text-gray-700">
           Anticipo visible en cada producto. Simulación completa antes de confirmar.
         </p>
       </div>

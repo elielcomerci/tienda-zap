@@ -7,9 +7,9 @@ export default function IntentionHero({ intention }: { intention: Intention }) {
   if (!intention.description && (!intention.mediaType || intention.mediaType === 'NONE')) return null
 
   return (
-    <div className="rounded-[28px] border border-[#F66B9A]/25 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.3)] mb-6 overflow-hidden relative">
+    <div className="rounded-2xl border border-gray-200/60 bg-white p-6 shadow-sm mb-6 overflow-hidden relative">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#FEF1F6] to-transparent rounded-bl-full -z-0 opacity-50" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-pink-50/50 to-transparent rounded-bl-full -z-0" />
 
       <div className="relative z-10 grid gap-6 md:grid-cols-[1fr_auto] items-center">
         <div>
