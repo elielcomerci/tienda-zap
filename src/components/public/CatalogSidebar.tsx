@@ -58,7 +58,7 @@ export default function CatalogSidebar({
           <div className="flex flex-row gap-2 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=product"
-              className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+              className={`flex items-center whitespace-nowrap xl:whitespace-normal rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                 !cat
                   ? 'bg-gray-950 text-white shadow-sm'
                   : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
@@ -70,7 +70,7 @@ export default function CatalogSidebar({
               <Link
                 key={category.id}
                 href={`/productos?mode=product&cat=${category.slug}`}
-                className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                className={`flex items-center whitespace-nowrap xl:whitespace-normal text-left rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                   cat === category.slug
                     ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
                     : 'border border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
@@ -84,7 +84,7 @@ export default function CatalogSidebar({
           <div className="flex flex-row gap-2 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=objective"
-              className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+              className={`flex items-center whitespace-nowrap xl:whitespace-normal rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                 !intent
                   ? 'bg-gray-950 text-white shadow-sm'
                   : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
@@ -96,14 +96,14 @@ export default function CatalogSidebar({
               <Link
                 key={intention.id}
                 href={`/productos?mode=objective&intent=${intention.slug}`}
-                className={`whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                className={`flex items-center gap-2 whitespace-nowrap xl:whitespace-normal text-left rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
                   intent === intention.slug
                     ? 'bg-[#ED2C71] text-white shadow-sm shadow-[#ED2C71]/20'
                     : 'border border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]'
                 }`}
               >
-                {intention.icon && <span className="mr-2">{intention.icon}</span>}
-                {intention.name}
+                {intention.icon && <span className="shrink-0 text-lg">{intention.icon}</span>}
+                <span className="leading-tight">{intention.name}</span>
               </Link>
             ))}
           </div>
