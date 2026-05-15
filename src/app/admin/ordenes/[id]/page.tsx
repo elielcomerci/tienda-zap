@@ -36,7 +36,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const hasDiscount = (order.discountTotal ?? 0) > 0
 
   const hasDesignItems = order.items.some((item) => item.designRequested)
-  const designProofs = order.proofs?.filter((p) => p.type === 'DESIGN_PROOF') ?? []
+  const designProofs = order.proofs?.filter((p) => p.type === 'PROOF') ?? []
   const deliverables = order.proofs?.filter((p) => p.type === 'DELIVERABLE') ?? []
 
   return (
