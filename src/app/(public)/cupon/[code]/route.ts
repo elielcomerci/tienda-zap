@@ -12,8 +12,17 @@ export async function GET(
     referrer: req.headers.get('referer'),
   })
 
-  const checkoutUrl = new URL('/checkout', req.nextUrl.origin)
-  checkoutUrl.searchParams.set('coupon', normalizedCode || code)
+  const productsUrl = new URL('/productos', req.nextUrl.origin)
+  productsUrl.searchParams.set('c', normalizedCode || code)
 
-  return NextResponse.redirect(checkoutUrl)
+  const response = NextResponse.redirect(productsUrl)
+  
+  response.cookies.set('zap_welcome_promo', normalizedCode || code, {
+    path: '/',
+    maxAge: 60 * 60 * 24, // 1 dia
+    httpOnly: false,
+    sameSite: 'lax',
+  })
+
+  return response
 }
