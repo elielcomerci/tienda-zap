@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { key: string[] } }
+  { params }: { params: Promise<{ key: string[] }> }
 ) {
   try {
-    const objectKey = params.key.join('/')
+    const { key } = await params
+    const objectKey = key.join('/')
     
     const command = new GetObjectCommand({
       Bucket: getR2BucketName(),
