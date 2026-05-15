@@ -29,6 +29,10 @@ export async function POST(req: NextRequest) {
       sellerId = userDb?.sellerId || null
     }
 
+    if (!sellerId) {
+      sellerId = req.cookies.get('zap_seller_ref')?.value || null
+    }
+
     const pricing = await evaluateCheckoutPricing({
       items: data.items,
       couponCode: data.couponCode,

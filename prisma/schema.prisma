@@ -16,6 +16,7 @@ model User {
   phone              String?
   isBanned           Boolean        @default(false)
   sellerId           String?
+  sellerNote         String?        @db.Text
   createdAt          DateTime       @default(now())
   billingAddress     String?
   billingCity        String?
@@ -34,6 +35,8 @@ model User {
   seller             User?          @relation("SellerClients", fields: [sellerId], references: [id])
   clients            User[]         @relation("SellerClients")
   sellerProfile      SellerProfile?
+  incentiveProgress  SellerIncentiveProgress[]
+  sellerPayouts      SellerPayout[]
 }
 
 model SellerProfile {
@@ -640,4 +643,48 @@ model Receipt {
 
   @@unique([orderId, sequenceNumber])
   @@index([orderId, status])
+}
+
+model SellerIncentive {
+  id              String   @id @default(cuid())
+  title           String   // e.g. "Bono de Fin de Semana"
+  description     String?  // e.g. "Cerrá 5 ventas este fin de semana y ganá un bono de $10.000"
+  goalType        String   // "SALES_COUNT", "TOTAL_REVENUE"
+  goalTarget      Float    // e.g. 5 (for count), 100000 (for revenue)
+  rewardType      String   // "FIXED_BONUS"
+  rewardAmount    Float    // e.g. 10000
+  startDate       DateTime
+  endDate         DateTime
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sellerProgress  SellerIncentiveProgress[]
+}
+
+model SellerIncentiveProgress {
+  id              String   @id @default(cuid())
+  sellerId        String
+  incentiveId     String
+  currentValue    Float    @default(0)
+  completed       Boolean  @default(false)
+  completedAt     DateTime?
+  rewardClaimed   Boolean  @default(false)
+
+  seller          User            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  incentive       SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerId, incentiveId])
+}
+
+model SellerPayout {
+  id          String   @id @default(cuid())
+  sellerId    String
+  amount      Float
+  reference   String?
+  createdAt   DateTime @default(now())
+
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
 }

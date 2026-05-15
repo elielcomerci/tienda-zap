@@ -32,6 +32,10 @@ export async function POST(req: NextRequest) {
       sellerId = userDb?.sellerId || null
     }
 
+    if (!sellerId) {
+      sellerId = req.cookies.get('zap_seller_ref')?.value || null
+    }
+
     if (data.paymentType === 'ZAP_CREDIT' && !session?.user?.id) {
       return Response.json(
         { error: 'Inicia sesión para solicitar Crédito ZAP y seguir tus cuotas.' },

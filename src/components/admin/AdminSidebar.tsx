@@ -19,7 +19,9 @@ import {
   X,
   Zap,
   Megaphone,
-  Target
+  Target,
+  Gift,
+  HandCoins
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -34,6 +36,8 @@ const navItems = [
   { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
   { href: '/admin/intenciones', label: 'Objetivos', icon: Target },
   { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
+  { href: '/admin/incentivos', label: 'Incentivos', icon: Gift },
+  { href: '/admin/liquidaciones', label: 'Liquidaciones', icon: HandCoins },
   { href: '/admin/rubros', label: 'Rubros', icon: Briefcase },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },

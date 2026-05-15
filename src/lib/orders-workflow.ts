@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { orderItemIsProductionReady } from '@/lib/order-files'
 import { confirmCouponRedemptionForOrder } from '@/lib/coupons'
+import { evaluateSellerIncentivesForOrder } from '@/lib/incentives-evaluator'
 import { sendEmailAsync } from '@/lib/email'
 import { paymentConfirmedEmail, orderReadyEmail } from '@/lib/email-templates'
 
@@ -93,6 +94,7 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
   }
 
   await confirmCouponRedemptionForOrder(orderId)
+  await evaluateSellerIncentivesForOrder(orderId)
 
   revalidateOrderViews(orderId)
   return nextStatus

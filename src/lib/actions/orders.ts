@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { releaseCouponRedemptionForOrder } from '@/lib/coupons'
 import { findAccessibleOrder, findAccessibleOrderItem } from '@/lib/order-access'
 import { activateZapCreditPlanForOrder } from '@/lib/actions/credits'
+import { evaluateSellerIncentivesForOrder } from '@/lib/incentives-evaluator'
 import { deleteR2Object, getR2ObjectMetadata } from '@/lib/r2'
 import {
   isArtworkUploadAllowedStatus,
@@ -38,6 +39,10 @@ export async function updateOrderStatus(id: string, status: string) {
 
   if (status === 'CANCELLED') {
     await releaseCouponRedemptionForOrder(id)
+  }
+
+  if (status === 'PAID' || status === 'DELIVERED') {
+    await evaluateSellerIncentivesForOrder(id)
   }
 
   // Send email on READY
