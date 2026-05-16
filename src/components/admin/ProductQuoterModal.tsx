@@ -34,6 +34,8 @@ export default function ProductQuoterModal({
   const [minMarginPercent, setMinMarginPercent] = useState(100)
   
   const [selectedFinishingIds, setSelectedFinishingIds] = useState<string[]>([])
+  const [combineFinishings, setCombineFinishings] = useState(false)
+  const [includeNoFinishing, setIncludeNoFinishing] = useState(true)
   const [quantities, setQuantities] = useState<number[]>([100, 500, 1000])
 
   useEffect(() => {
@@ -61,6 +63,17 @@ export default function ProductQuoterModal({
   // Finishings
   const finishings = data.finishings.filter(f => selectedFinishingIds.includes(f.id))
 
+  // Generar combos de terminaciones basados en las opciones
+  let finishingsOptions = combineFinishings && finishings.length > 0
+    ? [finishings] 
+    : finishings.map(f => [f])
+
+  if (includeNoFinishing || finishingsOptions.length === 0) {
+    if (!finishingsOptions.some(arr => arr.length === 0)) {
+      finishingsOptions.unshift([])
+    }
+  }
+
   // Generate matrix
   const matrix = selectedMaterials.flatMap(material => {
     const nestingResult = calculateNesting({
@@ -79,47 +92,49 @@ export default function ProductQuoterModal({
     const minQty = validQuantities.length > 0 ? Math.min(...validQuantities) : 1
     const maxQty = validQuantities.length > 0 ? Math.max(...validQuantities) : 1
 
-    return quantities.sort((a, b) => a - b).map(qty => {
-      const sheetsNeeded = Math.ceil(qty / nestingResult.itemsPerSheet)
-      const tier = material.tiers.find(t => 
-        sheetsNeeded >= t.minQty && (!t.maxQty || sheetsNeeded <= t.maxQty)
-      )
-      
-      const rawMaterialUnitPrice = tier ? tier.unitPrice : 
-        (material.tiers[material.tiers.length - 1]?.unitPrice || 0)
+    return finishingsOptions.flatMap(finishingCombo => {
+      const terminacionesText = finishingCombo.length > 0 
+        ? finishingCombo.map(f => f.name).join(' + ')
+        : 'Sin terminaciones'
 
-      // Logarithmic margin calculation
-      const progress = maxQty === minQty ? 0 : Math.log(qty / minQty) / Math.log(maxQty / minQty)
-      const currentMargin = maxMarginPercent - progress * (maxMarginPercent - minMarginPercent)
+      return quantities.sort((a, b) => a - b).map(qty => {
+        const sheetsNeeded = Math.ceil(qty / nestingResult.itemsPerSheet)
+        const tier = material.tiers.find(t => 
+          sheetsNeeded >= t.minQty && (!t.maxQty || sheetsNeeded <= t.maxQty)
+        )
+        
+        const rawMaterialUnitPrice = tier ? tier.unitPrice : 
+          (material.tiers[material.tiers.length - 1]?.unitPrice || 0)
 
-      try {
-        const quote = calculateQuote({
-          quantity: qty,
-          itemsPerSheet: nestingResult.itemsPerSheet,
-          rawMaterialUnitPrice,
-          finishings: finishings.map(f => ({ 
-            costType: f.costType, 
-            tiers: f.tiers 
-          })),
-          profitMarginPercent: currentMargin
-        })
-        return { material, qty, ...quote, itemsPerSheet: nestingResult.itemsPerSheet }
-      } catch {
-        return null
-      }
+        // Logarithmic margin calculation
+        const progress = maxQty === minQty ? 0 : Math.log(qty / minQty) / Math.log(maxQty / minQty)
+        const currentMargin = maxMarginPercent - progress * (maxMarginPercent - minMarginPercent)
+
+        try {
+          const quote = calculateQuote({
+            quantity: qty,
+            itemsPerSheet: nestingResult.itemsPerSheet,
+            rawMaterialUnitPrice,
+            finishings: finishingCombo.map(f => ({ 
+              costType: f.costType, 
+              tiers: f.tiers 
+            })),
+            profitMarginPercent: currentMargin
+          })
+          return { material, qty, terminacionesText, ...quote, itemsPerSheet: nestingResult.itemsPerSheet }
+        } catch {
+          return null
+        }
+      })
     })
   }).filter(Boolean)
 
   const handleApply = () => {
-    const terminacionesText = finishings.length > 0 
-      ? finishings.map(f => f.name).join(' + ')
-      : 'Sin terminaciones'
-
     const validVariants = matrix.map(m => ({
       options: {
         'Sustrato': m!.material.name,
         'Medida': `${itemWidth}x${itemHeight} cm`,
-        'Terminaciones': terminacionesText,
+        'Terminaciones': m!.terminacionesText,
         'Cantidad': `${m!.qty}`
       },
       price: roundPsychological(m!.totalPrice)
@@ -203,7 +218,39 @@ export default function ProductQuoterModal({
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Terminaciones Adicionales</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900">Terminaciones</h3>
+                <span className="text-xs text-gray-500">{selectedFinishingIds.length} elegidas</span>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-xl mb-4 space-y-3">
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <input 
+                    type="checkbox" 
+                    checked={includeNoFinishing}
+                    onChange={e => setIncludeNoFinishing(e.target.checked)}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-600"
+                  />
+                  Generar opción "Sin terminaciones"
+                </label>
+                {selectedFinishingIds.length > 1 && (
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input 
+                      type="checkbox" 
+                      checked={combineFinishings}
+                      onChange={e => setCombineFinishings(e.target.checked)}
+                      className="rounded border-gray-300 text-orange-600 focus:ring-orange-600"
+                    />
+                    Unir todas en una sola variante (combinar)
+                  </label>
+                )}
+                {selectedFinishingIds.length > 1 && !combineFinishings && (
+                  <p className="text-xs text-gray-500 pl-6">
+                    Se creará una opción independiente para cada terminación.
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
                 {data.finishings.map(f => (
                   <label key={f.id} className="flex items-center gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
