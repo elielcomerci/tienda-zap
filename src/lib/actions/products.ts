@@ -88,6 +88,8 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     variants: parseJsonField(formData, 'variants', []),
     relatedProductIds: parseJsonField<string[]>(formData, 'relatedProductIds', []),
     intentionIds: formData.getAll('intentionIds') as string[],
+    isCombo: formData.get('isCombo') === 'on',
+    targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds') as string[],
   }
 
   const parsed = productSchema.safeParse(raw)
@@ -127,7 +129,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
 
   await assertRelatedProductsExist(relatedProductIds, excludeProductId)
 
-  return { ...data, variants, relatedProductIds, categoryIsService: category.isService, intentionIds: data.intentionIds }
+  return { ...data, variants, relatedProductIds, categoryIsService: category.isService, intentionIds: data.intentionIds, targetBusinessTypeIds: data.targetBusinessTypeIds }
 }
 
 function buildVariantOptionValueIds(
@@ -187,6 +189,10 @@ export async function createProduct(formData: FormData) {
         : undefined,
       intentions: {
         connect: data.intentionIds.map(id => ({ id }))
+      },
+      isCombo: data.isCombo,
+      targetBusinessTypes: {
+        connect: data.targetBusinessTypeIds.map(id => ({ id }))
       }
     },
     include: {
@@ -262,6 +268,10 @@ export async function updateProduct(id: string, formData: FormData) {
           : undefined,
         intentions: {
           set: data.intentionIds.map(id => ({ id }))
+        },
+        isCombo: data.isCombo,
+        targetBusinessTypes: {
+          set: data.targetBusinessTypeIds.map(id => ({ id }))
         }
       },
     include: {

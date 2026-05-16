@@ -26,9 +26,9 @@ export default function ProductZapCreditPromo({
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-gray-900">
-              Crédito ZAP desde {downPaymentPercent}%
+              Crédito ZAP.
             </p>
-            <p className="text-xs text-gray-500">Simulación antes de confirmar.</p>
+            <p className="text-xs text-gray-500">Todo lo que necesitas con mínimos requisitos.</p>
           </div>
         </div>
         <ChevronDown

@@ -42,6 +42,8 @@ export default function ProductForm({
   initialRelatedProductIds?: string[]
   availableIntentions?: Array<{ id: string; name: string }>
   initialIntentionIds?: string[]
+  availableBusinessTypes?: Array<{ id: string; name: string; slug: string }>
+  initialTargetBusinessTypeIds?: string[]
 }) {
   const [images, setImages] = useState<string[]>(product?.images || [])
   const [uploading, setUploading] = useState(false)
@@ -62,6 +64,7 @@ export default function ProductForm({
     Boolean(product?.slug && product.slug !== generatedInitialSlug)
   )
   const [isQuoterOpen, setIsQuoterOpen] = useState(false)
+  const [isCombo, setIsCombo] = useState(product?.isCombo ?? false)
   
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
   const isServiceCategory = Boolean(selectedCategory?.isService)
@@ -395,8 +398,53 @@ export default function ProductForm({
                   </div>
                 </label>
               </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="isCombo"
+                    checked={isCombo}
+                    onChange={e => setIsCombo(e.target.checked)}
+                    className="h-5 w-5 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                  />
+                  <div>
+                    <span className="block text-sm font-semibold text-gray-900">
+                      Es un Combo
+                    </span>
+                    <span className="block text-xs text-gray-500">
+                      Aparece en la sección de Packs de la Home, segmentado por rubro
+                    </span>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
+
+          {isCombo && availableBusinessTypes && availableBusinessTypes.length > 0 && (
+            <div className="card p-6">
+              <h2 className="mb-1 border-b border-gray-100 pb-3 font-bold text-gray-900">
+                Rubros que pueden ver este Pack
+              </h2>
+              <p className="mb-4 text-xs text-gray-500">
+                Si no seleccionás ninguno, el combo es visible para todos los rubros.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {availableBusinessTypes.map((bt) => (
+                  <label key={bt.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      name="targetBusinessTypeIds"
+                      value={bt.id}
+                      defaultChecked={initialTargetBusinessTypeIds?.includes(bt.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                    />
+                    <span className="text-sm font-semibold text-gray-700">{bt.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {availableIntentions && availableIntentions.length > 0 && (
             <div className="card p-6">

@@ -46,6 +46,8 @@ export const productSchema = z.object({
   })).optional().default([]),
   relatedProductIds: z.array(z.string()).optional().default([]),
   intentionIds: z.array(z.string()).optional().default([]),
+  isCombo: z.boolean().default(false),
+  targetBusinessTypeIds: z.array(z.string()).optional().default([]),
 }).superRefine((data, ctx) => {
   const normalizedOptionNames = data.options.map((option) => option.name.trim().toLowerCase())
 

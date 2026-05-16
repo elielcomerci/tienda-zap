@@ -9,12 +9,13 @@ import {
   Zap,
 } from 'lucide-react'
 import { getCategories } from '@/lib/categories'
-import { getProducts } from '@/lib/products'
+import { getProducts, getCombos } from '@/lib/products'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import AddToCartButton from '@/components/public/AddToCartButton'
+import ComboSection from '@/components/public/ComboSection'
 
 export const metadata = {
   title: 'ZAP Tienda - Agencia Creativa',
@@ -54,9 +55,10 @@ const buyingMoments = [
 ]
 
 export default async function HomePage() {
-  // Get user's business type for personalized products
   const session = await auth()
   let priorityCategorySlugs: string[] = []
+  let businessTypeName: string | null = null
+  let businessTypeId: string | null = null
 
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
@@ -67,14 +69,19 @@ export default async function HomePage() {
         },
       },
     })
-    if (user?.businessType?.categories) {
-      priorityCategorySlugs = user.businessType.categories.map((c) => c.slug)
+    if (user?.businessType) {
+      businessTypeId = user.businessType.id
+      businessTypeName = user.businessType.name
+      if (user.businessType.categories) {
+        priorityCategorySlugs = user.businessType.categories.map((c) => c.slug)
+      }
     }
   }
 
-  const [categories, allProducts] = await Promise.all([
+  const [categories, allProducts, combos] = await Promise.all([
     getCategories(),
     getProducts(undefined, undefined, { take: 16 }),
+    getCombos(businessTypeId),
   ])
 
   // Prioritize products from the user's rubro categories

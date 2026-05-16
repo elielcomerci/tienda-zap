@@ -96,6 +96,7 @@ export async function getAllProductsAdmin() {
       category: true,
       options: { include: { values: true } },
       variants: { include: { options: { include: { optionValue: true } } } },
+      targetBusinessTypes: { select: { id: true, name: true, slug: true } },
       outgoingRelations: {
         select: { relatedProductId: true },
       },
@@ -124,3 +125,43 @@ export async function getProductRelationOptions(excludeProductId?: string) {
     orderBy: { name: 'asc' },
   })
 }
+
+/**
+ * Returns combos visible to the user:
+ * - If the user has a businessType, returns combos targeting that rubro + combos with no restrictions.
+ * - If no user/rubro, returns all active combos.
+ */
+export async function getCombos(businessTypeId?: string | null) {
+  return prisma.product.findMany({
+    where: {
+      active: true,
+      isCombo: true,
+      ...(businessTypeId
+        ? {
+            OR: [
+              { targetBusinessTypes: { some: { id: businessTypeId } } },
+              { targetBusinessTypes: { none: {} } },
+            ],
+          }
+        : {}),
+    },
+    include: {
+      category: true,
+      variants: { select: { price: true }, orderBy: { price: 'asc' } },
+      targetBusinessTypes: { select: { id: true, name: true, slug: true } },
+      outgoingRelations: {
+        include: {
+          relatedProduct: {
+            include: {
+              category: true,
+              variants: { select: { price: true }, orderBy: { price: 'asc' } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
