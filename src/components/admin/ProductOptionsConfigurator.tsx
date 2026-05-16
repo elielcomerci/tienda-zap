@@ -71,7 +71,7 @@ export default function ProductOptionsConfigurator({
 
       if (!incomingVariants || incomingVariants.length === 0) return
 
-      // Extract options from incoming variants
+      // Collect all option names and their complete value sets from the quoter
       const incomingOptionsMap: Record<string, Set<string>> = {}
       incomingVariants.forEach(v => {
         Object.entries(v.options).forEach(([optName, optValue]) => {
@@ -80,40 +80,30 @@ export default function ProductOptionsConfigurator({
         })
       })
 
-      let nextOptions = [...options]
+      // Start from existing options that are NOT managed by the quoter (manual ones)
+      const quoterOptionNames = new Set(Object.keys(incomingOptionsMap).map(k => k.toLowerCase()))
+      let nextOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
 
-      // For each option provided by the quoter (e.g., 'Sustrato', 'Cantidad')
+      // Add/replace quoter-managed options with fresh values (no merging)
       Object.entries(incomingOptionsMap).forEach(([optName, optValuesSet]) => {
-        const newValues = Array.from(optValuesSet)
-        const existingOptionIndex = nextOptions.findIndex(o => o.name.toLowerCase() === optName.toLowerCase())
-        
-        if (existingOptionIndex >= 0) {
-          // Replace completely instead of merging to clean up old quoter data
-          nextOptions[existingOptionIndex].values = newValues
-        } else {
-          // Create new option
-          nextOptions.push({ name: optName, isRequired: true, values: newValues })
-        }
+        nextOptions.push({ name: optName, isRequired: true, values: Array.from(optValuesSet) })
       })
+
       setOptions(nextOptions)
 
-      // Generate cartesian product for the new options
+      // Rebuild variant matrix from cartesian product
       const combinations = cartesianProduct(nextOptions)
       const nextVariants = combinations.map((combination) => {
-        // Find if this specific combination was just quoted
-        const incoming = incomingVariants.find(v => {
-          // It matches if every key in the incoming option matches the combination
-          return Object.entries(v.options).every(([k, val]) => combination[k] === val)
-        })
-        
+        const incoming = incomingVariants.find(v =>
+          Object.entries(v.options).every(([k, val]) => combination[k] === val)
+        )
         const existing = variants.find((variant) => {
           const variantKeys = Object.keys(variant.combinations)
           const combinationKeys = Object.keys(combination)
           if (variantKeys.length !== combinationKeys.length) return false
           return variantKeys.every((key) => variant.combinations[key] === combination[key])
         })
-
-        return existing 
+        return existing
           ? { ...existing, price: incoming ? incoming.price : existing.price }
           : { combinations: combination, price: incoming ? incoming.price : basePrice }
       })
