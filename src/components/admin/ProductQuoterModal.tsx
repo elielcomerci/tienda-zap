@@ -30,7 +30,8 @@ export default function ProductQuoterModal({
   const [itemHeight, setItemHeight] = useState(5)
   const [margin, setMargin] = useState(1) // 1cm de pinza general
   const [bleed, setBleed] = useState(0.2) // 2mm por lado
-  const [profitMarginPercent, setProfitMarginPercent] = useState(150)
+  const [maxMarginPercent, setMaxMarginPercent] = useState(218)
+  const [minMarginPercent, setMinMarginPercent] = useState(100)
   
   const [selectedFinishingIds, setSelectedFinishingIds] = useState<string[]>([])
   const [quantities, setQuantities] = useState<number[]>([100, 500, 1000])
@@ -73,6 +74,11 @@ export default function ProductQuoterModal({
 
     if (nestingResult.itemsPerSheet <= 0) return []
 
+    // Calculate min and max qty for logarithmic interpolation
+    const validQuantities = quantities.filter(q => q > 0)
+    const minQty = validQuantities.length > 0 ? Math.min(...validQuantities) : 1
+    const maxQty = validQuantities.length > 0 ? Math.max(...validQuantities) : 1
+
     return quantities.sort((a, b) => a - b).map(qty => {
       const sheetsNeeded = Math.ceil(qty / nestingResult.itemsPerSheet)
       const tier = material.tiers.find(t => 
@@ -81,6 +87,10 @@ export default function ProductQuoterModal({
       
       const rawMaterialUnitPrice = tier ? tier.unitPrice : 
         (material.tiers[material.tiers.length - 1]?.unitPrice || 0)
+
+      // Logarithmic margin calculation
+      const progress = maxQty === minQty ? 0 : Math.log(qty / minQty) / Math.log(maxQty / minQty)
+      const currentMargin = maxMarginPercent - progress * (maxMarginPercent - minMarginPercent)
 
       try {
         const quote = calculateQuote({
@@ -91,7 +101,7 @@ export default function ProductQuoterModal({
             costType: f.costType, 
             tiers: f.tiers 
           })),
-          profitMarginPercent
+          profitMarginPercent: currentMargin
         })
         return { material, qty, ...quote, itemsPerSheet: nestingResult.itemsPerSheet }
       } catch {
@@ -212,17 +222,36 @@ export default function ProductQuoterModal({
                   </label>
                 ))}
               </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-100">
-              <label className="label text-orange-600 font-semibold">Margen de Ganancia (%)</label>
-              <input 
-                type="number" 
-                value={profitMarginPercent} 
-                onChange={e => setProfitMarginPercent(Number(e.target.value))} 
-                className="input text-lg font-semibold" 
-              />
-              <p className="text-xs text-gray-500 mt-1">Ej: 150 = sumar 150% al costo (Costo x 2.5)</p>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                    Margen Tope (Min Cantidad)
+                  </label>
+                  <div className="flex rounded-xl overflow-hidden border border-gray-200 focus-within:border-orange-400 focus-within:ring-1 focus-within:ring-orange-400">
+                    <input
+                      type="number"
+                      value={maxMarginPercent}
+                      onChange={(e) => setMaxMarginPercent(Number(e.target.value))}
+                      className="w-full bg-gray-50 px-3 py-2 text-sm outline-none"
+                    />
+                    <span className="bg-gray-100 px-3 py-2 text-sm text-gray-500 border-l border-gray-200">%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                    Margen Base (Max Cantidad)
+                  </label>
+                  <div className="flex rounded-xl overflow-hidden border border-gray-200 focus-within:border-orange-400 focus-within:ring-1 focus-within:ring-orange-400">
+                    <input
+                      type="number"
+                      value={minMarginPercent}
+                      onChange={(e) => setMinMarginPercent(Number(e.target.value))}
+                      className="w-full bg-gray-50 px-3 py-2 text-sm outline-none"
+                    />
+                    <span className="bg-gray-100 px-3 py-2 text-sm text-gray-500 border-l border-gray-200">%</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
