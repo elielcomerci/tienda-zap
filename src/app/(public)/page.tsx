@@ -353,6 +353,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <ComboSection combos={combos} businessTypeName={businessTypeName} />
+
       {catalogProducts.length > 0 && (
         <section className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

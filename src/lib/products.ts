@@ -132,7 +132,7 @@ export async function getProductRelationOptions(excludeProductId?: string) {
  * - If no user/rubro, returns all active combos.
  */
 export async function getCombos(businessTypeId?: string | null) {
-  return prisma.product.findMany({
+  const result = await prisma.product.findMany({
     where: {
       active: true,
       isCombo: true,
@@ -163,5 +163,6 @@ export async function getCombos(businessTypeId?: string | null) {
     },
     orderBy: { createdAt: 'desc' },
   })
+  return result
 }
 

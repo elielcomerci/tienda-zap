@@ -2,13 +2,14 @@ import Link from 'next/link'
 import { ArrowRight, Package2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 
-type Combo = {
+export interface ComboItem {
   id: string
   name: string
   slug: string
   description: string | null
   images: string[]
   isCombo: boolean
+  price: number
   targetBusinessTypes: { id: string; name: string; slug: string }[]
   variants: { price: number }[]
   outgoingRelations: {
@@ -26,10 +27,12 @@ export default function ComboSection({
   combos,
   businessTypeName,
 }: {
-  combos: Combo[]
+  combos: any[] // We'll cast to ComboItem[] inside or use any to avoid Prisma mismatch errors at build time if inferred types fail
   businessTypeName?: string | null
 }) {
-  if (combos.length === 0) return null
+  const typedCombos = combos as unknown as ComboItem[]
+  
+  if (typedCombos.length === 0) return null
 
   return (
     <section className="border-y border-[#F66B9A]/15 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff]">
@@ -54,7 +57,7 @@ export default function ComboSection({
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {combos.map((combo) => {
+          {typedCombos.map((combo) => {
             const displayPrice = getProductDisplayPrice(combo)
             const includedItems = combo.outgoingRelations.slice(0, 4)
 

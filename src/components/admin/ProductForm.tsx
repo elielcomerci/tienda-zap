@@ -139,6 +139,9 @@ export default function ProductForm({
       if (!formData.get('active')) formData.set('active', 'false')
       else formData.set('active', 'true')
 
+      if (isCombo) formData.set('isCombo', 'on')
+      else formData.delete('isCombo')
+
       const raw = {
         name: formData.get('name') as string,
         slug: formData.get('slug') as string,
@@ -149,6 +152,8 @@ export default function ProductForm({
         stock: isServiceCategory ? 0 : formData.get('stock'),
         images,
         active: formData.get('active') === 'true',
+        isCombo: isCombo,
+        targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds'),
         options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
         variants: formData.get('variants') ? JSON.parse(formData.get('variants') as string) : [],
         relatedProductIds: formData.get('relatedProductIds')
