@@ -25,7 +25,7 @@ export default function ProductQuoterModal({
   const [data, setData] = useState<QuoterData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const [selectedMaterialId, setSelectedMaterialId] = useState('')
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([])
   const [itemWidth, setItemWidth] = useState(9)
   const [itemHeight, setItemHeight] = useState(5)
   const [margin, setMargin] = useState(1) // 1cm de pinza general
@@ -39,7 +39,7 @@ export default function ProductQuoterModal({
     if (isOpen && !data) {
       getQuoterData().then(d => {
         setData(d)
-        if (d.materials.length > 0) setSelectedMaterialId(d.materials[0].id)
+        if (d.materials.length > 0) setSelectedMaterialIds([d.materials[0].id])
         setLoading(false)
       })
     }
@@ -55,61 +55,66 @@ export default function ProductQuoterModal({
     )
   }
 
-  const selectedMaterial = data.materials.find(m => m.id === selectedMaterialId)
+  const selectedMaterials = data.materials.filter(m => selectedMaterialIds.includes(m.id))
   
-  // Calculate nesting
-  const nestingResult = selectedMaterial 
-    ? calculateNesting({
-        sheetWidth: selectedMaterial.width,
-        sheetHeight: selectedMaterial.height,
-        itemWidth,
-        itemHeight,
-        margin,
-        bleed
-      })
-    : { itemsPerSheet: 0, isRotated: false }
-
   // Finishings
   const finishings = data.finishings.filter(f => selectedFinishingIds.includes(f.id))
 
   // Generate matrix
-  const matrix = quantities.sort((a, b) => a - b).map(qty => {
-    if (!selectedMaterial || nestingResult.itemsPerSheet <= 0) return null
+  const matrix = selectedMaterials.flatMap(material => {
+    const nestingResult = calculateNesting({
+      sheetWidth: material.width,
+      sheetHeight: material.height,
+      itemWidth,
+      itemHeight,
+      margin,
+      bleed
+    })
 
-    // Determine raw material tier
-    const sheetsNeeded = Math.ceil(qty / nestingResult.itemsPerSheet)
-    const tier = selectedMaterial.tiers.find(t => 
-      sheetsNeeded >= t.minQty && (!t.maxQty || sheetsNeeded <= t.maxQty)
-    )
-    
-    // Si no hay tier que cubra esta cantidad, usamos el ultimo tier disponible o 0
-    const rawMaterialUnitPrice = tier ? tier.unitPrice : 
-      (selectedMaterial.tiers[selectedMaterial.tiers.length - 1]?.unitPrice || 0)
+    if (nestingResult.itemsPerSheet <= 0) return []
 
-    try {
-      const quote = calculateQuote({
-        quantity: qty,
-        itemsPerSheet: nestingResult.itemsPerSheet,
-        rawMaterialUnitPrice,
-        finishings: finishings.map(f => ({ 
-          costType: f.costType, 
-          tiers: f.tiers 
-        })),
-        profitMarginPercent
-      })
-      return { qty, ...quote }
-    } catch {
-      return null
-    }
-  })
+    return quantities.sort((a, b) => a - b).map(qty => {
+      const sheetsNeeded = Math.ceil(qty / nestingResult.itemsPerSheet)
+      const tier = material.tiers.find(t => 
+        sheetsNeeded >= t.minQty && (!t.maxQty || sheetsNeeded <= t.maxQty)
+      )
+      
+      const rawMaterialUnitPrice = tier ? tier.unitPrice : 
+        (material.tiers[material.tiers.length - 1]?.unitPrice || 0)
+
+      try {
+        const quote = calculateQuote({
+          quantity: qty,
+          itemsPerSheet: nestingResult.itemsPerSheet,
+          rawMaterialUnitPrice,
+          finishings: finishings.map(f => ({ 
+            costType: f.costType, 
+            tiers: f.tiers 
+          })),
+          profitMarginPercent
+        })
+        return { material, qty, ...quote, itemsPerSheet: nestingResult.itemsPerSheet }
+      } catch {
+        return null
+      }
+    })
+  }).filter(Boolean)
 
   const handleApply = () => {
-    const validVariants = matrix.filter(Boolean).map(m => ({
-      name: `${m!.qty} unidades`,
+    const validVariants = matrix.map(m => ({
+      name: `${m!.material.name} - ${m!.qty} unidades`,
       price: roundPsychological(m!.totalPrice)
     }))
     onApplyVariants(validVariants)
     onClose()
+  }
+
+  const toggleMaterial = (id: string) => {
+    if (selectedMaterialIds.includes(id)) {
+      setSelectedMaterialIds(selectedMaterialIds.filter(m => m !== id))
+    } else {
+      setSelectedMaterialIds([...selectedMaterialIds, id])
+    }
   }
 
   const toggleFinishing = (id: string) => {
@@ -137,16 +142,26 @@ export default function ProductQuoterModal({
           {/* Columna 1: Configuracion */}
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Material Base</h3>
-              <select 
-                value={selectedMaterialId} 
-                onChange={(e) => setSelectedMaterialId(e.target.value)}
-                className="input w-full"
-              >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900">Sustratos Base</h3>
+                <span className="text-xs text-gray-500">{selectedMaterialIds.length} seleccionados</span>
+              </div>
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
                 {data.materials.map(m => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.width}x{m.height}cm)</option>
+                  <label key={m.id} className="flex items-center gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedMaterialIds.includes(m.id)}
+                      onChange={() => toggleMaterial(m.id)}
+                      className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{m.name}</div>
+                      <div className="text-xs text-gray-500">{m.width}x{m.height}cm ({m.unit})</div>
+                    </div>
+                  </label>
                 ))}
-              </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -206,27 +221,7 @@ export default function ProductQuoterModal({
           <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col">
             <h3 className="font-semibold text-gray-900 mb-4">Nesting</h3>
             
-            {nestingResult.itemsPerSheet > 0 ? (
-              <div className="bg-white p-4 rounded-xl border border-blue-100 mb-6 flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-gray-500">Entran por pliego</div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {nestingResult.itemsPerSheet} u.
-                  </div>
-                </div>
-                {nestingResult.isRotated && (
-                  <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-medium">
-                    Rotado 90°
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm mb-6">
-                La pieza no entra en el pliego con los márgenes especificados.
-              </div>
-            )}
-
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3 mt-4">
               <h3 className="font-semibold text-gray-900">Cantidades a Cotizar</h3>
               <div className="flex gap-2">
                 {[100, 500, 1000, 5000].map(q => (
@@ -241,32 +236,40 @@ export default function ProductQuoterModal({
               </div>
             </div>
 
-            <div className="flex-1 space-y-3 overflow-y-auto">
-              {matrix.map((m, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm relative group">
-                  <div className="w-20 font-bold text-gray-900">{quantities[i]} u.</div>
-                  {m ? (
-                    <>
+            <div className="flex-1 space-y-3 overflow-y-auto max-h-80 pr-2">
+              {matrix.length === 0 ? (
+                <div className="text-sm text-gray-500 py-4 text-center">
+                  Seleccioná al menos un material válido para ver los precios.
+                </div>
+              ) : (
+                matrix.map((m, i) => (
+                  <div key={i} className="flex flex-col gap-2 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-gray-50 pb-2">
+                      <div className="font-medium text-gray-900 text-sm truncate pr-4" title={m!.material.name}>
+                        {m!.material.name}
+                      </div>
+                      <div className="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded text-xs">
+                        {m!.qty} u.
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 relative group">
                       <div className="flex-1 text-xs text-gray-500 space-y-1">
-                        <div>Pliegos: <span className="font-medium text-gray-700">{m.sheetsNeeded}</span></div>
-                        <div>Costo: <span className="font-medium text-gray-700">${m.totalCost.toFixed(2)}</span></div>
+                        <div>Entran <span className="font-medium text-gray-700">{m!.itemsPerSheet}</span>/pliego</div>
+                        <div>Pliegos: <span className="font-medium text-gray-700">{m!.sheetsNeeded}</span></div>
+                        <div>Costo B.: <span className="font-medium text-gray-700">${m!.totalCost.toFixed(2)}</span></div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-green-600">${roundPsychological(m.totalPrice)}</div>
-                        <div className="text-xs text-green-700/70">${(roundPsychological(m.totalPrice) / m.qty).toFixed(2)} c/u</div>
+                        <div className="text-lg font-bold text-green-600">${roundPsychological(m!.totalPrice)}</div>
+                        <div className="text-xs text-green-700/70">${(roundPsychological(m!.totalPrice) / m!.qty).toFixed(2)} c/u</div>
                       </div>
-                    </>
-                  ) : (
-                    <div className="flex-1 text-sm text-red-500">Error de cálculo</div>
-                  )}
-                  <button 
-                    onClick={() => setQuantities(quantities.filter((_, idx) => idx !== i))}
-                    className="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
+                      
+                      {/* En lugar de eliminar una cantidad acá (lo cual era raro), ya no lo permitimos fila por fila, 
+                          porque generaría una UI muy confusa al tener N variantes. Solo usan los botones +100, +500, etc. */}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="mt-6 pt-4 border-t border-gray-200">
