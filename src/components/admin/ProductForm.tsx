@@ -20,6 +20,8 @@ export default function ProductForm({
   initialRelatedProductIds,
   availableIntentions,
   initialIntentionIds,
+  availableBusinessTypes,
+  initialTargetBusinessTypeIds,
 }: {
   product?: any
   categories: Array<{
