@@ -17,7 +17,7 @@ export async function getProducts(
   return prisma.product.findMany({
     where: {
       active: true,
-      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      category: categorySlug ? { slug: categorySlug } : { slug: { not: 'sistema' } },
       ...(options?.intentSlug ? { intentions: { some: { slug: options.intentSlug } } } : {}),
       ...(search
         ? {
@@ -80,7 +80,10 @@ export const getProduct = cache(async function getProduct(slug: string) {
 
 export async function getActiveProductSlugs() {
   return prisma.product.findMany({
-    where: { active: true },
+    where: { 
+      active: true,
+      category: { slug: { not: 'sistema' } }
+    },
     select: { slug: true },
   })
 }

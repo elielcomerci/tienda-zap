@@ -20,7 +20,7 @@ export default function ProductQuoterModal({
 }: {
   isOpen: boolean
   onClose: () => void
-  onApplyVariants: (variants: { name: string; price: number }[]) => void
+  onApplyVariants: (variants: { options: Record<string, string>; price: number }[]) => void
 }) {
   const [data, setData] = useState<QuoterData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -101,8 +101,17 @@ export default function ProductQuoterModal({
   }).filter(Boolean)
 
   const handleApply = () => {
+    const terminacionesText = finishings.length > 0 
+      ? finishings.map(f => f.name).join(' + ')
+      : 'Sin terminaciones'
+
     const validVariants = matrix.map(m => ({
-      name: `${m!.material.name} - ${m!.qty} unidades`,
+      options: {
+        'Sustrato': m!.material.name,
+        'Medida': `${itemWidth}x${itemHeight} cm`,
+        'Terminaciones': terminacionesText,
+        'Cantidad': `${m!.qty}`
+      },
       price: roundPsychological(m!.totalPrice)
     }))
     onApplyVariants(validVariants)

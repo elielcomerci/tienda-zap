@@ -66,33 +66,45 @@ export default function ProductOptionsConfigurator({
 
   useEffect(() => {
     const handleApplyVariants = (e: Event) => {
-      const customEvent = e as CustomEvent<{ name: string; price: number }[]>
+      const customEvent = e as CustomEvent<{ options: Record<string, string>; price: number }[]>
       const incomingVariants = customEvent.detail
 
       if (!incomingVariants || incomingVariants.length === 0) return
 
-      // Create an option "Cantidad" if it doesn't exist
-      const existingOptionIndex = options.findIndex(o => o.name.toLowerCase() === 'cantidad')
-      const newValues = incomingVariants.map(v => v.name)
+      // Extract options from incoming variants
+      const incomingOptionsMap: Record<string, Set<string>> = {}
+      incomingVariants.forEach(v => {
+        Object.entries(v.options).forEach(([optName, optValue]) => {
+          if (!incomingOptionsMap[optName]) incomingOptionsMap[optName] = new Set()
+          incomingOptionsMap[optName].add(optValue)
+        })
+      })
 
       let nextOptions = [...options]
-      if (existingOptionIndex >= 0) {
-        // Merge values
-        const currentValues = nextOptions[existingOptionIndex].values
-        nextOptions[existingOptionIndex].values = Array.from(new Set([...currentValues, ...newValues]))
-      } else {
-        // Create new option
-        nextOptions.push({ name: 'Cantidad', isRequired: true, values: newValues })
-      }
+
+      // For each option provided by the quoter (e.g., 'Sustrato', 'Cantidad')
+      Object.entries(incomingOptionsMap).forEach(([optName, optValuesSet]) => {
+        const newValues = Array.from(optValuesSet)
+        const existingOptionIndex = nextOptions.findIndex(o => o.name.toLowerCase() === optName.toLowerCase())
+        
+        if (existingOptionIndex >= 0) {
+          // Replace completely instead of merging to clean up old quoter data
+          nextOptions[existingOptionIndex].values = newValues
+        } else {
+          // Create new option
+          nextOptions.push({ name: optName, isRequired: true, values: newValues })
+        }
+      })
       setOptions(nextOptions)
 
-      // We need to update variants after state settles, but React state is async.
-      // Easiest is to generate them and update prices.
+      // Generate cartesian product for the new options
       const combinations = cartesianProduct(nextOptions)
       const nextVariants = combinations.map((combination) => {
-        // Did we just receive this exact combination from Quoter?
-        // Quoter produces { "Cantidad": "100 unidades" } essentially.
-        const incoming = incomingVariants.find(v => combination['Cantidad'] === v.name)
+        // Find if this specific combination was just quoted
+        const incoming = incomingVariants.find(v => {
+          // It matches if every key in the incoming option matches the combination
+          return Object.entries(v.options).every(([k, val]) => combination[k] === val)
+        })
         
         const existing = variants.find((variant) => {
           const variantKeys = Object.keys(variant.combinations)
