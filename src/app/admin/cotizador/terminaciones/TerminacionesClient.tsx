@@ -157,9 +157,9 @@ export default function TerminacionesClient({
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-              <h2 className="text-xl font-bold text-gray-900">
+          <div className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 shrink-0">
+              <h2 className="text-lg font-bold text-gray-900">
                 {editingId ? 'Editar Terminación' : 'Nueva Terminación'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:bg-gray-100 rounded-lg p-2">
@@ -167,92 +167,89 @@ export default function TerminacionesClient({
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-6">
-              <div>
-                <label className="label">Nombre del proceso</label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="input"
-                  placeholder="Ej: Laminado Mate Frente y Dorso"
-                />
-              </div>
+            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
 
-              <div>
-                <label className="label">Tipo de Costo</label>
-                <select
-                  value={form.costType}
-                  onChange={(e) => setForm({ ...form, costType: e.target.value as FinishingCostType })}
-                  className="input"
-                >
-                  {Object.entries(COST_TYPE_LABELS).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
-                  ))}
-                </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  {form.costType === 'FIXED_SETUP' && 'Cobra un valor único sin importar cuántos pliegos o unidades sean (Ej: Matriz de Troquel).'}
-                  {form.costType === 'PER_SHEET' && 'Multiplica el costo por la cantidad de pliegos necesarios.'}
-                  {form.costType === 'PER_UNIT' && 'Multiplica el costo por la cantidad de piezas/productos finales.'}
-                </p>
-              </div>
-
-              <div className="border-t border-gray-100 pt-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-900">Escalas de Precio</h3>
-                  <button type="button" onClick={handleAddTier} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
-                    + Añadir Escala
-                  </button>
+                <div>
+                  <label className="label">Nombre del proceso</label>
+                  <input
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="input"
+                    placeholder="Ej: Laminado Mate Frente y Dorso"
+                  />
                 </div>
 
-                <div className="space-y-3">
-                  {tiers.map((tier, index) => (
-                    <div key={index} className="flex gap-3 items-end p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <div className="flex-1">
-                        <label className="label text-xs">Cant. Desde</label>
+                <div>
+                  <label className="label">Tipo de Costo</label>
+                  <select
+                    value={form.costType}
+                    onChange={(e) => setForm({ ...form, costType: e.target.value as FinishingCostType })}
+                    className="input"
+                  >
+                    {Object.entries(COST_TYPE_LABELS).map(([val, label]) => (
+                      <option key={val} value={val}>{label}</option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {form.costType === 'FIXED_SETUP' && 'Cobra un valor único sin importar cuántos pliegos o unidades sean (Ej: Matriz de Troquel).'}
+                    {form.costType === 'PER_SHEET' && 'Multiplica el costo por la cantidad de pliegos necesarios.'}
+                    {form.costType === 'PER_UNIT' && 'Multiplica el costo por la cantidad de piezas/productos finales.'}
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-100 pt-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-semibold text-gray-900">Escalas de Precio</h3>
+                    <button type="button" onClick={handleAddTier} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
+                      + Añadir Escala
+                    </button>
+                  </div>
+
+                  {/* Column headers */}
+                  <div className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2 px-1 mb-1">
+                    <span className="text-xs font-semibold text-gray-400">Desde</span>
+                    <span className="text-xs font-semibold text-gray-400">Hasta</span>
+                    <span className="text-xs font-semibold text-gray-400">Costo ($)</span>
+                    <span />
+                  </div>
+
+                  <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+                    {tiers.map((tier, index) => (
+                      <div key={index} className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2 items-center">
                         <input
-                          type="number"
-                          min="1"
-                          required
-                          value={tier.minQty}
+                          type="number" min="1" required value={tier.minQty}
                           onChange={(e) => handleUpdateTier(index, 'minQty', Number(e.target.value))}
-                          className="input"
+                          className="input !py-1.5 !text-sm"
                         />
-                      </div>
-                      <div className="flex-1">
-                        <label className="label text-xs">Cant. Hasta (vacío = infinito)</label>
                         <input
-                          type="number"
-                          min={tier.minQty}
-                          value={tier.maxQty || ''}
+                          type="number" min={tier.minQty} value={tier.maxQty || ''}
+                          placeholder="∞"
                           onChange={(e) => handleUpdateTier(index, 'maxQty', e.target.value ? Number(e.target.value) : null)}
-                          className="input"
+                          className="input !py-1.5 !text-sm"
                         />
-                      </div>
-                      <div className="flex-1">
-                        <label className="label text-xs">Costo ($)</label>
                         <input
-                          type="number"
-                          step="0.01"
-                          required
-                          value={tier.unitPrice}
+                          type="number" step="0.01" required value={tier.unitPrice}
                           onChange={(e) => handleUpdateTier(index, 'unitPrice', Number(e.target.value))}
-                          className="input"
+                          className="input !py-1.5 !text-sm"
                         />
+                        <button
+                          type="button" onClick={() => handleRemoveTier(index)}
+                          className="flex h-8 w-8 items-center justify-center text-red-400 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTier(index)}
-                        className="p-3 text-red-500 hover:bg-red-50 rounded-lg mb-[2px]"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+              </div>{/* end scrollable body */}
+
+              {/* Pinned footer */}
+              <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
