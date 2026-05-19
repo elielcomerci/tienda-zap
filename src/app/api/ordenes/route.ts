@@ -12,6 +12,7 @@ import { evaluateCheckoutPricing, reserveCouponRedemptionForOrder } from '@/lib/
 import { sendEmailAsync } from '@/lib/email'
 import { orderConfirmationEmail } from '@/lib/email-templates'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
+import { resolveActiveSellerId } from '@/lib/sellers'
 
 // POST /api/ordenes - crear orden TRANSFER, CASH o ZAP_CREDIT
 export async function POST(req: NextRequest) {
@@ -26,14 +27,14 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
 
-    let sellerId = null
+    let sellerId: string | null = null
     if (session?.user?.id) {
       const userDb = await prisma.user.findUnique({ where: { id: session.user.id }, select: { sellerId: true } })
-      sellerId = userDb?.sellerId || null
+      sellerId = await resolveActiveSellerId(userDb?.sellerId)
     }
 
     if (!sellerId) {
-      sellerId = req.cookies.get('zap_seller_ref')?.value || null
+      sellerId = await resolveActiveSellerId(req.cookies.get('zap_seller_ref')?.value)
     }
 
     if (data.paymentType === 'ZAP_CREDIT' && !session?.user?.id) {
@@ -159,4 +160,3 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: error.message }, { status: 500 })
   }
 }
-

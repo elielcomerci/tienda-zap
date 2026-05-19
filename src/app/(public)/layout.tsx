@@ -3,14 +3,18 @@ import PublicHeader from '@/components/public/PublicHeader'
 import WelcomePromoModal from '@/components/WelcomePromoModal'
 import { auth } from '@/auth'
 import { Heart } from 'lucide-react'
+import { cookies } from 'next/headers'
+import { getActiveSellerById } from '@/lib/sellers'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
+  const sellerRef = (await cookies()).get('zap_seller_ref')?.value
+  const referralSeller = await getActiveSellerById(sellerRef)
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <WelcomePromoModal />
-      <PublicHeader user={session?.user || null} />
+      <PublicHeader user={session?.user || null} referralSeller={referralSeller} />
       <main className="flex-1">{children}</main>
 
       {/* Footer — matches zap.com.ar */}

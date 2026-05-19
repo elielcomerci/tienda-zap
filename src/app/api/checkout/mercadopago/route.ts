@@ -9,6 +9,7 @@ import {
   hashOrderPublicAccessToken,
 } from '@/lib/order-access'
 import { evaluateCheckoutPricing, reserveCouponRedemptionForOrder } from '@/lib/coupons'
+import { resolveActiveSellerId } from '@/lib/sellers'
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,14 +24,14 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     const publicAccessToken = createOrderPublicAccessToken()
 
-    let sellerId = null
+    let sellerId: string | null = null
     if (session?.user?.id) {
       const userDb = await prisma.user.findUnique({ where: { id: session.user.id }, select: { sellerId: true } })
-      sellerId = userDb?.sellerId || null
+      sellerId = await resolveActiveSellerId(userDb?.sellerId)
     }
 
     if (!sellerId) {
-      sellerId = req.cookies.get('zap_seller_ref')?.value || null
+      sellerId = await resolveActiveSellerId(req.cookies.get('zap_seller_ref')?.value)
     }
 
     const pricing = await evaluateCheckoutPricing({

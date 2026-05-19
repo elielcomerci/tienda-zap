@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Handshake, LayoutDashboard, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
+import { createPublicSellerLead } from '@/lib/actions/leads'
 
 const NAV_HEIGHT = 70
 
@@ -15,16 +16,23 @@ const navLinks = [
 
 export default function PublicHeader({
   user,
+  referralSeller,
 }: {
   user?: { name?: string | null; role?: string | null } | null
+  referralSeller?: { id: string; name?: string | null } | null
 }) {
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [leadOpen, setLeadOpen] = useState(false)
+  const [leadError, setLeadError] = useState<string | null>(null)
+  const [leadSent, setLeadSent] = useState(false)
+  const [isLeadPending, startLeadTransition] = useTransition()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
   const canOpenSellerPanel = user?.role === 'SELLER' || user?.role === 'ADMIN'
+  const showReferralBanner = Boolean(referralSeller && !canOpenSellerPanel)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -66,6 +74,21 @@ export default function PublicHeader({
     if (targetCat) return currentCat === targetCat
     if (target.pathname === '/productos') return !currentCat
     return true
+  }
+
+  const handleLeadSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    setLeadError(null)
+
+    startLeadTransition(async () => {
+      const result = await createPublicSellerLead(formData)
+      if (result?.error) {
+        setLeadError(result.error)
+        return
+      }
+      setLeadSent(true)
+    })
   }
 
   return (
@@ -218,6 +241,23 @@ export default function PublicHeader({
         </div>
       </header>
 
+      {showReferralBanner && referralSeller && (
+        <div className="fixed left-0 right-0 top-[70px] z-40 border-y border-[#4576B9]/15 bg-white/95 px-4 py-2 text-center text-xs font-semibold text-gray-600 shadow-sm backdrop-blur">
+          Te esta asesorando <span className="text-[#ED2C71]">{referralSeller.name || 'un vendedor ZAP'}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setLeadOpen(true)
+              setLeadSent(false)
+              setLeadError(null)
+            }}
+            className="ml-3 rounded-full bg-[#ED2C71] px-3 py-1 text-[11px] font-bold text-white"
+          >
+            Quiero asesoria
+          </button>
+        </div>
+      )}
+
       {/* Mobile menu — full screen overlay like zap.com.ar */}
       <div
         className={`md:hidden fixed inset-0 z-40 flex flex-col items-center justify-center text-white transition-transform duration-500 ease-in-out ${
@@ -290,8 +330,66 @@ export default function PublicHeader({
         </ul>
       </div>
 
+      {leadOpen && referralSeller && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-gray-950/50 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-black text-gray-900">Te contactamos</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Deja tus datos y {referralSeller.name || 'tu vendedor ZAP'} te escribe.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLeadOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100"
+                aria-label="Cerrar"
+              >
+                &times;
+              </button>
+            </div>
+
+            {leadSent ? (
+              <div className="rounded-xl bg-green-50 p-4 text-sm font-semibold text-green-700">
+                Listo, recibimos tus datos. Te vamos a contactar pronto.
+              </div>
+            ) : (
+              <form onSubmit={handleLeadSubmit} className="space-y-3">
+                <input type="hidden" name="sellerId" value={referralSeller.id} />
+                {leadError && (
+                  <div className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{leadError}</div>
+                )}
+                <div>
+                  <label className="label">Nombre</label>
+                  <input name="name" required className="input" placeholder="Tu nombre" />
+                </div>
+                <div>
+                  <label className="label">WhatsApp</label>
+                  <input name="phone" required className="input" placeholder="223..." />
+                </div>
+                <div>
+                  <label className="label">Email</label>
+                  <input name="email" type="email" className="input" placeholder="tu@email.com" />
+                </div>
+                <div>
+                  <label className="label">Que necesitas?</label>
+                  <textarea name="interest" rows={3} className="input resize-none" placeholder="Contanos brevemente..." />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setLeadOpen(false)} className="btn-secondary">Cancelar</button>
+                  <button type="submit" disabled={isLeadPending} className="btn-primary">
+                    {isLeadPending ? 'Enviando...' : 'Enviar'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Spacer for fixed header */}
-      <div style={{ height: `${NAV_HEIGHT}px` }} aria-hidden="true" />
+      <div style={{ height: `${NAV_HEIGHT + (showReferralBanner ? 34 : 0)}px` }} aria-hidden="true" />
     </>
   )
 }

@@ -1,7 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import ClientsTable from './ClientsTable'
 
@@ -20,23 +19,51 @@ export default async function SellerClientesPage({
 
   const { q } = await searchParams
 
-  const clients = await prisma.user.findMany({
-    where: {
-      sellerId: seller.id,
-      ...(q
-        ? {
-            OR: [
-              { name: { contains: q, mode: 'insensitive' } },
-              { email: { contains: q, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-    },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      _count: { select: { orders: true } }
-    }
-  })
+  const [clients, leads, businessTypes] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        sellerId: seller.id,
+        ...(q
+          ? {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { orders: true } }
+      }
+    }),
+    prisma.sellerLead.findMany({
+      where: {
+        sellerId: seller.id,
+        ...(q
+          ? {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q } },
+                { businessName: { contains: q, mode: 'insensitive' } },
+                { interest: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        businessType: { select: { name: true } },
+        convertedUser: { select: { id: true, name: true, email: true } },
+      },
+    }),
+    prisma.businessType.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true },
+    }),
+  ])
 
   return (
     <div className="space-y-6">
@@ -47,13 +74,13 @@ export default async function SellerClientesPage({
             Gestioná tu cartera de clientes activos.
           </p>
         </div>
-        <Link href="/seller/clientes/vincular" className="btn-primary inline-flex items-center gap-2">
+        <div className="hidden items-center gap-2 text-sm font-semibold text-[#ED2C71] sm:flex">
           <Plus size={18} />
-          Vincular Cliente
-        </Link>
+          Cargar prospectos y clientes
+        </div>
       </div>
 
-      <ClientsTable clients={clients} initialQuery={q} />
+      <ClientsTable clients={clients} leads={leads} businessTypes={businessTypes} initialQuery={q} />
     </div>
   )
 }

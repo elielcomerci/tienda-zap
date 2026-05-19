@@ -15,7 +15,7 @@ export default async function SellerDashboardPage() {
     include: {
       sellerProfile: true,
       _count: {
-        select: { clients: true, sellerOrders: true },
+        select: { clients: true, sellerOrders: true, sellerLeads: true },
       },
     },
   })
@@ -150,6 +150,7 @@ export default async function SellerDashboardPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Clientes</p>
             <p className="text-xl font-bold text-gray-900">{seller._count.clients}</p>
+            <p className="mt-1 text-xs text-gray-500">{seller._count.sellerLeads} prospectos</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-500">
             <Users size={20} />

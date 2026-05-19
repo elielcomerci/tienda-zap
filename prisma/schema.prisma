@@ -34,6 +34,8 @@ model User {
   sessions           Session[]
   seller             User?          @relation("SellerClients", fields: [sellerId], references: [id])
   clients            User[]         @relation("SellerClients")
+  sellerLeads        SellerLead[]   @relation("SellerLeadOwner")
+  convertedLeads     SellerLead[]   @relation("SellerLeadConvertedUser")
   sellerProfile      SellerProfile?
   incentiveProgress  SellerIncentiveProgress[]
   sellerPayouts      SellerPayout[]
@@ -56,7 +58,33 @@ model BusinessType {
   slug       String     @unique
   categories Category[]
   users      User[]
+  sellerLeads SellerLead[]
   combos     Product[]  @relation("ComboBusinessTypes")
+}
+
+model SellerLead {
+  id              String           @id @default(cuid())
+  sellerId        String
+  name            String
+  email           String?
+  phone           String?
+  businessName    String?
+  businessTypeId  String?
+  interest        String?
+  status          SellerLeadStatus @default(NEW)
+  notes           String?          @db.Text
+  nextContactAt   DateTime?
+  convertedUserId String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  seller        User          @relation("SellerLeadOwner", fields: [sellerId], references: [id], onDelete: Cascade)
+  businessType  BusinessType? @relation(fields: [businessTypeId], references: [id])
+  convertedUser User?         @relation("SellerLeadConvertedUser", fields: [convertedUserId], references: [id])
+
+  @@index([sellerId, status])
+  @@index([email])
+  @@index([phone])
 }
 
 model Category {
@@ -484,6 +512,14 @@ enum Role {
   ADMIN
   CUSTOMER
   SELLER
+}
+
+enum SellerLeadStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  LOST
 }
 
 enum OrderStatus {

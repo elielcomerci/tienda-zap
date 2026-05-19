@@ -1,8 +1,16 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'ZAP Tienda <onboarding@resend.dev>'
+
+let resendClient: Resend | null = null
+
+function getResendClient() {
+  if (!process.env.RESEND_API_KEY) return null
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendClient
+}
 
 export async function sendEmail({
   to,
@@ -19,6 +27,9 @@ export async function sendEmail({
   }
 
   try {
+    const resend = getResendClient()
+    if (!resend) return
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to,

@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs'
 import { registerSchema, updateProfileSchema } from '@/lib/validations'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import { resolveActiveSellerId } from '@/lib/sellers'
 
 export async function registerUser(formData: FormData): Promise<void> {
   const parsed = registerSchema.safeParse(Object.fromEntries(formData))
@@ -39,8 +40,30 @@ export async function registerUser(formData: FormData): Promise<void> {
     redirect('/registro?error=Email+o+documento+ya+registrado')
   }
 
+  const cookieSellerId = await resolveActiveSellerId((await cookies()).get('zap_seller_ref')?.value)
+  const matchingLead = await prisma.sellerLead.findFirst({
+    where: {
+      convertedUserId: null,
+      OR: [
+        { email: parsed.data.email },
+        ...(parsed.data.phone ? [{ phone: parsed.data.phone }] : []),
+      ],
+      seller: {
+        isBanned: false,
+        role: { in: ['SELLER', 'ADMIN'] },
+        OR: [
+          { role: 'ADMIN' },
+          { sellerProfile: { active: true } },
+        ],
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { sellerId: true },
+  })
+  const sellerId = cookieSellerId || matchingLead?.sellerId || null
+
   const hash = await bcrypt.hash(parsed.data.password, 12)
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       name: parsed.data.name,
       email: parsed.data.email,
@@ -49,9 +72,26 @@ export async function registerUser(formData: FormData): Promise<void> {
       businessTypeId: parsed.data.businessTypeId || null,
       password: hash,
       role: 'CUSTOMER',
-      sellerId: (await cookies()).get('zap_seller_ref')?.value || null,
+      sellerId,
     },
   })
+
+  if (sellerId) {
+    await prisma.sellerLead.updateMany({
+      where: {
+        sellerId,
+        convertedUserId: null,
+        OR: [
+          { email: parsed.data.email },
+          ...(parsed.data.phone ? [{ phone: parsed.data.phone }] : []),
+        ],
+      },
+      data: {
+        convertedUserId: user.id,
+        status: 'WON',
+      },
+    })
+  }
 
   redirect('/login?registered=1')
 }
