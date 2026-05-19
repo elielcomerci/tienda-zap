@@ -76,13 +76,27 @@ export default function ProductMediaBlock({
     const lines = lrcText.split(/\r?\n/)
     const result: Array<{ time: number; text: string }> = []
     const timeRegex = /\[(\d+):(\d+(?:\.\d+)?)\]/
+    const offsetRegex = /\[offset:\s*([+-]?\d+)\s*\]/i
+
+    let offsetMs = 0
+    // Try to find global [offset: +/- ms] metadata
+    for (const line of lines) {
+      const offsetMatch = offsetRegex.exec(line)
+      if (offsetMatch) {
+        offsetMs = parseInt(offsetMatch[1], 10)
+        break
+      }
+    }
+
+    const offsetSeconds = offsetMs / 1000
 
     for (const line of lines) {
       const match = timeRegex.exec(line)
       if (match) {
         const minutes = parseInt(match[1], 10)
         const seconds = parseFloat(match[2])
-        const timeInSeconds = minutes * 60 + seconds
+        let timeInSeconds = minutes * 60 + seconds + offsetSeconds
+        if (timeInSeconds < 0) timeInSeconds = 0
         const text = line.replace(timeRegex, '').trim()
         if (!isNaN(timeInSeconds)) {
           result.push({ time: timeInSeconds, text })
