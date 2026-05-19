@@ -78,7 +78,7 @@ export default async function SellerOrdenesPage() {
                   return (
                     <tr key={order.id} className="hover:bg-gray-50/50">
                       <td className="px-6 py-4">
-                        <Link href={`/admin/ordenes/${order.id}`} className="font-semibold text-[#ED2C71] hover:underline">
+                        <Link href={`/seller/ordenes/${order.id}`} className="font-semibold text-[#ED2C71] hover:underline">
                           #{getOrderDisplayCode(order.id)}
                         </Link>
                         <p className="text-xs text-gray-400 mt-0.5">
@@ -90,8 +90,8 @@ export default async function SellerOrdenesPage() {
                         <p className="text-xs text-gray-500">{order.user?.email || order.guestEmail}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${statusColor[order.status]}`}>
-                          {statusLabel[order.status]}
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${statusColor[order.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                          {statusLabel[order.status] ?? order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right font-medium">

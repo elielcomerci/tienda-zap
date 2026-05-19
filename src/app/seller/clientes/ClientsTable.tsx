@@ -51,7 +51,7 @@ export default function ClientsTable({ clients, initialQuery }: { clients: any[]
             <tbody className="divide-y divide-gray-100">
               {clients.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-gray-500">
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
                     No tenés clientes en tu cartera que coincidan con la búsqueda.
                   </td>
                 </tr>

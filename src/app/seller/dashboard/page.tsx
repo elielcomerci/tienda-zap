@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { DollarSign, Users, ShoppingCart, Target, Gift, Clock, Phone } from 'lucide-react'
 import Link from 'next/link'
 import ReferralCard from '@/components/seller/ReferralCard'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 export default async function SellerDashboardPage() {
   const session = await auth()
@@ -71,6 +72,10 @@ export default async function SellerDashboardPage() {
   
   const totalPaid = payouts._sum.amount || 0
   const availableBalance = totalEarned - totalPaid
+  const withdrawUrl = buildWhatsappUrl(
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+    `Hola ZAP, soy ${seller.name} y quiero solicitar el retiro de mis $${availableBalance.toLocaleString('es-AR')} disponibles.`
+  )
   // Fetch active incentives progress
   const now = new Date()
   const activeIncentives = await prisma.sellerIncentive.findMany({
@@ -106,9 +111,9 @@ export default async function SellerDashboardPage() {
           </div>
           <div className="flex items-center justify-between">
             <p className="text-3xl font-black text-orange-600">${availableBalance.toLocaleString('es-AR')}</p>
-            {availableBalance > 0 && (
+            {availableBalance > 0 && withdrawUrl && (
               <a 
-                href={`https://wa.me/5491100000000?text=${encodeURIComponent(`Hola ZAP, soy ${seller.name} y quiero solicitar el retiro de mis $${availableBalance.toLocaleString('es-AR')} disponibles.`)}`}
+                href={withdrawUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-xs font-bold bg-white text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-colors border border-orange-200"

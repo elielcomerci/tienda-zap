@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { LayoutDashboard, Menu, ShoppingCart, X, LogOut } from 'lucide-react'
+import { Handshake, LayoutDashboard, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
 const NAV_HEIGHT = 70
 
@@ -24,6 +24,7 @@ export default function PublicHeader({
   const [menuOpen, setMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const canOpenSellerPanel = user?.role === 'SELLER' || user?.role === 'ADMIN'
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -115,6 +116,16 @@ export default function PublicHeader({
                     title="Ir al admin"
                   >
                     <LayoutDashboard size={17} />
+                  </Link>
+                )}
+
+                {canOpenSellerPanel && (
+                  <Link
+                    href="/seller/dashboard"
+                    className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] text-[#2F5F9F] transition-colors hover:bg-[#4576B9]/15"
+                    title="Ir al panel de vendedores"
+                  >
+                    <Handshake size={17} />
                   </Link>
                 )}
 
@@ -245,6 +256,15 @@ export default function PublicHeader({
                     className="bg-white/20 text-white text-lg py-2 px-8 rounded-full font-bold"
                   >
                     Panel Admin
+                  </Link>
+                )}
+                {canOpenSellerPanel && (
+                  <Link
+                    href="/seller/dashboard"
+                    onClick={() => setMenuOpen(false)}
+                    className="bg-white/20 text-white text-lg py-2 px-8 rounded-full font-bold"
+                  >
+                    Panel Vendedores
                   </Link>
                 )}
               </div>
