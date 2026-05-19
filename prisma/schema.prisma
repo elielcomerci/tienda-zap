@@ -81,10 +81,24 @@ model SellerLead {
   seller        User          @relation("SellerLeadOwner", fields: [sellerId], references: [id], onDelete: Cascade)
   businessType  BusinessType? @relation(fields: [businessTypeId], references: [id])
   convertedUser User?         @relation("SellerLeadConvertedUser", fields: [convertedUserId], references: [id])
+  events        SellerLeadEvent[]
 
   @@index([sellerId, status])
+  @@index([sellerId, nextContactAt])
   @@index([email])
   @@index([phone])
+}
+
+model SellerLeadEvent {
+  id        String   @id @default(cuid())
+  leadId    String
+  type      String
+  note      String?
+  createdAt DateTime @default(now())
+
+  lead SellerLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
 }
 
 model Category {

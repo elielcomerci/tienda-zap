@@ -17,6 +17,20 @@ const leadSchema = z.object({
   nextContactAt: z.string().trim().optional(),
 })
 
+function parseLeadDate(value?: string) {
+  return value ? new Date(`${value}T12:00:00`) : null
+}
+
+async function logLeadEvent(leadId: string, type: string, note?: string | null) {
+  await prisma.sellerLeadEvent.create({
+    data: {
+      leadId,
+      type,
+      note: note || null,
+    },
+  })
+}
+
 async function requireSeller() {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
@@ -81,28 +95,28 @@ export async function createSellerLead(formData: FormData) {
     interest: data.interest || null,
     status: existingUser ? 'WON' as const : data.status,
     notes: data.notes || null,
-    nextContactAt: data.nextContactAt ? new Date(`${data.nextContactAt}T12:00:00`) : null,
+    nextContactAt: parseLeadDate(data.nextContactAt),
     convertedUserId: existingUser?.id || null,
   }
+
+  let leadId = existingLead?.id
 
   if (existingLead) {
     await prisma.sellerLead.update({
       where: { id: existingLead.id },
-      data: {
-      name: data.name,
-      email: data.email || null,
-      phone: data.phone,
-      businessName: data.businessName || null,
-      businessTypeId: data.businessTypeId || null,
-      interest: data.interest || null,
-      status: existingUser ? 'WON' : data.status,
-      notes: data.notes || null,
-      nextContactAt: data.nextContactAt ? new Date(`${data.nextContactAt}T12:00:00`) : null,
-      convertedUserId: existingUser?.id || null,
-      },
+      data: leadData,
     })
   } else {
-    await prisma.sellerLead.create({ data: leadData })
+    const createdLead = await prisma.sellerLead.create({ data: leadData })
+    leadId = createdLead.id
+  }
+
+  if (leadId) {
+    await logLeadEvent(
+      leadId,
+      existingLead ? 'UPDATED' : 'CREATED',
+      existingUser ? 'Prospecto vinculado a usuario existente.' : 'Prospecto cargado en cartera.'
+    )
   }
 
   if (existingUser && !existingUser.sellerId) {
@@ -110,6 +124,9 @@ export async function createSellerLead(formData: FormData) {
       where: { id: existingUser.id },
       data: { sellerId: seller.id },
     })
+    if (leadId) {
+      await logLeadEvent(leadId, 'CONVERTED', 'Usuario existente asociado al vendedor.')
+    }
   }
 
   revalidatePath('/seller/clientes')
@@ -120,10 +137,18 @@ export async function createSellerLead(formData: FormData) {
 export async function updateSellerLeadStatus(leadId: string, status: 'NEW' | 'CONTACTED' | 'QUOTED' | 'WON' | 'LOST') {
   const seller = await requireSeller()
 
+  const currentLead = await prisma.sellerLead.findFirst({
+    where: { id: leadId, sellerId: seller.id },
+    select: { status: true },
+  })
+
+  if (!currentLead || currentLead.status === status) return
+
   await prisma.sellerLead.updateMany({
     where: { id: leadId, sellerId: seller.id },
     data: { status },
   })
+  await logLeadEvent(leadId, 'STATUS_CHANGED', `${currentLead.status} -> ${status}`)
 
   revalidatePath('/seller/clientes')
   revalidatePath('/seller/dashboard')
@@ -136,6 +161,47 @@ export async function updateSellerLeadNote(leadId: string, note: string | null) 
     where: { id: leadId, sellerId: seller.id },
     data: { notes: note },
   })
+  await logLeadEvent(leadId, 'NOTE_UPDATED', note || 'Nota vacia')
 
   revalidatePath('/seller/clientes')
+}
+
+export async function updateSellerLead(leadId: string, formData: FormData) {
+  const seller = await requireSeller()
+  const parsed = leadSchema.safeParse(Object.fromEntries(formData))
+
+  if (!parsed.success) {
+    return {
+      error: Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Revisa los datos del prospecto.',
+    }
+  }
+
+  const lead = await prisma.sellerLead.findFirst({
+    where: { id: leadId, sellerId: seller.id },
+    select: { id: true },
+  })
+
+  if (!lead) return { error: 'No encontramos ese prospecto en tu cartera.' }
+
+  const data = parsed.data
+
+  await prisma.sellerLead.update({
+    where: { id: lead.id },
+    data: {
+      name: data.name,
+      email: data.email || null,
+      phone: data.phone,
+      businessName: data.businessName || null,
+      businessTypeId: data.businessTypeId || null,
+      interest: data.interest || null,
+      status: data.status,
+      notes: data.notes || null,
+      nextContactAt: parseLeadDate(data.nextContactAt),
+    },
+  })
+  await logLeadEvent(lead.id, 'UPDATED', 'Datos del prospecto actualizados.')
+
+  revalidatePath('/seller/clientes')
+  revalidatePath('/seller/dashboard')
+  return { success: true }
 }

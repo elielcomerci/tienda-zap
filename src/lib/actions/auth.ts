@@ -77,7 +77,7 @@ export async function registerUser(formData: FormData): Promise<void> {
   })
 
   if (sellerId) {
-    await prisma.sellerLead.updateMany({
+    const matchingLeads = await prisma.sellerLead.findMany({
       where: {
         sellerId,
         convertedUserId: null,
@@ -86,11 +86,28 @@ export async function registerUser(formData: FormData): Promise<void> {
           ...(parsed.data.phone ? [{ phone: parsed.data.phone }] : []),
         ],
       },
+      select: { id: true },
+    })
+
+    await prisma.sellerLead.updateMany({
+      where: {
+        id: { in: matchingLeads.map((lead) => lead.id) },
+      },
       data: {
         convertedUserId: user.id,
         status: 'WON',
       },
     })
+
+    if (matchingLeads.length > 0) {
+      await prisma.sellerLeadEvent.createMany({
+        data: matchingLeads.map((lead) => ({
+          leadId: lead.id,
+          type: 'CONVERTED',
+          note: 'Prospecto convertido por registro de usuario.',
+        })),
+      })
+    }
   }
 
   redirect('/login?registered=1')

@@ -13,6 +13,16 @@ const publicLeadSchema = z.object({
   interest: z.string().trim().optional(),
 })
 
+async function logLeadEvent(leadId: string, type: string, note?: string | null) {
+  await prisma.sellerLeadEvent.create({
+    data: {
+      leadId,
+      type,
+      note: note || null,
+    },
+  })
+}
+
 export async function createPublicSellerLead(formData: FormData) {
   const parsed = publicLeadSchema.safeParse(Object.fromEntries(formData))
 
@@ -59,13 +69,24 @@ export async function createPublicSellerLead(formData: FormData) {
     convertedUserId: existingUser?.id || null,
   }
 
+  let leadId = existingLead?.id
+
   if (existingLead) {
     await prisma.sellerLead.update({
       where: { id: existingLead.id },
       data: leadData,
     })
   } else {
-    await prisma.sellerLead.create({ data: leadData })
+    const createdLead = await prisma.sellerLead.create({ data: leadData })
+    leadId = createdLead.id
+  }
+
+  if (leadId) {
+    await logLeadEvent(
+      leadId,
+      existingLead ? 'UPDATED' : 'CREATED',
+      'Contacto recibido desde link de vendedor.'
+    )
   }
 
   if (existingUser && !existingUser.sellerId) {
@@ -73,6 +94,9 @@ export async function createPublicSellerLead(formData: FormData) {
       where: { id: existingUser.id },
       data: { sellerId: seller.id },
     })
+    if (leadId) {
+      await logLeadEvent(leadId, 'CONVERTED', 'Usuario existente asociado desde formulario publico.')
+    }
   }
 
   revalidatePath('/seller/clientes')

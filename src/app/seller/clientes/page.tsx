@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function SellerClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; status?: string; followUp?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
@@ -17,7 +17,31 @@ export default async function SellerClientesPage({
   const seller = await prisma.user.findUnique({ where: { id: session.user.id } })
   if (!seller || (seller.role !== 'SELLER' && seller.role !== 'ADMIN')) redirect('/')
 
-  const { q } = await searchParams
+  const { q, status, followUp } = await searchParams
+  const today = new Date()
+  today.setHours(23, 59, 59, 999)
+  const leadStatus = ['NEW', 'CONTACTED', 'QUOTED', 'WON', 'LOST'].includes(status || '')
+    ? status
+    : undefined
+  const leadConditions: any[] = []
+
+  if (leadStatus) {
+    leadConditions.push({ status: leadStatus })
+  }
+
+  if (followUp === 'due') {
+    leadConditions.push({
+      nextContactAt: { lte: today },
+      status: { notIn: ['WON', 'LOST'] },
+    })
+  }
+
+  if (followUp === 'none') {
+    leadConditions.push({
+      nextContactAt: null,
+      status: { notIn: ['WON', 'LOST'] },
+    })
+  }
 
   const [clients, leads, businessTypes] = await Promise.all([
     prisma.user.findMany({
@@ -41,6 +65,7 @@ export default async function SellerClientesPage({
     prisma.sellerLead.findMany({
       where: {
         sellerId: seller.id,
+        ...(leadConditions.length > 0 ? { AND: leadConditions } : {}),
         ...(q
           ? {
               OR: [
@@ -57,6 +82,10 @@ export default async function SellerClientesPage({
       include: {
         businessType: { select: { name: true } },
         convertedUser: { select: { id: true, name: true, email: true } },
+        events: {
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        },
       },
     }),
     prisma.businessType.findMany({
@@ -80,7 +109,14 @@ export default async function SellerClientesPage({
         </div>
       </div>
 
-      <ClientsTable clients={clients} leads={leads} businessTypes={businessTypes} initialQuery={q} />
+      <ClientsTable
+        clients={clients}
+        leads={leads}
+        businessTypes={businessTypes}
+        initialQuery={q}
+        initialStatus={leadStatus}
+        initialFollowUp={followUp}
+      />
     </div>
   )
 }
