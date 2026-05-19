@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react'
 import OrderItemOptions from './OrderItemOptions'
+import OrderItemBrief from './OrderItemBrief'
 import CheckoutZapCreditConfigurator from '@/components/public/CheckoutZapCreditConfigurator'
 import CouponScannerModal from '@/components/public/CouponScannerModal'
 import {
@@ -287,6 +288,10 @@ function CheckoutContent() {
         quantity: item.quantity,
         unitPrice: item.price,
         notes: item.notes,
+        briefType: item.briefType,
+        briefResponses: item.briefResponses,
+        briefReferenceLinks: item.briefReferenceLinks,
+        briefReferenceFiles: item.briefReferenceFiles,
         designRequested: item.designRequested,
         isService: item.isService,
         selectedOptions: item.selectedOptions,
@@ -378,6 +383,10 @@ function CheckoutContent() {
             productId: item.productId,
             quantity: item.quantity,
             notes: item.notes,
+            briefType: item.briefType,
+            briefResponses: item.briefResponses,
+            briefReferenceLinks: item.briefReferenceLinks,
+            briefReferenceFiles: item.briefReferenceFiles,
             designRequested: item.designRequested,
             selectedOptions: item.selectedOptions,
           })),
@@ -435,6 +444,10 @@ function CheckoutContent() {
         unitPrice: item.price,
         name: item.name,
         notes: item.notes,
+        briefType: item.briefType,
+        briefResponses: item.briefResponses,
+        briefReferenceLinks: item.briefReferenceLinks,
+        briefReferenceFiles: item.briefReferenceFiles,
         designRequested: item.designRequested,
         selectedOptions: item.selectedOptions,
       })),
@@ -1006,6 +1019,7 @@ function CheckoutContent() {
                       </div>
 
                       <OrderItemOptions item={item} compact />
+                      <OrderItemBrief item={item} compact />
                     </div>
                   ))}
                 </div>

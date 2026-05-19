@@ -11,6 +11,7 @@ type ProductWithOptions = {
   name: string
   price: number
   creditDownPaymentPercent: number
+  briefType?: string | null
   stock?: number
   images: string[]
   category: {
@@ -39,6 +40,10 @@ type ProductWithOptions = {
     }[]
   }[]
   [key: string]: any
+}
+
+function normalizeBriefType(value?: string | null) {
+  return value === 'DESIGN' || value === 'MUSIC' || value === 'VIDEO' ? value : 'NONE'
 }
 
 export default function ProductConfigurator({
@@ -217,6 +222,7 @@ export default function ProductConfigurator({
       image: product.images[0] || '',
       quantity: 1,
       isService: isServiceProduct,
+      briefType: normalizeBriefType(product.briefType),
       selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
     })
 

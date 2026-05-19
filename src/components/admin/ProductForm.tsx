@@ -3,12 +3,49 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, UploadCloud, X, Save, AlertCircle, Calculator } from 'lucide-react'
+import {
+  ArrowLeft,
+  UploadCloud,
+  X,
+  Save,
+  AlertCircle,
+  Calculator,
+  Music,
+  Video,
+  LinkIcon,
+} from 'lucide-react'
 import ProductOptionsConfigurator from './ProductOptionsConfigurator'
 import ProductRelationsPicker from './ProductRelationsPicker'
 import ProductQuoterModal from './ProductQuoterModal'
 import { slugify } from '@/lib/slug'
 import { getFirstValidationError, productSchema } from '@/lib/validations'
+
+type ProductMediaType = 'NONE' | 'AUDIO' | 'VIDEO' | 'YOUTUBE'
+
+const PRODUCT_MEDIA_ACCEPT: Record<Exclude<ProductMediaType, 'NONE' | 'YOUTUBE'>, string> = {
+  AUDIO: 'audio/mpeg,audio/mp3,audio/wav,audio/x-wav,.mp3,.wav',
+  VIDEO: 'video/mp4,.mp4',
+}
+
+function getYouTubeEmbedUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./, '')
+    const videoId =
+      host === 'youtu.be'
+        ? parsed.pathname.split('/').filter(Boolean)[0]
+        : parsed.pathname.startsWith('/shorts/')
+          ? parsed.pathname.split('/').filter(Boolean)[1]
+          : parsed.searchParams.get('v') ||
+            (parsed.pathname.startsWith('/embed/')
+              ? parsed.pathname.split('/').filter(Boolean)[1]
+              : null)
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url
+  } catch {
+    return url
+  }
+}
 
 export default function ProductForm({
   product,
@@ -49,6 +86,7 @@ export default function ProductForm({
 }) {
   const [images, setImages] = useState<string[]>(product?.images || [])
   const [uploading, setUploading] = useState(false)
+  const [mediaUploading, setMediaUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [hasVariants, setHasVariants] = useState(
@@ -67,6 +105,9 @@ export default function ProductForm({
   )
   const [isQuoterOpen, setIsQuoterOpen] = useState(false)
   const [isCombo, setIsCombo] = useState(product?.isCombo ?? false)
+  const [mediaType, setMediaType] = useState<ProductMediaType>(product?.mediaType || 'NONE')
+  const [mediaUrl, setMediaUrl] = useState(product?.mediaUrl || '')
+  const [mediaTitle, setMediaTitle] = useState(product?.mediaTitle || '')
   
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
   const isServiceCategory = Boolean(selectedCategory?.isService)
@@ -104,6 +145,55 @@ export default function ProductForm({
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index))
+  }
+
+  const handleMediaTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextType = event.target.value as ProductMediaType
+    setMediaType(nextType)
+    if (nextType === 'NONE') {
+      setMediaUrl('')
+      setMediaTitle('')
+    }
+  }
+
+  const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || (mediaType !== 'AUDIO' && mediaType !== 'VIDEO')) return
+
+    setMediaUploading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/admin/product-media/presigned', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+          sizeBytes: file.size,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'No pudimos preparar la subida.')
+
+      const uploadRes = await fetch(data.signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': data.contentType },
+        body: file,
+      })
+
+      if (!uploadRes.ok) throw new Error('No pudimos subir el archivo a R2.')
+
+      setMediaType(data.mediaType)
+      setMediaUrl(data.publicUrl)
+      setMediaTitle((current) => current || file.name)
+    } catch (err: any) {
+      setError(err.message || 'No pudimos subir el archivo multimedia. Intenta de nuevo.')
+    } finally {
+      setMediaUploading(false)
+      event.target.value = ''
+    }
   }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,6 +241,10 @@ export default function ProductForm({
         categoryId: selectedCategoryId,
         stock: isServiceCategory ? 0 : formData.get('stock'),
         images,
+        briefType: formData.get('briefType') as string,
+        mediaType,
+        mediaUrl,
+        mediaTitle,
         active: formData.get('active') === 'true',
         isCombo: isCombo,
         targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds'),
@@ -208,6 +302,10 @@ export default function ProductForm({
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">
+        <input type="hidden" name="mediaType" value={mediaType} />
+        <input type="hidden" name="mediaUrl" value={mediaUrl} />
+        <input type="hidden" name="mediaTitle" value={mediaTitle} />
+
         <div className="grid gap-6 md:col-span-3 md:grid-cols-2">
           <div className="card space-y-4 p-6">
             <h2 className="border-b border-gray-100 pb-3 font-bold text-gray-900">
@@ -425,6 +523,23 @@ export default function ProductForm({
                   </div>
                 </label>
               </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <label className="label">Mini brief requerido</label>
+                <select
+                  name="briefType"
+                  defaultValue={product?.briefType || 'NONE'}
+                  className="input"
+                >
+                  <option value="NONE">Sin mini brief</option>
+                  <option value="DESIGN">Diseño grafico</option>
+                  <option value="MUSIC">Musica / jingle</option>
+                  <option value="VIDEO">Video / reel</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Activa preguntas rapidas por item en carrito y checkout.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -524,6 +639,120 @@ export default function ProductForm({
             <p className="text-center text-xs text-gray-400">JPG, PNG o WEBP. Max 5MB c/u.</p>
           </div>
 
+          <div className="card p-6">
+            <h2 className="mb-4 border-b border-gray-100 pb-3 font-bold text-gray-900">
+              Audio y video
+            </h2>
+
+            <div className="grid gap-4">
+              <div>
+                <label className="label">Tipo de medio</label>
+                <select value={mediaType} onChange={handleMediaTypeChange} className="input">
+                  <option value="NONE">Sin medio adicional</option>
+                  <option value="AUDIO">Audio subido a R2 (MP3/WAV)</option>
+                  <option value="VIDEO">Video subido a R2 (MP4)</option>
+                  <option value="YOUTUBE">Video desde YouTube</option>
+                </select>
+              </div>
+
+              {mediaType !== 'NONE' && (
+                <div>
+                  <label className="label">Titulo del medio</label>
+                  <input
+                    type="text"
+                    value={mediaTitle}
+                    onChange={(event) => setMediaTitle(event.target.value)}
+                    className="input"
+                    placeholder="Ej: Demo de audio o video del producto"
+                  />
+                </div>
+              )}
+
+              {(mediaType === 'AUDIO' || mediaType === 'VIDEO') && (
+                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4">
+                  <label className="flex cursor-pointer items-center justify-center gap-3 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:text-orange-600">
+                    {mediaUploading ? (
+                      <span className="animate-pulse">Subiendo a R2...</span>
+                    ) : (
+                      <>
+                        {mediaType === 'AUDIO' ? <Music size={18} /> : <Video size={18} />}
+                        Cargar {mediaType === 'AUDIO' ? 'audio' : 'video'}
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept={PRODUCT_MEDIA_ACCEPT[mediaType]}
+                      onChange={handleMediaUpload}
+                      className="hidden"
+                      disabled={mediaUploading}
+                    />
+                  </label>
+                  <p className="mt-3 text-center text-xs text-gray-400">
+                    {mediaType === 'AUDIO' ? 'MP3 o WAV' : 'MP4'} hasta 200MB. Se guarda en media.zap.com.ar.
+                  </p>
+                </div>
+              )}
+
+              {mediaType === 'YOUTUBE' && (
+                <div>
+                  <label className="label">Link de YouTube</label>
+                  <div className="relative">
+                    <LinkIcon
+                      size={16}
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <input
+                      type="url"
+                      value={mediaUrl}
+                      onChange={(event) => setMediaUrl(event.target.value)}
+                      className="input !pl-10"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {mediaUrl && mediaType !== 'NONE' && (
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-950 p-3 text-white">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-gray-300">
+                    <span>Preview</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMediaUrl('')
+                        setMediaTitle('')
+                      }}
+                      className="rounded bg-white/10 px-2 py-1 text-[11px] text-white hover:bg-white/20"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                  {mediaType === 'AUDIO' && (
+                    <audio controls src={mediaUrl} preload="none" className="w-full">
+                      Tu navegador no soporta audio.
+                    </audio>
+                  )}
+                  {mediaType === 'VIDEO' && (
+                    <video controls src={mediaUrl} preload="metadata" className="aspect-video w-full rounded-lg bg-black">
+                      Tu navegador no soporta video.
+                    </video>
+                  )}
+                  {mediaType === 'YOUTUBE' && (
+                    <div className="relative aspect-video overflow-hidden rounded-lg bg-black">
+                      <iframe
+                        className="absolute inset-0 h-full w-full"
+                        src={getYouTubeEmbedUrl(mediaUrl)}
+                        title={mediaTitle || 'Video del producto'}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
           {error && (
             <div className="card flex items-start gap-3 border-red-100 bg-red-50 p-4 text-red-700">
               <AlertCircle size={20} className="mt-0.5 shrink-0" />
@@ -533,7 +762,7 @@ export default function ProductForm({
 
           <button
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading || uploading || mediaUploading}
             className="btn-primary w-full justify-center !py-3.5 shadow-xl"
           >
             <Save size={18} />

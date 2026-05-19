@@ -35,6 +35,16 @@ export async function resolveCheckoutOrderItems(
     productId: string
     quantity: number
     notes?: string
+    briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
+    briefResponses?: Record<string, string>
+    briefReferenceLinks?: string[]
+    briefReferenceFiles?: Array<{
+      url: string
+      objectKey?: string
+      fileName: string
+      contentType?: string
+      sizeBytes?: number
+    }>
     designRequested?: boolean
     selectedOptions?: Array<{ name: string; value: string }>
   }>
@@ -120,6 +130,10 @@ export async function resolveCheckoutOrderItems(
       unitPrice,
       creditDownPaymentPercent: product.creditDownPaymentPercent,
       notes: item.notes,
+      briefType: item.briefType && item.briefType !== 'NONE' ? item.briefType : product.briefType || 'NONE',
+      briefResponses: item.briefResponses || undefined,
+      briefReferenceLinks: item.briefReferenceLinks || [],
+      briefReferenceFiles: item.briefReferenceFiles || undefined,
       isService: product.category.isService,
       designRequested: product.category.isService ? false : Boolean(item.designRequested),
       artworkSubmissionChannel: 'PENDING' as const,

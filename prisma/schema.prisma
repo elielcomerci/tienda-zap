@@ -138,6 +138,10 @@ model Product {
   active                   Boolean           @default(true)
   stock                    Int               @default(0)
   isCombo                  Boolean           @default(false)
+  briefType                String?           @default("NONE")
+  mediaType                String?           @default("NONE")
+  mediaUrl                 String?
+  mediaTitle               String?
   createdAt                DateTime          @default(now())
   updatedAt                DateTime          @updatedAt
   creditDownPaymentPercent Int               @default(30)
@@ -204,6 +208,10 @@ model OrderItem {
   quantity                 Int
   unitPrice                Float
   notes                    String?
+  briefType                String?                   @default("NONE")
+  briefResponses           Json?
+  briefReferenceLinks      String[]
+  briefReferenceFiles      Json?
   designRequested          Boolean                  @default(false)
   fileUrl                  String?
   artworkSubmissionChannel ArtworkSubmissionChannel @default(PENDING)

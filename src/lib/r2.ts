@@ -56,6 +56,19 @@ export async function createPresignedR2UploadUrl(params: {
   })
 }
 
+export function getR2PublicMediaBaseUrl() {
+  return (
+    process.env.R2_PUBLIC_MEDIA_URL ||
+    process.env.NEXT_PUBLIC_R2_PUBLIC_MEDIA_URL ||
+    'https://media.zap.com.ar'
+  ).replace(/\/+$/, '')
+}
+
+export function buildR2PublicMediaUrl(objectKey: string) {
+  const cleanKey = objectKey.replace(/^\/+/, '')
+  return `${getR2PublicMediaBaseUrl()}/${cleanKey}`
+}
+
 export async function createPresignedR2DownloadUrl(params: {
   objectKey: string
   fileName?: string | null

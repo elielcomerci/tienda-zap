@@ -10,6 +10,20 @@ const couponPreviewSchema = z.object({
       productId: z.string(),
       quantity: z.number().int().positive(),
       notes: z.string().optional(),
+      briefType: z.enum(['NONE', 'DESIGN', 'MUSIC', 'VIDEO']).optional(),
+      briefResponses: z.record(z.string(), z.string()).optional(),
+      briefReferenceLinks: z.array(z.string().url()).optional(),
+      briefReferenceFiles: z
+        .array(
+          z.object({
+            url: z.string().url(),
+            objectKey: z.string().optional(),
+            fileName: z.string(),
+            contentType: z.string().optional(),
+            sizeBytes: z.number().optional(),
+          })
+        )
+        .optional(),
       designRequested: z.boolean().optional(),
       selectedOptions: z
         .array(

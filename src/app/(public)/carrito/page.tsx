@@ -15,6 +15,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 import ZapCreditSimulationCard from '@/components/public/ZapCreditSimulationCard'
 import OrderItemOptions from '../checkout/OrderItemOptions'
+import OrderItemBrief from '../checkout/OrderItemBrief'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, updateNotes, total, clearCart } = useCartStore()
@@ -267,6 +268,7 @@ export default function CartPage() {
                             Defini si envias archivo final o si preferis que lo coordinemos.
                           </p>
                           <OrderItemOptions item={item} compact />
+                          <OrderItemBrief item={item} compact />
                         </div>
                       </div>
                     </div>

@@ -5,9 +5,11 @@ import { auth } from '@/auth'
 import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getCustomerOrder } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
+import BriefReferenceUploader from '@/components/public/BriefReferenceUploader'
 import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import OrderTimeline from '@/components/public/OrderTimeline'
 import ProofReviewSection from '@/components/public/ProofReviewSection'
+import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -176,6 +178,12 @@ export default async function MiOrdenPage({
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 text-sm">{item.product.name}</p>
                   {item.notes && <p className="text-xs text-gray-400 mt-0.5">Nota: {item.notes}</p>}
+                  <OrderItemBriefSummary
+                    briefType={item.briefType}
+                    briefResponses={item.briefResponses}
+                    briefReferenceLinks={item.briefReferenceLinks}
+                    briefReferenceFiles={item.briefReferenceFiles}
+                  />
 
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {hasUploadedFile && (
@@ -250,6 +258,8 @@ export default async function MiOrdenPage({
       {hasUploadableItems && (
         <OrderFileUploader orderId={order.id} whatsappUrl={filesWhatsappUrl} items={order.items as any} />
       )}
+
+      <BriefReferenceUploader orderId={order.id} items={order.items} />
 
       <div className="card p-5 space-y-3 text-sm">
         <div className="flex justify-between">

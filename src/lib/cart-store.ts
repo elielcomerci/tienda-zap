@@ -10,6 +10,16 @@ export interface CartItem {
   quantity: number
   isService?: boolean
   notes?: string
+  briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
+  briefResponses?: Record<string, string>
+  briefReferenceLinks?: string[]
+  briefReferenceFiles?: Array<{
+    url: string
+    objectKey?: string
+    fileName: string
+    contentType?: string
+    sizeBytes?: number
+  }>
   fileUrl?: string
   designRequested?: boolean
   selectedOptions?: { name: string; value: string }[]
@@ -22,6 +32,10 @@ interface CartStore {
   removeItem: (cartItemId: string) => void
   updateQuantity: (cartItemId: string, quantity: number) => void
   updateNotes: (cartItemId: string, notes: string) => void
+  updateBrief: (
+    cartItemId: string,
+    brief: Pick<CartItem, 'briefResponses' | 'briefReferenceLinks' | 'briefReferenceFiles'>
+  ) => void
   updateItemOptions: (cartItemId: string, options: { fileUrl?: string; designRequested?: boolean }) => void
   clearCart: () => void
   total: () => number
@@ -73,6 +87,13 @@ export const useCartStore = create<CartStore>()(
         set((state) => ({
           items: state.items.map((i) =>
             i.cartItemId === cartItemId ? { ...i, notes } : i
+          ),
+        })),
+
+      updateBrief: (cartItemId, brief) =>
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.cartItemId === cartItemId ? { ...i, ...brief } : i
           ),
         })),
 

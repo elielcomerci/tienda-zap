@@ -22,6 +22,7 @@ import { getOrderDisplayCode } from '@/lib/orders-workflow'
 import OrderInvoiceUploader from '@/components/admin/OrderInvoiceUploader'
 import ReceiptDownloader from '@/components/admin/ReceiptDownloader'
 import ProofUploader from '@/components/admin/ProofUploader'
+import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }
 
@@ -356,6 +357,13 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                           {item.notes}
                         </div>
                       )}
+
+                      <OrderItemBriefSummary
+                        briefType={item.briefType}
+                        briefResponses={item.briefResponses}
+                        briefReferenceLinks={item.briefReferenceLinks}
+                        briefReferenceFiles={item.briefReferenceFiles}
+                      />
                     </div>
                   </div>
                 )

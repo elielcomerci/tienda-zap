@@ -15,6 +15,16 @@ type CouponPreviewItem = {
   productId: string
   quantity: number
   notes?: string
+  briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
+  briefResponses?: Record<string, string>
+  briefReferenceLinks?: string[]
+  briefReferenceFiles?: Array<{
+    url: string
+    objectKey?: string
+    fileName: string
+    contentType?: string
+    sizeBytes?: number
+  }>
   designRequested?: boolean
   selectedOptions?: Array<{ name: string; value: string }>
 }

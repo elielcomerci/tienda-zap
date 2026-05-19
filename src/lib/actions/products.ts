@@ -83,6 +83,10 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     categoryId: formData.get('categoryId') as string,
     stock: formData.get('stock'),
     images: parseJsonField<string[]>(formData, 'images', []),
+    briefType: (formData.get('briefType') as string) || 'NONE',
+    mediaType: (formData.get('mediaType') as string) || 'NONE',
+    mediaUrl: (formData.get('mediaUrl') as string) || '',
+    mediaTitle: (formData.get('mediaTitle') as string) || '',
     active: formData.get('active') === 'true',
     options: parseJsonField(formData, 'options', []),
     variants: parseJsonField(formData, 'variants', []),
@@ -170,6 +174,10 @@ export async function createProduct(formData: FormData) {
       categoryId: data.categoryId,
       stock: data.stock,
       images: data.images,
+      briefType: data.briefType,
+      mediaType: data.mediaType,
+      mediaUrl: data.mediaType === 'NONE' ? null : data.mediaUrl,
+      mediaTitle: data.mediaType === 'NONE' ? null : data.mediaTitle || null,
       active: data.active,
       options: {
         create: data.options.map((option) => ({
@@ -249,6 +257,10 @@ export async function updateProduct(id: string, formData: FormData) {
       categoryId: data.categoryId,
       stock: data.stock,
       images: data.images,
+      briefType: data.briefType,
+      mediaType: data.mediaType,
+      mediaUrl: data.mediaType === 'NONE' ? null : data.mediaUrl,
+      mediaTitle: data.mediaType === 'NONE' ? null : data.mediaTitle || null,
       active: data.active,
       options: {
         create: data.options.map((option) => ({

@@ -5,6 +5,7 @@ import { getActiveProductSlugs, getProduct } from '@/lib/products'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
+import ProductMediaBlock from '@/components/public/ProductMediaBlock'
 import ProductZapCreditPromo from '@/components/public/ProductZapCreditPromo'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
@@ -69,6 +70,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)] 2xl:gap-12">
           <div className="self-start xl:sticky xl:top-24">
             <ProductImageGallery images={product.images} productName={product.name} />
+            <ProductMediaBlock
+              mediaType={product.mediaType}
+              mediaUrl={product.mediaUrl}
+              mediaTitle={product.mediaTitle}
+              productName={product.name}
+            />
           </div>
 
           <div className="space-y-6">

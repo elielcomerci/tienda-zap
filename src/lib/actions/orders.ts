@@ -192,3 +192,55 @@ export async function markOrderItemAsWhatsapp(input: {
 
   await syncOrderStatusAfterArtworkChange(input.orderId)
 }
+
+export async function addOrderItemBriefReferenceFile(input: {
+  orderId: string
+  itemId: string
+  accessToken?: string
+  objectKey: string
+  publicUrl: string
+  originalName: string
+  contentType: string
+  sizeBytes: number
+}) {
+  const item = await findAccessibleOrderItem(input.orderId, input.itemId, input.accessToken, {
+    select: {
+      id: true,
+      orderId: true,
+      briefType: true,
+      briefReferenceFiles: true,
+    },
+  })
+
+  if (!item) {
+    throw new Error('No autorizado')
+  }
+
+  if (!item.briefType || item.briefType === 'NONE') {
+    throw new Error('Este item no tiene brief configurado.')
+  }
+
+  const expectedPrefix = `orders/${input.orderId}/${input.itemId}/brief/`
+  if (!input.objectKey.startsWith(expectedPrefix)) {
+    throw new Error('La referencia del archivo es invalida.')
+  }
+
+  const currentFiles = Array.isArray(item.briefReferenceFiles) ? item.briefReferenceFiles : []
+  const safeFile = {
+    url: input.publicUrl,
+    objectKey: input.objectKey,
+    fileName: sanitizeFileName(input.originalName),
+    contentType: input.contentType,
+    sizeBytes: input.sizeBytes,
+    uploadedAt: new Date().toISOString(),
+  }
+
+  await prisma.orderItem.update({
+    where: { id: input.itemId },
+    data: {
+      briefReferenceFiles: [...currentFiles, safeFile],
+    },
+  })
+
+  revalidateOrderViews(input.orderId)
+}

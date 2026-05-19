@@ -14,6 +14,8 @@ import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
 import OrderReceiptUploader from '@/components/public/OrderReceiptUploader'
 import ResumePaymentButton from '@/components/public/ResumePaymentButton'
+import BriefReferenceUploader from '@/components/public/BriefReferenceUploader'
+import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -437,6 +439,12 @@ export default async function CheckoutSuccessPage({
               />
             )}
 
+            <BriefReferenceUploader
+              orderId={order.id}
+              accessToken={token}
+              items={order.items}
+            />
+
             {needsDesign && designWhatsappUrl && (
               <section className="rounded-[32px] border border-[#F66B9A]/25 bg-white p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.28)] sm:p-8">
                 <div className="flex items-start gap-3">
@@ -600,6 +608,12 @@ export default async function CheckoutSuccessPage({
                         ${(item.unitPrice * item.quantity).toLocaleString('es-AR')}
                       </span>
                     </div>
+                    <OrderItemBriefSummary
+                      briefType={item.briefType}
+                      briefResponses={item.briefResponses}
+                      briefReferenceLinks={item.briefReferenceLinks}
+                      briefReferenceFiles={item.briefReferenceFiles}
+                    />
                   </div>
                 ))}
               </div>

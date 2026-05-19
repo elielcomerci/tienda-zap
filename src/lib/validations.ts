@@ -27,6 +27,10 @@ export const productSchema = z.object({
   categoryId: z.string().min(1, 'Selecciona una categoria'),
   stock: z.coerce.number().int().min(0).default(0),
   images: z.array(z.string().url()).min(1, 'Agrega al menos una imagen'),
+  briefType: z.enum(['NONE', 'DESIGN', 'MUSIC', 'VIDEO']).default('NONE'),
+  mediaType: z.enum(['NONE', 'AUDIO', 'VIDEO', 'YOUTUBE']).default('NONE'),
+  mediaUrl: z.string().trim().optional().default(''),
+  mediaTitle: z.string().trim().optional().default(''),
   active: z.boolean().default(true),
   options: z.array(z.object({
     id: z.string().optional(),
@@ -49,6 +53,45 @@ export const productSchema = z.object({
   isCombo: z.boolean().default(false),
   targetBusinessTypeIds: z.array(z.string()).optional().default([]),
 }).superRefine((data, ctx) => {
+  if (data.mediaType !== 'NONE') {
+    if (!data.mediaUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['mediaUrl'],
+        message: 'Carga un archivo o indica una URL para el medio del producto.',
+      })
+    } else {
+      const parsedUrl = z.string().url().safeParse(data.mediaUrl)
+      if (!parsedUrl.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['mediaUrl'],
+          message: 'La URL del medio no es valida.',
+        })
+      }
+    }
+  }
+
+  if (data.mediaType === 'YOUTUBE' && data.mediaUrl) {
+    try {
+      const url = new URL(data.mediaUrl)
+      const host = url.hostname.replace(/^www\./, '')
+      if (!['youtube.com', 'm.youtube.com', 'youtu.be'].includes(host)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['mediaUrl'],
+          message: 'El video debe ser un link de YouTube.',
+        })
+      }
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['mediaUrl'],
+        message: 'El video debe ser un link de YouTube valido.',
+      })
+    }
+  }
+
   const normalizedOptionNames = data.options.map((option) => option.name.trim().toLowerCase())
 
   if (new Set(normalizedOptionNames).size !== normalizedOptionNames.length) {
@@ -159,6 +202,20 @@ export const orderCheckoutSchema = z.object({
       quantity: z.number().int().positive(),
       unitPrice: z.number().min(0),
       notes: z.string().optional(),
+      briefType: z.enum(['NONE', 'DESIGN', 'MUSIC', 'VIDEO']).optional(),
+      briefResponses: z.record(z.string(), z.string()).optional(),
+      briefReferenceLinks: z.array(z.string().url()).optional(),
+      briefReferenceFiles: z
+        .array(
+          z.object({
+            url: z.string().url(),
+            objectKey: z.string().optional(),
+            fileName: z.string(),
+            contentType: z.string().optional(),
+            sizeBytes: z.number().optional(),
+          })
+        )
+        .optional(),
       designRequested: z.boolean().optional(),
       isService: z.boolean().optional(),
       selectedOptions: z.array(z.object({
