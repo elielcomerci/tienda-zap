@@ -74,6 +74,17 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     throw new Error('El nombre del producto debe incluir letras o números para generar un slug válido.')
   }
 
+  const mediaList = parseJsonField<any[]>(formData, 'mediaList', [])
+  let mediaType = (formData.get('mediaType') as string) || 'NONE'
+  let mediaUrl = (formData.get('mediaUrl') as string) || ''
+  let mediaTitle = (formData.get('mediaTitle') as string) || ''
+
+  if (mediaList.length > 0) {
+    mediaType = mediaList[0].type
+    mediaUrl = mediaList[0].url
+    mediaTitle = mediaList[0].title
+  }
+
   const raw = {
     name,
     slug: normalizedSlug,
@@ -84,9 +95,10 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     stock: formData.get('stock'),
     images: parseJsonField<string[]>(formData, 'images', []),
     briefType: (formData.get('briefType') as string) || 'NONE',
-    mediaType: (formData.get('mediaType') as string) || 'NONE',
-    mediaUrl: (formData.get('mediaUrl') as string) || '',
-    mediaTitle: (formData.get('mediaTitle') as string) || '',
+    mediaType,
+    mediaUrl,
+    mediaTitle,
+    mediaList,
     active: formData.get('active') === 'true',
     options: parseJsonField(formData, 'options', []),
     variants: parseJsonField(formData, 'variants', []),
@@ -178,6 +190,7 @@ export async function createProduct(formData: FormData) {
       mediaType: data.mediaType,
       mediaUrl: data.mediaType === 'NONE' ? null : data.mediaUrl,
       mediaTitle: data.mediaType === 'NONE' ? null : data.mediaTitle || null,
+      mediaList: data.mediaList,
       active: data.active,
       options: {
         create: data.options.map((option) => ({
@@ -261,6 +274,7 @@ export async function updateProduct(id: string, formData: FormData) {
       mediaType: data.mediaType,
       mediaUrl: data.mediaType === 'NONE' ? null : data.mediaUrl,
       mediaTitle: data.mediaType === 'NONE' ? null : data.mediaTitle || null,
+      mediaList: data.mediaList,
       active: data.active,
       options: {
         create: data.options.map((option) => ({

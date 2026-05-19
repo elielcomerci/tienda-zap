@@ -74,6 +74,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               mediaType={product.mediaType}
               mediaUrl={product.mediaUrl}
               mediaTitle={product.mediaTitle}
+              mediaList={product.mediaList}
               productName={product.name}
             />
           </div>

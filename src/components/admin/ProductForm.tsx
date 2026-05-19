@@ -13,6 +13,10 @@ import {
   Music,
   Video,
   LinkIcon,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import ProductOptionsConfigurator from './ProductOptionsConfigurator'
 import ProductRelationsPicker from './ProductRelationsPicker'
@@ -105,9 +109,38 @@ export default function ProductForm({
   )
   const [isQuoterOpen, setIsQuoterOpen] = useState(false)
   const [isCombo, setIsCombo] = useState(product?.isCombo ?? false)
-  const [mediaType, setMediaType] = useState<ProductMediaType>(product?.mediaType || 'NONE')
-  const [mediaUrl, setMediaUrl] = useState(product?.mediaUrl || '')
-  const [mediaTitle, setMediaTitle] = useState(product?.mediaTitle || '')
+  interface MediaTrack {
+    id: string
+    type: 'AUDIO' | 'VIDEO' | 'YOUTUBE'
+    url: string
+    title: string
+  }
+
+  const [mediaList, setMediaList] = useState<MediaTrack[]>(() => {
+    if (product?.mediaList && Array.isArray(product.mediaList)) {
+      return product.mediaList as MediaTrack[]
+    }
+    if (product?.mediaUrl && product?.mediaType && product.mediaType !== 'NONE') {
+      return [
+        {
+          id: 'legacy-media',
+          type: product.mediaType as 'AUDIO' | 'VIDEO' | 'YOUTUBE',
+          url: product.mediaUrl,
+          title: product.mediaTitle || 'Demo del producto',
+        },
+      ]
+    }
+    return []
+  })
+
+  const [newTitle, setNewTitle] = useState('')
+  const [newType, setNewType] = useState<'AUDIO' | 'VIDEO' | 'YOUTUBE'>('AUDIO')
+  const [newUrl, setNewUrl] = useState('')
+
+  const firstTrack = mediaList[0]
+  const derivedMediaType = firstTrack ? firstTrack.type : 'NONE'
+  const derivedMediaUrl = firstTrack ? firstTrack.url : ''
+  const derivedMediaTitle = firstTrack ? firstTrack.title : ''
   
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
   const isServiceCategory = Boolean(selectedCategory?.isService)
@@ -147,18 +180,9 @@ export default function ProductForm({
     setImages(images.filter((_, i) => i !== index))
   }
 
-  const handleMediaTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextType = event.target.value as ProductMediaType
-    setMediaType(nextType)
-    if (nextType === 'NONE') {
-      setMediaUrl('')
-      setMediaTitle('')
-    }
-  }
-
-  const handleMediaUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTrackUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file || (mediaType !== 'AUDIO' && mediaType !== 'VIDEO')) return
+    if (!file || (newType !== 'AUDIO' && newType !== 'VIDEO')) return
 
     setMediaUploading(true)
     setError('')
@@ -185,15 +209,59 @@ export default function ProductForm({
 
       if (!uploadRes.ok) throw new Error('No pudimos subir el archivo a R2.')
 
-      setMediaType(data.mediaType)
-      setMediaUrl(data.publicUrl)
-      setMediaTitle((current) => current || file.name)
+      setNewUrl(data.publicUrl)
+      setNewTitle((current) => current || file.name.split('.')[0])
     } catch (err: any) {
       setError(err.message || 'No pudimos subir el archivo multimedia. Intenta de nuevo.')
     } finally {
       setMediaUploading(false)
       event.target.value = ''
     }
+  }
+
+  const handleAddTrack = () => {
+    if (!newTitle.trim()) {
+      setError('Por favor, ingresa un título para la pista.')
+      return
+    }
+    if (!newUrl.trim()) {
+      setError('Por favor, sube un archivo o ingresa una URL válida.')
+      return
+    }
+
+    try {
+      if (newType !== 'YOUTUBE') new URL(newUrl)
+    } catch {
+      setError('La URL ingresada no es válida.')
+      return
+    }
+
+    const track: MediaTrack = {
+      id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: newType,
+      url: newType === 'YOUTUBE' ? getYouTubeEmbedUrl(newUrl.trim()) : newUrl.trim(),
+      title: newTitle.trim(),
+    }
+
+    setMediaList((prev) => [...prev, track])
+    setNewTitle('')
+    setNewUrl('')
+    setError('')
+  }
+
+  const handleRemoveTrack = (id: string) => {
+    setMediaList((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  const handleMoveTrack = (index: number, direction: 'up' | 'down') => {
+    const nextIndex = direction === 'up' ? index - 1 : index + 1
+    if (nextIndex < 0 || nextIndex >= mediaList.length) return
+
+    const updated = [...mediaList]
+    const temp = updated[index]
+    updated[index] = updated[nextIndex]
+    updated[nextIndex] = temp
+    setMediaList(updated)
   }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,6 +293,7 @@ export default function ProductForm({
     try {
       const formData = new FormData(e.currentTarget)
       formData.append('images', JSON.stringify(images))
+      formData.append('mediaList', JSON.stringify(mediaList))
 
       if (!formData.get('active')) formData.set('active', 'false')
       else formData.set('active', 'true')
@@ -242,9 +311,10 @@ export default function ProductForm({
         stock: isServiceCategory ? 0 : formData.get('stock'),
         images,
         briefType: formData.get('briefType') as string,
-        mediaType,
-        mediaUrl,
-        mediaTitle,
+        mediaType: derivedMediaType,
+        mediaUrl: derivedMediaUrl,
+        mediaTitle: derivedMediaTitle,
+        mediaList,
         active: formData.get('active') === 'true',
         isCombo: isCombo,
         targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds'),
@@ -302,9 +372,10 @@ export default function ProductForm({
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">
-        <input type="hidden" name="mediaType" value={mediaType} />
-        <input type="hidden" name="mediaUrl" value={mediaUrl} />
-        <input type="hidden" name="mediaTitle" value={mediaTitle} />
+        <input type="hidden" name="mediaType" value={derivedMediaType} />
+        <input type="hidden" name="mediaUrl" value={derivedMediaUrl} />
+        <input type="hidden" name="mediaTitle" value={derivedMediaTitle} />
+        <input type="hidden" name="mediaList" value={JSON.stringify(mediaList)} />
 
         <div className="grid gap-6 md:col-span-3 md:grid-cols-2">
           <div className="card space-y-4 p-6">
@@ -641,115 +712,178 @@ export default function ProductForm({
 
           <div className="card p-6">
             <h2 className="mb-4 border-b border-gray-100 pb-3 font-bold text-gray-900">
-              Audio y video
+              Pistas y Demos Multimedia
             </h2>
 
-            <div className="grid gap-4">
+            <div className="space-y-6">
+              {/* Playlist Current State */}
               <div>
-                <label className="label">Tipo de medio</label>
-                <select value={mediaType} onChange={handleMediaTypeChange} className="input">
-                  <option value="NONE">Sin medio adicional</option>
-                  <option value="AUDIO">Audio subido a R2 (MP3/WAV)</option>
-                  <option value="VIDEO">Video subido a R2 (MP4)</option>
-                  <option value="YOUTUBE">Video desde YouTube</option>
-                </select>
+                <label className="label mb-2">Lista de pistas cargadas ({mediaList.length})</label>
+                {mediaList.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
+                    <Music size={32} className="mx-auto mb-2 text-gray-400 opacity-60" />
+                    <p className="text-sm font-semibold text-gray-500">No hay pistas cargadas</p>
+                    <p className="text-xs text-gray-400">Agrega audios de demo o videos abajo.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {mediaList.map((track, index) => (
+                      <div
+                        key={track.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 transition-all hover:bg-gray-100/70"
+                      >
+                        <div className="flex items-center gap-2">
+                          {/* Reordering Chevrons */}
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveTrack(index, 'up')}
+                              disabled={index === 0}
+                              className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                            >
+                              <ChevronUp size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveTrack(index, 'down')}
+                              disabled={index === mediaList.length - 1}
+                              className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                            >
+                              <ChevronDown size={14} />
+                            </button>
+                          </div>
+
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-100">
+                            {track.type === 'AUDIO' && <Music size={16} className="text-orange-500" />}
+                            {track.type === 'VIDEO' && <Video size={16} className="text-[#ED2C71]" />}
+                            {track.type === 'YOUTUBE' && <LinkIcon size={16} className="text-red-500" />}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-gray-900">{track.title}</p>
+                            <span className="inline-block rounded-md bg-gray-200/60 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 uppercase tracking-wider">
+                              {track.type === 'YOUTUBE' ? 'YouTube' : track.type}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTrack(track.id)}
+                            className="rounded-lg p-2 text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {mediaType !== 'NONE' && (
-                <div>
-                  <label className="label">Titulo del medio</label>
-                  <input
-                    type="text"
-                    value={mediaTitle}
-                    onChange={(event) => setMediaTitle(event.target.value)}
-                    className="input"
-                    placeholder="Ej: Demo de audio o video del producto"
-                  />
-                </div>
-              )}
+              {/* Add New Track Form */}
+              <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  Agregar Nueva Pista
+                </h3>
 
-              {(mediaType === 'AUDIO' || mediaType === 'VIDEO') && (
-                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4">
-                  <label className="flex cursor-pointer items-center justify-center gap-3 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:text-orange-600">
-                    {mediaUploading ? (
-                      <span className="animate-pulse">Subiendo a R2...</span>
-                    ) : (
-                      <>
-                        {mediaType === 'AUDIO' ? <Music size={18} /> : <Video size={18} />}
-                        Cargar {mediaType === 'AUDIO' ? 'audio' : 'video'}
-                      </>
-                    )}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="label">Título de la pista</label>
                     <input
-                      type="file"
-                      accept={PRODUCT_MEDIA_ACCEPT[mediaType]}
-                      onChange={handleMediaUpload}
-                      className="hidden"
-                      disabled={mediaUploading}
-                    />
-                  </label>
-                  <p className="mt-3 text-center text-xs text-gray-400">
-                    {mediaType === 'AUDIO' ? 'MP3 o WAV' : 'MP4'} hasta 200MB. Se guarda en media.zap.com.ar.
-                  </p>
-                </div>
-              )}
-
-              {mediaType === 'YOUTUBE' && (
-                <div>
-                  <label className="label">Link de YouTube</label>
-                  <div className="relative">
-                    <LinkIcon
-                      size={16}
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <input
-                      type="url"
-                      value={mediaUrl}
-                      onChange={(event) => setMediaUrl(event.target.value)}
-                      className="input !pl-10"
-                      placeholder="https://www.youtube.com/watch?v=..."
+                      type="text"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      className="input bg-white"
+                      placeholder="Ej: Demo Acústico"
                     />
                   </div>
-                </div>
-              )}
 
-              {mediaUrl && mediaType !== 'NONE' && (
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-950 p-3 text-white">
-                  <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-gray-300">
-                    <span>Preview</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMediaUrl('')
-                        setMediaTitle('')
+                  <div>
+                    <label className="label">Tipo de pista</label>
+                    <select
+                      value={newType}
+                      onChange={(e) => {
+                        setNewType(e.target.value as any)
+                        setNewUrl('')
                       }}
-                      className="rounded bg-white/10 px-2 py-1 text-[11px] text-white hover:bg-white/20"
+                      className="input bg-white"
                     >
-                      Quitar
-                    </button>
+                      <option value="AUDIO">Audio (R2 MP3/WAV)</option>
+                      <option value="VIDEO">Video (R2 MP4)</option>
+                      <option value="YOUTUBE">Enlace de YouTube</option>
+                    </select>
                   </div>
-                  {mediaType === 'AUDIO' && (
-                    <audio controls src={mediaUrl} preload="none" className="w-full">
-                      Tu navegador no soporta audio.
-                    </audio>
-                  )}
-                  {mediaType === 'VIDEO' && (
-                    <video controls src={mediaUrl} preload="metadata" className="aspect-video w-full rounded-lg bg-black">
-                      Tu navegador no soporta video.
-                    </video>
-                  )}
-                  {mediaType === 'YOUTUBE' && (
-                    <div className="relative aspect-video overflow-hidden rounded-lg bg-black">
-                      <iframe
-                        className="absolute inset-0 h-full w-full"
-                        src={getYouTubeEmbedUrl(mediaUrl)}
-                        title={mediaTitle || 'Video del producto'}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                </div>
+
+                {newType === 'YOUTUBE' ? (
+                  <div>
+                    <label className="label">Link de YouTube</label>
+                    <div className="relative">
+                      <LinkIcon
+                        size={16}
+                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
+                      <input
+                        type="url"
+                        value={newUrl}
+                        onChange={(e) => setNewUrl(e.target.value)}
+                        className="input bg-white !pl-10"
+                        placeholder="https://www.youtube.com/watch?v=..."
                       />
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border-2 border-dashed border-gray-200 bg-white p-4">
+                    {newUrl ? (
+                      <div className="flex items-center justify-between gap-3 rounded-lg border border-green-100 bg-green-50 p-2.5">
+                        <span className="truncate text-xs font-semibold text-green-800">
+                          {newUrl}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setNewUrl('')}
+                          className="text-xs font-bold text-red-600 hover:text-red-700"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex cursor-pointer items-center justify-center gap-3 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-100 hover:text-orange-600">
+                        {mediaUploading ? (
+                          <span className="animate-pulse">Subiendo a R2...</span>
+                        ) : (
+                          <>
+                            {newType === 'AUDIO' ? <Music size={18} /> : <Video size={18} />}
+                            Cargar {newType === 'AUDIO' ? 'audio' : 'video'}
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept={PRODUCT_MEDIA_ACCEPT[newType as Exclude<typeof newType, 'YOUTUBE'>]}
+                          onChange={handleTrackUpload}
+                          className="hidden"
+                          disabled={mediaUploading}
+                        />
+                      </label>
+                    )}
+                    <p className="mt-2 text-center text-[10px] text-gray-400">
+                      {newType === 'AUDIO' ? 'MP3 o WAV' : 'MP4'} hasta 200MB. Se guarda en media.zap.com.ar.
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleAddTrack}
+                  disabled={mediaUploading || !newTitle.trim() || !newUrl.trim()}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow transition-all hover:bg-slate-800 disabled:opacity-55"
+                >
+                  <Plus size={16} />
+                  Añadir pista a la lista
+                </button>
+              </div>
             </div>
           </div>
 
