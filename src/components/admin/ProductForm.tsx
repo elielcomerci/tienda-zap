@@ -114,6 +114,7 @@ export default function ProductForm({
     type: 'AUDIO' | 'VIDEO' | 'YOUTUBE'
     url: string
     title: string
+    lyrics?: string
   }
 
   const [mediaList, setMediaList] = useState<MediaTrack[]>(() => {
@@ -133,6 +134,7 @@ export default function ProductForm({
     return []
   })
 
+  const [expandedLyricsTrackId, setExpandedLyricsTrackId] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
   const [newType, setNewType] = useState<'AUDIO' | 'VIDEO' | 'YOUTUBE'>('AUDIO')
   const [newUrl, setNewUrl] = useState('')
@@ -251,6 +253,13 @@ export default function ProductForm({
 
   const handleRemoveTrack = (id: string) => {
     setMediaList((prev) => prev.filter((t) => t.id !== id))
+    if (expandedLyricsTrackId === id) setExpandedLyricsTrackId(null)
+  }
+
+  const handleUpdateTrackLyrics = (id: string, lyrics: string) => {
+    setMediaList((prev) =>
+      prev.map((track) => (track.id === id ? { ...track, lyrics } : track))
+    )
   }
 
   const handleMoveTrack = (index: number, direction: 'up' | 'down') => {
@@ -730,52 +739,85 @@ export default function ProductForm({
                     {mediaList.map((track, index) => (
                       <div
                         key={track.id}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 transition-all hover:bg-gray-100/70"
+                        className="rounded-xl border border-gray-200 bg-gray-50 p-3 transition-all hover:bg-gray-100/40 space-y-3"
                       >
-                        <div className="flex items-center gap-2">
-                          {/* Reordering Chevrons */}
-                          <div className="flex flex-col gap-0.5">
-                            <button
-                              type="button"
-                              onClick={() => handleMoveTrack(index, 'up')}
-                              disabled={index === 0}
-                              className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
-                            >
-                              <ChevronUp size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleMoveTrack(index, 'down')}
-                              disabled={index === mediaList.length - 1}
-                              className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
-                            >
-                              <ChevronDown size={14} />
-                            </button>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            {/* Reordering Chevrons */}
+                            <div className="flex flex-col gap-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveTrack(index, 'up')}
+                                disabled={index === 0}
+                                className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                              >
+                                <ChevronUp size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveTrack(index, 'down')}
+                                disabled={index === mediaList.length - 1}
+                                className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                              >
+                                <ChevronDown size={14} />
+                              </button>
+                            </div>
+
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-100">
+                              {track.type === 'AUDIO' && <Music size={16} className="text-orange-500" />}
+                              {track.type === 'VIDEO' && <Video size={16} className="text-[#ED2C71]" />}
+                              {track.type === 'YOUTUBE' && <LinkIcon size={16} className="text-red-500" />}
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-gray-900">{track.title}</p>
+                              <span className="inline-block rounded-md bg-gray-200/60 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 uppercase tracking-wider">
+                                {track.type === 'YOUTUBE' ? 'YouTube' : track.type}
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-100">
-                            {track.type === 'AUDIO' && <Music size={16} className="text-orange-500" />}
-                            {track.type === 'VIDEO' && <Video size={16} className="text-[#ED2C71]" />}
-                            {track.type === 'YOUTUBE' && <LinkIcon size={16} className="text-red-500" />}
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-gray-900">{track.title}</p>
-                            <span className="inline-block rounded-md bg-gray-200/60 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 uppercase tracking-wider">
-                              {track.type === 'YOUTUBE' ? 'YouTube' : track.type}
-                            </span>
+                          <div className="flex items-center gap-1.5">
+                            {track.type === 'AUDIO' && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedLyricsTrackId(expandedLyricsTrackId === track.id ? null : track.id)}
+                                className={`rounded-lg px-2.5 py-1.5 text-xs font-bold border transition-colors ${
+                                  expandedLyricsTrackId === track.id
+                                    ? 'bg-slate-900 border-slate-950 text-white'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                }`}
+                              >
+                                Letra (LRC)
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTrack(track.id)}
+                              className="rounded-lg p-2 text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveTrack(track.id)}
-                            className="rounded-lg p-2 text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                        {track.type === 'AUDIO' && expandedLyricsTrackId === track.id && (
+                          <div className="border-t border-gray-200/60 pt-3 mt-2">
+                            <label className="text-[10px] font-black uppercase tracking-wider text-gray-500 block mb-1">
+                              Letra Sincronizada (LRC o SRT)
+                            </label>
+                            <textarea
+                              value={track.lyrics || ''}
+                              onChange={(e) => handleUpdateTrackLyrics(track.id, e.target.value)}
+                              rows={5}
+                              className="input font-mono !text-[11px] bg-white w-full resize-none p-2 border border-gray-200 rounded-lg focus:border-slate-800"
+                              placeholder="Ej:&#10;[00:12.30] Primera línea de letra&#10;[00:15.50] Segunda línea de letra..."
+                            />
+                            <p className="text-[9px] text-gray-400 mt-1 leading-tight">
+                              Escribe o pega la letra con marcas de tiempo `[minutos:segundos]`. Se sincronizará en tiempo real en la tienda.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

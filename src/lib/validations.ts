@@ -36,6 +36,7 @@ export const productSchema = z.object({
     type: z.enum(['AUDIO', 'VIDEO', 'YOUTUBE']),
     url: z.string().url('La URL del medio no es válida'),
     title: z.string().min(1, 'El título es requerido'),
+    lyrics: z.string().optional().default(''),
   })).optional().default([]),
   active: z.boolean().default(true),
   options: z.array(z.object({

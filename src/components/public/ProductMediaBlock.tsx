@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import {
   Play,
   Pause,
@@ -11,6 +11,7 @@ import {
   Music,
   Video,
   LinkIcon,
+  AlignLeft,
 } from 'lucide-react'
 
 type ProductMediaBlockProps = {
@@ -59,12 +60,76 @@ export default function ProductMediaBlock({
   const audioRef = useRef<HTMLAudioElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const volumeBarRef = useRef<HTMLDivElement>(null)
+  const lyricsContainerRef = useRef<HTMLDivElement>(null)
 
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [isMuted, setIsMuted] = useState(false)
+  const [showLyrics, setShowLyrics] = useState(false)
+
+  // Parse LRC lyrics
+  const parsedLyrics = useMemo(() => {
+    const lrcText = activeTrack?.lyrics || ''
+    if (!lrcText) return []
+    const lines = lrcText.split(/\r?\n/)
+    const result: Array<{ time: number; text: string }> = []
+    const timeRegex = /\[(\d+):(\d+(?:\.\d+)?)\]/
+
+    for (const line of lines) {
+      const match = timeRegex.exec(line)
+      if (match) {
+        const minutes = parseInt(match[1], 10)
+        const seconds = parseFloat(match[2])
+        const timeInSeconds = minutes * 60 + seconds
+        const text = line.replace(timeRegex, '').trim()
+        if (!isNaN(timeInSeconds)) {
+          result.push({ time: timeInSeconds, text })
+        }
+      }
+    }
+    return result.sort((a, b) => a.time - b.time)
+  }, [activeTrack?.lyrics])
+
+  // Find active lyric index based on current time
+  const currentLyricIndex = useMemo(() => {
+    if (parsedLyrics.length === 0) return -1
+    let matchedIndex = -1
+    for (let i = 0; i < parsedLyrics.length; i++) {
+      if (currentTime >= parsedLyrics[i].time) {
+        matchedIndex = i
+      } else {
+        break
+      }
+    }
+    return matchedIndex
+  }, [parsedLyrics, currentTime])
+
+  // Click to seek to lyric timestamp
+  const handleLyricClick = (time: number) => {
+    if (!audioRef.current) return
+    audioRef.current.currentTime = time
+    setCurrentTime(time)
+  }
+
+  // Smoothly scroll active lyric to vertical center of container
+  useEffect(() => {
+    if (showLyrics && currentLyricIndex !== -1 && lyricsContainerRef.current) {
+      const container = lyricsContainerRef.current
+      const activeElement = container.querySelector(`[data-index="${currentLyricIndex}"]`) as HTMLElement
+      if (activeElement) {
+        const containerHeight = container.clientHeight
+        const elementTop = activeElement.offsetTop
+        const elementHeight = activeElement.clientHeight
+        
+        container.scrollTo({
+          top: elementTop - containerHeight / 2 + elementHeight / 2,
+          behavior: 'smooth'
+        })
+      }
+    }
+  }, [currentLyricIndex, showLyrics])
 
   // Pause audio and reset if track changes or active selection is not AUDIO
   useEffect(() => {
@@ -75,6 +140,7 @@ export default function ProductMediaBlock({
       setDuration(0)
       audioRef.current.load()
     }
+    setShowLyrics(false)
   }, [activeTrackIndex])
 
   // Reload audio on URL change
@@ -179,6 +245,16 @@ export default function ProductMediaBlock({
         .eq-bar-static-2 { height: 6px; }
         .eq-bar-static-3 { height: 8px; }
         .eq-bar-static-4 { height: 4px; }
+        .lyrics-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .lyrics-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .lyrics-scrollbar::-webkit-scrollbar-thumb {
+          background: #1e293b;
+          border-radius: 4px;
+        }
       `}</style>
 
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -276,28 +352,75 @@ export default function ProductMediaBlock({
               </button>
             </div>
 
-            {/* Volume Control */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={toggleMute}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
+            {/* Volume & Lyrics Buttons */}
+            <div className="flex items-center gap-4">
+              {activeTrack.lyrics && (
+                <button
+                  type="button"
+                  onClick={() => setShowLyrics(!showLyrics)}
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all ${
+                    showLyrics
+                      ? 'bg-[#ED2C71] text-white shadow-md shadow-[#ED2C71]/30'
+                      : 'text-gray-400 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700'
+                  }`}
+                  title="Mostrar letra"
+                >
+                  <AlignLeft size={14} />
+                  <span>Letra</span>
+                </button>
+              )}
 
-              <div
-                ref={volumeBarRef}
-                onClick={handleVolumeClick}
-                className="relative h-1 w-16 cursor-pointer rounded-full bg-slate-800"
-              >
+              {/* Volume Control */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+
                 <div
-                  className="absolute left-0 top-0 h-full rounded-full bg-gray-300"
-                  style={{ width: `${isMuted ? 0 : volume * 100}%` }}
-                />
+                  ref={volumeBarRef}
+                  onClick={handleVolumeClick}
+                  className="relative h-1 w-16 cursor-pointer rounded-full bg-slate-800"
+                >
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full bg-gray-300"
+                    style={{ width: `${isMuted ? 0 : volume * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Sync Lyrics Panel */}
+          {showLyrics && parsedLyrics.length > 0 && (
+            <div className="mt-5 border-t border-slate-900 pt-4">
+              <div
+                ref={lyricsContainerRef}
+                className="lyrics-scrollbar max-h-[180px] overflow-y-auto space-y-4 py-2 px-1 text-center scroll-smooth"
+              >
+                {parsedLyrics.map((lyric, idx) => {
+                  const isActive = idx === currentLyricIndex
+                  return (
+                    <div
+                      key={idx}
+                      data-index={idx}
+                      onClick={() => handleLyricClick(lyric.time)}
+                      className={`cursor-pointer transition-all duration-300 ${
+                        isActive
+                          ? 'text-[#ED2C71] text-base font-black scale-105 filter drop-shadow-[0_2px_8px_rgba(237,44,113,0.35)]'
+                          : 'text-slate-400 text-sm font-semibold opacity-50 hover:opacity-85'
+                      }`}
+                    >
+                      {lyric.text || '•••'}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
