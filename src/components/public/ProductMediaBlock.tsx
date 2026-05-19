@@ -119,12 +119,15 @@ export default function ProductMediaBlock({
       const container = lyricsContainerRef.current
       const activeElement = container.querySelector(`[data-index="${currentLyricIndex}"]`) as HTMLElement
       if (activeElement) {
-        const containerHeight = container.clientHeight
-        const elementTop = activeElement.offsetTop
-        const elementHeight = activeElement.clientHeight
+        const containerRect = container.getBoundingClientRect()
+        const elementRect = activeElement.getBoundingClientRect()
+        
+        // Accurate relative position independent of offsetParent positioning
+        const absoluteElementTop = elementRect.top - containerRect.top + container.scrollTop
+        const targetScrollTop = absoluteElementTop - (containerRect.height / 2) + (elementRect.height / 2)
         
         container.scrollTo({
-          top: elementTop - containerHeight / 2 + elementHeight / 2,
+          top: targetScrollTop,
           behavior: 'smooth'
         })
       }
@@ -396,10 +399,10 @@ export default function ProductMediaBlock({
 
           {/* Sync Lyrics Panel */}
           {showLyrics && parsedLyrics.length > 0 && (
-            <div className="mt-5 border-t border-slate-900 pt-4">
+            <div className="mt-5 border-t border-slate-900/60 pt-4">
               <div
                 ref={lyricsContainerRef}
-                className="lyrics-scrollbar max-h-[180px] overflow-y-auto space-y-4 py-2 px-1 text-center scroll-smooth"
+                className="lyrics-scrollbar max-h-[220px] overflow-y-auto space-y-5 py-[90px] px-4 text-center scroll-smooth"
               >
                 {parsedLyrics.map((lyric, idx) => {
                   const isActive = idx === currentLyricIndex
@@ -408,10 +411,10 @@ export default function ProductMediaBlock({
                       key={idx}
                       data-index={idx}
                       onClick={() => handleLyricClick(lyric.time)}
-                      className={`cursor-pointer transition-all duration-300 ${
+                      className={`cursor-pointer transition-all duration-300 leading-relaxed ${
                         isActive
-                          ? 'text-[#ED2C71] text-base font-black scale-105 filter drop-shadow-[0_2px_8px_rgba(237,44,113,0.35)]'
-                          : 'text-slate-400 text-sm font-semibold opacity-50 hover:opacity-85'
+                          ? 'text-[#ED2C71] text-[16px] md:text-[17px] font-black scale-105 filter drop-shadow-[0_2px_10px_rgba(237,44,113,0.4)]'
+                          : 'text-slate-400 text-[14px] md:text-[15px] font-bold opacity-35 hover:opacity-90'
                       }`}
                     >
                       {lyric.text || '•••'}
