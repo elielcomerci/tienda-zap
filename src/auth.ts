@@ -39,11 +39,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role
         token.id = user.id
       }
+
+      if (token.id) {
+        const currentUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: {
+            email: true,
+            name: true,
+            role: true,
+            isBanned: true,
+          },
+        })
+
+        if (!currentUser || currentUser.isBanned) {
+          token.role = 'CUSTOMER'
+          return token
+        }
+
+        token.email = currentUser.email
+        token.name = currentUser.name
+        token.role = currentUser.role
+      }
+
       return token
     },
     session({ session, token }) {

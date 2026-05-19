@@ -121,7 +121,7 @@ export default function PublicHeader({
 
                 {canOpenSellerPanel && (
                   <Link
-                    href="/seller/dashboard"
+                    href="/seller"
                     className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] text-[#2F5F9F] transition-colors hover:bg-[#4576B9]/15"
                     title="Ir al panel de vendedores"
                   >
@@ -172,6 +172,15 @@ export default function PublicHeader({
 
           {/* Mobile: cart + hamburger */}
           <div className="flex items-center gap-2 md:hidden">
+            {canOpenSellerPanel && (
+              <Link
+                href="/seller"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] text-[#2F5F9F] shadow-sm"
+                aria-label="Ir al panel de vendedores"
+              >
+                <Handshake size={18} />
+              </Link>
+            )}
             <Link
               href="/carrito"
               className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm"
@@ -260,7 +269,7 @@ export default function PublicHeader({
                 )}
                 {canOpenSellerPanel && (
                   <Link
-                    href="/seller/dashboard"
+                    href="/seller"
                     onClick={() => setMenuOpen(false)}
                     className="bg-white/20 text-white text-lg py-2 px-8 rounded-full font-bold"
                   >
