@@ -183,7 +183,7 @@ export default function ProductMediaBlock({
 
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-sm font-black uppercase tracking-[0.16em] text-gray-900">
-          {activeTrack.type === 'AUDIO' ? 'Escuchar demo' : 'Ver demo'}
+          {activeTrack.type === 'AUDIO' ? 'Escuchar pista' : 'Ver video'}
         </h2>
         <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
           {activeTrack.type === 'YOUTUBE' ? 'YouTube' : activeTrack.type === 'VIDEO' ? 'MP4' : 'Audio'}
@@ -206,7 +206,7 @@ export default function ProductMediaBlock({
           <div className="mb-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ED2C71]">
-                Reproduciendo demo
+                En reproducción
               </span>
               <p className="truncate text-base font-bold text-white mt-0.5">
                 {activeTrack.title}
@@ -328,7 +328,7 @@ export default function ProductMediaBlock({
       {tracks.length > 1 && (
         <div className="mt-5 border-t border-gray-100 pt-4">
           <label className="text-[11px] font-black uppercase tracking-[0.18em] text-gray-500 mb-2.5 block">
-            Demos disponibles ({tracks.length})
+            Pistas disponibles ({tracks.length})
           </label>
           <div className="space-y-2">
             {tracks.map((track, index) => {
