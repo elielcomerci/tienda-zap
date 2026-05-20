@@ -35,7 +35,8 @@ export default function PublicHeader({
   const [mobileProdOpen, setMobileProdOpen] = useState(false)
   const [mobileObjOpen, setMobileObjOpen] = useState(false)
 
-  const canOpenSellerPanel = user?.role === 'SELLER' || user?.role === 'ADMIN'
+  const canOpenAdminPanel = user?.role === 'ADMIN'
+  const canOpenSellerPanel = user?.role === 'SELLER' || canOpenAdminPanel
   const showReferralBanner = Boolean(referralSeller && !canOpenSellerPanel)
 
   useEffect(() => { setMounted(true) }, [])
@@ -271,7 +272,7 @@ export default function PublicHeader({
 
               {/* User area */}
               <li className="h-full flex items-center">
-                {user?.role === 'ADMIN' && (
+                {canOpenAdminPanel && (
                   <Link
                     href="/admin"
                     className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] text-[#C91F5B] transition-colors hover:bg-[#F66B9A]/20"
@@ -334,6 +335,15 @@ export default function PublicHeader({
 
           {/* Mobile: cart + hamburger */}
           <div className="flex items-center gap-2 md:hidden">
+            {canOpenAdminPanel && (
+              <Link
+                href="/admin"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] text-[#C91F5B] shadow-sm"
+                aria-label="Ir al admin"
+              >
+                <LayoutDashboard size={18} />
+              </Link>
+            )}
             {canOpenSellerPanel && (
               <Link
                 href="/seller"
@@ -532,7 +542,7 @@ export default function PublicHeader({
                   >
                     Mi perfil
                   </Link>
-                  {user.role === 'ADMIN' && (
+                  {canOpenAdminPanel && (
                     <Link
                       href="/admin"
                       onClick={() => setMenuOpen(false)}
