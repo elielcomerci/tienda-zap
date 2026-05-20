@@ -35,7 +35,7 @@ export default async function AdminUsuariosPage({
           select: { orders: true, clients: true },
         },
       },
-      take: 100, // limit to 100 recent users for performance
+      take: 100,
     }),
     prisma.user.findMany({
       where: {
@@ -52,7 +52,7 @@ export default async function AdminUsuariosPage({
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">Usuarios</h1>
         <p className="mt-2 text-sm text-gray-500">
-          Gestioná los roles, convertí clientes en vendedores y controlá los accesos.
+          Gestiona roles, asesores comerciales, cartera de clientes y accesos.
         </p>
       </div>
 

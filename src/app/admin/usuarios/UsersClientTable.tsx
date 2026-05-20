@@ -17,11 +17,27 @@ type SellerRank = (typeof SELLER_RANKS)[number]
 type SellerStatus = 'ACTIVE' | 'RETIRED' | 'SUSPENDED'
 type SellerOption = { id: string; name: string | null; email: string }
 
+type CommercialDraft = {
+  rank: SellerRank
+  status: SellerStatus
+  temporaryRate: string
+  temporaryDays: string
+  excludeFromLeaderboards: boolean
+  penaltyRank: SellerRank
+  penaltyReason: string
+}
+
 const rankLabels: Record<SellerRank, string> = {
-  BRONZE: 'Bronce',
-  SILVER: 'Plata',
-  GOLD: 'Oro',
-  DIAMOND: 'Diamante',
+  BRONZE: 'Inicial',
+  SILVER: 'Asociado',
+  GOLD: 'Senior',
+  DIAMOND: 'Estrategico',
+}
+
+const statusLabels: Record<SellerStatus, string> = {
+  ACTIVE: 'Activo',
+  RETIRED: 'Retirado',
+  SUSPENDED: 'Suspendido',
 }
 
 export default function UsersClientTable({
@@ -37,6 +53,7 @@ export default function UsersClientTable({
   const [q, setQ] = useState(initialQuery || '')
   const [loading, setLoading] = useState<string | null>(null)
   const [ownerDrafts, setOwnerDrafts] = useState<Record<string, { sellerId: string; operationalSellerId: string }>>({})
+  const [commercialDrafts, setCommercialDrafts] = useState<Record<string, CommercialDraft>>({})
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,113 +76,6 @@ export default function UsersClientTable({
     setLoading(userId)
     await toggleBan(userId, !isBanned)
     setLoading(null)
-  }
-
-  const parseRank = (value: string | null) => {
-    const rank = value?.trim().toUpperCase() as SellerRank | undefined
-    return rank && SELLER_RANKS.includes(rank) ? rank : null
-  }
-
-  const handleRankChange = async (userId: string, currentRank: SellerRank) => {
-    const rank = parseRank(
-      prompt(`Nuevo rango (${SELLER_RANKS.join(', ')}). Actual: ${currentRank}`, currentRank)
-    )
-    if (!rank) return
-
-    setLoading(userId)
-    try {
-      await updateSellerRank(userId, rank)
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'No se pudo actualizar el rango.')
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  const handlePenalty = async (userId: string, currentRank: SellerRank) => {
-    const rank = parseRank(
-      prompt(`Rango destino por penalizacion (${SELLER_RANKS.join(', ')}). Actual: ${currentRank}`, currentRank)
-    )
-    if (!rank) return
-
-    const reason = prompt('Motivo obligatorio de penalizacion (minimo 10 caracteres):')
-    if (!reason) return
-
-    setLoading(userId)
-    try {
-      await penalizeSellerRank(userId, rank, reason)
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'No se pudo registrar la penalizacion.')
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  const handleStatusChange = async (userId: string, currentStatus: SellerStatus) => {
-    const status = prompt('Estado comercial (ACTIVE, RETIRED, SUSPENDED):', currentStatus)?.trim().toUpperCase() as
-      | SellerStatus
-      | undefined
-    if (!status || !['ACTIVE', 'RETIRED', 'SUSPENDED'].includes(status)) return
-
-    setLoading(userId)
-    try {
-      await updateSellerProfileSettings(userId, { status })
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'No se pudo actualizar el estado.')
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  const handleTemporaryRate = async (userId: string) => {
-    const rateInput = prompt('Porcentaje temporal de comision. Dejar vacio para quitar override:')
-    if (rateInput === null) return
-
-    if (!rateInput.trim()) {
-      setLoading(userId)
-      try {
-        await updateSellerProfileSettings(userId, {
-          temporaryCommissionRate: null,
-          temporaryRateExpiresAt: null,
-        })
-      } finally {
-        setLoading(null)
-      }
-      return
-    }
-
-    const rate = Number(rateInput)
-    const days = Number(prompt('Dias de vigencia:', '30'))
-    if (!Number.isFinite(rate) || rate < 0 || rate > 100 || !Number.isFinite(days) || days <= 0) {
-      alert('Override invalido.')
-      return
-    }
-
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + days)
-
-    setLoading(userId)
-    try {
-      await updateSellerProfileSettings(userId, {
-        temporaryCommissionRate: rate,
-        temporaryRateExpiresAt: expiresAt,
-      })
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'No se pudo guardar el override.')
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  const handleLeaderboardToggle = async (userId: string, currentValue: boolean) => {
-    setLoading(userId)
-    try {
-      await updateSellerProfileSettings(userId, { excludeFromLeaderboards: !currentValue })
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'No se pudo actualizar rankings.')
-    } finally {
-      setLoading(null)
-    }
   }
 
   const getOwnerDraft = (user: any) =>
@@ -194,6 +104,74 @@ export default function UsersClientTable({
       })
     } catch (error) {
       alert(error instanceof Error ? error.message : 'No se pudo asignar la cartera.')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  const getCommercialDraft = (user: any): CommercialDraft =>
+    commercialDrafts[user.id] ?? {
+      rank: (user.sellerProfile?.rank || 'BRONZE') as SellerRank,
+      status: (user.sellerProfile?.status || 'ACTIVE') as SellerStatus,
+      temporaryRate: user.sellerProfile?.temporaryCommissionRate?.toString() || '',
+      temporaryDays: '30',
+      excludeFromLeaderboards: Boolean(user.sellerProfile?.excludeFromLeaderboards),
+      penaltyRank: (user.sellerProfile?.rank || 'BRONZE') as SellerRank,
+      penaltyReason: '',
+    }
+
+  const updateCommercialDraft = (user: any, patch: Partial<CommercialDraft>) => {
+    setCommercialDrafts((current) => ({
+      ...current,
+      [user.id]: {
+        ...getCommercialDraft(user),
+        ...patch,
+      },
+    }))
+  }
+
+  const handleCommercialSave = async (user: any) => {
+    const draft = getCommercialDraft(user)
+    const currentRank = (user.sellerProfile?.rank || 'BRONZE') as SellerRank
+    const rate = draft.temporaryRate.trim() ? Number(draft.temporaryRate) : null
+    const days = Number(draft.temporaryDays || 30)
+    let expiresAt: Date | null = null
+
+    if (rate !== null) {
+      if (!Number.isFinite(rate) || rate < 0 || rate > 100 || !Number.isFinite(days) || days <= 0) {
+        alert('Override invalido.')
+        return
+      }
+      expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + days)
+    }
+
+    setLoading(user.id)
+    try {
+      if (draft.rank !== currentRank) {
+        await updateSellerRank(user.id, draft.rank)
+      }
+      await updateSellerProfileSettings(user.id, {
+        status: draft.status,
+        temporaryCommissionRate: rate,
+        temporaryRateExpiresAt: expiresAt,
+        excludeFromLeaderboards: draft.excludeFromLeaderboards,
+      })
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'No se pudo actualizar el perfil comercial.')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  const handlePenalty = async (user: any) => {
+    const draft = getCommercialDraft(user)
+    setLoading(user.id)
+    try {
+      await penalizeSellerRank(user.id, draft.penaltyRank, draft.penaltyReason)
+      updateCommercialDraft(user, { penaltyReason: '' })
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'No se pudo registrar la penalizacion.')
     } finally {
       setLoading(null)
     }
@@ -242,6 +220,7 @@ export default function UsersClientTable({
                   const status = (user.sellerProfile?.status || 'ACTIVE') as SellerStatus
                   const isCommercialUser = (user.role === 'SELLER' || user.role === 'ADMIN') && user.sellerProfile
                   const ownerDraft = getOwnerDraft(user)
+                  const commercialDraft = getCommercialDraft(user)
 
                   return (
                     <tr key={user.id} className="hover:bg-gray-50/50">
@@ -257,7 +236,7 @@ export default function UsersClientTable({
                           </span>
                         ) : user.role === 'SELLER' ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-800">
-                            Vendedor
+                            Asesor
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800">
@@ -278,42 +257,91 @@ export default function UsersClientTable({
                                 {rankLabels[rank]} · {user.sellerProfile.defaultCommissionRate}%
                               </span>
                               <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
-                                {status}
+                                {statusLabels[status]}
                               </span>
-                              <button
-                                onClick={() => handleRankChange(user.id, rank)}
+                            </div>
+                            <div className="mt-2 grid w-full max-w-3xl gap-2 rounded-lg bg-gray-50 p-2 text-xs sm:grid-cols-[1fr_1fr_90px_80px_auto_auto]">
+                              <select
+                                value={commercialDraft.rank}
+                                onChange={(event) => updateCommercialDraft(user, { rank: event.target.value as SellerRank })}
                                 disabled={loading === user.id}
-                                className="text-[10px] font-semibold text-gray-500 transition-colors hover:text-[#ED2C71] disabled:opacity-50"
+                                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 outline-none focus:border-orange-500 disabled:opacity-50"
+                                aria-label="Rango comercial"
                               >
-                                Cambiar rango
-                              </button>
-                              <button
-                                onClick={() => handlePenalty(user.id, rank)}
+                                {SELLER_RANKS.map((option) => (
+                                  <option key={option} value={option}>{rankLabels[option]}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={commercialDraft.status}
+                                onChange={(event) => updateCommercialDraft(user, { status: event.target.value as SellerStatus })}
                                 disabled={loading === user.id}
-                                className="text-[10px] font-semibold text-red-500 transition-colors hover:text-red-700 disabled:opacity-50"
+                                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 outline-none focus:border-orange-500 disabled:opacity-50"
+                                aria-label="Estado comercial"
+                              >
+                                {Object.entries(statusLabels).map(([value, label]) => (
+                                  <option key={value} value={value}>{label}</option>
+                                ))}
+                              </select>
+                              <input
+                                type="number"
+                                value={commercialDraft.temporaryRate}
+                                onChange={(event) => updateCommercialDraft(user, { temporaryRate: event.target.value })}
+                                disabled={loading === user.id}
+                                placeholder="% temp."
+                                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 outline-none focus:border-orange-500 disabled:opacity-50"
+                              />
+                              <input
+                                type="number"
+                                min={1}
+                                value={commercialDraft.temporaryDays}
+                                onChange={(event) => updateCommercialDraft(user, { temporaryDays: event.target.value })}
+                                disabled={loading === user.id || !commercialDraft.temporaryRate.trim()}
+                                placeholder="Dias"
+                                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 outline-none focus:border-orange-500 disabled:opacity-50"
+                              />
+                              <label className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 font-semibold text-gray-600">
+                                <input
+                                  type="checkbox"
+                                  checked={commercialDraft.excludeFromLeaderboards}
+                                  onChange={(event) => updateCommercialDraft(user, { excludeFromLeaderboards: event.target.checked })}
+                                  disabled={loading === user.id}
+                                />
+                                Sin ranking
+                              </label>
+                              <button
+                                onClick={() => handleCommercialSave(user)}
+                                disabled={loading === user.id}
+                                className="rounded-lg bg-gray-900 px-2 py-1.5 font-semibold text-white transition-colors hover:bg-black disabled:opacity-50"
+                              >
+                                Guardar
+                              </button>
+                            </div>
+                            <div className="mt-2 grid w-full max-w-3xl gap-2 rounded-lg border border-red-100 bg-red-50 p-2 text-xs sm:grid-cols-[140px_1fr_auto]">
+                              <select
+                                value={commercialDraft.penaltyRank}
+                                onChange={(event) => updateCommercialDraft(user, { penaltyRank: event.target.value as SellerRank })}
+                                disabled={loading === user.id}
+                                className="rounded-lg border border-red-100 bg-white px-2 py-1.5 outline-none focus:border-red-400 disabled:opacity-50"
+                                aria-label="Rango por penalizacion"
+                              >
+                                {SELLER_RANKS.map((option) => (
+                                  <option key={option} value={option}>{rankLabels[option]}</option>
+                                ))}
+                              </select>
+                              <input
+                                value={commercialDraft.penaltyReason}
+                                onChange={(event) => updateCommercialDraft(user, { penaltyReason: event.target.value })}
+                                disabled={loading === user.id}
+                                placeholder="Motivo obligatorio de revision de rango"
+                                className="rounded-lg border border-red-100 bg-white px-2 py-1.5 outline-none focus:border-red-400 disabled:opacity-50"
+                              />
+                              <button
+                                onClick={() => handlePenalty(user)}
+                                disabled={loading === user.id || commercialDraft.penaltyReason.trim().length < 10}
+                                className="rounded-lg bg-red-600 px-2 py-1.5 font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                               >
                                 Penalizar
-                              </button>
-                              <button
-                                onClick={() => handleStatusChange(user.id, status)}
-                                disabled={loading === user.id}
-                                className="text-[10px] font-semibold text-gray-500 transition-colors hover:text-[#ED2C71] disabled:opacity-50"
-                              >
-                                Estado
-                              </button>
-                              <button
-                                onClick={() => handleTemporaryRate(user.id)}
-                                disabled={loading === user.id}
-                                className="text-[10px] font-semibold text-gray-500 transition-colors hover:text-[#ED2C71] disabled:opacity-50"
-                              >
-                                Override
-                              </button>
-                              <button
-                                onClick={() => handleLeaderboardToggle(user.id, user.sellerProfile.excludeFromLeaderboards)}
-                                disabled={loading === user.id}
-                                className="text-[10px] font-semibold text-gray-500 transition-colors hover:text-[#ED2C71] disabled:opacity-50"
-                              >
-                                {user.sellerProfile.excludeFromLeaderboards ? 'Incluir ranking' : 'Excluir ranking'}
                               </button>
                             </div>
                           </div>
@@ -325,7 +353,7 @@ export default function UsersClientTable({
                               onChange={(event) => updateOwnerDraft(user, { sellerId: event.target.value })}
                               disabled={loading === user.id || sellers.length === 0}
                               className="rounded-lg border border-gray-200 px-2 py-1.5 text-xs outline-none focus:border-orange-500 disabled:opacity-50"
-                              aria-label="Vendedor titular"
+                              aria-label="Asesor titular"
                             >
                               <option value="">Sin titular</option>
                               {sellers.map((seller) => (
@@ -339,9 +367,9 @@ export default function UsersClientTable({
                               onChange={(event) => updateOwnerDraft(user, { operationalSellerId: event.target.value })}
                               disabled={loading === user.id || sellers.length === 0}
                               className="rounded-lg border border-gray-200 px-2 py-1.5 text-xs outline-none focus:border-orange-500 disabled:opacity-50"
-                              aria-label="Heredero operativo"
+                              aria-label="Asesor operativo"
                             >
-                              <option value="">Sin heredero</option>
+                              <option value="">Sin operativo</option>
                               {sellers.map((seller) => (
                                 <option key={seller.id} value={seller.id}>
                                   {seller.name || seller.email}
@@ -378,7 +406,7 @@ export default function UsersClientTable({
                               className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                             >
                               {user.role === 'CUSTOMER' ? (
-                                <><UserCheck size={14} className="text-orange-500" /> Hacer Vendedor</>
+                                <><UserCheck size={14} className="text-orange-500" /> Hacer Asesor</>
                               ) : (
                                 <><UserX size={14} className="text-gray-500" /> Degradar a Cliente</>
                               )}

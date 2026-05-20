@@ -34,7 +34,7 @@ export async function createPublicSellerLead(formData: FormData) {
 
   const data = parsed.data
   const seller = await getActiveSellerById(data.sellerId)
-  if (!seller) return { error: 'El vendedor no esta disponible.' }
+  if (!seller) return { error: 'El asesor no esta disponible.' }
 
   const existingUser = data.email
     ? await prisma.user.findUnique({
@@ -44,7 +44,7 @@ export async function createPublicSellerLead(formData: FormData) {
     : null
 
   if (existingUser?.sellerId && existingUser.sellerId !== seller.id) {
-    return { error: 'Ya estas asociado a otro vendedor de ZAP.' }
+    return { error: 'Ya estas asociado a otro asesor de ZAP.' }
   }
 
   const existingLead = await prisma.sellerLead.findFirst({
@@ -64,7 +64,7 @@ export async function createPublicSellerLead(formData: FormData) {
     name: data.name,
     phone: data.phone,
     email: data.email || null,
-    interest: data.interest || 'Consulta desde link de vendedor',
+    interest: data.interest || 'Consulta desde link de asesor',
     status: existingUser ? 'WON' as const : 'NEW' as const,
     convertedUserId: existingUser?.id || null,
   }
@@ -85,7 +85,7 @@ export async function createPublicSellerLead(formData: FormData) {
     await logLeadEvent(
       leadId,
       existingLead ? 'UPDATED' : 'CREATED',
-      'Contacto recibido desde link de vendedor.'
+      'Contacto recibido desde link de asesor.'
     )
   }
 

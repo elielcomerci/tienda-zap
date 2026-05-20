@@ -69,7 +69,7 @@ export async function updateSellerProfileSettings(
       temporaryCommissionRate: input.temporaryCommissionRate,
       temporaryRateExpiresAt: input.temporaryRateExpiresAt,
       excludeFromLeaderboards: input.excludeFromLeaderboards,
-      active: input.status === 'SUSPENDED' ? false : undefined,
+      active: input.status ? input.status !== 'SUSPENDED' : undefined,
     },
   })
 
@@ -160,7 +160,7 @@ export async function penalizeSellerRank(
     where: { userId },
     select: { rank: true },
   })
-  if (!current) throw new Error('El usuario no tiene perfil vendedor.')
+  if (!current) throw new Error('El usuario no tiene perfil de asesor.')
 
   const rankConfig = getSellerRankConfig(rank)
   await prisma.sellerProfile.update({

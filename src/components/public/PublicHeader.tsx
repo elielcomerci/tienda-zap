@@ -286,7 +286,7 @@ export default function PublicHeader({
                   <Link
                     href="/seller"
                     className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] text-[#2F5F9F] transition-colors hover:bg-[#4576B9]/15"
-                    title="Ir al panel de vendedores"
+                    title="Ir al panel de asesores"
                   >
                     <Handshake size={17} />
                   </Link>
@@ -348,7 +348,7 @@ export default function PublicHeader({
               <Link
                 href="/seller"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] text-[#2F5F9F] shadow-sm"
-                aria-label="Ir al panel de vendedores"
+                aria-label="Ir al panel de asesores"
               >
                 <Handshake size={18} />
               </Link>
@@ -392,7 +392,7 @@ export default function PublicHeader({
 
       {showReferralBanner && referralSeller && (
         <div className="fixed left-0 right-0 top-[70px] z-40 border-y border-[#4576B9]/15 bg-white/95 px-4 py-2 text-center text-xs font-semibold text-gray-600 shadow-sm backdrop-blur">
-          Te está asesorando <span className="text-[#ED2C71]">{referralSeller.name || 'un vendedor ZAP'}</span>
+          Te está asesorando <span className="text-[#ED2C71]">{referralSeller.name || 'un asesor ZAP'}</span>
           <button
             type="button"
             onClick={() => {
@@ -557,7 +557,7 @@ export default function PublicHeader({
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center justify-center bg-white/20 text-white text-base py-2 px-6 rounded-full font-bold hover:bg-white/30 active:scale-[0.98] transition-all"
                     >
-                      Panel Vendedores
+                      Panel Asesores
                     </Link>
                   )}
                 </div>
@@ -594,7 +594,7 @@ export default function PublicHeader({
               <div>
                 <h2 className="text-lg font-black text-gray-900">Te contactamos</h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  Deja tus datos y {referralSeller.name || 'tu vendedor ZAP'} te escribe.
+                  Deja tus datos y {referralSeller.name || 'tu asesor ZAP'} te escribe.
                 </p>
               </div>
               <button

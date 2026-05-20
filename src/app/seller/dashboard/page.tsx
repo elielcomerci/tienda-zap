@@ -34,7 +34,7 @@ export default async function SellerDashboardPage() {
         </div>
         <h1 className="mb-2 text-2xl font-bold text-gray-900">Cuenta en revisión</h1>
         <p className="max-w-md text-gray-500">
-          Hemos recibido tu solicitud para unirte como vendedor. Nuestro equipo la está revisando y pronto nos pondremos en contacto con vos para activarla.
+          Hemos recibido tu solicitud para unirte como asesor comercial. Nuestro equipo la está revisando y pronto nos pondremos en contacto con vos para activarla.
         </p>
       </div>
     )
@@ -106,7 +106,7 @@ export default async function SellerDashboardPage() {
     { key: 'STORE', label: 'Tienda online' },
     { key: 'MANUAL', label: 'Ventas manuales' },
     { key: 'RECURRING', label: 'Abonos recurrentes' },
-    { key: 'ROYALTY', label: 'Regalias' },
+    { key: 'ROYALTY', label: 'Regalías' },
   ].map((row) => ({
     ...row,
     amount: commissionByType.get(row.key) || 0,
@@ -166,12 +166,12 @@ export default async function SellerDashboardPage() {
         <div className="flex flex-col justify-between rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-6 shadow-sm">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-emerald-700">
-              Piso asegurado próximo mes
+              Piso proyectado próximo mes
             </p>
             <p className="text-3xl font-black text-emerald-700">${guaranteedFloor.toLocaleString('es-AR')}</p>
           </div>
           <p className="mt-2 text-xs text-emerald-800">
-            Solo cuenta abonos activos confirmados.
+            Solo cuenta abonos recurrentes activos y registrados.
           </p>
         </div>
 
@@ -305,7 +305,7 @@ export default async function SellerDashboardPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="mb-4">
           <h2 className="text-lg font-bold text-gray-900">Detalle de ingresos</h2>
-          <p className="mt-1 text-sm text-gray-500">Separacion por origen de comision y regalias.</p>
+          <p className="mt-1 text-sm text-gray-500">Separación por origen de comisión y regalías.</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {commissionTypeRows.map((row) => (

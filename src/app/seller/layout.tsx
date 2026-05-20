@@ -24,7 +24,7 @@ export default async function SellerLayout({ children }: { children: React.React
           </div>
           <div>
             <span className="font-bold text-white">ZAP</span>{' '}
-            <span className="text-sm text-gray-400">Vendedores</span>
+            <span className="text-sm text-gray-400">Asesores</span>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export default async function SellerLayout({ children }: { children: React.React
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ED2C71] text-white">
                 <Zap size={18} />
               </span>
-              ZAP Vendedores
+              ZAP Asesores
             </Link>
             <Link href="/perfil" className="text-sm font-semibold text-gray-500">
               Perfil

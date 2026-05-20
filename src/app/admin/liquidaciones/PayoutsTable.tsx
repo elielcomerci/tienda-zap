@@ -42,7 +42,7 @@ export default function PayoutsTable({ sellers }: { sellers: any[] }) {
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
               <tr>
-                <th className="px-6 py-4 font-semibold">Vendedor</th>
+                <th className="px-6 py-4 font-semibold">Asesor</th>
                 <th className="px-6 py-4 font-semibold text-right">Histórico</th>
                 <th className="px-6 py-4 font-semibold text-right text-gray-400">Retirado</th>
                 <th className="px-6 py-4 font-semibold text-right text-orange-600">Saldo Disponible</th>
@@ -74,7 +74,7 @@ export default function PayoutsTable({ sellers }: { sellers: any[] }) {
                           <span>Tienda ${seller.breakdown.store.toLocaleString('es-AR')}</span>
                           <span>Manual ${seller.breakdown.manual.toLocaleString('es-AR')}</span>
                           <span>Abonos ${seller.breakdown.recurring.toLocaleString('es-AR')}</span>
-                          <span>Regalias ${seller.breakdown.royalty.toLocaleString('es-AR')}</span>
+                          <span>Regalías ${seller.breakdown.royalty.toLocaleString('es-AR')}</span>
                         </div>
                       )}
                     </td>
@@ -132,7 +132,7 @@ export default function PayoutsTable({ sellers }: { sellers: any[] }) {
               {sellers.length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-gray-500">
-                    No hay vendedores activos en el sistema.
+                    No hay asesores activos en el sistema.
                   </td>
                 </tr>
               )}

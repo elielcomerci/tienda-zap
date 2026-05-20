@@ -26,7 +26,7 @@ export async function createSellerPayout(sellerId: string, amount: number, refer
   const availableBalance = availableLedgers.reduce((total, ledger) => total + ledger.amount, 0)
 
   if (amount > availableBalance) {
-    throw new Error('El monto supera el saldo disponible del vendedor.')
+    throw new Error('El monto supera el saldo disponible del asesor.')
   }
 
   if (Math.abs(amount - availableBalance) > 0.01) {

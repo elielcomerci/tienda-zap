@@ -33,7 +33,7 @@ export async function createRecurringSubscription(input: CreateRecurringSubscrip
   const name = input.name.trim()
   if (!name) throw new Error('El nombre del abono es obligatorio.')
   if (!input.clientId) throw new Error('Selecciona un cliente.')
-  if (!input.portfolioSellerId) throw new Error('Selecciona un vendedor titular.')
+  if (!input.portfolioSellerId) throw new Error('Selecciona un asesor titular.')
   if (!Number.isFinite(input.monthlyAmount) || input.monthlyAmount <= 0) {
     throw new Error('El monto mensual debe ser mayor a 0.')
   }

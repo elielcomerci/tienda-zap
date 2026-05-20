@@ -8,10 +8,10 @@ export const SELLER_RANKS: Array<{
   commissionRate: number
   threshold: number
 }> = [
-  { rank: 'BRONZE', label: 'Bronce', commissionRate: 10, threshold: 0 },
-  { rank: 'SILVER', label: 'Plata', commissionRate: 13, threshold: 5_000_000 },
-  { rank: 'GOLD', label: 'Oro', commissionRate: 16, threshold: 15_000_000 },
-  { rank: 'DIAMOND', label: 'Diamante', commissionRate: 20, threshold: 40_000_000 },
+  { rank: 'BRONZE', label: 'Inicial', commissionRate: 10, threshold: 0 },
+  { rank: 'SILVER', label: 'Asociado', commissionRate: 13, threshold: 5_000_000 },
+  { rank: 'GOLD', label: 'Senior', commissionRate: 16, threshold: 15_000_000 },
+  { rank: 'DIAMOND', label: 'Estrategico', commissionRate: 20, threshold: 40_000_000 },
 ]
 
 const RANK_INDEX = new Map(SELLER_RANKS.map((rank, index) => [rank.rank, index]))

@@ -32,7 +32,7 @@ export async function associateClient(emailOrDocument: string) {
   }
 
   if (client.sellerId) {
-    return { error: 'Este cliente ya está asociado a otro vendedor.' }
+    return { error: 'Este cliente ya está asociado a otro asesor.' }
   }
 
   await prisma.user.update({

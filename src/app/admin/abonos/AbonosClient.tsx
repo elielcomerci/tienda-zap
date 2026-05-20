@@ -142,7 +142,7 @@ export default function AbonosClient({
           </label>
 
           <label className="space-y-1 text-sm">
-            <span className="font-medium text-gray-700">Vendedor titular</span>
+            <span className="font-medium text-gray-700">Asesor titular</span>
             <select
               value={form.portfolioSellerId}
               onChange={(event) => setForm((current) => ({ ...current, portfolioSellerId: event.target.value }))}
@@ -238,7 +238,7 @@ export default function AbonosClient({
               <tr>
                 <th className="px-5 py-3 font-semibold">Abono</th>
                 <th className="px-5 py-3 font-semibold">Cliente</th>
-                <th className="px-5 py-3 font-semibold">Vendedor</th>
+                <th className="px-5 py-3 font-semibold">Asesor</th>
                 <th className="px-5 py-3 font-semibold text-right">Mensual</th>
                 <th className="px-5 py-3 font-semibold">Estado</th>
                 <th className="px-5 py-3 font-semibold text-right">Acciones</th>

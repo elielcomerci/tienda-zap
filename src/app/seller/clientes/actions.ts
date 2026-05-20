@@ -45,7 +45,7 @@ async function requireSeller() {
   }
 
   if (seller.role !== 'ADMIN' && !seller.sellerProfile?.active) {
-    throw new Error('Tu cuenta de vendedor todavia no esta activa.')
+    throw new Error('Tu cuenta de asesor todavia no esta activa.')
   }
 
   return seller
@@ -70,7 +70,7 @@ export async function createSellerLead(formData: FormData) {
     : null
 
   if (existingUser?.sellerId && existingUser.sellerId !== seller.id) {
-    return { error: 'Ese email ya pertenece a un cliente asociado a otro vendedor.' }
+    return { error: 'Ese email ya pertenece a un cliente asociado a otro asesor.' }
   }
 
   const existingLead = await prisma.sellerLead.findFirst({
@@ -125,7 +125,7 @@ export async function createSellerLead(formData: FormData) {
       data: { sellerId: seller.id },
     })
     if (leadId) {
-      await logLeadEvent(leadId, 'CONVERTED', 'Usuario existente asociado al vendedor.')
+      await logLeadEvent(leadId, 'CONVERTED', 'Usuario existente asociado al asesor.')
     }
   }
 

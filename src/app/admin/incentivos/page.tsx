@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Target, Gift, Plus } from 'lucide-react'
 import { createIncentive, toggleIncentiveActive, deleteIncentive } from '@/lib/actions/incentives'
 
-export const metadata = { title: 'Incentivos de Vendedores — ZAP Admin' }
+export const metadata = { title: 'Incentivos de Asesores - ZAP Admin' }
 
 export default async function AdminIncentivesPage() {
   const incentives = await prisma.sellerIncentive.findMany({
@@ -18,7 +18,7 @@ export default async function AdminIncentivesPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Incentivos</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Creá metas y desafíos para motivar a tus vendedores.
+            Crea metas y desafios para motivar a tus asesores.
           </p>
         </div>
       </div>

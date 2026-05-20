@@ -6,7 +6,7 @@ import PasswordInput from '@/components/ui/PasswordInput'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 
-export const metadata = { title: 'Registro de Vendedores — ZAP Tienda' }
+export const metadata = { title: 'Registro de Asesores - ZAP Tienda' }
 
 export default async function SellerRegistroPage({
   searchParams,
@@ -14,7 +14,7 @@ export default async function SellerRegistroPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
-  
+
   const session = await auth()
   if (session?.user) {
     redirect('/perfil')
@@ -32,8 +32,8 @@ export default async function SellerRegistroPage({
           <Link href="/" className="relative z-10 inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-500 shadow-lg shadow-orange-500/20 mb-4 transition-transform hover:scale-105">
             <Zap size={32} />
           </Link>
-          <h1 className="relative z-10 text-2xl font-bold">Unite como Vendedor</h1>
-          <p className="relative z-10 text-orange-200 text-sm mt-1">Tu cuenta quedará en espera de aprobación</p>
+          <h1 className="relative z-10 text-2xl font-bold">Unite como Asesor Comercial</h1>
+          <p className="relative z-10 text-orange-200 text-sm mt-1">Tu cuenta quedara en espera de aprobacion</p>
         </div>
 
         <form action={registerSeller} className="p-8 pt-6 space-y-4">
@@ -45,7 +45,7 @@ export default async function SellerRegistroPage({
 
           <div>
             <label className="label">Nombre completo</label>
-            <input name="name" type="text" required className="input" placeholder="Juan García" />
+            <input name="name" type="text" required className="input" placeholder="Juan Garcia" />
           </div>
 
           <div>
@@ -55,7 +55,7 @@ export default async function SellerRegistroPage({
 
           <div>
             <label className="label">
-              Teléfono / WhatsApp <span className="text-gray-400 font-normal">(requerido)</span>
+              Telefono / WhatsApp <span className="text-gray-400 font-normal">(requerido)</span>
             </label>
             <input name="phone" type="tel" required className="input" placeholder="1134567890" />
           </div>
@@ -70,7 +70,7 @@ export default async function SellerRegistroPage({
           {businessTypes.length > 0 && (
             <div>
               <label className="label">
-                ¿A qué rubro apuntas principalmente? <span className="text-gray-400 font-normal">(opcional)</span>
+                A que rubro apuntas principalmente? <span className="text-gray-400 font-normal">(opcional)</span>
               </label>
               <select name="businessTypeId" className="input" defaultValue="">
                 <option value="">Cualquier rubro</option>
@@ -85,28 +85,28 @@ export default async function SellerRegistroPage({
 
           <PasswordInput
             name="password"
-            label="Contraseña"
-            placeholder="Mínimo 6 caracteres"
+            label="Contrasena"
+            placeholder="Minimo 6 caracteres"
             required
           />
 
           <PasswordInput
             name="confirmPassword"
-            label="Confirmar contraseña"
-            placeholder="Repetí la contraseña"
+            label="Confirmar contrasena"
+            placeholder="Repeti la contrasena"
             required
           />
 
           <div className="pt-2">
             <button type="submit" className="w-full flex justify-center items-center py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-md shadow-orange-500/20">
-              Aplicar como vendedor
+              Aplicar como asesor
             </button>
           </div>
 
           <p className="text-center text-sm text-gray-500">
-            ¿Ya sos vendedor?{' '}
+            Ya sos asesor?{' '}
             <Link href="/login" className="text-orange-500 font-semibold hover:underline">
-              Ingresá acá
+              Ingresa aca
             </Link>
           </p>
         </form>
