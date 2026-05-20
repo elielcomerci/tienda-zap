@@ -43,9 +43,21 @@ const ZAP_PINK = '#ED2C71'
 const ZAP_BLUE = '#4576B9'
 const ZAP_PURPLE = '#9951A1'
 const INK = '#111111'
-const MUTED = '#999999'
-const MUTED_LIGHT = '#BBBBBB'
-const CUT_COLOR = '#CCCCCC'
+const MUTED = '#666666'
+const MUTED_LIGHT = '#999999'
+const CUT_COLOR = '#D5D5D5'
+
+/* ── Helpers ── */
+
+function getImageFormat(dataUrl: string): 'PNG' | 'JPEG' | 'WEBP' {
+  if (dataUrl.includes('image/jpeg') || dataUrl.includes('image/jpg')) {
+    return 'JPEG'
+  }
+  if (dataUrl.includes('image/webp')) {
+    return 'WEBP'
+  }
+  return 'PNG'
+}
 
 /* ── Helpers ── */
 
@@ -151,7 +163,12 @@ export async function buildCouponCardData(
   // Try to fetch client logo
   let clientLogoDataUrl: string | null = null
   if (coupon.promotion.welcomeLogoUrl) {
-    clientLogoDataUrl = await fetchImageAsDataUrl(coupon.promotion.welcomeLogoUrl)
+    let logoUrl = coupon.promotion.welcomeLogoUrl
+    if (logoUrl.startsWith('/') || !logoUrl.startsWith('http')) {
+      const baseUrl = fallbackBaseUrl.replace(/\/$/, '')
+      logoUrl = `${baseUrl}/${logoUrl.replace(/^\//, '')}`
+    }
+    clientLogoDataUrl = await fetchImageAsDataUrl(logoUrl)
   }
 
   const discount = getDiscountLabel(coupon.promotion)
@@ -200,7 +217,7 @@ function drawRoundedRect(
 }
 
 function drawQrCorners(doc: jsPDF, x: number, y: number, size: number, cornerLen: number) {
-  const lineWidth = 0.6
+  const lineWidth = 0.5
 
   // Top-left (pink)
   doc.setDrawColor(ZAP_PINK)
@@ -227,15 +244,15 @@ function drawQrCorners(doc: jsPDF, x: number, y: number, size: number, cornerLen
 function drawCutLine(doc: jsPDF, x: number, y: number, width: number) {
   doc.setDrawColor(CUT_COLOR)
   doc.setLineWidth(0.15)
-  doc.setLineDashPattern([1.5, 1], 0)
-  doc.line(x + 8, y, x + width, y)
+  doc.setLineDashPattern([2, 1.5], 0)
+  doc.line(x + 10, y, x + width - 10, y)
   doc.setLineDashPattern([], 0)
 
   // Scissors icon (small "✂")
-  doc.setFontSize(5)
-  doc.setTextColor(CUT_COLOR)
+  doc.setFontSize(6)
+  doc.setTextColor(MUTED_LIGHT)
   doc.setFont('helvetica', 'normal')
-  doc.text('✂', x + 3.5, y + 1.2)
+  doc.text('✂', x + 5, y + 1.5)
 }
 
 function drawInitialsLogo(
@@ -246,7 +263,7 @@ function drawInitialsLogo(
   size: number
 ) {
   const half = size / 2
-  const radius = 3
+  const radius = 3.5
 
   // Dark rounded background
   doc.setFillColor(INK)
@@ -254,9 +271,9 @@ function drawInitialsLogo(
 
   // Initials text
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(size * 0.42)
+  doc.setFontSize(size * 0.38)
   doc.setTextColor('#FFFFFF')
-  doc.text(initials, cx, cy + size * 0.15, { align: 'center' })
+  doc.text(initials, cx, cy + size * 0.13, { align: 'center' })
 }
 
 /* ── Main coupon drawing ── */
@@ -286,18 +303,14 @@ export function drawCoupon(
   // ── Gradient bar top ──
   drawGradientBar(doc, x, y, width, sw(1.5))
 
-  // ── Agency branding (top-right, subtle) ──
-  const logoSize = sw(5)
-  doc.addImage(ZAP_LOGO_B64, 'PNG', sx(75), sy(4), logoSize, logoSize, undefined, 'FAST')
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(sw(2.8))
-  doc.setTextColor(180, 180, 180)
-  doc.text('ZAP', sx(81), sy(11), { align: 'center' })
+  // ── Agency branding (top-left, subtle, no text below) ──
+  const logoSize = sw(6)
+  doc.addImage(ZAP_LOGO_B64, 'PNG', sx(8), sy(4.5), logoSize, logoSize, undefined, 'FAST')
 
   // ── Client logo or initials ──
   const logoCenterX = sx(45)
-  const logoY = sy(16)
-  const clientLogoSize = sw(17)
+  const logoY = sy(15)
+  const clientLogoSize = sw(22)
 
   if (card.clientLogoDataUrl) {
     try {
@@ -313,9 +326,11 @@ export function drawCoupon(
         sw(3.5),
         'S'
       )
+      
+      const format = getImageFormat(card.clientLogoDataUrl)
       doc.addImage(
         card.clientLogoDataUrl,
-        'PNG',
+        format,
         logoCenterX - clientLogoSize / 2 + sw(0.5),
         logoY + sw(0.5),
         clientLogoSize - sw(1),
@@ -332,70 +347,70 @@ export function drawCoupon(
   }
 
   // ── Business name ──
-  const nameY = logoY + clientLogoSize + sw(5)
+  const nameY = logoY + clientLogoSize + sw(6)
   doc.setTextColor(INK)
-  setFitFont(doc, compactLabel(card.presenterName, 30), sw(70), sw(5), sw(3.5), 'bold')
+  setFitFont(doc, compactLabel(card.presenterName, 30), sw(72), sw(5.2), sw(3.8), 'bold')
   doc.text(compactLabel(card.presenterName, 30), sx(45), nameY, { align: 'center' })
 
   // ── Subtitle (audience label or person name) ──
   const subtitle = card.audienceLabel || card.personName || ''
   if (subtitle) {
-    doc.setFont('helvetica', 'italic')
-    doc.setFontSize(sw(3.2))
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(sw(3.4))
     doc.setTextColor(MUTED)
-    doc.text(compactLabel(subtitle, 35), sx(45), nameY + sw(4.5), { align: 'center' })
+    doc.text(compactLabel(subtitle, 35), sx(45), nameY + sw(4.8), { align: 'center' })
   }
 
   // ── Benefit block ──
-  const benefitY = nameY + sw(subtitle ? 12 : 9)
+  const benefitY = nameY + sw(subtitle ? 13 : 9)
 
   // Main discount label (large, pink ZAP color)
   doc.setTextColor(ZAP_PINK)
-  setFitFont(doc, card.discountLabel, sw(60), sw(10), sw(6), 'bold')
+  setFitFont(doc, card.discountLabel, sw(70), sw(12), sw(7.5), 'bold')
   doc.text(card.discountLabel, sx(45), benefitY, { align: 'center' })
 
   // Discount subtitle
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(sw(3.8))
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(sw(4.2))
   doc.setTextColor(ZAP_BLUE)
-  doc.text(card.discountSubtitle, sx(45), benefitY + sw(5.5), { align: 'center' })
+  doc.text(card.discountSubtitle, sx(45), benefitY + sw(6.2), { align: 'center' })
 
   // Benefit description
   doc.setFont('helvetica', 'italic')
-  doc.setFontSize(sw(3))
+  doc.setFontSize(sw(3.2))
   doc.setTextColor(MUTED)
-  doc.text('Presentá este cupón antes de finalizar la compra.', sx(45), benefitY + sw(11), {
+  doc.text('Presentá este cupón antes de finalizar la compra.', sx(45), benefitY + sw(12), {
     align: 'center',
     maxWidth: sw(70),
   })
 
   // ── Cut line ──
-  const cutY = sy(83)
+  const cutY = sy(82.5)
   drawCutLine(doc, x, cutY, width)
 
   // ── QR section ──
   const qrSize = sw(22)
   const qrX = sx(45) - qrSize / 2
-  const qrY = cutY + sw(5)
+  const qrY = cutY + sw(7)
 
   // QR corners
-  drawQrCorners(doc, qrX - sw(2), qrY - sw(2), qrSize + sw(4), sw(3))
+  drawQrCorners(doc, qrX - sw(2.5), qrY - sw(2.5), qrSize + sw(5), sw(3.5))
 
   // QR image
   doc.addImage(card.qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize, undefined, 'FAST')
 
   // ── Code ──
-  const codeY = qrY + qrSize + sw(5)
+  const codeY = qrY + qrSize + sw(6.5)
   doc.setTextColor(ZAP_PINK)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(sw(3.5))
+  doc.setFontSize(sw(4.2))
   doc.text(card.code, sx(45), codeY, { align: 'center' })
 
   // ── Expiry ──
   doc.setFont('helvetica', 'italic')
-  doc.setFontSize(sw(2.8))
+  doc.setFontSize(sw(3))
   doc.setTextColor(MUTED_LIGHT)
-  doc.text(card.expiresLabel, sx(45), codeY + sw(4), { align: 'center', maxWidth: sw(70) })
+  doc.text(card.expiresLabel, sx(45), codeY + sw(4.5), { align: 'center', maxWidth: sw(76) })
 }
 
 // Keep legacy exports for backward compatibility
