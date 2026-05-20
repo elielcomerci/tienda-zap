@@ -29,14 +29,16 @@ export async function GET(
       coupons: {
         orderBy: { createdAt: 'desc' },
         include: {
-          promotion: {
-            select: {
-              qrBaseUrl: true,
-              name: true,
-              discountKind: true,
-              discountValue: true,
-            },
-          },
+              promotion: {
+                select: {
+                  qrBaseUrl: true,
+                  name: true,
+                  discountKind: true,
+                  discountValue: true,
+                  welcomeLogoUrl: true,
+                  audienceLabel: true,
+                },
+              },
         },
       },
     },

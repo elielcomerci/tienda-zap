@@ -24,6 +24,8 @@ export async function GET(
           name: true,
           discountKind: true,
           discountValue: true,
+          welcomeLogoUrl: true,
+          audienceLabel: true,
         },
       },
     },
