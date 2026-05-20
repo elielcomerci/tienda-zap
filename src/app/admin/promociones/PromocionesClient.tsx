@@ -94,6 +94,7 @@ type GenerateFormState = {
   quantity: string
   prefix: string
   batchName: string
+  publicPresenterName: string
   recipients: string
   qrBaseUrl: string
   expiresAt: string
@@ -124,6 +125,7 @@ const DEFAULT_GENERATE_FORM: GenerateFormState = {
   quantity: '25',
   prefix: 'ZAP',
   batchName: '',
+  publicPresenterName: '',
   recipients: '',
   qrBaseUrl: '',
   expiresAt: '',
@@ -302,6 +304,7 @@ export default function PromocionesClient({
         quantity: Number(generateForm.quantity || '0'),
         prefix: generateForm.prefix,
         batchName: generateForm.batchName || null,
+        publicPresenterName: generateForm.publicPresenterName || null,
         recipients: generateForm.recipients || null,
         qrBaseUrl: generateForm.qrBaseUrl || null,
         expiresAt: generateForm.expiresAt || null,
@@ -1001,6 +1004,23 @@ export default function PromocionesClient({
                     placeholder="Ej: Expo mayo 2026"
                   />
                 </div>
+                <div>
+                  <label className="label">Nombre visible del referente</label>
+                  <input
+                    value={generateForm.publicPresenterName}
+                    onChange={(event) =>
+                      setGenerateForm((current) => ({ ...current, publicPresenterName: event.target.value }))
+                    }
+                    className="input"
+                    placeholder="Ej: REMAX, C21, Dra. Lopez, Cafe Norte"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Se muestra al cliente como beneficio acercado por este referente. No uses aca nombres internos.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="label">URL base para QR</label>
                   <input

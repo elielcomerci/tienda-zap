@@ -8,6 +8,12 @@ import { createPresignedR2UploadUrl, getR2BucketName, getR2Client } from '@/lib/
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { revalidatePath } from 'next/cache'
 
+function getMetadataString(metadata: unknown, key: string) {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return ''
+  const value = (metadata as Record<string, unknown>)[key]
+  return typeof value === 'string' ? value : ''
+}
+
 async function requireAdmin() {
   const session = await auth()
   if (!session || session.user?.role !== 'ADMIN') {
@@ -321,6 +327,7 @@ export async function generatePromotionCoupons(input: {
   quantity: number
   prefix: string
   batchName?: string | null
+  publicPresenterName?: string | null
   recipients?: string | null
   qrBaseUrl?: string | null
   expiresAt?: string | null
@@ -340,6 +347,7 @@ export async function generatePromotionCoupons(input: {
   }
   const expiresAt = normalizeOptionalDate(input.expiresAt)
   const batchName = normalizeOptionalText(input.batchName)
+  const publicPresenterName = normalizeOptionalText(input.publicPresenterName)
   const promotion = await prisma.promotion.findUnique({
     where: { id: input.promotionId },
     select: { qrBaseUrl: true },
@@ -350,6 +358,14 @@ export async function generatePromotionCoupons(input: {
   await prisma.promotionCoupon.createMany({
     data: codes.map((code, index) => {
       const recipient = recipients[index]
+      const couponPresenterName =
+        publicPresenterName ||
+        normalizeOptionalText(recipient?.recipientBusiness) ||
+        normalizeOptionalText(recipient?.recipientName)
+      const metadata = {
+        ...(recipient?.metadata ?? {}),
+        ...(couponPresenterName ? { publicPresenterName: couponPresenterName } : {}),
+      }
       return {
       code,
       promotionId: input.promotionId,
@@ -359,7 +375,7 @@ export async function generatePromotionCoupons(input: {
       recipientPhone: recipient?.recipientPhone,
       batchName,
       qrPayload: buildCouponLandingUrl(code, qrBaseUrl),
-      metadata: recipient?.metadata,
+      metadata: Object.keys(metadata).length ? metadata : undefined,
       expiresAt,
       status: 'AVAILABLE',
       usesLeft: 1,
@@ -410,6 +426,7 @@ export async function exportPromotionCouponsCsv(promotionId: string) {
       'email',
       'telefono',
       'lote',
+      'referente_publico',
       'qr',
       'escaneos',
       'redenciones',
@@ -425,6 +442,7 @@ export async function exportPromotionCouponsCsv(promotionId: string) {
       coupon.recipientEmail,
       coupon.recipientPhone,
       coupon.batchName,
+      getMetadataString(coupon.metadata, 'publicPresenterName'),
       coupon.qrPayload,
       coupon._count.scans,
       coupon._count.redemptions,

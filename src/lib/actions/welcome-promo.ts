@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { normalizeCouponCode } from '@/lib/coupons'
+import { getCouponPresenterName, normalizeCouponCode } from '@/lib/coupons'
 
 export async function getWelcomePromoDetails(couponCode: string) {
   const normalizedCode = normalizeCouponCode(couponCode)
@@ -9,7 +9,7 @@ export async function getWelcomePromoDetails(couponCode: string) {
 
   const coupon = await prisma.promotionCoupon.findUnique({
     where: { code: normalizedCode },
-    include: { promotion: true }
+    include: { promotion: true },
   })
 
   if (!coupon || coupon.promotion.status !== 'ACTIVE') {
@@ -17,12 +17,12 @@ export async function getWelcomePromoDetails(couponCode: string) {
   }
 
   const promo = coupon.promotion
+  const presenterName = getCouponPresenterName(coupon)
 
-  if (!promo.welcomeTitle && !promo.welcomeMessage) {
-    return null // Solo mostramos modal si la promoción está configurada para ello
+  if (!promo.welcomeTitle && !promo.welcomeMessage && !presenterName) {
+    return null
   }
 
-  // Verificar si la promo no venció y el cupón está disponible
   const now = new Date()
   if (promo.activeFrom && promo.activeFrom > now) return null
   if (promo.activeTo && promo.activeTo < now) return null
@@ -34,6 +34,7 @@ export async function getWelcomePromoDetails(couponCode: string) {
     message: promo.welcomeMessage,
     conditions: promo.welcomeConditions,
     logoUrl: promo.welcomeLogoUrl,
+    presenterName,
     discountKind: promo.discountKind,
     discountValue: promo.discountValue,
   }

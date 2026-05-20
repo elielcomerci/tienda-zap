@@ -144,6 +144,7 @@ type CouponPreviewState = {
   originalTotal: number
   finalTotal: number
   discountAmount: number
+  presenterName?: string | null
 }
 
 export default function CheckoutPage() {
@@ -793,12 +794,17 @@ function CheckoutContent() {
                               </span>
                             )}
                           </div>
-                          <p className="mt-1 text-sm leading-7 text-emerald-900">
-                            {couponPreview.detail}
-                          </p>
+                            <p className="mt-1 text-sm leading-7 text-emerald-900">
+                              {couponPreview.detail}
+                            </p>
+                            {couponPreview.presenterName && (
+                              <p className="mt-2 rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-800">
+                                Beneficio acercado por {couponPreview.presenterName}.
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
                   )}
 
                   {couponFeedback && (

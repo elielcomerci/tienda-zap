@@ -38,6 +38,7 @@ export type AppliedCouponSummary = {
   code: string
   promotionId: string
   promotionName: string
+  presenterName?: string | null
   discountKind: DiscountKind
   discountValue: number
   discountAmount: number
@@ -61,6 +62,26 @@ export type CouponPreviewResult = {
   originalTotal: number
   finalTotal: number
   discountAmount: number
+  presenterName?: string | null
+}
+
+function getCouponMetadataString(metadata: Prisma.JsonValue | null | undefined, key: string) {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return null
+  const value = (metadata as Record<string, unknown>)[key]
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+export function getCouponPresenterName(coupon: {
+  recipientBusiness?: string | null
+  recipientName?: string | null
+  metadata?: Prisma.JsonValue | null
+}) {
+  return (
+    getCouponMetadataString(coupon.metadata, 'publicPresenterName') ||
+    coupon.recipientBusiness?.trim() ||
+    coupon.recipientName?.trim() ||
+    null
+  )
 }
 
 function normalizeCouponSegment(value: string) {
@@ -219,6 +240,7 @@ async function evaluateCouponRecord(input: {
       code: coupon.code,
       promotionId: coupon.promotion.id,
       promotionName: coupon.promotion.name,
+      presenterName: getCouponPresenterName(coupon),
       discountKind: coupon.promotion.discountKind,
       discountValue: coupon.promotion.discountValue,
       discountAmount,
@@ -417,6 +439,7 @@ export async function previewCheckoutCoupon(input: {
       couponCode: normalizedCode,
       userId: input.userId,
     })
+    const presenterName = pricing.appliedCoupon?.presenterName
 
     return {
       status: 'recognized',
@@ -429,6 +452,7 @@ export async function previewCheckoutCoupon(input: {
       originalTotal: pricing.subtotal,
       finalTotal: pricing.total,
       discountAmount: pricing.discountTotal,
+      presenterName,
     }
   } catch (error: any) {
     return buildInvalidCouponPreview(total, error.message || 'No encontramos un cupon válido.')

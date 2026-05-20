@@ -104,6 +104,12 @@ export default function WelcomePromoModal() {
             {promo.message || `Tenés un beneficio especial aplicable a toda tu compra. El código ${promo.code} ya fue guardado en tu sesión y se aplicará en el checkout.`}
           </p>
 
+          {promo.presenterName && (
+            <p className="mt-4 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-center text-sm font-semibold text-orange-900">
+              Beneficio acercado por {promo.presenterName}.
+            </p>
+          )}
+
           <div className="mt-8">
             <button 
               onClick={handleClose}
