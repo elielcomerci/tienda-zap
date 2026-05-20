@@ -37,8 +37,8 @@ type CouponCardData = {
 }
 
 /* ── Design tokens ── */
-const CARD_WIDTH = 90
-const CARD_HEIGHT = 128
+const CARD_WIDTH = 148
+const CARD_HEIGHT = 210
 const ZAP_PINK = '#ED2C71'
 const ZAP_BLUE = '#4576B9'
 const ZAP_PURPLE = '#9951A1'
@@ -102,18 +102,20 @@ function getInitials(name: string): string {
 function setFitFont(
   doc: jsPDF,
   text: string,
-  maxWidth: number,
-  startSize: number,
-  minSize: number,
+  maxWidthMm: number,
+  startSizeMm: number,
+  minSizeMm: number,
   style: 'normal' | 'bold' | 'italic' | 'bolditalic' = 'bold'
 ) {
-  let size = startSize
+  let sizeMm = startSizeMm
   doc.setFont('helvetica', style)
-  doc.setFontSize(size)
 
-  while (size > minSize && doc.getTextWidth(text) > maxWidth) {
-    size -= 0.3
-    doc.setFontSize(size)
+  const mmToPt = 2.83464567
+  doc.setFontSize(sizeMm * mmToPt)
+
+  while (sizeMm > minSizeMm && doc.getTextWidth(text) > maxWidthMm) {
+    sizeMm -= 0.2
+    doc.setFontSize(sizeMm * mmToPt)
   }
 }
 
@@ -255,6 +257,33 @@ function drawCutLine(doc: jsPDF, x: number, y: number, width: number) {
   doc.text('✂', x + 5, y + 1.5)
 }
 
+function drawGradientText(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  align: 'left' | 'center' | 'right' = 'center'
+) {
+  doc.saveGraphicsState()
+  try {
+    // Attempt to use PDF clipping path for text
+    doc.text(text, x, y, { align, renderingMode: 'fillAndAddForClipping' })
+    // Draw gradient over the text bounds
+    let rectX = x - width / 2
+    if (align === 'left') rectX = x
+    if (align === 'right') rectX = x - width
+    const rectY = y - height * 0.8
+    drawGradientBar(doc, rectX, rectY, width, height * 1.5)
+  } catch (e) {
+    // Fallback if renderingMode is not supported
+    doc.setTextColor(ZAP_PINK)
+    doc.text(text, x, y, { align })
+  }
+  doc.restoreGraphicsState()
+}
+
 function drawInitialsLogo(
   doc: jsPDF,
   initials: string,
@@ -291,6 +320,12 @@ export function drawCoupon(
   const sy = (v: number) => y + v * scale
   const sw = (v: number) => v * scale
 
+  const mmToPt = 2.83464567
+  const setPtFont = (style: 'normal' | 'bold' | 'italic' | 'bolditalic', sizeMm: number) => {
+    doc.setFont('helvetica', style)
+    doc.setFontSize(sizeMm * scale * mmToPt)
+  }
+
   // ── White card background ──
   doc.setFillColor('#FFFFFF')
   doc.rect(x, y, width, height, 'F')
@@ -301,40 +336,49 @@ export function drawCoupon(
   doc.rect(x, y, width, height, 'S')
 
   // ── Gradient bar top ──
-  drawGradientBar(doc, x, y, width, sw(1.5))
+  drawGradientBar(doc, x, y, width, sw(2))
 
   // ── Agency branding (top-left, subtle, no text below) ──
-  const logoSize = sw(6)
-  doc.addImage(ZAP_LOGO_B64, 'PNG', sx(8), sy(4.5), logoSize, logoSize, undefined, 'FAST')
+  const logoSize = sw(12)
+  doc.addImage(ZAP_LOGO_B64, 'PNG', sx(12), sy(8), logoSize, logoSize, undefined, 'FAST')
 
   // ── Client logo or initials ──
-  const logoCenterX = sx(45)
-  const logoY = sy(15)
-  const clientLogoSize = sw(22)
+  const logoCenterX = sx(CARD_WIDTH / 2)
+  const logoY = sy(25)
+  const clientLogoSize = sw(35)
 
   if (card.clientLogoDataUrl) {
     try {
-      // Rounded border placeholder
-      doc.setDrawColor(230, 230, 230)
-      doc.setLineWidth(0.15)
-      drawRoundedRect(
-        doc,
-        logoCenterX - clientLogoSize / 2,
-        logoY,
-        clientLogoSize,
-        clientLogoSize,
-        sw(3.5),
-        'S'
-      )
-      
       const format = getImageFormat(card.clientLogoDataUrl)
+      const props = doc.getImageProperties(card.clientLogoDataUrl)
+      const imgRatio = props.width / props.height
+
+      let drawW = clientLogoSize
+      let drawH = clientLogoSize
+
+      if (imgRatio > 1) {
+        // Horizontal image
+        drawH = clientLogoSize / imgRatio
+      } else {
+        // Vertical or square image
+        drawW = clientLogoSize * imgRatio
+      }
+
+      const drawX = logoCenterX - drawW / 2
+      const drawY = logoY + (clientLogoSize - drawH) / 2
+
+      // Draw subtle border for logos as per image
+      doc.setDrawColor(230, 230, 230)
+      doc.setLineWidth(0.3)
+      drawRoundedRect(doc, logoCenterX - clientLogoSize/2, logoY, clientLogoSize, clientLogoSize, 4, 'S')
+
       doc.addImage(
         card.clientLogoDataUrl,
         format,
-        logoCenterX - clientLogoSize / 2 + sw(0.5),
-        logoY + sw(0.5),
-        clientLogoSize - sw(1),
-        clientLogoSize - sw(1),
+        drawX,
+        drawY,
+        drawW,
+        drawH,
         undefined,
         'FAST'
       )
@@ -347,70 +391,64 @@ export function drawCoupon(
   }
 
   // ── Business name ──
-  const nameY = logoY + clientLogoSize + sw(6)
+  const nameY = logoY + clientLogoSize + sw(10)
   doc.setTextColor(INK)
-  setFitFont(doc, compactLabel(card.presenterName, 30), sw(72), sw(5.2), sw(3.8), 'bold')
-  doc.text(compactLabel(card.presenterName, 30), sx(45), nameY, { align: 'center' })
+  setFitFont(doc, compactLabel(card.presenterName, 30), sw(120), 8, 5, 'bold')
+  doc.text(compactLabel(card.presenterName, 30), logoCenterX, nameY, { align: 'center' })
 
   // ── Subtitle (audience label or person name) ──
   const subtitle = card.audienceLabel || card.personName || ''
   if (subtitle) {
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(sw(3.4))
+    setPtFont('normal', 5)
     doc.setTextColor(MUTED)
-    doc.text(compactLabel(subtitle, 35), sx(45), nameY + sw(4.8), { align: 'center' })
+    doc.text(compactLabel(subtitle, 35), logoCenterX, nameY + sw(7), { align: 'center' })
   }
 
   // ── Benefit block ──
-  const benefitY = nameY + sw(subtitle ? 13 : 9)
+  const benefitY = nameY + sw(subtitle ? 22 : 15)
 
-  // Main discount label (large, pink ZAP color)
-  doc.setTextColor(ZAP_PINK)
-  setFitFont(doc, card.discountLabel, sw(70), sw(12), sw(7.5), 'bold')
-  doc.text(card.discountLabel, sx(45), benefitY, { align: 'center' })
+  // Main discount label (huge gradient text)
+  setFitFont(doc, card.discountLabel, sw(130), 20, 12, 'bold')
+  drawGradientText(doc, card.discountLabel, logoCenterX, benefitY, sw(130), sw(20), 'center')
 
   // Discount subtitle
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(sw(4.2))
+  setPtFont('bold', 6)
   doc.setTextColor(ZAP_BLUE)
-  doc.text(card.discountSubtitle, sx(45), benefitY + sw(6.2), { align: 'center' })
+  doc.text(card.discountSubtitle, logoCenterX, benefitY + sw(10), { align: 'center' })
 
   // Benefit description
-  doc.setFont('helvetica', 'italic')
-  doc.setFontSize(sw(3.2))
+  setPtFont('italic', 4.5)
   doc.setTextColor(MUTED)
-  doc.text('Presentá este cupón antes de finalizar la compra.', sx(45), benefitY + sw(12), {
+  doc.text('Presentá este cupón antes de finalizar la compra.', logoCenterX, benefitY + sw(22), {
     align: 'center',
-    maxWidth: sw(70),
+    maxWidth: sw(120),
   })
 
   // ── Cut line ──
-  const cutY = sy(82.5)
+  const cutY = sy(135)
   drawCutLine(doc, x, cutY, width)
 
   // ── QR section ──
-  const qrSize = sw(22)
-  const qrX = sx(45) - qrSize / 2
-  const qrY = cutY + sw(7)
+  const qrSize = sw(42)
+  const qrX = logoCenterX - qrSize / 2
+  const qrY = cutY + sw(12)
 
   // QR corners
-  drawQrCorners(doc, qrX - sw(2.5), qrY - sw(2.5), qrSize + sw(5), sw(3.5))
+  drawQrCorners(doc, qrX - sw(3.5), qrY - sw(3.5), qrSize + sw(7), sw(6))
 
   // QR image
   doc.addImage(card.qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize, undefined, 'FAST')
 
   // ── Code ──
-  const codeY = qrY + qrSize + sw(6.5)
+  const codeY = qrY + qrSize + sw(10)
   doc.setTextColor(ZAP_PINK)
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(sw(4.2))
-  doc.text(card.code, sx(45), codeY, { align: 'center' })
+  setPtFont('bold', 5)
+  doc.text(card.code, logoCenterX, codeY, { align: 'center' })
 
   // ── Expiry ──
-  doc.setFont('helvetica', 'italic')
-  doc.setFontSize(sw(3))
+  setPtFont('italic', 3.5)
   doc.setTextColor(MUTED_LIGHT)
-  doc.text(card.expiresLabel, sx(45), codeY + sw(4.5), { align: 'center', maxWidth: sw(76) })
+  doc.text(card.expiresLabel, logoCenterX, codeY + sw(8), { align: 'center', maxWidth: sw(120) })
 }
 
 // Keep legacy exports for backward compatibility
@@ -468,22 +506,37 @@ function drawSheetGuides(doc: jsPDF, positions: Array<{ x: number; y: number }>)
 }
 
 export async function createCouponSheetPdf(coupons: CouponPdfRecord[], fallbackBaseUrl: string) {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  // 320x470mm layout as requested
+  const SHEET_WIDTH = 320
+  const SHEET_HEIGHT = 470
+  const MARGIN = 10
 
-  // A4 is 210×297mm. With 90×128mm coupons: 2 columns × 2 rows = 4 per page
-  const marginX = (210 - 2 * CARD_WIDTH) / 2  // ~15mm
-  const marginY = (297 - 2 * CARD_HEIGHT) / 2 // ~20.5mm
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [SHEET_WIDTH, SHEET_HEIGHT] })
+
+  // Calculate grid: 2 columns, 2 rows of A5 coupons
+  const columns = 2
+  const rows = 2
+  const couponsPerPage = columns * rows
+
+  // Usable area
+  const usableWidth = SHEET_WIDTH - MARGIN * 2
+  const usableHeight = SHEET_HEIGHT - MARGIN * 2
+
+  // Center the grid in the usable area
+  const gridWidth = columns * CARD_WIDTH
+  const gridHeight = rows * CARD_HEIGHT
+  const startX = MARGIN + (usableWidth - gridWidth) / 2
+  const startY = MARGIN + (usableHeight - gridHeight) / 2
+
   const positions = [
-    { x: marginX, y: marginY },
-    { x: marginX + CARD_WIDTH, y: marginY },
-    { x: marginX, y: marginY + CARD_HEIGHT },
-    { x: marginX + CARD_WIDTH, y: marginY + CARD_HEIGHT },
+    { x: startX, y: startY },
+    { x: startX + CARD_WIDTH, y: startY },
+    { x: startX, y: startY + CARD_HEIGHT },
+    { x: startX + CARD_WIDTH, y: startY + CARD_HEIGHT },
   ]
 
-  const couponsPerPage = 4
-
   for (let pageStart = 0; pageStart < coupons.length; pageStart += couponsPerPage) {
-    if (pageStart > 0) doc.addPage('a4', 'portrait')
+    if (pageStart > 0) doc.addPage([SHEET_WIDTH, SHEET_HEIGHT], 'portrait')
     const group = coupons.slice(pageStart, pageStart + couponsPerPage)
     drawSheetGuides(doc, positions)
 
