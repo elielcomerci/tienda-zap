@@ -12,7 +12,7 @@ export default function CatalogSidebar({
   categories: { id: string; name: string; slug: string }[]
   intentions: Intention[]
   cat?: string
-  mode?: 'product' | 'objective'
+  mode?: 'product' | 'objective' | 'combo'
   intent?: string
 }) {
   const currentMode = mode || 'product'
@@ -29,31 +29,42 @@ export default function CatalogSidebar({
           <Link
             href="/productos?mode=product"
             scroll={false}
-            className={`flex-1 flex justify-center items-center py-2 text-sm font-semibold rounded-lg transition-all ${
+            className={`flex-1 flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
               currentMode === 'product'
                 ? 'bg-[#ED2C71] text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
-            Producto
+            Productos
+          </Link>
+          <Link
+            href="/productos?mode=combo"
+            scroll={false}
+            className={`flex-1 flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
+              currentMode === 'combo'
+                ? 'bg-[#ED2C71] text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+            }`}
+          >
+            Combos
           </Link>
           <Link
             href="/productos?mode=objective"
             scroll={false}
-            className={`flex-1 flex justify-center items-center py-2 text-sm font-semibold rounded-lg transition-all ${
+            className={`flex-1 flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
               currentMode === 'objective'
                 ? 'bg-[#ED2C71] text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
-            Objetivo
+            Objetivos
           </Link>
         </div>
       </div>
 
       <div>
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
-          {currentMode === 'product' ? 'Categorías' : 'Objetivos'}
+          {currentMode === 'product' ? 'Categorías' : currentMode === 'combo' ? 'Packs Comerciales' : 'Objetivos'}
         </p>
 
         {currentMode === 'product' ? (
@@ -85,6 +96,15 @@ export default function CatalogSidebar({
                 <span className="leading-tight">{category.name}</span>
               </Link>
             ))}
+          </div>
+        ) : currentMode === 'combo' ? (
+          <div className="rounded-2xl border border-[#4576B9]/15 bg-[#EEF4FC]/50 p-4 space-y-2.5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#2F5F9F]">
+              Soluciones Todo-en-Uno
+            </p>
+            <p className="text-xs font-medium leading-5 text-gray-600">
+              Kits diseñados para simplificar. Llevate la cartelería, los flyers, stickers y papelería corporativa listos y sincronizados en un solo click para potenciar tu marca.
+            </p>
           </div>
         ) : (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">

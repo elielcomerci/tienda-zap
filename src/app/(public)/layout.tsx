@@ -5,16 +5,34 @@ import { auth } from '@/auth'
 import { Heart } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { getActiveSellerById } from '@/lib/sellers'
+import { prisma } from '@/lib/prisma'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   const sellerRef = (await cookies()).get('zap_seller_ref')?.value
   const referralSeller = await getActiveSellerById(sellerRef)
 
+  // Fetch categories and intentions for the new dynamic header dropdowns
+  const [categories, intentions] = await Promise.all([
+    prisma.category.findMany({
+      where: { slug: { not: 'sistema' } },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.intention.findMany({
+      where: { active: true },
+      orderBy: { order: 'asc' },
+    }),
+  ])
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <WelcomePromoModal />
-      <PublicHeader user={session?.user || null} referralSeller={referralSeller} />
+      <PublicHeader 
+        user={session?.user || null} 
+        referralSeller={referralSeller}
+        categories={categories}
+        intentions={intentions}
+      />
       <main className="flex-1">{children}</main>
 
       {/* Footer — matches zap.com.ar */}

@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
-import { getProducts } from '@/lib/products'
+import { getProducts, getCombos } from '@/lib/products'
 import { getCategories } from '@/lib/categories'
 import { getIntentions } from '@/lib/intentions'
 import AddToCartButton from '@/components/public/AddToCartButton'
@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string; q?: string; mode?: 'product' | 'objective'; intent?: string }>
+  searchParams: Promise<{ cat?: string; q?: string; mode?: 'product' | 'objective' | 'combo'; intent?: string }>
 }) {
   const { cat, q, mode, intent } = await searchParams
   
@@ -24,11 +24,13 @@ export default async function ProductsPage({
   const selectedIntention = intent ? intentions.find(i => i.slug === intent) : undefined
 
   const [products, categories] = await Promise.all([
-    getProducts(
-      mode === 'objective' ? undefined : cat, 
-      q, 
-      { intentSlug: mode === 'objective' ? intent : undefined }
-    ), 
+    mode === 'combo'
+      ? getCombos(null)
+      : getProducts(
+          mode === 'objective' ? undefined : cat, 
+          q, 
+          { intentSlug: mode === 'objective' ? intent : undefined }
+        ), 
     getCategories()
   ])
   const selectedCategory = categories.find((category) => category.slug === cat)
@@ -40,13 +42,21 @@ export default async function ProductsPage({
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                Catálogo
+                {mode === 'combo' ? 'Packs Comerciales' : 'Catálogo'}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                Productos y servicios ZAP
+                {mode === 'combo' 
+                  ? 'Packs y Combos ZAP' 
+                  : mode === 'objective' 
+                    ? 'Soluciones por Objetivo' 
+                    : 'Productos y servicios ZAP'}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                Gráfica, cartelería, exhibidores, merchandising, web y presencia digital.
+                {mode === 'combo'
+                  ? 'Kits completos y combos todo-en-uno diseñados específicamente para resolver la gráfica, papelería y presencia digital de tu local o lanzamiento en un solo click.'
+                  : mode === 'objective'
+                    ? 'Encontrá las herramientas ideales agrupadas según el momento y meta de tu negocio.'
+                    : 'Gráfica, cartelería, exhibidores, merchandising, web y presencia digital.'}
               </p>
             </div>
 
@@ -64,7 +74,9 @@ export default async function ProductsPage({
                 <p className="mt-2 text-base font-bold text-gray-950">
                   {mode === 'objective' && selectedIntention 
                     ? selectedIntention.name 
-                    : selectedCategory?.name || 'Todos'}
+                    : mode === 'combo'
+                      ? 'Todos los Combos'
+                      : selectedCategory?.name || 'Todos'}
                 </p>
               </div>
               {q?.trim() && (
@@ -109,12 +121,17 @@ export default async function ProductsPage({
 
                 <div className="flex flex-wrap items-center gap-2">
                   <ShareModal />
+                  {mode === 'combo' && (
+                    <span className="rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] px-3 py-1.5 text-xs font-semibold text-[#2F5F9F]">
+                      Packs y Combos
+                    </span>
+                  )}
                   {selectedIntention && mode === 'objective' && (
                     <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
                       Objetivo: {selectedIntention.name}
                     </span>
                   )}
-                  {selectedCategory && mode !== 'objective' && (
+                  {selectedCategory && mode !== 'objective' && mode !== 'combo' && (
                     <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
                       Categoría: {selectedCategory.name}
                     </span>
