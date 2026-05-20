@@ -170,7 +170,7 @@ export default function ProductConfigurator({
         ? 'Esta combinación no está disponible.'
         : minPrice === null && !activeVariant
           ? 'Sin variantes disponibles online.'
-          : 'Disponible con tarjeta o Crédito ZAP.'
+          : 'Disponible para compra online o consulta guiada.'
 
   const summaryStateLabel = !allRequiredSelected
     ? 'Faltan requeridas'
@@ -238,9 +238,6 @@ export default function ProductConfigurator({
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
               Pedido directo
             </span>
-            <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-              Crédito ZAP {creditDownPaymentPercent}%
-            </span>
           </div>
 
           <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
@@ -285,7 +282,7 @@ export default function ProductConfigurator({
                   Pago
                 </p>
                 <p className="mt-2 text-sm font-semibold text-white">
-                  Crédito ZAP desde {creditDownPaymentPercent}%.
+                  Tarjeta, MercadoPago o transferencia.
                 </p>
               </div>
             </div>
@@ -335,9 +332,6 @@ export default function ProductConfigurator({
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
               Configurá tu pieza
-            </span>
-            <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-              Crédito ZAP {creditDownPaymentPercent}%
             </span>
           </div>
 
@@ -461,7 +455,7 @@ export default function ProductConfigurator({
                 Pago
               </p>
               <p className="mt-2 text-sm font-semibold text-white">
-                Crédito ZAP desde {creditDownPaymentPercent}%.
+                Tarjeta, MercadoPago o transferencia.
               </p>
             </div>
           </div>

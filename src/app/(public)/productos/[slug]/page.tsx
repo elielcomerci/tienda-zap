@@ -6,7 +6,6 @@ import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import ProductMediaBlock from '@/components/public/ProductMediaBlock'
-import ProductZapCreditPromo from '@/components/public/ProductZapCreditPromo'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 
@@ -41,15 +40,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       name: product.name,
       categoryName: product.category.name,
       price: displayPrice,
-      creditDownPaymentPercent: product.creditDownPaymentPercent || 30,
       slug: product.slug,
       intent: displayPrice === null ? 'cotizar' : 'consultar',
     })
-  )
-
-  const creditWhatsappUrl = buildWhatsappUrl(
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    `Hola! Vi el producto "${product.name}" en la tienda y quiero evaluarlo con Crédito ZAP para mi negocio.`
   )
 
   return (
@@ -111,10 +104,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                   <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Crédito ZAP
+                    Modalidad
                   </dt>
                   <dd className="mt-2 text-sm font-semibold text-gray-900">
-                    Desde {product.creditDownPaymentPercent || 30}% de anticipo
+                    Pedido online o consulta guiada
                   </dd>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -130,13 +123,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
             <ProductConfigurator product={product} inquiryUrl={inquiryUrl} />
           </div>
-        </div>
-
-        <div className="mt-8">
-          <ProductZapCreditPromo
-            downPaymentPercent={product.creditDownPaymentPercent || 30}
-            whatsappUrl={creditWhatsappUrl}
-          />
         </div>
 
         <RelatedProductsSection products={relatedProducts} isCombo={product.isCombo} />

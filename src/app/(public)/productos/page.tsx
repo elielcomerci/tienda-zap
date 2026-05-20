@@ -201,7 +201,6 @@ export default async function ProductsPage({
                       name: product.name,
                       categoryName: product.category.name,
                       price: displayPrice,
-                      creditDownPaymentPercent: product.creditDownPaymentPercent,
                       slug: product.slug,
                       intent: productIntent,
                     })
@@ -217,9 +216,6 @@ export default async function ProductsPage({
                           <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
                             <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
                               {product.category.name}
-                            </span>
-                            <span className="rounded-full bg-[#ED2C71] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-sm shadow-[#ED2C71]/20">
-                              Crédito ZAP
                             </span>
                           </div>
 
@@ -264,9 +260,6 @@ export default async function ProductsPage({
                               {displayPrice !== null
                                 ? `$${displayPrice.toLocaleString('es-AR')}`
                                 : 'Consultar'}
-                            </p>
-                            <p className="mt-1 text-xs text-gray-500">
-                              Crédito ZAP desde {product.creditDownPaymentPercent}% de anticipo
                             </p>
                           </div>
 

@@ -9,11 +9,8 @@ import {
   ShieldCheck,
   ShoppingBag,
   Trash2,
-  Wallet,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
-import { useCreditEligibility } from '@/lib/use-credit-eligibility'
-import ZapCreditSimulationCard from '@/components/public/ZapCreditSimulationCard'
 import OrderItemOptions from '../checkout/OrderItemOptions'
 import OrderItemBrief from '../checkout/OrderItemBrief'
 
@@ -21,7 +18,6 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, updateNotes, total, clearCart } = useCartStore()
   const count = useCartStore((state) => state.itemCount())
   const hasUnavailableItems = items.some((item) => item.price <= 0)
-  const { eligibility, isLoading } = useCreditEligibility()
   const totalAmount = total()
 
   if (items.length === 0) {
@@ -167,11 +163,6 @@ export default function CartPage() {
                             <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
                               {item.isService ? 'Servicio' : 'Producción'}
                             </span>
-                            {item.creditDownPaymentPercent ? (
-                              <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
-                                Crédito ZAP {item.creditDownPaymentPercent}%
-                              </span>
-                            ) : null}
                           </div>
 
                           <h3 className="mt-3 line-clamp-2 text-2xl font-black tracking-tight text-gray-950">
@@ -304,14 +295,11 @@ export default function CartPage() {
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                    Flexibilidad
+                    Pago
                   </p>
-                  <div className="mt-2 flex items-center gap-2 text-white">
-                    <Wallet size={18} className="text-[#F66B9A]" />
-                    <span className="text-sm font-semibold">
-                      Tarjeta, transferencia o Crédito ZAP
-                    </span>
-                  </div>
+                  <p className="mt-2 text-sm font-semibold text-white">
+                    Tarjeta, MercadoPago o transferencia
+                  </p>
                 </div>
               </div>
 
@@ -392,20 +380,6 @@ export default function CartPage() {
           </aside>
         </div>
 
-        <div className="mt-8 rounded-[32px] border border-[#F66B9A]/25 bg-white/70 p-4 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.35)] sm:p-5">
-          <ZapCreditSimulationCard
-            totalAmount={totalAmount}
-            items={items.map((item) => ({
-              unitPrice: item.price,
-              quantity: item.quantity,
-              creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
-            }))}
-            eligibility={eligibility}
-            isLoading={isLoading}
-            title="Asi podria resolverse con Crédito ZAP"
-            description="Una referencia rapida para saber si te conviene ordenar el pago con mas aire."
-          />
-        </div>
       </div>
     </div>
   )

@@ -1,12 +1,10 @@
 import Link from 'next/link'
 import {
   ArrowRight,
-  BadgePercent,
   MessageCircleMore,
   Package,
   ShieldCheck,
   Store,
-  Zap,
 } from 'lucide-react'
 import { getCategories } from '@/lib/categories'
 import { getProducts, getCombos } from '@/lib/products'
@@ -110,11 +108,6 @@ export default async function HomePage() {
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     'Hola! Estoy viendo la tienda y quiero elegir lo mejor para mi negocio.'
   )
-  const creditWhatsappUrl = buildWhatsappUrl(
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-    'Hola! Quiero evaluar un pedido con Crédito ZAP.'
-  )
-
   const buildProductInquiryUrl = (
     product: (typeof featuredProducts)[number],
     price: number | null
@@ -125,7 +118,6 @@ export default async function HomePage() {
         name: product.name,
         categoryName: product.category.name,
         price,
-        creditDownPaymentPercent: product.creditDownPaymentPercent,
         slug: product.slug,
         intent: price === null ? 'cotizar' : 'consultar',
       })
@@ -321,38 +313,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-[#F66B9A]/20 bg-white">
-        <div className="mx-auto max-w-[1380px] px-4 py-6 xl:px-8">
-          <div className="flex flex-col gap-4 rounded-[30px] border border-[#F66B9A]/25 bg-gradient-to-r from-[#FEF1F6] via-white to-[#F0F5FA] p-5 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.18)] sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-                Crédito ZAP
-              </p>
-              <p className="mt-1 text-sm text-gray-700 sm:text-base">
-                Resolvé trabajos importantes con anticipo y seguimiento claro.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Link href="/credito-zap" className="btn-secondary !py-2.5">
-                Ver crédito
-              </Link>
-              {creditWhatsappUrl && (
-                <Link
-                  href={creditWhatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-primary !py-2.5"
-                >
-                  <BadgePercent size={18} />
-                  Consultar
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
       <ComboSection combos={combos} businessTypeName={businessTypeName} />
 
       {catalogProducts.length > 0 && (
@@ -407,9 +367,6 @@ export default async function HomePage() {
                       <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
                         {product.category.name}
                       </span>
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                        Crédito ZAP
-                      </span>
                     </div>
 
                     <div>
@@ -434,9 +391,6 @@ export default async function HomePage() {
                           {displayPrice !== null
                             ? `$${displayPrice.toLocaleString('es-AR')}`
                             : 'Consultar'}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-500">
-                          Anticipo sugerido {product.creditDownPaymentPercent}% con Crédito ZAP
                         </p>
                       </div>
 
@@ -539,4 +493,3 @@ export default async function HomePage() {
     </div>
   )
 }
-

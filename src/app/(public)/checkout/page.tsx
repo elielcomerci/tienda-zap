@@ -38,16 +38,16 @@ const paymentOptions = [
     icon: CreditCard,
   },
   {
-    value: 'ZAP_CREDIT',
-    label: 'Crédito ZAP',
-    desc: 'Anticipo hoy y resto en pagos fijos',
-    icon: Wallet,
-  },
-  {
     value: 'TRANSFER',
     label: 'Transferencia',
     desc: 'Nos envias el comprobante y seguimos',
     icon: Smartphone,
+  },
+  {
+    value: 'ZAP_CREDIT',
+    label: 'Crédito ZAP',
+    desc: 'Solo si necesitas financiar este pedido',
+    icon: Wallet,
   },
 ] as const
 
@@ -813,24 +813,6 @@ function CheckoutContent() {
                     </div>
                   )}
                 </div>
-
-                {zapCreditDisabled && (
-                  <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-                    <p className="font-semibold">Crédito ZAP para usuarios registrados</p>
-                    <p className="mt-1 text-blue-800">
-                      Inicia sesion para pedir tu plan, seguir cuotas y tener todo ordenado desde tu
-                      cuenta.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Link href="/login" className="btn-secondary !px-4 !py-2 !text-sm">
-                        Iniciar sesion
-                      </Link>
-                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
-                        Ver mas información
-                      </Link>
-                    </div>
-                  </div>
-                )}
 
                 {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
                   <div className="mt-4 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6]/60 p-4">

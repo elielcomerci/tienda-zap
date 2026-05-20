@@ -51,7 +51,7 @@ export function buildProductInquiryMessage({
     `Hola! Quiero ${action} por "${name}".`,
     categoryName ? `Rubro: ${categoryName}.` : null,
     typeof price === 'number' && price > 0 ? `Precio visto: $${price.toLocaleString('es-AR')}.` : null,
-    creditDownPaymentPercent
+    intent === 'credito' && creditDownPaymentPercent
       ? `Crédito ZAP desde ${creditDownPaymentPercent}% de anticipo.`
       : null,
     `Link: ${getPublicProductUrl(slug)}`,

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { ChevronDown, Handshake, LayoutDashboard, Percent, ShoppingCart, X } from 'lucide-react'
+import { ChevronDown, Handshake, LayoutDashboard, ShoppingCart, X } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState, useEffect, useTransition } from 'react'
 import { createPublicSellerLead } from '@/lib/actions/leads'
@@ -253,21 +253,6 @@ export default function PublicHeader({
                     </div>
                   </div>
                 </div>
-              </li>
-
-              {/* Redesigned & Relocated: Crédito ZAP (Secondary pill styled action before user account) */}
-              <li className="h-full flex items-center pr-2">
-                <Link
-                  href="/credito-zap"
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-bold transition-all hover:scale-105 hover:shadow-sm ${
-                    isLinkActive('/credito-zap')
-                      ? 'bg-[#EEF4FC] border-[#4576B9] text-[#2F5F9F]'
-                      : 'bg-gray-50/80 border-gray-200 text-gray-600 hover:border-[#4576B9]/40 hover:bg-[#EEF4FC]/50 hover:text-[#2F5F9F]'
-                  }`}
-                >
-                  <Percent size={13} className="text-[#4576B9]" />
-                  <span>Crédito ZAP</span>
-                </Link>
               </li>
 
               {/* User area */}
@@ -572,17 +557,6 @@ export default function PublicHeader({
               )}
             </li>
 
-            {/* Secondary/Relocated Crédito ZAP on mobile (Outlined styled button at bottom) */}
-            <li className="pt-6">
-              <Link
-                href="/credito-zap"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-center gap-2 border border-white/40 bg-white/10 text-white text-sm font-bold py-2.5 px-6 rounded-full active:scale-95 hover:bg-white/20 transition-all text-center shadow-sm"
-              >
-                <Percent size={14} className="text-white" />
-                <span>Financiación: Crédito ZAP</span>
-              </Link>
-            </li>
           </ul>
         </div>
       </div>

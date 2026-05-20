@@ -142,15 +142,6 @@ export default function CatalogSidebar({
           </div>
         )}
       </div>
-
-      <div className="rounded-2xl border border-pink-100 bg-pink-50/50 p-4">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#ED2C71]">
-          Crédito ZAP
-        </p>
-        <p className="mt-1.5 text-xs font-medium leading-5 text-gray-700">
-          Anticipo visible en cada producto. Simulación completa antes de confirmar.
-        </p>
-      </div>
     </aside>
   )
 }
