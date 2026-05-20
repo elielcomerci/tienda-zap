@@ -8,58 +8,74 @@ datasource db {
 }
 
 model User {
-  id                 String         @id @default(cuid())
-  email              String         @unique
-  password           String
-  role               Role           @default(CUSTOMER)
-  name               String?
-  phone              String?
-  isBanned           Boolean        @default(false)
-  sellerId           String?
-  sellerNote         String?        @db.Text
-  createdAt          DateTime       @default(now())
-  billingAddress     String?
-  billingCity        String?
-  billingProvince    String?
-  documentId         String?
-  shippingAddress    String?
-  shippingCity       String?
-  shippingPostalCode String?
-  shippingProvince   String?
-  businessTypeId     String?
-  businessType       BusinessType?  @relation(fields: [businessTypeId], references: [id])
-  accounts           Account[]
-  orders             Order[]        @relation("CustomerOrders")
-  sellerOrders       Order[]        @relation("OrderSeller")
-  sessions           Session[]
-  seller             User?          @relation("SellerClients", fields: [sellerId], references: [id])
-  clients            User[]         @relation("SellerClients")
-  sellerLeads        SellerLead[]   @relation("SellerLeadOwner")
-  convertedLeads     SellerLead[]   @relation("SellerLeadConvertedUser")
-  sellerProfile      SellerProfile?
-  incentiveProgress  SellerIncentiveProgress[]
-  sellerPayouts      SellerPayout[]
+  id                                String                        @id @default(cuid())
+  email                             String                        @unique
+  password                          String
+  role                              Role                          @default(CUSTOMER)
+  name                              String?
+  phone                             String?
+  isBanned                          Boolean                       @default(false)
+  sellerId                          String?
+  operationalSellerId               String?
+  sellerNote                        String?                       @db.Text
+  createdAt                         DateTime                      @default(now())
+  billingAddress                    String?
+  billingCity                       String?
+  billingProvince                   String?
+  documentId                        String?
+  shippingAddress                   String?
+  shippingCity                      String?
+  shippingPostalCode                String?
+  shippingProvince                  String?
+  businessTypeId                    String?
+  businessType                      BusinessType?                 @relation(fields: [businessTypeId], references: [id])
+  accounts                          Account[]
+  orders                            Order[]                       @relation("CustomerOrders")
+  sellerOrders                      Order[]                       @relation("OrderSeller")
+  sessions                          Session[]
+  seller                            User?                         @relation("SellerClients", fields: [sellerId], references: [id])
+  clients                           User[]                        @relation("SellerClients")
+  operationalSeller                 User?                         @relation("OperationalSellerClients", fields: [operationalSellerId], references: [id])
+  operationalClients                User[]                        @relation("OperationalSellerClients")
+  sellerLeads                       SellerLead[]                  @relation("SellerLeadOwner")
+  convertedLeads                    SellerLead[]                  @relation("SellerLeadConvertedUser")
+  sellerProfile                     SellerProfile?
+  incentiveProgress                 SellerIncentiveProgress[]
+  sellerPayouts                     SellerPayout[]
+  sellerCommissionLedgers           SellerCommissionLedger[]      @relation("SellerCommissionSeller")
+  clientCommissionLedgers           SellerCommissionLedger[]      @relation("SellerCommissionClient")
+  sellerRankEvents                  SellerRankEvent[]
+  ownedRecurringSubscriptions       SellerRecurringSubscription[] @relation("RecurringPortfolioSeller")
+  operationalRecurringSubscriptions SellerRecurringSubscription[] @relation("RecurringOperationalSeller")
+  clientRecurringSubscriptions      SellerRecurringSubscription[] @relation("RecurringClient")
 }
 
 model SellerProfile {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  defaultCommissionRate Float    @default(20.0)
-  active                Boolean  @default(true)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                      String              @id @default(cuid())
+  userId                  String              @unique
+  defaultCommissionRate   Float               @default(20.0)
+  rank                    SellerRank          @default(BRONZE)
+  maxRankAchieved         SellerRank          @default(BRONZE)
+  lifetimeNetRevenue      Float               @default(0)
+  temporaryCommissionRate Float?
+  temporaryRateExpiresAt  DateTime?
+  excludeFromLeaderboards Boolean             @default(false)
+  status                  SellerProfileStatus @default(ACTIVE)
+  active                  Boolean             @default(true)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model BusinessType {
-  id         String     @id @default(cuid())
-  name       String
-  slug       String     @unique
-  categories Category[]
-  users      User[]
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  categories  Category[]
+  users       User[]
   sellerLeads SellerLead[]
-  combos     Product[]  @relation("ComboBusinessTypes")
+  combos      Product[]    @relation("ComboBusinessTypes")
 }
 
 model SellerLead {
@@ -78,9 +94,9 @@ model SellerLead {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  seller        User          @relation("SellerLeadOwner", fields: [sellerId], references: [id], onDelete: Cascade)
-  businessType  BusinessType? @relation(fields: [businessTypeId], references: [id])
-  convertedUser User?         @relation("SellerLeadConvertedUser", fields: [convertedUserId], references: [id])
+  seller        User              @relation("SellerLeadOwner", fields: [sellerId], references: [id], onDelete: Cascade)
+  businessType  BusinessType?     @relation(fields: [businessTypeId], references: [id])
+  convertedUser User?             @relation("SellerLeadConvertedUser", fields: [convertedUserId], references: [id])
   events        SellerLeadEvent[]
 
   @@index([sellerId, status])
@@ -124,52 +140,52 @@ model Intention {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  products    Product[] @relation("ProductIntentions")
+  products Product[] @relation("ProductIntentions")
 }
 
 model Product {
-  id                       String            @id @default(cuid())
+  id                       String               @id @default(cuid())
   name                     String
-  slug                     String            @unique
+  slug                     String               @unique
   description              String?
   price                    Float
   images                   String[]
   categoryId               String
-  active                   Boolean           @default(true)
-  stock                    Int               @default(0)
-  isCombo                  Boolean           @default(false)
-  briefType                String?           @default("NONE")
-  mediaType                String?           @default("NONE")
+  active                   Boolean              @default(true)
+  stock                    Int                  @default(0)
+  isCombo                  Boolean              @default(false)
+  briefType                String?              @default("NONE")
+  mediaType                String?              @default("NONE")
   mediaUrl                 String?
   mediaTitle               String?
   mediaList                Json?
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
-  creditDownPaymentPercent Int               @default(30)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  creditDownPaymentPercent Int                  @default(30)
   orderItems               OrderItem[]
-  category                 Category          @relation(fields: [categoryId], references: [id])
+  category                 Category             @relation(fields: [categoryId], references: [id])
   options                  ProductOption[]
-  outgoingRelations        ProductRelation[] @relation("ProductOutgoingRelations")
-  incomingRelations        ProductRelation[] @relation("ProductIncomingRelations")
+  outgoingRelations        ProductRelation[]    @relation("ProductOutgoingRelations")
+  incomingRelations        ProductRelation[]    @relation("ProductIncomingRelations")
   variants                 ProductVariant[]
-  intentions               Intention[]       @relation("ProductIntentions")
+  intentions               Intention[]          @relation("ProductIntentions")
   quoterConfig             ProductQuoterConfig?
-  targetBusinessTypes      BusinessType[]    @relation("ComboBusinessTypes")
+  targetBusinessTypes      BusinessType[]       @relation("ComboBusinessTypes")
 }
 
 model Order {
-  id                    String            @id @default(cuid())
+  id                    String                   @id @default(cuid())
   userId                String?
   sellerId              String?
   guestEmail            String?
   guestName             String?
   guestPhone            String?
   subtotal              Float?
-  discountTotal         Float             @default(0)
+  discountTotal         Float                    @default(0)
   total                 Float
   couponCode            String?
   pricingSnapshot       Json?
-  status                OrderStatus       @default(PENDING)
+  status                OrderStatus              @default(PENDING)
   paymentType           PaymentType
   paymentId             String?
   commissionAmount      Float?
@@ -178,8 +194,8 @@ model Order {
   invoiceFileName       String?
   invoiceUploadedAt     DateTime?
   notes                 String?
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
   publicAccessTokenHash String?
   mpPreferenceId        String?
   partnerAccountId      String?
@@ -191,15 +207,16 @@ model Order {
   shippingCity          String?
   shippingPostalCode    String?
   shippingProvince      String?
-  partnerAccount        PartnerAccount?   @relation(fields: [partnerAccountId], references: [id])
-  user                  User?             @relation("CustomerOrders", fields: [userId], references: [id])
-  seller                User?             @relation("OrderSeller", fields: [sellerId], references: [id])
+  partnerAccount        PartnerAccount?          @relation(fields: [partnerAccountId], references: [id])
+  user                  User?                    @relation("CustomerOrders", fields: [userId], references: [id])
+  seller                User?                    @relation("OrderSeller", fields: [sellerId], references: [id])
   items                 OrderItem[]
   couponRedemption      CouponRedemption?
   zapCreditPlan         ZapCreditPlan?
   receipts              Receipt[]
   events                OrderEvent[]
   proofs                ProofFile[]
+  commissionLedgers     SellerCommissionLedger[]
 }
 
 model OrderItem {
@@ -209,7 +226,7 @@ model OrderItem {
   quantity                 Int
   unitPrice                Float
   notes                    String?
-  briefType                String?                   @default("NONE")
+  briefType                String?                  @default("NONE")
   briefResponses           Json?
   briefReferenceLinks      String[]
   briefReferenceFiles      Json?
@@ -450,31 +467,31 @@ model PartnerCampaign {
 }
 
 model Promotion {
-  id            String             @id @default(cuid())
+  id            String          @id @default(cuid())
   name          String
-  type          PromotionType      @default(COUPON)
-  status        PromotionStatus    @default(DRAFT)
+  type          PromotionType   @default(COUPON)
+  status        PromotionStatus @default(DRAFT)
   campaignKind  String?
   audienceLabel String?
   qrBaseUrl     String?
-  priority      Int                @default(0)
-  stackable     Boolean            @default(false)
+  priority      Int             @default(0)
+  stackable     Boolean         @default(false)
   activeFrom    DateTime?
   activeTo      DateTime?
   discountKind  DiscountKind
   discountValue Float
   maxUses       Int?
   perUserLimit  Int?
-  
+
   welcomeTitle      String?
   welcomeMessage    String?
   welcomeConditions String?
   welcomeLogoUrl    String?
 
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  coupons       PromotionCoupon[]
-  redemptions   CouponRedemption[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  coupons     PromotionCoupon[]
+  redemptions CouponRedemption[]
 }
 
 model PromotionCoupon {
@@ -535,6 +552,49 @@ enum Role {
   ADMIN
   CUSTOMER
   SELLER
+}
+
+enum SellerRank {
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+}
+
+enum SellerProfileStatus {
+  ACTIVE
+  RETIRED
+  SUSPENDED
+}
+
+enum SellerRankEventType {
+  AUTOMATIC_PROMOTION
+  MANUAL_CHANGE
+  TEMPORARY_OVERRIDE
+  PENALTY
+}
+
+enum SellerCommissionType {
+  STORE
+  SPOT
+  MANUAL
+  RECURRING
+  ROYALTY
+  BONUS
+  ADJUSTMENT
+}
+
+enum SellerCommissionStatus {
+  PENDING
+  AVAILABLE
+  PAID_OUT
+  CANCELLED
+}
+
+enum RecurringSubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
 }
 
 enum SellerLeadStatus {
@@ -715,47 +775,124 @@ model Receipt {
 }
 
 model SellerIncentive {
-  id              String   @id @default(cuid())
-  title           String   // e.g. "Bono de Fin de Semana"
-  description     String?  // e.g. "Cerrá 5 ventas este fin de semana y ganá un bono de $10.000"
-  goalType        String   // "SALES_COUNT", "TOTAL_REVENUE"
-  goalTarget      Float    // e.g. 5 (for count), 100000 (for revenue)
-  rewardType      String   // "FIXED_BONUS"
-  rewardAmount    Float    // e.g. 10000
-  startDate       DateTime
-  endDate         DateTime
-  active          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String // e.g. "Bono de Fin de Semana"
+  description  String? // e.g. "Cerrá 5 ventas este fin de semana y ganá un bono de $10.000"
+  goalType     String // "SALES_COUNT", "TOTAL_REVENUE"
+  goalTarget   Float // e.g. 5 (for count), 100000 (for revenue)
+  rewardType   String // "FIXED_BONUS"
+  rewardAmount Float // e.g. 10000
+  startDate    DateTime
+  endDate      DateTime
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  sellerProgress  SellerIncentiveProgress[]
+  sellerProgress SellerIncentiveProgress[]
 }
 
 model SellerIncentiveProgress {
-  id              String   @id @default(cuid())
-  sellerId        String
-  incentiveId     String
-  currentValue    Float    @default(0)
-  completed       Boolean  @default(false)
-  completedAt     DateTime?
-  rewardClaimed   Boolean  @default(false)
+  id            String    @id @default(cuid())
+  sellerId      String
+  incentiveId   String
+  currentValue  Float     @default(0)
+  completed     Boolean   @default(false)
+  completedAt   DateTime?
+  rewardClaimed Boolean   @default(false)
 
-  seller          User            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  incentive       SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
+  seller    User            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  incentive SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
 
   @@unique([sellerId, incentiveId])
 }
 
 model SellerPayout {
-  id          String   @id @default(cuid())
-  sellerId    String
-  amount      Float
-  reference   String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  sellerId  String
+  amount    Float
+  reference String?
+  createdAt DateTime @default(now())
 
-  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  seller      User                     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  commissions SellerCommissionLedger[]
 
   @@index([sellerId])
+}
+
+model SellerRankEvent {
+  id          String              @id @default(cuid())
+  sellerId    String
+  fromRank    SellerRank?
+  toRank      SellerRank
+  eventType   SellerRankEventType
+  reason      String?             @db.Text
+  createdById String?
+  createdAt   DateTime            @default(now())
+
+  seller User @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId, createdAt])
+}
+
+model SellerCommissionLedger {
+  id             String                 @id @default(cuid())
+  sellerId       String
+  clientId       String?
+  orderId        String?
+  recurringId    String?
+  payoutId       String?
+  period         String?
+  type           SellerCommissionType
+  status         SellerCommissionStatus @default(PENDING)
+  baseAmount     Float
+  commissionRate Float
+  amount         Float
+  rank           SellerRank?
+  notes          String?                @db.Text
+  availableAt    DateTime?
+  paidOutAt      DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  seller    User                         @relation("SellerCommissionSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  client    User?                        @relation("SellerCommissionClient", fields: [clientId], references: [id])
+  order     Order?                       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  recurring SellerRecurringSubscription? @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+  payout    SellerPayout?                @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  @@unique([sellerId, orderId, type])
+  @@unique([sellerId, recurringId, type, period])
+  @@index([sellerId, status])
+  @@index([orderId])
+  @@index([recurringId, period])
+  @@index([payoutId])
+}
+
+model SellerRecurringSubscription {
+  id                  String                      @id @default(cuid())
+  clientId            String
+  portfolioSellerId   String
+  operationalSellerId String?
+  name                String
+  monthlyAmount       Float
+  dueDay              Int
+  status              RecurringSubscriptionStatus @default(ACTIVE)
+  startedAt           DateTime                    @default(now())
+  pausedAt            DateTime?
+  cancelledAt         DateTime?
+  notes               String?                     @db.Text
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  client            User                     @relation("RecurringClient", fields: [clientId], references: [id])
+  portfolioSeller   User                     @relation("RecurringPortfolioSeller", fields: [portfolioSellerId], references: [id])
+  operationalSeller User?                    @relation("RecurringOperationalSeller", fields: [operationalSellerId], references: [id])
+  commissions       SellerCommissionLedger[]
+
+  @@index([clientId])
+  @@index([portfolioSellerId, status])
+  @@index([operationalSellerId])
 }
 
 // ==========================================
@@ -763,14 +900,14 @@ model SellerPayout {
 // ==========================================
 
 model RawMaterial {
-  id        String            @id @default(cuid())
+  id        String                @id @default(cuid())
   name      String
-  width     Float             // Ancho del pliego/material en cm
-  height    Float             // Alto del pliego/material en cm
-  unit      String            @default("PLIEGO") // PLIEGO, M2, METRO LINEAL, etc.
-  active    Boolean           @default(true)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  width     Float // Ancho del pliego/material en cm
+  height    Float // Alto del pliego/material en cm
+  unit      String                @default("PLIEGO") // PLIEGO, M2, METRO LINEAL, etc.
+  active    Boolean               @default(true)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
   tiers     RawMaterialTier[]
   configs   ProductQuoterConfig[]
 
@@ -782,7 +919,7 @@ model RawMaterialTier {
   rawMaterialId String
   minQty        Int
   maxQty        Int?
-  unitPrice     Float       // Costo por unidad en este rango de cantidades
+  unitPrice     Float // Costo por unidad en este rango de cantidades
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id], onDelete: Cascade)
@@ -811,14 +948,14 @@ model FinishingOperation {
 }
 
 model FinishingTier {
-  id            String             @id @default(cuid())
-  finishingId   String
-  minQty        Int
-  maxQty        Int?
-  unitPrice     Float
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  finishing     FinishingOperation @relation(fields: [finishingId], references: [id], onDelete: Cascade)
+  id          String             @id @default(cuid())
+  finishingId String
+  minQty      Int
+  maxQty      Int?
+  unitPrice   Float
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  finishing   FinishingOperation @relation(fields: [finishingId], references: [id], onDelete: Cascade)
 
   @@index([finishingId])
   @@map("finishing_tiers")
@@ -828,8 +965,8 @@ model ProductQuoterConfig {
   id            String                  @id @default(cuid())
   productId     String                  @unique
   rawMaterialId String
-  itemWidth     Float                   // Ancho del producto en cm
-  itemHeight    Float                   // Alto del producto en cm
+  itemWidth     Float // Ancho del producto en cm
+  itemHeight    Float // Alto del producto en cm
   margin        Float                   @default(0) // Margen de corte/agarre (cm)
   bleed         Float                   @default(0) // Demasía (cm)
   profitMargin  Float                   @default(150) // Porcentaje de ganancia (ej: 150 = +150%)

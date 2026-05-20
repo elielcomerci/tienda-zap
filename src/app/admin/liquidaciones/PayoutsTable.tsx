@@ -69,6 +69,14 @@ export default function PayoutsTable({ sellers }: { sellers: any[] }) {
                       <span className={`font-bold ${available > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
                         ${available.toLocaleString('es-AR')}
                       </span>
+                      {available > 0 && seller.breakdown && (
+                        <div className="mt-1 space-x-2 text-[10px] font-medium text-gray-400">
+                          <span>Tienda ${seller.breakdown.store.toLocaleString('es-AR')}</span>
+                          <span>Manual ${seller.breakdown.manual.toLocaleString('es-AR')}</span>
+                          <span>Abonos ${seller.breakdown.recurring.toLocaleString('es-AR')}</span>
+                          <span>Regalias ${seller.breakdown.royalty.toLocaleString('es-AR')}</span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       {selectedSeller === seller.id ? (

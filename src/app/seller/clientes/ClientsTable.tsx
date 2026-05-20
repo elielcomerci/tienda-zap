@@ -30,8 +30,12 @@ type ClientRow = {
   name: string | null
   email: string
   phone: string | null
+  sellerId: string | null
+  operationalSellerId: string | null
   sellerNote: string | null
   createdAt: Date | string
+  seller: { id: string; name: string | null; email: string } | null
+  operationalSeller: { id: string; name: string | null; email: string } | null
   _count: { orders: number }
 }
 
@@ -243,6 +247,12 @@ export default function ClientsTable({
                       <td className="px-6 py-4">
                         <p className="font-bold text-gray-900">{client.name || 'Sin nombre'}</p>
                         <p className="text-xs text-gray-400">Registrado el {formatDate(client.createdAt)}</p>
+                        <div className="mt-2 space-y-0.5 text-xs text-gray-500">
+                          <p>Titular: {client.seller?.name || client.seller?.email || 'Sin asignar'}</p>
+                          {client.operationalSeller && (
+                            <p>Heredero operativo: {client.operationalSeller.name || client.operationalSeller.email}</p>
+                          )}
+                        </div>
                       </td>
                       <td className="space-y-1 px-6 py-4">
                         <div className="flex items-center gap-1.5 text-gray-600">

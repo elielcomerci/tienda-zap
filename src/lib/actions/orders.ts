@@ -17,6 +17,7 @@ import {
   syncOrderStatusAfterPayment,
   getOrderDisplayCode,
 } from '@/lib/orders-workflow'
+import { syncOrderSellerCommissions } from '@/lib/seller-commissions'
 import { sendEmailAsync } from '@/lib/email'
 import { orderReadyEmail } from '@/lib/email-templates'
 
@@ -40,6 +41,8 @@ export async function updateOrderStatus(id: string, status: string) {
   if (status === 'CANCELLED') {
     await releaseCouponRedemptionForOrder(id)
   }
+
+  await syncOrderSellerCommissions(id)
 
   if (status === 'PAID' || status === 'DELIVERED') {
     await evaluateSellerIncentivesForOrder(id)

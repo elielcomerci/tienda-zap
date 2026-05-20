@@ -74,7 +74,7 @@ export default async function SellerOrdenesPage() {
                 </tr>
               ) : (
                 orders.map((order) => {
-                  const isCommissionPaid = order.status === 'PAID' || order.status === 'DELIVERED'
+                  const isCommissionAvailable = order.status === 'DELIVERED'
                   return (
                     <tr key={order.id} className="hover:bg-gray-50/50">
                       <td className="px-6 py-4">
@@ -99,9 +99,9 @@ export default async function SellerOrdenesPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         {order.commissionAmount !== null ? (
-                          <div className={isCommissionPaid ? 'text-emerald-600 font-bold' : 'text-gray-400 font-medium'}>
+                          <div className={isCommissionAvailable ? 'text-emerald-600 font-bold' : 'text-gray-400 font-medium'}>
                             ${order.commissionAmount.toLocaleString('es-AR')}
-                            {!isCommissionPaid && <span className="block text-[10px] text-gray-400 font-normal">Pendiente de pago</span>}
+                            {!isCommissionAvailable && <span className="block text-[10px] text-gray-400 font-normal">Disponible al entregar</span>}
                           </div>
                         ) : (
                           <span className="text-gray-400 text-xs">No aplica</span>

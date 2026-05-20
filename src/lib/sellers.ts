@@ -10,7 +10,7 @@ export async function getActiveSellerById(sellerId?: string | null) {
       isBanned: false,
       OR: [
         { role: 'ADMIN' },
-        { sellerProfile: { active: true } },
+        { sellerProfile: { active: true, status: 'ACTIVE' } },
       ],
     },
     select: {

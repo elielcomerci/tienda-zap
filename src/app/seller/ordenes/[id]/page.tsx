@@ -58,7 +58,7 @@ export default async function SellerOrderDetailPage({
 
   if (!order) notFound()
 
-  const isCommissionAvailable = order.status === 'PAID' || order.status === 'DELIVERED'
+  const isCommissionAvailable = order.status === 'DELIVERED'
 
   return (
     <div className="space-y-6">
@@ -144,7 +144,7 @@ export default async function SellerOrderDetailPage({
               </div>
               {!isCommissionAvailable && order.commissionAmount !== null && (
                 <p className="rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
-                  La comision queda disponible cuando la orden se marca como pagada o entregada.
+                  La comision queda disponible cuando la orden se marca como entregada.
                 </p>
               )}
             </div>

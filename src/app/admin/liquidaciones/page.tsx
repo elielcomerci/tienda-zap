@@ -9,20 +9,15 @@ export default async function AdminLiquidacionesPage() {
   const session = await auth()
   if (!session?.user || session.user.role !== 'ADMIN') redirect('/login')
 
-  // Fetch all sellers with their orders, incentive progress, and payouts
   const sellersDb = await prisma.user.findMany({
     where: {
       role: { in: ['SELLER', 'ADMIN'] },
       sellerProfile: { isNot: null }
     },
     include: {
-      sellerOrders: {
-        where: { status: { in: ['PAID', 'DELIVERED'] } },
-        select: { commissionAmount: true }
-      },
-      incentiveProgress: {
-        where: { completed: true },
-        include: { incentive: { select: { rewardAmount: true } } }
+      sellerCommissionLedgers: {
+        where: { status: { in: ['AVAILABLE', 'PAID_OUT'] } },
+        select: { amount: true, status: true, type: true }
       },
       sellerPayouts: {
         select: { amount: true }
@@ -32,17 +27,34 @@ export default async function AdminLiquidacionesPage() {
   })
 
   const sellers = sellersDb.map((s) => {
-    const totalCommissions = s.sellerOrders.reduce((acc, order) => acc + (order.commissionAmount || 0), 0)
-    const totalBonuses = s.incentiveProgress.reduce((acc, progress) => acc + (progress.incentive?.rewardAmount || 0), 0)
-    const totalEarned = totalCommissions + totalBonuses
+    const availableCommissions = s.sellerCommissionLedgers
+      .filter((ledger) => ledger.status === 'AVAILABLE')
+      .reduce((acc, ledger) => acc + ledger.amount, 0)
     const totalPaid = s.sellerPayouts.reduce((acc, payout) => acc + payout.amount, 0)
+    const paidCommissions = s.sellerCommissionLedgers
+      .filter((ledger) => ledger.status === 'PAID_OUT')
+      .reduce((acc, ledger) => acc + ledger.amount, 0)
 
     return {
       id: s.id,
       name: s.name,
       email: s.email,
-      totalEarned,
-      totalPaid,
+      totalEarned: availableCommissions + paidCommissions,
+      totalPaid: Math.max(totalPaid, paidCommissions),
+      breakdown: {
+        store: s.sellerCommissionLedgers
+          .filter((ledger) => ledger.status === 'AVAILABLE' && ledger.type === 'STORE')
+          .reduce((acc, ledger) => acc + ledger.amount, 0),
+        manual: s.sellerCommissionLedgers
+          .filter((ledger) => ledger.status === 'AVAILABLE' && ledger.type === 'MANUAL')
+          .reduce((acc, ledger) => acc + ledger.amount, 0),
+        recurring: s.sellerCommissionLedgers
+          .filter((ledger) => ledger.status === 'AVAILABLE' && ledger.type === 'RECURRING')
+          .reduce((acc, ledger) => acc + ledger.amount, 0),
+        royalty: s.sellerCommissionLedgers
+          .filter((ledger) => ledger.status === 'AVAILABLE' && ledger.type === 'ROYALTY')
+          .reduce((acc, ledger) => acc + ledger.amount, 0),
+      },
     }
   })
 

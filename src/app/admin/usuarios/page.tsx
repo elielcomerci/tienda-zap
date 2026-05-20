@@ -15,25 +15,37 @@ export default async function AdminUsuariosPage({
 
   const { q } = await searchParams
 
-  const users = await prisma.user.findMany({
-    where: q
-      ? {
-          OR: [
-            { name: { contains: q, mode: 'insensitive' } },
-            { email: { contains: q, mode: 'insensitive' } },
-            { documentId: { contains: q } },
-          ],
-        }
-      : undefined,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      sellerProfile: true,
-      _count: {
-        select: { orders: true, clients: true },
+  const [users, sellers] = await Promise.all([
+    prisma.user.findMany({
+      where: q
+        ? {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+              { documentId: { contains: q } },
+            ],
+          }
+        : undefined,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sellerProfile: true,
+        seller: { select: { id: true, name: true, email: true } },
+        operationalSeller: { select: { id: true, name: true, email: true } },
+        _count: {
+          select: { orders: true, clients: true },
+        },
       },
-    },
-    take: 100, // limit to 100 recent users for performance
-  })
+      take: 100, // limit to 100 recent users for performance
+    }),
+    prisma.user.findMany({
+      where: {
+        role: { in: ['SELLER', 'ADMIN'] },
+        sellerProfile: { isNot: null },
+      },
+      select: { id: true, name: true, email: true },
+      orderBy: [{ name: 'asc' }, { email: 'asc' }],
+    }),
+  ])
 
   return (
     <div className="space-y-6">
@@ -44,7 +56,7 @@ export default async function AdminUsuariosPage({
         </p>
       </div>
 
-      <UsersClientTable users={users} initialQuery={q} />
+      <UsersClientTable users={users} sellers={sellers} initialQuery={q} />
     </div>
   )
 }

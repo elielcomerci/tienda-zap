@@ -46,7 +46,10 @@ export default async function SellerClientesPage({
   const [clients, leads, businessTypes] = await Promise.all([
     prisma.user.findMany({
       where: {
-        sellerId: seller.id,
+        OR: [
+          { sellerId: seller.id },
+          { operationalSellerId: seller.id },
+        ],
         ...(q
           ? {
               OR: [
@@ -59,6 +62,8 @@ export default async function SellerClientesPage({
       },
       orderBy: { createdAt: 'desc' },
       include: {
+        seller: { select: { id: true, name: true, email: true } },
+        operationalSeller: { select: { id: true, name: true, email: true } },
         _count: { select: { orders: true } }
       }
     }),
