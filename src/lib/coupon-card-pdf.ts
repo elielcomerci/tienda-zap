@@ -7,6 +7,7 @@ import { ZAP_LOGO_B64 } from '@/lib/logo-base64'
 type CouponPdfPromotion = {
   name: string
   qrBaseUrl: string | null
+  discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: number
   welcomeLogoUrl?: string | null
   audienceLabel?: string | null
@@ -141,7 +142,7 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
     // We convert it to PNG on the fly using sharp
     if (contentType.includes('svg') || url.toLowerCase().split('?')[0].endsWith('.svg')) {
       const sharp = (await import('sharp')).default
-      buffer = await sharp(buffer).png().toBuffer()
+      buffer = (await sharp(buffer).png().toBuffer()) as Buffer
       contentType = 'image/png'
     }
 
