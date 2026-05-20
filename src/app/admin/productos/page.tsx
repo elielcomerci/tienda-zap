@@ -71,6 +71,11 @@ export default async function AdminProductsPage() {
                           Servicio
                         </span>
                       )}
+                      {product.isCombo && (
+                        <span className="badge ml-2 bg-[#FEF1F6] border border-[#F66B9A]/30 text-[#C91F5B]">
+                          Combo ZAP
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-900">
                       ${product.price.toLocaleString('es-AR')}

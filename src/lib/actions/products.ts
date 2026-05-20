@@ -351,20 +351,107 @@ export async function deleteProduct(id: string) {
 export async function duplicateProduct(id: string) {
   await requireAdmin()
 
-  const original = await prisma.product.findUnique({ where: { id } })
+  const original = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      options: {
+        include: { values: true },
+      },
+      variants: {
+        include: {
+          options: {
+            include: {
+              optionValue: {
+                include: { option: true },
+              },
+            },
+          },
+        },
+      },
+      outgoingRelations: {
+        select: { relatedProductId: true },
+      },
+      intentions: {
+        select: { id: true },
+      },
+      targetBusinessTypes: {
+        select: { id: true },
+      },
+    },
+  })
   if (!original) throw new Error('Producto no encontrado')
 
-  const { id: _id, createdAt, updatedAt, ...rest } = original
+  const duplicateSlug = await ensureUniqueProductSlug(`${original.slug}-copia`)
 
-  await prisma.product.create({
+  const duplicatedProduct = await prisma.product.create({
     data: {
-      ...rest,
-      name: `${rest.name} (copia)`,
-      slug: `${rest.slug}-copia-${Date.now()}`,
+      name: `${original.name} (copia)`,
+      slug: duplicateSlug,
+      description: original.description,
+      price: original.price,
+      creditDownPaymentPercent: original.creditDownPaymentPercent,
+      categoryId: original.categoryId,
+      stock: original.stock,
+      images: original.images,
+      briefType: original.briefType,
+      mediaType: original.mediaType,
+      mediaUrl: original.mediaUrl,
+      mediaTitle: original.mediaTitle,
+      mediaList: original.mediaList ?? undefined,
       active: false,
+      isCombo: original.isCombo,
+      options: {
+        create: original.options.map((option) => ({
+          name: option.name,
+          isRequired: option.isRequired,
+          values: {
+            create: option.values.map((value) => ({ value: value.value })),
+          },
+        })),
+      },
+      outgoingRelations:
+        original.outgoingRelations.length > 0
+          ? {
+              create: original.outgoingRelations.map((relation) => ({
+                relatedProductId: relation.relatedProductId,
+              })),
+            }
+          : undefined,
+      intentions: {
+        connect: original.intentions.map((intention) => ({ id: intention.id })),
+      },
+      targetBusinessTypes: {
+        connect: original.targetBusinessTypes.map((businessType) => ({ id: businessType.id })),
+      },
+    },
+    include: {
+      options: { include: { values: true } },
     },
   })
 
+  for (const variant of original.variants) {
+    const combinations = Object.fromEntries(
+      variant.options.map((variantOption) => [
+        variantOption.optionValue.option.name,
+        variantOption.optionValue.value,
+      ])
+    )
+    const optionValueIds = buildVariantOptionValueIds(duplicatedProduct.options, combinations)
+
+    await prisma.productVariant.create({
+      data: {
+        productId: duplicatedProduct.id,
+        price: variant.price,
+        sku: variant.sku,
+        stock: variant.stock,
+        options: {
+          create: optionValueIds.map((optionValueId) => ({ optionValueId })),
+        },
+      },
+    })
+  }
+
   revalidatePath('/')
   revalidatePath('/admin/productos')
+  revalidatePath('/productos')
 }

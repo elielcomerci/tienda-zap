@@ -17,6 +17,7 @@ export async function getProducts(
   return prisma.product.findMany({
     where: {
       active: true,
+      isCombo: false,
       category: categorySlug ? { slug: categorySlug } : { slug: { not: 'sistema' } },
       ...(options?.intentSlug ? { intentions: { some: { slug: options.intentSlug } } } : {}),
       ...(search
@@ -109,7 +110,10 @@ export async function getProductRelationOptions(excludeProductId?: string) {
   await requireAdmin()
 
   return prisma.product.findMany({
-    where: excludeProductId ? { id: { not: excludeProductId } } : undefined,
+    where: {
+      isCombo: false,
+      ...(excludeProductId ? { id: { not: excludeProductId } } : {}),
+    },
     select: {
       id: true,
       name: true,
@@ -131,11 +135,19 @@ export async function getProductRelationOptions(excludeProductId?: string) {
  * - If the user has a businessType, returns combos targeting that rubro + combos with no restrictions.
  * - If no user/rubro, returns all active combos.
  */
-export async function getCombos(businessTypeId?: string | null) {
+export async function getCombos(businessTypeId?: string | null, search?: string) {
   const result = await prisma.product.findMany({
     where: {
       active: true,
       isCombo: true,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
       ...(businessTypeId
         ? {
             OR: [
@@ -165,4 +177,3 @@ export async function getCombos(businessTypeId?: string | null) {
   })
   return result
 }
-

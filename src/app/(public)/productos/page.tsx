@@ -10,6 +10,8 @@ import IntentionHero from '@/components/public/IntentionHero'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
+import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,10 +24,29 @@ export default async function ProductsPage({
   
   const intentions = await getIntentions()
   const selectedIntention = intent ? intentions.find(i => i.slug === intent) : undefined
+  const session = await auth()
+  let businessTypeId: string | null = null
+  let businessTypeName: string | null = null
+
+  if (mode === 'combo' && session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        businessType: {
+          select: { id: true, name: true },
+        },
+      },
+    })
+
+    if (user?.businessType) {
+      businessTypeId = user.businessType.id
+      businessTypeName = user.businessType.name
+    }
+  }
 
   const [products, categories] = await Promise.all([
     mode === 'combo'
-      ? getCombos(null)
+      ? getCombos(businessTypeId, q)
       : getProducts(
           mode === 'objective' ? undefined : cat, 
           q, 
@@ -75,7 +96,9 @@ export default async function ProductsPage({
                   {mode === 'objective' && selectedIntention 
                     ? selectedIntention.name 
                     : mode === 'combo'
-                      ? 'Todos los Combos'
+                      ? businessTypeName
+                        ? `Combos para ${businessTypeName}`
+                        : 'Todos los Combos'
                       : selectedCategory?.name || 'Todos'}
                 </p>
               </div>
