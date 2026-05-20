@@ -154,6 +154,8 @@ model Product {
   active                   Boolean              @default(true)
   stock                    Int                  @default(0)
   isCombo                  Boolean              @default(false)
+  comboPricingMode         String               @default("FIXED")
+  comboDiscountPercent     Float                @default(0)
   briefType                String?              @default("NONE")
   mediaType                String?              @default("NONE")
   mediaUrl                 String?

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Check, MessageCircleMore, ShoppingCart } from 'lucide-react'
+import { Check, MessageCircleMore, PackageCheck, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 
@@ -10,6 +10,7 @@ type ProductWithOptions = {
   id: string
   name: string
   price: number
+  isCombo?: boolean
   creditDownPaymentPercent: number
   briefType?: string | null
   stock?: number
@@ -39,6 +40,9 @@ type ProductWithOptions = {
       }
     }[]
   }[]
+  outgoingRelations?: {
+    relatedProduct: ProductWithOptions
+  }[]
   [key: string]: any
 }
 
@@ -54,10 +58,16 @@ export default function ProductConfigurator({
   inquiryUrl?: string | null
 }) {
   const [selected, setSelected] = useState<Record<string, string>>({})
+  const [comboSelections, setComboSelections] = useState<Record<string, Record<string, string>>>({})
   const [added, setAdded] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
 
   const hasOptions = product.options && product.options.length > 0
+  const comboParts = product.isCombo
+    ? (product.outgoingRelations || []).map((relation) => relation.relatedProduct)
+    : []
+  const isDynamicCombo = product.isCombo && product.comboPricingMode === 'DYNAMIC'
+  const comboDiscountPercent = Math.max(0, Math.min(100, Number(product.comboDiscountPercent || 0)))
   const isServiceProduct = product.category.isService
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
@@ -92,7 +102,6 @@ export default function ProductConfigurator({
     )
   }, [hasOptions, selected, variantCombinations])
 
-  const currentPrice = activeVariant ? activeVariant.price : product.price
   const selectedVariantAvailable = !activeVariant || isPurchasablePrice(activeVariant.price)
 
   const minPrice = useMemo(() => {
@@ -126,9 +135,68 @@ export default function ProductConfigurator({
       .every((option) => Boolean(selected[option.name]))
   }, [hasOptions, product.options, selected])
 
+  const comboPartsReady = useMemo(
+    () =>
+      comboParts.every((part) =>
+        (part.options || [])
+          .filter((option) => option.isRequired)
+          .every((option) => Boolean(comboSelections[part.id]?.[option.name]))
+      ),
+    [comboParts, comboSelections]
+  )
+
+  const comboPartsBaseTotal = useMemo(() => {
+    if (!isDynamicCombo) return null
+
+    let total = 0
+    for (const part of comboParts) {
+      if (!part.options || part.options.length === 0) {
+        if (!isPurchasablePrice(part.price)) return null
+        total += part.price
+        continue
+      }
+
+      const partSelections = comboSelections[part.id] || {}
+      const selectedEntries = Object.entries(partSelections).filter(([, value]) => value)
+      const requiredOptions = part.options.filter((option) => option.isRequired)
+      const hasRequiredOptions = requiredOptions.every((option) => Boolean(partSelections[option.name]))
+      if (!hasRequiredOptions) return null
+
+      const matchingVariant = (part.variants || []).find((variant) => {
+        const combos: Record<string, string> = {}
+        variant.options.forEach((option) => {
+          combos[option.optionValue.option.name] = option.optionValue.value
+        })
+
+        const comboKeys = Object.keys(combos)
+        if (comboKeys.length !== selectedEntries.length) return false
+        return selectedEntries.every(([key, value]) => combos[key] === value)
+      })
+
+      if (!matchingVariant || !isPurchasablePrice(matchingVariant.price)) return null
+      total += matchingVariant.price
+    }
+
+    return total
+  }, [comboParts, comboSelections, isDynamicCombo])
+
+  const dynamicComboPrice =
+    comboPartsBaseTotal === null
+      ? null
+      : Math.max(0, comboPartsBaseTotal * (1 - comboDiscountPercent / 100))
+  const currentPrice = isDynamicCombo
+    ? dynamicComboPrice ?? 0
+    : activeVariant
+      ? activeVariant.price
+      : product.price
+
   const canAddToCart = hasOptions
     ? Boolean(activeVariant) && allRequiredSelected && selectedVariantAvailable
     : simpleProductAvailable
+
+  const canAddConfiguredProduct = isDynamicCombo
+    ? comboPartsReady && dynamicComboPrice !== null && dynamicComboPrice > 0
+    : canAddToCart && comboPartsReady
 
   const contextualMinPrice = useMemo(() => {
     if (!hasOptions) return minPrice
@@ -137,6 +205,9 @@ export default function ProductConfigurator({
   }, [hasOptions, matchingAvailableVariants, minPrice])
 
   const displayPrice =
+    isDynamicCombo
+      ? dynamicComboPrice
+      :
     !activeVariant && hasOptions
       ? contextualMinPrice
       : isPurchasablePrice(currentPrice)
@@ -145,6 +216,10 @@ export default function ProductConfigurator({
 
   const addToCartLabel = added
     ? 'Agregado'
+    : !comboPartsReady
+      ? 'ConfigurÃ¡ el combo'
+    : isDynamicCombo && dynamicComboPrice === null
+      ? 'ElegÃ­ las piezas'
     : !hasOptions
       ? simpleProductAvailable
         ? 'Agregar al carrito'
@@ -207,12 +282,58 @@ export default function ProductConfigurator({
     }))
   }
 
-  const handleAddToCart = () => {
-    if (!canAddToCart) return
+  const handleComboPartSelect = (productId: string, optionName: string, value: string) => {
+    setComboSelections((previous) => ({
+      ...previous,
+      [productId]: {
+        ...(previous[productId] || {}),
+        [optionName]: previous[productId]?.[optionName] === value ? '' : value,
+      },
+    }))
+  }
 
-    const optionsArray = Object.entries(selected)
+  const isComboPartOptionValueAvailable = (
+    part: ProductWithOptions,
+    optionName: string,
+    value: string
+  ) => {
+    if (!part.variants || part.variants.length === 0) return true
+
+    const partSelected = comboSelections[part.id] || {}
+    return part.variants.some((variant) => {
+      const combos: Record<string, string> = {}
+      variant.options.forEach((option) => {
+        combos[option.optionValue.option.name] = option.optionValue.value
+      })
+
+      if (!isPurchasablePrice(variant.price)) return false
+      if (combos[optionName] !== value) return false
+
+      return Object.entries(partSelected).every(([selectedOptionName, selectedValue]) => {
+        if (!selectedValue || selectedOptionName === optionName) return true
+        return combos[selectedOptionName] === selectedValue
+      })
+    })
+  }
+
+  const buildSelectedOptions = () => {
+    const productOptions = Object.entries(selected)
       .filter(([, value]) => value !== '')
       .map(([name, value]) => ({ name, value }))
+
+    const comboOptions = comboParts.flatMap((part) =>
+      Object.entries(comboSelections[part.id] || {})
+        .filter(([, value]) => value !== '')
+        .map(([name, value]) => ({ name: `${part.name} / ${name}`, value }))
+    )
+
+    return [...productOptions, ...comboOptions]
+  }
+
+  const handleAddToCart = () => {
+    if (!canAddConfiguredProduct) return
+
+    const optionsArray = buildSelectedOptions()
 
     addItem({
       productId: product.id,
@@ -252,15 +373,17 @@ export default function ProductConfigurator({
                 Precio final
               </p>
 
-              {simpleProductAvailable ? (
+              {displayPrice !== null ? (
                 <>
                   <div className="mt-3 flex items-end gap-2">
                     <span className="text-4xl font-black tracking-tight sm:text-5xl">
-                      ${product.price.toLocaleString('es-AR')}
+                      ${displayPrice.toLocaleString('es-AR')}
                     </span>
                     <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">Precio unitario final.</p>
+                  <p className="mt-2 text-sm text-gray-300">
+                    {isDynamicCombo ? 'Total del combo según configuración.' : 'Precio unitario final.'}
+                  </p>
                 </>
               ) : (
                 <>
@@ -291,13 +414,13 @@ export default function ProductConfigurator({
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!canAddToCart || added}
+                disabled={!canAddConfiguredProduct || added}
                 className={`
                   flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
                   ${
                     added
                       ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                      : canAddToCart
+                      : canAddConfiguredProduct
                         ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
                         : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
                   }
@@ -321,6 +444,18 @@ export default function ProductConfigurator({
             </div>
           </div>
         </div>
+        {comboParts.length > 0 && (
+          <ComboPartsConfigurator
+            parts={comboParts}
+            selections={comboSelections}
+            onSelect={handleComboPartSelect}
+            isOptionValueAvailable={isComboPartOptionValueAvailable}
+            isDynamicCombo={isDynamicCombo}
+            baseTotal={comboPartsBaseTotal}
+            discountPercent={comboDiscountPercent}
+            finalPrice={dynamicComboPrice}
+          />
+        )}
       </section>
     )
   }
@@ -464,13 +599,13 @@ export default function ProductConfigurator({
             <button
               type="button"
               onClick={handleAddToCart}
-              disabled={!canAddToCart || added}
+              disabled={!canAddConfiguredProduct || added}
               className={`
                 flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
                 ${
                   added
                     ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                    : canAddToCart
+                    : canAddConfiguredProduct
                       ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
                       : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
                 }
@@ -494,6 +629,140 @@ export default function ProductConfigurator({
           </div>
         </div>
       </div>
+      {comboParts.length > 0 && (
+        <ComboPartsConfigurator
+          parts={comboParts}
+          selections={comboSelections}
+          onSelect={handleComboPartSelect}
+          isOptionValueAvailable={isComboPartOptionValueAvailable}
+          isDynamicCombo={isDynamicCombo}
+          baseTotal={comboPartsBaseTotal}
+          discountPercent={comboDiscountPercent}
+          finalPrice={dynamicComboPrice}
+        />
+      )}
     </section>
+  )
+}
+
+function ComboPartsConfigurator({
+  parts,
+  selections,
+  onSelect,
+  isOptionValueAvailable,
+  isDynamicCombo,
+  baseTotal,
+  discountPercent,
+  finalPrice,
+}: {
+  parts: ProductWithOptions[]
+  selections: Record<string, Record<string, string>>
+  onSelect: (productId: string, optionName: string, value: string) => void
+  isOptionValueAvailable: (part: ProductWithOptions, optionName: string, value: string) => boolean
+  isDynamicCombo: boolean
+  baseTotal: number | null
+  discountPercent: number
+  finalPrice: number | null
+}) {
+  return (
+    <div className="mt-6 rounded-[28px] border border-[#4576B9]/15 bg-[#EEF4FC]/45 p-5">
+      <div className="mb-5 flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-[#2F5F9F]">
+          <PackageCheck size={19} />
+        </div>
+        <div>
+          <h3 className="text-lg font-black text-gray-950">Configuración de piezas incluidas</h3>
+          <p className="mt-1 text-sm leading-6 text-gray-600">
+            {isDynamicCombo
+              ? 'Elegí las variantes de cada producto. El precio del combo se calcula con descuento sobre la suma de las piezas.'
+              : 'El precio del pack es cerrado. Elegí las variantes necesarias para que cada pieza salga lista en el pedido.'}
+          </p>
+        </div>
+      </div>
+
+      {isDynamicCombo && (
+        <div className="mb-5 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-white bg-white p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+              Suma piezas
+            </p>
+            <p className="mt-2 text-lg font-black text-gray-950">
+              {baseTotal !== null ? `$${baseTotal.toLocaleString('es-AR')}` : 'Pendiente'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white bg-white p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+              Descuento combo
+            </p>
+            <p className="mt-2 text-lg font-black text-[#ED2C71]">{discountPercent}%</p>
+          </div>
+          <div className="rounded-2xl border border-white bg-white p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+              Total pack
+            </p>
+            <p className="mt-2 text-lg font-black text-gray-950">
+              {finalPrice !== null ? `$${finalPrice.toLocaleString('es-AR')}` : 'Configurá'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {parts.map((part) => (
+          <div key={part.id} className="rounded-[24px] border border-gray-200 bg-white p-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-base font-black text-gray-950">{part.name}</p>
+                <p className="text-xs font-semibold text-gray-500">{part.category.name}</p>
+              </div>
+              {(!part.options || part.options.length === 0) && (
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                  Sin variantes
+                </span>
+              )}
+            </div>
+
+            {part.options && part.options.length > 0 && (
+              <div className="mt-4 space-y-4">
+                {part.options.map((option) => (
+                  <div key={option.id}>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <p className="text-sm font-bold text-gray-900">{option.name}</p>
+                      <span className="text-xs font-semibold text-gray-500">
+                        {option.isRequired ? 'Requerida' : 'Opcional'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {option.values.map((value) => {
+                        const isSelected = selections[part.id]?.[option.name] === value.value
+                        const isAvailable = isOptionValueAvailable(part, option.name, value.value)
+
+                        return (
+                          <button
+                            key={value.id}
+                            type="button"
+                            onClick={() => onSelect(part.id, option.name, value.value)}
+                            disabled={!isAvailable && !isSelected}
+                            className={`rounded-2xl border-2 p-3 text-left text-sm font-semibold transition-all ${
+                              isSelected
+                                ? 'border-[#4576B9] bg-[#EEF4FC] text-[#2F5F9F]'
+                                : isAvailable
+                                  ? 'border-gray-200 bg-white text-gray-700 hover:border-[#4576B9]/30'
+                                  : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300'
+                            }`}
+                          >
+                            {value.value}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

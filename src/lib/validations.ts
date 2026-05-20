@@ -58,6 +58,8 @@ export const productSchema = z.object({
   relatedProductIds: z.array(z.string()).optional().default([]),
   intentionIds: z.array(z.string()).optional().default([]),
   isCombo: z.boolean().default(false),
+  comboPricingMode: z.enum(['FIXED', 'DYNAMIC']).default('FIXED'),
+  comboDiscountPercent: z.coerce.number().min(0).max(100).default(0),
   targetBusinessTypeIds: z.array(z.string()).optional().default([]),
 }).superRefine((data, ctx) => {
   if (data.mediaType !== 'NONE') {

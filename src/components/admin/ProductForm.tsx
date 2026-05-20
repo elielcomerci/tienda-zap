@@ -109,6 +109,9 @@ export default function ProductForm({
   )
   const [isQuoterOpen, setIsQuoterOpen] = useState(false)
   const [isCombo, setIsCombo] = useState(product?.isCombo ?? false)
+  const [comboPricingMode, setComboPricingMode] = useState<'FIXED' | 'DYNAMIC'>(
+    product?.comboPricingMode === 'DYNAMIC' ? 'DYNAMIC' : 'FIXED'
+  )
   interface MediaTrack {
     id: string
     type: 'AUDIO' | 'VIDEO' | 'YOUTUBE'
@@ -309,6 +312,7 @@ export default function ProductForm({
 
       if (isCombo) formData.set('isCombo', 'on')
       else formData.delete('isCombo')
+      formData.set('comboPricingMode', isCombo ? comboPricingMode : 'FIXED')
 
       const raw = {
         name: formData.get('name') as string,
@@ -326,6 +330,8 @@ export default function ProductForm({
         mediaList,
         active: formData.get('active') === 'true',
         isCombo: isCombo,
+        comboPricingMode: isCombo ? comboPricingMode : 'FIXED',
+        comboDiscountPercent: formData.get('comboDiscountPercent') || 0,
         targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds'),
         options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
         variants: formData.get('variants') ? JSON.parse(formData.get('variants') as string) : [],
@@ -448,7 +454,11 @@ export default function ProductForm({
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="label">Precio ARS *</label>
+                <label className="label">
+                  {isCombo && comboPricingMode === 'DYNAMIC'
+                    ? 'Precio fijo opcional ARS'
+                    : 'Precio ARS *'}
+                </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-gray-400">
                     $
@@ -459,12 +469,18 @@ export default function ProductForm({
                     defaultValue={product?.price}
                     step="0.01"
                     min="0"
-                    required={!hasVariants}
-                    disabled={hasVariants}
+                    required={!hasVariants && (!isCombo || comboPricingMode === 'FIXED')}
+                    disabled={hasVariants && (!isCombo || comboPricingMode === 'FIXED')}
                     className="input !pl-8 disabled:bg-gray-50 disabled:opacity-60"
                     placeholder="0.00"
                   />
                 </div>
+                {isCombo && comboPricingMode === 'DYNAMIC' && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    En modo configurable se calcula desde las piezas incluidas. Dejalo en 0 salvo
+                    que quieras usarlo como referencia interna.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -508,6 +524,70 @@ export default function ProductForm({
                 </div>
               )}
             </div>
+            {isCombo && (
+              <div className="mt-4 rounded-2xl border border-[#4576B9]/15 bg-[#EEF4FC]/50 p-4">
+                <p className="mb-3 text-sm font-bold text-gray-900">Precio del combo</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white p-3">
+                    <input
+                      type="radio"
+                      name="comboPricingMode"
+                      value="FIXED"
+                      checked={comboPricingMode === 'FIXED'}
+                      onChange={() => setComboPricingMode('FIXED')}
+                      className="mt-1 h-4 w-4 text-[#ED2C71] focus:ring-[#ED2C71]"
+                    />
+                    <span>
+                      <span className="block text-sm font-bold text-gray-900">Precio cerrado</span>
+                      <span className="block text-xs leading-5 text-gray-500">
+                        El pack se vende al precio definido arriba, aunque el cliente configure las
+                        piezas incluidas.
+                      </span>
+                    </span>
+                  </label>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white p-3">
+                    <input
+                      type="radio"
+                      name="comboPricingMode"
+                      value="DYNAMIC"
+                      checked={comboPricingMode === 'DYNAMIC'}
+                      onChange={() => setComboPricingMode('DYNAMIC')}
+                      className="mt-1 h-4 w-4 text-[#ED2C71] focus:ring-[#ED2C71]"
+                    />
+                    <span>
+                      <span className="block text-sm font-bold text-gray-900">
+                        Configurable con descuento
+                      </span>
+                      <span className="block text-xs leading-5 text-gray-500">
+                        Suma el precio de las variantes elegidas y aplica el descuento del combo.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+                {comboPricingMode === 'DYNAMIC' && (
+                  <div className="mt-3 max-w-xs">
+                    <label className="label">Descuento sobre piezas (%)</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="comboDiscountPercent"
+                        defaultValue={product?.comboDiscountPercent ?? 0}
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        className="input !pr-10"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-gray-400">
+                        %
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {comboPricingMode !== 'DYNAMIC' && (
+                  <input type="hidden" name="comboDiscountPercent" value="0" />
+                )}
+              </div>
+            )}
             {hasVariants && (
               <p className="mt-3 flex items-center gap-2 rounded-xl border border-orange-100 bg-orange-50 p-2.5 text-xs font-medium text-orange-600">
                 <AlertCircle size={14} />

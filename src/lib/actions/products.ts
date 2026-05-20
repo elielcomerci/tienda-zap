@@ -105,6 +105,8 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     relatedProductIds: parseJsonField<string[]>(formData, 'relatedProductIds', []),
     intentionIds: formData.getAll('intentionIds') as string[],
     isCombo: formData.get('isCombo') === 'on',
+    comboPricingMode: ((formData.get('comboPricingMode') as string) || 'FIXED') as 'FIXED' | 'DYNAMIC',
+    comboDiscountPercent: formData.get('comboDiscountPercent') || 0,
     targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds') as string[],
   }
 
@@ -212,6 +214,8 @@ export async function createProduct(formData: FormData) {
         connect: data.intentionIds.map(id => ({ id }))
       },
       isCombo: data.isCombo,
+      comboPricingMode: data.isCombo ? data.comboPricingMode : 'FIXED',
+      comboDiscountPercent: data.isCombo && data.comboPricingMode === 'DYNAMIC' ? data.comboDiscountPercent : 0,
       targetBusinessTypes: {
         connect: data.targetBusinessTypeIds.map(id => ({ id }))
       }
@@ -296,6 +300,8 @@ export async function updateProduct(id: string, formData: FormData) {
           set: data.intentionIds.map(id => ({ id }))
         },
         isCombo: data.isCombo,
+        comboPricingMode: data.isCombo ? data.comboPricingMode : 'FIXED',
+        comboDiscountPercent: data.isCombo && data.comboPricingMode === 'DYNAMIC' ? data.comboDiscountPercent : 0,
         targetBusinessTypes: {
           set: data.targetBusinessTypeIds.map(id => ({ id }))
         }
@@ -400,6 +406,8 @@ export async function duplicateProduct(id: string) {
       mediaList: original.mediaList ?? undefined,
       active: false,
       isCombo: original.isCombo,
+      comboPricingMode: original.comboPricingMode,
+      comboDiscountPercent: original.comboDiscountPercent,
       options: {
         create: original.options.map((option) => ({
           name: option.name,

@@ -66,9 +66,20 @@ export const getProduct = cache(async function getProduct(slug: string) {
           relatedProduct: {
             include: {
               category: true,
+              options: {
+                include: { values: true },
+                orderBy: { id: 'asc' },
+              },
               variants: {
-                select: { price: true },
-                orderBy: { price: 'asc' },
+                include: {
+                  options: {
+                    include: {
+                      optionValue: {
+                        include: { option: true },
+                      },
+                    },
+                  },
+                },
               },
             },
           },
