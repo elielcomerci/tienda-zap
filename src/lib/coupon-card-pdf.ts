@@ -135,18 +135,18 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 
     if (!response.ok) return null
 
-    let buffer = Buffer.from(await response.arrayBuffer())
+    let finalBuffer: any = Buffer.from(await response.arrayBuffer())
     let contentType = response.headers.get('content-type') || 'image/png'
 
     // jsPDF does not natively support SVG via addImage
     // We convert it to PNG on the fly using sharp
     if (contentType.includes('svg') || url.toLowerCase().split('?')[0].endsWith('.svg')) {
       const sharp = (await import('sharp')).default
-      buffer = (await sharp(buffer).png().toBuffer()) as Buffer
+      finalBuffer = await sharp(finalBuffer).png().toBuffer()
       contentType = 'image/png'
     }
 
-    const base64 = buffer.toString('base64')
+    const base64 = finalBuffer.toString('base64')
     return `data:${contentType};base64,${base64}`
   } catch {
     return null
