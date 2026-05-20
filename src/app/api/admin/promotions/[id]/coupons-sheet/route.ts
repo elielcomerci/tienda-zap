@@ -28,19 +28,29 @@ export async function GET(
       name: true,
       coupons: {
         orderBy: { createdAt: 'desc' },
-        include: {
-              promotion: {
-                select: {
-                  qrBaseUrl: true,
-                  name: true,
-                  discountKind: true,
-                  discountValue: true,
-                  welcomeLogoUrl: true,
-                  audienceLabel: true,
-                  welcomeMessage: true,
-                  welcomeConditions: true,
-                },
-              },
+        select: {
+          code: true,
+          recipientName: true,
+          recipientBusiness: true,
+          batchName: true,
+          qrPayload: true,
+          metadata: true,
+          expiresAt: true,
+          usesLeft: true,
+          promotion: {
+            select: {
+              qrBaseUrl: true,
+              name: true,
+              discountKind: true,
+              discountValue: true,
+              welcomeLogoUrl: true,
+              audienceLabel: true,
+              welcomeMessage: true,
+              welcomeConditions: true,
+              maxUses: true,
+              perUserLimit: true,
+            },
+          },
         },
       },
     },

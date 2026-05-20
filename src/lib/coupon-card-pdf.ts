@@ -13,6 +13,8 @@ type CouponPdfPromotion = {
   audienceLabel?: string | null
   welcomeMessage?: string | null
   welcomeConditions?: string | null
+  maxUses?: number | null
+  perUserLimit?: number | null
 }
 
 export type CouponPdfRecord = {
@@ -23,6 +25,7 @@ export type CouponPdfRecord = {
   qrPayload: string | null
   metadata: Prisma.JsonValue | null
   expiresAt: Date | null
+  usesLeft: number
   promotion: CouponPdfPromotion
 }
 
@@ -69,16 +72,63 @@ function compactLabel(value: string, maxLength = 36) {
   return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1)}…` : normalized
 }
 
-function getDiscountLabel(promotion: CouponPdfPromotion): { main: string; subtitle: string } {
+function getDiscountSubtitle(promotion: CouponPdfPromotion, coupon: CouponPdfRecord): string {
+  // If the promotion has an explicit conditions text, use it as the subtitle
+  if (promotion.welcomeConditions) return promotion.welcomeConditions
+
+  const perUser = promotion.perUserLimit
+  const maxUses = promotion.maxUses
+  const usesLeft = coupon.usesLeft
+  const expires = coupon.expiresAt
+
+  // Single use coupon (usesLeft starts at 1 and perUserLimit is 1)
+  if (usesLeft === 1 && (perUser === 1 || perUser == null)) {
+    if (expires) {
+      return `por única vez · válido hasta ${expires.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}`
+    }
+    return 'por única vez'
+  }
+
+  // Multi-use but limited
+  if (usesLeft > 1) {
+    if (expires) {
+      return `hasta ${usesLeft} usos · válido hasta ${expires.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}`
+    }
+    return `hasta ${usesLeft} usos`
+  }
+
+  // Unlimited per user (perUserLimit is null) but expires
+  if (!perUser && expires) {
+    return `ilimitado · válido hasta ${expires.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}`
+  }
+
+  // Unlimited and no expiry
+  if (!perUser && !expires) {
+    return 'sin límite de usos'
+  }
+
+  // Fallback
+  if (expires) {
+    return `válido hasta ${expires.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}`
+  }
+
+  return 'sin vencimiento'
+}
+
+function getDiscountLabel(
+  promotion: CouponPdfPromotion,
+  coupon: CouponPdfRecord
+): { main: string; subtitle: string } {
+  const subtitle = getDiscountSubtitle(promotion, coupon)
   if (promotion.discountKind === 'PERCENTAGE') {
     return {
       main: `${promotion.discountValue}% off`,
-      subtitle: 'en tu próxima compra',
+      subtitle,
     }
   }
   return {
     main: `$${promotion.discountValue.toLocaleString('es-AR')} off`,
-    subtitle: 'en tu próxima compra',
+    subtitle,
   }
 }
 
@@ -189,7 +239,7 @@ export async function buildCouponCardData(
     clientLogoDataUrl = await fetchImageAsDataUrl(logoUrl)
   }
 
-  const discount = getDiscountLabel(coupon.promotion)
+  const discount = getDiscountLabel(coupon.promotion, coupon)
 
   return {
     code: coupon.code,
