@@ -37,6 +37,8 @@ export async function GET(
                   discountValue: true,
                   welcomeLogoUrl: true,
                   audienceLabel: true,
+                  welcomeMessage: true,
+                  welcomeConditions: true,
                 },
               },
         },

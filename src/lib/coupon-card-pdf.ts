@@ -7,10 +7,11 @@ import { ZAP_LOGO_B64 } from '@/lib/logo-base64'
 type CouponPdfPromotion = {
   name: string
   qrBaseUrl: string | null
-  discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: number
   welcomeLogoUrl?: string | null
   audienceLabel?: string | null
+  welcomeMessage?: string | null
+  welcomeConditions?: string | null
 }
 
 export type CouponPdfRecord = {
@@ -31,6 +32,7 @@ type CouponCardData = {
   audienceLabel: string | null
   discountLabel: string
   discountSubtitle: string
+  benefitDescription: string
   expiresLabel: string
   qrDataUrl: string
   clientLogoDataUrl: string | null
@@ -182,9 +184,10 @@ export async function buildCouponCardData(
     audienceLabel: coupon.promotion.audienceLabel || null,
     discountLabel: discount.main,
     discountSubtitle: discount.subtitle,
+    benefitDescription: coupon.promotion.welcomeMessage || 'Presentá este cupón antes de finalizar la compra.',
     expiresLabel: coupon.expiresAt
       ? `Válido hasta el ${coupon.expiresAt.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}`
-      : 'Beneficio sujeto a condiciones vigentes',
+      : (coupon.promotion.welcomeConditions || 'Beneficio sujeto a condiciones vigentes'),
     qrDataUrl,
     clientLogoDataUrl,
   }
@@ -367,11 +370,6 @@ export function drawCoupon(
       const drawX = logoCenterX - drawW / 2
       const drawY = logoY + (clientLogoSize - drawH) / 2
 
-      // Draw subtle border for logos as per image
-      doc.setDrawColor(230, 230, 230)
-      doc.setLineWidth(0.3)
-      drawRoundedRect(doc, logoCenterX - clientLogoSize/2, logoY, clientLogoSize, clientLogoSize, 4, 'S')
-
       doc.addImage(
         card.clientLogoDataUrl,
         format,
@@ -391,37 +389,37 @@ export function drawCoupon(
   }
 
   // ── Business name ──
-  const nameY = logoY + clientLogoSize + sw(10)
+  const nameY = logoY + clientLogoSize + sw(12)
   doc.setTextColor(INK)
-  setFitFont(doc, compactLabel(card.presenterName, 30), sw(120), 8, 5, 'bold')
+  setFitFont(doc, compactLabel(card.presenterName, 30), sw(130), 10, 6, 'bold')
   doc.text(compactLabel(card.presenterName, 30), logoCenterX, nameY, { align: 'center' })
 
   // ── Subtitle (audience label or person name) ──
   const subtitle = card.audienceLabel || card.personName || ''
   if (subtitle) {
-    setPtFont('normal', 5)
+    setPtFont('normal', 6)
     doc.setTextColor(MUTED)
-    doc.text(compactLabel(subtitle, 35), logoCenterX, nameY + sw(7), { align: 'center' })
+    doc.text(compactLabel(subtitle, 35), logoCenterX, nameY + sw(8), { align: 'center' })
   }
 
   // ── Benefit block ──
-  const benefitY = nameY + sw(subtitle ? 22 : 15)
+  const benefitY = nameY + sw(subtitle ? 26 : 18)
 
   // Main discount label (huge gradient text)
   setFitFont(doc, card.discountLabel, sw(130), 20, 12, 'bold')
   drawGradientText(doc, card.discountLabel, logoCenterX, benefitY, sw(130), sw(20), 'center')
 
   // Discount subtitle
-  setPtFont('bold', 6)
+  setPtFont('bold', 7)
   doc.setTextColor(ZAP_BLUE)
-  doc.text(card.discountSubtitle, logoCenterX, benefitY + sw(10), { align: 'center' })
+  doc.text(card.discountSubtitle, logoCenterX, benefitY + sw(12), { align: 'center' })
 
   // Benefit description
-  setPtFont('italic', 4.5)
+  setPtFont('italic', 5)
   doc.setTextColor(MUTED)
-  doc.text('Presentá este cupón antes de finalizar la compra.', logoCenterX, benefitY + sw(22), {
+  doc.text(card.benefitDescription, logoCenterX, benefitY + sw(24), {
     align: 'center',
-    maxWidth: sw(120),
+    maxWidth: sw(130),
   })
 
   // ── Cut line ──
@@ -446,9 +444,9 @@ export function drawCoupon(
   doc.text(card.code, logoCenterX, codeY, { align: 'center' })
 
   // ── Expiry ──
-  setPtFont('italic', 3.5)
+  setPtFont('italic', 4)
   doc.setTextColor(MUTED_LIGHT)
-  doc.text(card.expiresLabel, logoCenterX, codeY + sw(8), { align: 'center', maxWidth: sw(120) })
+  doc.text(card.expiresLabel, logoCenterX, codeY + sw(9), { align: 'center', maxWidth: sw(130) })
 }
 
 // Keep legacy exports for backward compatibility
