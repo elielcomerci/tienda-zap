@@ -61,7 +61,7 @@ export async function GET(
   return new Response(pdf, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Cache-Control': 'private, max-age=300',
+      'Cache-Control': 'no-store, max-age=0',
       'Content-Disposition': `attachment; filename="${filename}-pliego-cupones.pdf"`,
     },
   })
