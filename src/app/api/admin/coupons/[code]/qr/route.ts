@@ -35,6 +35,7 @@ function buildPremiumCouponCard(input: {
   discountLabel: string
   companyName: string
   personName?: string | null
+  logoUrl?: string | null
   expiresAt?: Date | null
 }) {
   const qrInner = stripSvgWrapper(input.qrSvg)
@@ -44,6 +45,7 @@ function buildPremiumCouponCard(input: {
   const code = escapeXml(input.code)
   const payload = escapeXml(input.payload)
   const discountLabel = escapeXml(input.discountLabel)
+  const logoUrl = input.logoUrl ? escapeXml(input.logoUrl) : null
   const expiresLabel = input.expiresAt
     ? `Valido hasta ${input.expiresAt.toLocaleDateString('es-AR')}`
     : 'Beneficio sujeto a disponibilidad y condiciones vigentes'
@@ -91,6 +93,10 @@ function buildPremiumCouponCard(input: {
   </g>
 
   <g transform="translate(146 286)">
+    ${logoUrl ? `
+    <rect x="284" y="-84" width="220" height="74" rx="24" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+    <image href="${logoUrl}" x="304" y="-70" width="180" height="46" preserveAspectRatio="xMidYMid meet"/>
+    ` : ''}
     <text x="394" y="0" text-anchor="middle" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="4">CUPON EXCLUSIVO</text>
     <text x="394" y="70" text-anchor="middle" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="950">${companyName}</text>
     ${personName ? `<text x="394" y="116" text-anchor="middle" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">Para ${personName}</text>` : ''}
@@ -137,6 +143,7 @@ export async function GET(
           name: true,
           discountKind: true,
           discountValue: true,
+          welcomeLogoUrl: true,
         },
       },
     },
@@ -171,6 +178,9 @@ export async function GET(
     coupon.promotion.discountKind === 'PERCENTAGE'
       ? `${coupon.promotion.discountValue}% OFF`
       : `$${coupon.promotion.discountValue.toLocaleString('es-AR')} OFF`
+  const logoUrl = coupon.promotion.welcomeLogoUrl
+    ? new URL(coupon.promotion.welcomeLogoUrl, req.nextUrl.origin).toString()
+    : null
   const cardSvg = buildPremiumCouponCard({
     qrSvg: svg,
     code: coupon.code,
@@ -179,6 +189,7 @@ export async function GET(
     discountLabel,
     companyName,
     personName,
+    logoUrl,
     expiresAt: coupon.expiresAt,
   })
 
