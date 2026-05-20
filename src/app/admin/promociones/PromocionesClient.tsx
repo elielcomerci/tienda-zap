@@ -604,9 +604,8 @@ export default function PromocionesClient({
                           </button>
                           <a
                             href={`/api/admin/coupons/${encodeURIComponent(coupon.code)}/qr`}
-                            target="_blank"
                             className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Abrir QR"
+                            title="Descargar tarjeta premium"
                           >
                             <QrCode size={16} />
                           </a>
