@@ -139,10 +139,14 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
     let contentType = response.headers.get('content-type') || 'image/png'
 
     // jsPDF does not natively support SVG via addImage
-    // We convert it to PNG on the fly using sharp
+    // We convert it to PNG on the fly using sharp at high DPI for crisp quality
     if (contentType.includes('svg') || url.toLowerCase().split('?')[0].endsWith('.svg')) {
       const sharp = (await import('sharp')).default
-      finalBuffer = await sharp(finalBuffer).png().toBuffer()
+      // density: 300 means sharp rasterises the SVG at 300 DPI instead of
+      // the default 72 DPI – this makes the logo ~4× sharper on the PDF
+      finalBuffer = await sharp(finalBuffer, { density: 300 })
+        .png()
+        .toBuffer()
       contentType = 'image/png'
     }
 
