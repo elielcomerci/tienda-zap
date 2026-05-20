@@ -552,6 +552,15 @@ export default function PromocionesClient({
                       <Download size={16} />
                       CSV
                     </button>
+                    {promotion.coupons.length > 0 && (
+                      <a
+                        href={`/api/admin/promotions/${encodeURIComponent(promotion.id)}/coupons-sheet`}
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-orange-700"
+                      >
+                        <QrCode size={16} />
+                        PDF lote
+                      </a>
+                    )}
                   </div>
                 </div>
 
@@ -605,7 +614,7 @@ export default function PromocionesClient({
                           <a
                             href={`/api/admin/coupons/${encodeURIComponent(coupon.code)}/qr`}
                             className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Descargar tarjeta premium"
+                            title="Descargar tarjeta PDF"
                           >
                             <QrCode size={16} />
                           </a>
@@ -1063,7 +1072,7 @@ export default function PromocionesClient({
 
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
                 Generamos codigos no secuenciales del estilo <strong>ZAP-7F3K9Q2A-X</strong>, su
-                landing <strong>/cupon/codigo</strong> y un QR SVG descargable para cada registro.
+                landing <strong>/cupon/codigo</strong>, tarjeta PDF individual y pliego PDF de lote.
               </div>
 
               <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
