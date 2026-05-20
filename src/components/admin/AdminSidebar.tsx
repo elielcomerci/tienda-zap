@@ -23,32 +23,54 @@ import {
   Gift,
   HandCoins,
   Layers,
-  Scissors
+  Scissors,
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/admin/productos', label: 'Productos', icon: Package },
-  { href: '/admin/categorias', label: 'Categorías', icon: Tag },
-  { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
-  { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
-  { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
-  { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
-  { href: '/admin/intenciones', label: 'Objetivos', icon: Target },
-  { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
-  { href: '/admin/incentivos', label: 'Incentivos', icon: Gift },
-  { href: '/admin/liquidaciones', label: 'Liquidaciones', icon: HandCoins },
-  { href: '/admin/rubros', label: 'Rubros', icon: Briefcase },
-  { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
-  { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
-  { href: '/admin/campanas', label: 'Campañas Partner', icon: Megaphone },
-]
-
-const cotizadorItems = [
-  { href: '/admin/cotizador/materiales', label: 'Materias Primas', icon: Layers },
-  { href: '/admin/cotizador/terminaciones', label: 'Terminaciones', icon: Scissors },
+const navSections = [
+  {
+    title: 'Operación',
+    items: [
+      { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+      { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
+      { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
+      { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
+      { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
+    ],
+  },
+  {
+    title: 'Catálogo',
+    items: [
+      { href: '/admin/productos', label: 'Productos', icon: Package },
+      { href: '/admin/categorias', label: 'Categorías', icon: Tag },
+      { href: '/admin/rubros', label: 'Rubros', icon: Briefcase },
+      { href: '/admin/intenciones', label: 'Objetivos', icon: Target },
+      { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
+    ],
+  },
+  {
+    title: 'Equipo comercial',
+    items: [
+      { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
+      { href: '/admin/incentivos', label: 'Incentivos', icon: Gift },
+      { href: '/admin/liquidaciones', label: 'Liquidaciones', icon: HandCoins },
+    ],
+  },
+  {
+    title: 'Partners',
+    items: [
+      { href: '/admin/partners', label: 'Partners kiosco24', icon: Building2 },
+      { href: '/admin/campanas', label: 'Campañas Partner', icon: Megaphone },
+    ],
+  },
+  {
+    title: 'Cotizador',
+    items: [
+      { href: '/admin/cotizador/materiales', label: 'Materias Primas', icon: Layers },
+      { href: '/admin/cotizador/terminaciones', label: 'Terminaciones', icon: Scissors },
+    ],
+  },
 ]
 
 export default function AdminSidebar() {
@@ -89,48 +111,33 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = isActive(item.href, item.exact)
+        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+          {navSections.map((section) => (
+            <div key={section.title} className="space-y-1">
+              <div className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                {section.title}
+              </div>
+              {section.items.map((item) => {
+                const active = isActive(item.href, item.exact)
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                  active
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </Link>
-            )
-          })}
-          
-          <div className="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider px-3">
-            Cotizador
-          </div>
-          {cotizadorItems.map((item) => {
-            const active = isActive(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-                  active
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </Link>
-            )
-          })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                      active
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} />
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="space-y-1 border-t border-gray-800 px-3 py-4">
@@ -146,7 +153,7 @@ export default function AdminSidebar() {
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-400 transition-all hover:bg-gray-800 hover:text-red-400"
           >
             <LogOut size={18} />
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </aside>

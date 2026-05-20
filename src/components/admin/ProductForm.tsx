@@ -533,14 +533,6 @@ export default function ProductForm({
           />
         </div>
 
-        <div className="md:col-span-3">
-          <ProductRelationsPicker
-            isCombo={isCombo}
-            products={availableProducts}
-            initialSelectedIds={initialRelatedProductIds || []}
-          />
-        </div>
-
         <div className="space-y-6 md:col-span-3">
           <div className="card p-6">
             <h2 className="mb-4 border-b border-gray-100 pb-3 font-bold text-gray-900">
@@ -648,6 +640,12 @@ export default function ProductForm({
               </div>
             </div>
           )}
+
+          <ProductRelationsPicker
+            isCombo={isCombo}
+            products={availableProducts}
+            initialSelectedIds={initialRelatedProductIds || []}
+          />
 
           {availableIntentions && availableIntentions.length > 0 && (
             <div className="card p-6">
