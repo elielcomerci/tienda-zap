@@ -139,7 +139,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           />
         </div>
 
-        <RelatedProductsSection products={relatedProducts} />
+        <RelatedProductsSection products={relatedProducts} isCombo={product.isCombo} />
       </div>
     </div>
   )

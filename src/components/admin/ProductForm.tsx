@@ -535,6 +535,7 @@ export default function ProductForm({
 
         <div className="md:col-span-3">
           <ProductRelationsPicker
+            isCombo={isCombo}
             products={availableProducts}
             initialSelectedIds={initialRelatedProductIds || []}
           />

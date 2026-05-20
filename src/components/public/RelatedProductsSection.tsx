@@ -1,6 +1,6 @@
-﻿import Image from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Link2 } from 'lucide-react'
+import { ArrowRight, Link2, Boxes } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 
 type RelatedProduct = {
@@ -19,7 +19,13 @@ type RelatedProduct = {
   }>
 }
 
-export default function RelatedProductsSection({ products }: { products: RelatedProduct[] }) {
+export default function RelatedProductsSection({
+  products,
+  isCombo = false,
+}: {
+  products: RelatedProduct[]
+  isCombo?: boolean
+}) {
   if (products.length === 0) {
     return null
   }
@@ -28,12 +34,16 @@ export default function RelatedProductsSection({ products }: { products: Related
     <section className="mt-14">
       <div className="mb-6 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FEF1F6] text-[#ED2C71]">
-          <Link2 size={18} />
+          {isCombo ? <Boxes size={18} /> : <Link2 size={18} />}
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Piezas que pueden acompanar</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {isCombo ? 'Productos incluidos en este Pack / Combo' : 'Piezas que pueden acompañar'}
+          </h2>
           <p className="text-sm text-gray-500">
-            Seleccionadas para completar mejor este trabajo.
+            {isCombo
+              ? 'Este kit comercial de ZAP incluye las siguientes piezas de forma integrada:'
+              : 'Seleccionadas para completar mejor este trabajo.'}
           </p>
         </div>
       </div>
@@ -87,7 +97,7 @@ export default function RelatedProductsSection({ products }: { products: Related
                   </div>
 
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#ED2C71]">
-                    Ver pieza
+                    {isCombo ? 'Ver pieza incluida' : 'Ver pieza'}
                     <ArrowRight size={16} />
                   </span>
                 </div>

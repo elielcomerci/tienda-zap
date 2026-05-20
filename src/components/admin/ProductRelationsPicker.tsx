@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Image from 'next/image'
-import { Link2, Search } from 'lucide-react'
+import { Link2, Search, Boxes } from 'lucide-react'
 
 type RelatedProductOption = {
   id: string
@@ -18,9 +18,11 @@ type RelatedProductOption = {
 export default function ProductRelationsPicker({
   products,
   initialSelectedIds = [],
+  isCombo = false,
 }: {
   products: RelatedProductOption[]
   initialSelectedIds?: string[]
+  isCombo?: boolean
 }) {
   const [query, setQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState(initialSelectedIds)
@@ -54,11 +56,19 @@ export default function ProductRelationsPicker({
       <input type="hidden" name="relatedProductIds" value={JSON.stringify(selectedIds)} />
 
       <div className="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
-        <Link2 size={18} className="text-orange-500" />
+        {isCombo ? (
+          <Boxes size={18} className="text-[#ED2C71]" />
+        ) : (
+          <Link2 size={18} className="text-orange-500" />
+        )}
         <div>
-          <h2 className="font-bold text-gray-900">Ventas cruzadas</h2>
+          <h2 className="font-bold text-gray-900">
+            {isCombo ? 'Productos incluidos en el Pack/Combo' : 'Ventas cruzadas'}
+          </h2>
           <p className="text-xs text-gray-500">
-            Elegi otros productos para sugerir en esta ficha publica.
+            {isCombo
+              ? 'Elegí los productos individuales que conforman este combo comercial de ZAP.'
+              : 'Elegí otros productos para sugerir en esta ficha pública.'}
           </p>
         </div>
       </div>
@@ -70,7 +80,7 @@ export default function ProductRelationsPicker({
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nombre, categoria o slug..."
+            placeholder="Buscar por nombre, categoría o slug..."
             className="w-full border-none bg-transparent p-0 text-sm text-gray-700 focus:ring-0"
           />
         </div>
@@ -82,7 +92,9 @@ export default function ProductRelationsPicker({
         </p>
         {selectedProducts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
-            Todavia no hay productos relacionados seleccionados.
+            {isCombo
+              ? 'Todavía no hay productos incluidos en este combo.'
+              : 'Todavía no hay productos relacionados seleccionados.'}
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -91,7 +103,11 @@ export default function ProductRelationsPicker({
                 key={product.id}
                 type="button"
                 onClick={() => toggleSelection(product.id)}
-                className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700"
+                className={
+                  isCombo
+                    ? 'rounded-full border border-[#F66B9A]/30 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]'
+                    : 'rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700'
+                }
               >
                 {product.name}
               </button>
@@ -114,15 +130,23 @@ export default function ProductRelationsPicker({
                 key={product.id}
                 className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${
                   selected
-                    ? 'border-orange-300 bg-orange-50'
-                    : 'border-gray-200 bg-white hover:border-orange-200'
+                    ? isCombo
+                      ? 'border-[#F66B9A] bg-[#FEF1F6]'
+                      : 'border-orange-300 bg-orange-50'
+                    : isCombo
+                      ? 'border-gray-200 bg-white hover:border-[#F66B9A]/50'
+                      : 'border-gray-200 bg-white hover:border-orange-200'
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={selected}
                   onChange={() => toggleSelection(product.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                  className={
+                    isCombo
+                      ? 'h-4 w-4 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]'
+                      : 'h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500'
+                  }
                 />
                 <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-gray-100">
                   {product.images[0] ? (
