@@ -757,6 +757,12 @@ export default function ProductForm({
               Imagenes
             </h2>
 
+            {images.length === 0 && (
+              <div className="mb-4 rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs font-semibold leading-5 text-amber-800">
+                Agrega al menos una imagen general. Tambien funciona como respaldo cuando una variante no tiene foto propia.
+              </div>
+            )}
+
             <div className="mb-4 grid grid-cols-2 gap-2">
               {images.map((url, index) => (
                 <div

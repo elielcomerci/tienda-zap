@@ -19,3 +19,19 @@ export async function getIntentions() {
     orderBy: { order: 'asc' },
   })
 }
+
+export async function getPublicIntentions() {
+  return prisma.intention.findMany({
+    where: {
+      active: true,
+      products: {
+        some: {
+          active: true,
+          isCombo: false,
+          category: { slug: { not: 'sistema' } },
+        },
+      },
+    },
+    orderBy: { order: 'asc' },
+  })
+}

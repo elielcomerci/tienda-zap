@@ -351,6 +351,8 @@ model ProductOption {
   id         String               @id @default(cuid())
   productId  String
   name       String
+  displayType String              @default("BUTTON")
+  sortOrder Int                   @default(0)
   isRequired Boolean              @default(true)
   product    Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
   values     ProductOptionValue[]
@@ -360,6 +362,8 @@ model ProductOptionValue {
   id       String          @id @default(cuid())
   optionId String
   value    String
+  colorHex String?
+  sortOrder Int           @default(0)
   option   ProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
   variants VariantOption[]
 }
@@ -370,6 +374,7 @@ model ProductVariant {
   price     Float
   sku       String?
   stock     Int?
+  imageUrl  String?
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   options   VariantOption[]
 }
@@ -902,16 +907,17 @@ model SellerRecurringSubscription {
 // ==========================================
 
 model RawMaterial {
-  id        String                @id @default(cuid())
-  name      String
-  width     Float // Ancho del pliego/material en cm
-  height    Float // Alto del pliego/material en cm
-  unit      String                @default("PLIEGO") // PLIEGO, M2, METRO LINEAL, etc.
-  active    Boolean               @default(true)
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  tiers     RawMaterialTier[]
-  configs   ProductQuoterConfig[]
+  id                    String                        @id @default(cuid())
+  name                  String
+  width                 Float // Ancho del pliego/material en cm
+  height                Float // Alto del pliego/material en cm
+  unit                  String                        @default("PLIEGO") // PLIEGO, M2, METRO LINEAL, etc.
+  active                Boolean                       @default(true)
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime                      @updatedAt
+  tiers                 RawMaterialTier[]
+  configs               ProductQuoterConfig[]
+  quoterConfigMaterials ProductQuoterConfigMaterial[]
 
   @@map("raw_materials")
 }
@@ -964,22 +970,75 @@ model FinishingTier {
 }
 
 model ProductQuoterConfig {
-  id            String                  @id @default(cuid())
-  productId     String                  @unique
-  rawMaterialId String
-  itemWidth     Float // Ancho del producto en cm
-  itemHeight    Float // Alto del producto en cm
-  margin        Float                   @default(0) // Margen de corte/agarre (cm)
-  bleed         Float                   @default(0) // Demasía (cm)
-  profitMargin  Float                   @default(150) // Porcentaje de ganancia (ej: 150 = +150%)
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
-  product       Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
-  rawMaterial   RawMaterial             @relation(fields: [rawMaterialId], references: [id])
-  finishings    QuoterConfigFinishing[]
+  id               String                        @id @default(cuid())
+  productId        String                        @unique
+  rawMaterialId    String?
+  itemWidth        Float? // Ancho del producto en cm
+  itemHeight       Float? // Alto del producto en cm
+  margin           Float                         @default(0) // Margen de corte/agarre (cm)
+  bleed            Float                         @default(0) // Demasía (cm)
+  profitMargin     Float                         @default(150) // Porcentaje de ganancia (ej: 150 = +150%)
+  minProfitMargin  Float?
+  maxProfitMargin  Float?
+  pricingMode      String                        @default("SHEET_NESTING")
+  allowCustomSize  Boolean                       @default(false)
+  minWidth         Float?
+  maxWidth         Float?
+  minHeight        Float?
+  maxHeight        Float?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  product          Product                       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rawMaterial      RawMaterial?                  @relation(fields: [rawMaterialId], references: [id])
+  finishings       QuoterConfigFinishing[]
+  allowedMaterials ProductQuoterConfigMaterial[]
+  quantityPresets  ProductQuoterQuantityPreset[]
+  sizePresets      ProductQuoterSizePreset[]
 
   @@index([rawMaterialId])
   @@map("product_quoter_configs")
+}
+
+model ProductQuoterConfigMaterial {
+  configId      String
+  rawMaterialId String
+  label         String?
+  createdAt     DateTime            @default(now())
+  config        ProductQuoterConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  rawMaterial   RawMaterial         @relation(fields: [rawMaterialId], references: [id], onDelete: Cascade)
+
+  @@id([configId, rawMaterialId])
+  @@index([rawMaterialId])
+  @@map("product_quoter_config_materials")
+}
+
+model ProductQuoterQuantityPreset {
+  id        String              @id @default(cuid())
+  configId  String
+  quantity  Int
+  label     String?
+  sortOrder Int                 @default(0)
+  createdAt DateTime            @default(now())
+  config    ProductQuoterConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@unique([configId, quantity])
+  @@index([configId])
+  @@map("product_quoter_quantity_presets")
+}
+
+model ProductQuoterSizePreset {
+  id        String              @id @default(cuid())
+  configId  String
+  label     String
+  width     Float
+  height    Float
+  sortOrder Int                 @default(0)
+  createdAt DateTime            @default(now())
+  config    ProductQuoterConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+
+  @@unique([configId, label])
+  @@index([configId])
+  @@map("product_quoter_size_presets")
 }
 
 model QuoterConfigFinishing {

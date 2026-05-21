@@ -42,10 +42,16 @@ export const productSchema = z.object({
   options: z.array(z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Cada opcion debe tener nombre'),
+    displayType: z.enum(['BUTTON', 'COLOR_SWATCH', 'SIZE']).optional().default('BUTTON'),
     isRequired: z.boolean(),
     values: z.array(z.object({
       id: z.string().optional(),
       value: z.string().min(1, 'Cada valor debe tener texto'),
+      colorHex: z
+        .string()
+        .trim()
+        .optional()
+        .refine((value) => !value || /^#[0-9a-fA-F]{6}$/.test(value), 'Usa un color hexadecimal valido.'),
     })).min(1, 'Cada opcion debe tener al menos un valor'),
   })).optional().default([]),
   variants: z.array(z.object({
@@ -54,6 +60,10 @@ export const productSchema = z.object({
     price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0'),
     sku: z.string().optional(),
     stock: z.coerce.number().int().optional(),
+    imageUrl: z.string().trim().optional().refine(
+      (value) => !value || z.string().url().safeParse(value).success,
+      'La URL de imagen de una variante no es valida'
+    ),
   })).optional().default([]),
   relatedProductIds: z.array(z.string()).optional().default([]),
   intentionIds: z.array(z.string()).optional().default([]),

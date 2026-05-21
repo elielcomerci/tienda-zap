@@ -6,7 +6,7 @@ import {
   ShieldCheck,
   Store,
 } from 'lucide-react'
-import { getCategories } from '@/lib/categories'
+import { getPublicCategories } from '@/lib/categories'
 import { getProducts, getCombos } from '@/lib/products'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
@@ -77,7 +77,7 @@ export default async function HomePage() {
   }
 
   const [categories, allProducts, combos] = await Promise.all([
-    getCategories(),
+    getPublicCategories(),
     getProducts(undefined, undefined, { take: 16 }),
     getCombos(businessTypeId),
   ])
@@ -103,6 +103,9 @@ export default async function HomePage() {
   const primaryHeroDisplayPrice = primaryHeroProduct
     ? getProductDisplayPrice(primaryHeroProduct)
     : null
+  const primaryHeroRequiresConfiguration = primaryHeroProduct
+    ? primaryHeroProduct.variants.length > 0 || Boolean(primaryHeroProduct.quoterConfig)
+    : false
 
   const salesWhatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
@@ -218,7 +221,7 @@ export default async function HomePage() {
                           : 'Una pieza creada para sumar presencia visual con terminacion profesional.'}
                       </p>
                       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
-                        {primaryHeroProduct.variants.length > 0 &&
+                        {primaryHeroRequiresConfiguration &&
                         primaryHeroDisplayPrice !== null
                           ? 'Desde'
                           : 'Precio'}
@@ -241,10 +244,10 @@ export default async function HomePage() {
                           quantity: 1,
                           isService: primaryHeroProduct.category.isService,
                         }}
-                        hasVariants={primaryHeroProduct.variants.length > 0}
+                        hasVariants={primaryHeroRequiresConfiguration}
                         slug={primaryHeroProduct.slug}
                         disabled={
-                          primaryHeroProduct.variants.length === 0 &&
+                          !primaryHeroRequiresConfiguration &&
                           primaryHeroDisplayPrice === null
                         }
                         consultUrl={buildProductInquiryUrl(primaryHeroProduct, primaryHeroDisplayPrice)}
@@ -271,7 +274,7 @@ export default async function HomePage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {secondaryHeroProducts.map((product) => {
                     const displayPrice = getProductDisplayPrice(product)
-                    const hasVariants = product.variants.length > 0
+                    const requiresConfiguration = product.variants.length > 0 || Boolean(product.quoterConfig)
 
                     return (
                       <Link
@@ -299,7 +302,7 @@ export default async function HomePage() {
                           <h3 className="mt-2 text-lg font-black text-gray-950">{product.name}</h3>
                           <p className="mt-3 text-sm font-semibold text-gray-900">
                             {displayPrice !== null
-                              ? `${hasVariants ? 'Desde ' : ''}$${displayPrice.toLocaleString('es-AR')}`
+                              ? `${requiresConfiguration ? 'Desde ' : ''}$${displayPrice.toLocaleString('es-AR')}`
                               : 'Consultar'}
                           </p>
                         </div>
@@ -339,6 +342,7 @@ export default async function HomePage() {
             {catalogProducts.map((product) => {
               const displayPrice = getProductDisplayPrice(product)
               const hasVariants = product.variants.length > 0
+              const requiresConfiguration = hasVariants || Boolean(product.quoterConfig)
               const inquiryUrl = buildProductInquiryUrl(product, displayPrice)
 
               return (
@@ -385,7 +389,7 @@ export default async function HomePage() {
                     <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                          {hasVariants && displayPrice !== null ? 'Desde' : 'Precio'}
+                          {requiresConfiguration && displayPrice !== null ? 'Desde' : 'Precio'}
                         </p>
                         <p className="mt-1 text-2xl font-black text-gray-950">
                           {displayPrice !== null
@@ -405,9 +409,9 @@ export default async function HomePage() {
                             quantity: 1,
                             isService: product.category.isService,
                           }}
-                          hasVariants={hasVariants}
+                          hasVariants={requiresConfiguration}
                           slug={product.slug}
-                          disabled={!hasVariants && displayPrice === null}
+                          disabled={!requiresConfiguration && displayPrice === null}
                           consultUrl={inquiryUrl}
                           consultLabel="Cotizar"
                         />

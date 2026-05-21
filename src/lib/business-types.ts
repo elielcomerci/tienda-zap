@@ -24,6 +24,37 @@ export async function getActiveBusinessTypes() {
   })
 }
 
+export async function getPublicBusinessTypes() {
+  return prisma.businessType.findMany({
+    where: {
+      OR: [
+        {
+          categories: {
+            some: {
+              products: {
+                some: {
+                  active: true,
+                  isCombo: false,
+                },
+              },
+            },
+          },
+        },
+        {
+          combos: {
+            some: {
+              active: true,
+              isCombo: true,
+            },
+          },
+        },
+      ],
+    },
+    select: { id: true, name: true, slug: true },
+    orderBy: { name: 'asc' },
+  })
+}
+
 export async function createBusinessType(data: { name: string; slug: string; categoryIds: string[] }) {
   await requireAdmin()
   return prisma.businessType.create({

@@ -17,6 +17,7 @@ type RelatedProduct = {
   variants: Array<{
     price: number
   }>
+  quoterConfig?: any
 }
 
 export default function RelatedProductsSection({
@@ -51,6 +52,7 @@ export default function RelatedProductsSection({
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => {
           const displayPrice = getProductDisplayPrice(product)
+          const requiresConfiguration = product.variants.length > 0 || Boolean(product.quoterConfig)
 
           return (
             <Link
@@ -86,7 +88,7 @@ export default function RelatedProductsSection({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    {product.variants.length > 0 && displayPrice !== null && (
+                    {requiresConfiguration && displayPrice !== null && (
                       <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                         Desde
                       </p>

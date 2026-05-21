@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Check, MessageCircleMore, PackageCheck, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
+import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 
 type ProductWithOptions = {
   id: string
@@ -22,14 +23,16 @@ type ProductWithOptions = {
   options: {
     id: string
     name: string
+    displayType?: string | null
     isRequired: boolean
-    values: { id: string; value: string }[]
+    values: { id: string; value: string; colorHex?: string | null }[]
   }[]
   variants: {
     id: string
     price: number
     sku?: string | null
     stock?: number | null
+    imageUrl?: string | null
     options: {
       id: string
       optionValue: {
@@ -43,6 +46,7 @@ type ProductWithOptions = {
   outgoingRelations?: {
     relatedProduct: ProductWithOptions
   }[]
+  quoterConfig?: any
   [key: string]: any
 }
 
@@ -53,9 +57,11 @@ function normalizeBriefType(value?: string | null) {
 export default function ProductConfigurator({
   product,
   inquiryUrl,
+  onPreviewImageChange,
 }: {
   product: ProductWithOptions
   inquiryUrl?: string | null
+  onPreviewImageChange?: (imageUrl: string | null) => void
 }) {
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [comboSelections, setComboSelections] = useState<Record<string, Record<string, string>>>({})
@@ -71,6 +77,36 @@ export default function ProductConfigurator({
   const isServiceProduct = product.category.isService
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
+  const quoterConfig = product.quoterConfig
+  const quoterMaterials = useMemo(
+    () => (quoterConfig ? getQuoterMaterials(quoterConfig) : []),
+    [quoterConfig]
+  )
+  const [quoteSelection, setQuoteSelection] = useState<Record<string, string>>({})
+
+  const quoteResult = useMemo(() => {
+    if (!quoterConfig || quoterMaterials.length === 0) return null
+
+    const rawMaterialId = quoteSelection.rawMaterialId || quoterMaterials[0]?.id
+    const sizeLabel = quoteSelection.sizeLabel || quoterConfig.sizePresets?.[0]?.label
+    const quantity = Number(quoteSelection.quantity || quoterConfig.quantityPresets?.[0]?.quantity || 0)
+    const finishingIds = quoteSelection.finishingIds
+      ? quoteSelection.finishingIds.split(',').filter(Boolean)
+      : []
+
+    if (!rawMaterialId || !quantity) return null
+
+    try {
+      return calculateProductQuote(quoterConfig, {
+        rawMaterialId,
+        quantity,
+        sizeLabel,
+        finishingIds,
+      })
+    } catch {
+      return null
+    }
+  }, [quoteSelection, quoterConfig, quoterMaterials])
 
   const variantCombinations = useMemo(() => {
     if (!product.variants) return []
@@ -189,6 +225,45 @@ export default function ProductConfigurator({
     : activeVariant
       ? activeVariant.price
       : product.price
+
+  const previewImageUrl = useMemo(() => {
+    if (!hasOptions || variantCombinations.length === 0) return null
+    if (activeVariant?.imageUrl) return activeVariant.imageUrl
+
+    const selectedEntries = Object.entries(selected).filter(([, value]) => value)
+    if (selectedEntries.length === 0) return null
+
+    let bestMatch: { score: number; imageUrl: string } | null = null
+
+    for (const variant of variantCombinations) {
+      if (!variant.imageUrl) continue
+
+      let score = 0
+      let conflictsWithSelection = false
+
+      for (const [index, option] of product.options.entries()) {
+        const selectedValue = selected[option.name]
+        if (!selectedValue) continue
+        if (variant.combos[option.name] !== selectedValue) {
+          conflictsWithSelection = true
+          break
+        }
+        score += product.options.length - index
+      }
+
+      if (conflictsWithSelection) continue
+
+      if (score > 0 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { score, imageUrl: variant.imageUrl }
+      }
+    }
+
+    return bestMatch?.imageUrl || null
+  }, [activeVariant, hasOptions, product.options, selected, variantCombinations])
+
+  useEffect(() => {
+    onPreviewImageChange?.(previewImageUrl)
+  }, [onPreviewImageChange, previewImageUrl])
 
   const canAddToCart = hasOptions
     ? Boolean(activeVariant) && allRequiredSelected && selectedVariantAvailable
@@ -340,7 +415,7 @@ export default function ProductConfigurator({
       name: product.name,
       price: currentPrice,
       creditDownPaymentPercent,
-      image: product.images[0] || '',
+      image: previewImageUrl || product.images[0] || '',
       quantity: 1,
       isService: isServiceProduct,
       briefType: normalizeBriefType(product.briefType),
@@ -349,6 +424,153 @@ export default function ProductConfigurator({
 
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
+  }
+
+  const handleAddQuotedToCart = () => {
+    if (!quoteResult) return
+
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: quoteResult.totalPrice,
+      creditDownPaymentPercent,
+      image: product.images[0] || '',
+      quantity: 1,
+      isService: isServiceProduct,
+      briefType: normalizeBriefType(product.briefType),
+      selectedOptions: quoteResult.selectedOptions,
+    })
+
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
+  }
+
+  if (quoterConfig) {
+    const selectedFinishingIds = quoteSelection.finishingIds
+      ? quoteSelection.finishingIds.split(',').filter(Boolean)
+      : []
+
+    return (
+      <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
+        <div className="border-b border-gray-100 pb-5">
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+            Cotización automática
+          </span>
+          <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
+            Configurá tu pedido
+          </h2>
+        </div>
+
+        <div className="mt-6 space-y-5">
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Material</span>
+            <select
+              value={quoteSelection.rawMaterialId || quoterMaterials[0]?.id || ''}
+              onChange={(event) =>
+                setQuoteSelection((previous) => ({ ...previous, rawMaterialId: event.target.value }))
+              }
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+            >
+              {quoterMaterials.map((material) => (
+                <option key={material.id} value={material.id}>
+                  {material.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {quoterConfig.sizePresets.length > 0 && (
+            <label className="block">
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Medida</span>
+              <select
+                value={quoteSelection.sizeLabel || quoterConfig.sizePresets[0]?.label || ''}
+                onChange={(event) =>
+                  setQuoteSelection((previous) => ({ ...previous, sizeLabel: event.target.value }))
+                }
+                className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+              >
+                {quoterConfig.sizePresets.map((size: any) => (
+                  <option key={size.id || size.label} value={size.label}>
+                    {size.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Cantidad</span>
+            <select
+              value={quoteSelection.quantity || String(quoterConfig.quantityPresets[0]?.quantity || '')}
+              onChange={(event) =>
+                setQuoteSelection((previous) => ({ ...previous, quantity: event.target.value }))
+              }
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+            >
+              {quoterConfig.quantityPresets.map((preset: any) => (
+                <option key={preset.id || preset.quantity} value={preset.quantity}>
+                  {preset.label || preset.quantity}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {quoterConfig.finishings.length > 0 && (
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Terminaciones</span>
+              <div className="mt-2 grid gap-2">
+                {quoterConfig.finishings.map((entry: any) => {
+                  const finishing = entry.finishing
+                  const selectedFinishing = selectedFinishingIds.includes(finishing.id)
+                  return (
+                    <label
+                      key={finishing.id}
+                      className="flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-800"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedFinishing}
+                        onChange={() => {
+                          const next = selectedFinishing
+                            ? selectedFinishingIds.filter((id) => id !== finishing.id)
+                            : [...selectedFinishingIds, finishing.id]
+                          setQuoteSelection((previous) => ({ ...previous, finishingIds: next.join(',') }))
+                        }}
+                        className="rounded text-[#ED2C71]"
+                      />
+                      {finishing.name}
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio final</p>
+          {quoteResult ? (
+            <div className="mt-3 flex items-end gap-2">
+              <span className="text-4xl font-black tracking-tight sm:text-5xl">
+                ${quoteResult.totalPrice.toLocaleString('es-AR')}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-gray-300">Elegí una configuración válida.</p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleAddQuotedToCart}
+            disabled={!quoteResult}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED2C71] px-5 py-3 text-sm font-black text-white transition hover:bg-[#C91F5B] disabled:cursor-not-allowed disabled:bg-gray-700"
+          >
+            {added ? <Check size={18} /> : <ShoppingCart size={18} />}
+            {added ? 'Agregado' : 'Agregar al carrito'}
+          </button>
+        </div>
+      </section>
+    )
   }
 
   if (!hasOptions) {
@@ -505,10 +727,20 @@ export default function ProductConfigurator({
               )}
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            <div
+              className={`mt-4 grid gap-2.5 ${
+                option.displayType === 'COLOR_SWATCH'
+                  ? 'grid-cols-3 sm:grid-cols-4'
+                  : option.displayType === 'SIZE'
+                    ? 'grid-cols-4 sm:grid-cols-6'
+                    : 'grid-cols-2 sm:grid-cols-3'
+              }`}
+            >
               {option.values.map((value) => {
                 const isSelected = selected[option.name] === value.value
                 const isAvailable = isOptionValueAvailable(option.name, value.value)
+                const isColorSwatch = option.displayType === 'COLOR_SWATCH'
+                const isSize = option.displayType === 'SIZE'
 
                 return (
                   <button
@@ -517,7 +749,8 @@ export default function ProductConfigurator({
                     onClick={() => handleSelect(option.name, value.value)}
                     disabled={!isAvailable && !isSelected}
                     className={`
-                      relative rounded-2xl border-2 p-3.5 text-left transition-all duration-150
+                      relative border-2 transition-all duration-150
+                      ${isColorSwatch ? 'rounded-2xl p-2.5 text-center' : isSize ? 'rounded-xl px-3 py-3 text-center' : 'rounded-2xl p-3.5 text-left'}
                       ${
                         isSelected
                           ? 'border-[#ED2C71] bg-[#FEF1F6] shadow-md shadow-[#ED2C71]/10 ring-2 ring-[#FEF1F6]'
@@ -527,8 +760,15 @@ export default function ProductConfigurator({
                       }
                     `}
                   >
+                    {isColorSwatch && (
+                      <span
+                        className="mx-auto mb-2 block h-8 w-8 rounded-full border border-black/10 shadow-inner ring-2 ring-white"
+                        style={{ backgroundColor: value.colorHex || value.value }}
+                        aria-hidden="true"
+                      />
+                    )}
                     <span
-                      className={`block text-sm font-semibold ${
+                      className={`block font-semibold ${isSize ? 'text-base' : 'text-sm'} ${
                         isSelected
                           ? 'text-[#C91F5B]'
                           : isAvailable
@@ -732,10 +972,19 @@ function ComboPartsConfigurator({
                         {option.isRequired ? 'Requerida' : 'Opcional'}
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div
+                      className={`grid gap-2 ${
+                        option.displayType === 'COLOR_SWATCH'
+                          ? 'grid-cols-3 sm:grid-cols-4'
+                          : option.displayType === 'SIZE'
+                            ? 'grid-cols-4 sm:grid-cols-6'
+                            : 'grid-cols-2 sm:grid-cols-3'
+                      }`}
+                    >
                       {option.values.map((value) => {
                         const isSelected = selections[part.id]?.[option.name] === value.value
                         const isAvailable = isOptionValueAvailable(part, option.name, value.value)
+                        const isColorSwatch = option.displayType === 'COLOR_SWATCH'
 
                         return (
                           <button
@@ -743,14 +992,23 @@ function ComboPartsConfigurator({
                             type="button"
                             onClick={() => onSelect(part.id, option.name, value.value)}
                             disabled={!isAvailable && !isSelected}
-                            className={`rounded-2xl border-2 p-3 text-left text-sm font-semibold transition-all ${
+                            className={`border-2 text-sm font-semibold transition-all ${
+                              isColorSwatch ? 'rounded-2xl p-2.5 text-center' : 'rounded-2xl p-3 text-left'
+                            } ${
                               isSelected
                                 ? 'border-[#4576B9] bg-[#EEF4FC] text-[#2F5F9F]'
                                 : isAvailable
                                   ? 'border-gray-200 bg-white text-gray-700 hover:border-[#4576B9]/30'
-                                  : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300'
+                                : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300'
                             }`}
                           >
+                            {isColorSwatch && (
+                              <span
+                                className="mx-auto mb-2 block h-7 w-7 rounded-full border border-black/10 shadow-inner ring-2 ring-white"
+                                style={{ backgroundColor: value.colorHex || value.value }}
+                                aria-hidden="true"
+                              />
+                            )}
                             {value.value}
                           </button>
                         )

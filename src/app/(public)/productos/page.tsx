@@ -2,8 +2,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts, getCombos } from '@/lib/products'
-import { getCategories } from '@/lib/categories'
-import { getIntentions } from '@/lib/intentions'
+import { getPublicCategories } from '@/lib/categories'
+import { getPublicIntentions } from '@/lib/intentions'
 import AddToCartButton from '@/components/public/AddToCartButton'
 import CatalogSidebar from '@/components/public/CatalogSidebar'
 import IntentionHero from '@/components/public/IntentionHero'
@@ -22,7 +22,7 @@ export default async function ProductsPage({
 }) {
   const { cat, q, mode, intent } = await searchParams
   
-  const intentions = await getIntentions()
+  const intentions = await getPublicIntentions()
   const selectedIntention = intent ? intentions.find(i => i.slug === intent) : undefined
   const session = await auth()
   let businessTypeId: string | null = null
@@ -52,7 +52,7 @@ export default async function ProductsPage({
           q, 
           { intentSlug: mode === 'objective' ? intent : undefined }
         ), 
-    getCategories()
+    getPublicCategories()
   ])
   const selectedCategory = categories.find((category) => category.slug === cat)
 
@@ -193,6 +193,7 @@ export default async function ProductsPage({
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => {
                   const hasVariants = product.variants && product.variants.length > 0
+                  const requiresConfiguration = hasVariants || Boolean(product.quoterConfig)
                   const displayPrice = getProductDisplayPrice(product)
                   const productIntent = displayPrice === null ? 'cotizar' : 'consultar'
                   const inquiryUrl = buildWhatsappUrl(
@@ -251,7 +252,7 @@ export default async function ProductsPage({
 
                         <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
                           <div>
-                            {hasVariants && displayPrice !== null && (
+                            {requiresConfiguration && displayPrice !== null && (
                               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                                 Desde
                               </p>
@@ -274,9 +275,9 @@ export default async function ProductsPage({
                                 quantity: 1,
                                 isService: product.category.isService,
                               }}
-                              hasVariants={hasVariants}
+                              hasVariants={requiresConfiguration}
                               slug={product.slug}
-                              disabled={!hasVariants && displayPrice === null}
+                              disabled={!requiresConfiguration && displayPrice === null}
                               consultUrl={inquiryUrl}
                               consultLabel="Cotizar"
                             />

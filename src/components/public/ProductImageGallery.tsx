@@ -1,16 +1,24 @@
 ﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { X, ZoomIn } from 'lucide-react'
 
 export default function ProductImageGallery({
   images,
   productName,
+  selectedImageUrl,
 }: {
   images: string[]
   productName: string
+  selectedImageUrl?: string | null
 }) {
-  const safeImages = images.filter((image) => typeof image === 'string' && image.trim().length > 0)
+  const selectedImage = typeof selectedImageUrl === 'string' ? selectedImageUrl.trim() : ''
+  const safeImages = useMemo(() => {
+    const baseImages = images.filter((image) => typeof image === 'string' && image.trim().length > 0)
+    return selectedImage && !baseImages.includes(selectedImage)
+      ? [selectedImage, ...baseImages]
+      : baseImages
+  }, [images, selectedImage])
   const [activeIndex, setActiveIndex] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
 
@@ -31,6 +39,14 @@ export default function ProductImageGallery({
       setActiveIndex(0)
     }
   }, [activeIndex, safeImages.length])
+
+  useEffect(() => {
+    if (!selectedImage) return
+    const selectedIndex = safeImages.indexOf(selectedImage)
+    if (selectedIndex >= 0) {
+      setActiveIndex(selectedIndex)
+    }
+  }, [safeImages, selectedImage])
 
   if (safeImages.length === 0) {
     return (

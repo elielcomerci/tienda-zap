@@ -35,6 +35,29 @@ export async function getProducts(
         select: { price: true },
         orderBy: { price: 'asc' },
       },
+      quoterConfig: {
+        include: {
+          rawMaterial: {
+            include: { tiers: { orderBy: { minQty: 'asc' } } },
+          },
+          allowedMaterials: {
+            include: {
+              rawMaterial: {
+                include: { tiers: { orderBy: { minQty: 'asc' } } },
+              },
+            },
+          },
+          finishings: {
+            include: {
+              finishing: {
+                include: { tiers: { orderBy: { minQty: 'asc' } } },
+              },
+            },
+          },
+          quantityPresets: { orderBy: { sortOrder: 'asc' } },
+          sizePresets: { orderBy: { sortOrder: 'asc' } },
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
     take: options?.take,
@@ -47,8 +70,8 @@ export const getProduct = cache(async function getProduct(slug: string) {
     include: {
       category: true,
       options: {
-        include: { values: true },
-        orderBy: { id: 'asc' },
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
       variants: {
         include: {
@@ -61,14 +84,37 @@ export const getProduct = cache(async function getProduct(slug: string) {
           },
         },
       },
+      quoterConfig: {
+        include: {
+          rawMaterial: {
+            include: { tiers: { orderBy: { minQty: 'asc' } } },
+          },
+          allowedMaterials: {
+            include: {
+              rawMaterial: {
+                include: { tiers: { orderBy: { minQty: 'asc' } } },
+              },
+            },
+          },
+          finishings: {
+            include: {
+              finishing: {
+                include: { tiers: { orderBy: { minQty: 'asc' } } },
+              },
+            },
+          },
+          quantityPresets: { orderBy: { sortOrder: 'asc' } },
+          sizePresets: { orderBy: { sortOrder: 'asc' } },
+        },
+      },
       outgoingRelations: {
         include: {
           relatedProduct: {
             include: {
               category: true,
               options: {
-                include: { values: true },
-                orderBy: { id: 'asc' },
+                include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+                orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
               },
               variants: {
                 include: {
@@ -79,6 +125,29 @@ export const getProduct = cache(async function getProduct(slug: string) {
                       },
                     },
                   },
+                },
+              },
+              quoterConfig: {
+                include: {
+                  rawMaterial: {
+                    include: { tiers: { orderBy: { minQty: 'asc' } } },
+                  },
+                  allowedMaterials: {
+                    include: {
+                      rawMaterial: {
+                        include: { tiers: { orderBy: { minQty: 'asc' } } },
+                      },
+                    },
+                  },
+                  finishings: {
+                    include: {
+                      finishing: {
+                        include: { tiers: { orderBy: { minQty: 'asc' } } },
+                      },
+                    },
+                  },
+                  quantityPresets: { orderBy: { sortOrder: 'asc' } },
+                  sizePresets: { orderBy: { sortOrder: 'asc' } },
                 },
               },
             },
@@ -106,7 +175,10 @@ export async function getAllProductsAdmin() {
   return prisma.product.findMany({
     include: {
       category: true,
-      options: { include: { values: true } },
+      options: {
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      },
       variants: { include: { options: { include: { optionValue: true } } } },
       targetBusinessTypes: { select: { id: true, name: true, slug: true } },
       outgoingRelations: {

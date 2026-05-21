@@ -195,11 +195,17 @@ export async function createProduct(formData: FormData) {
       mediaList: data.mediaList,
       active: data.active,
       options: {
-        create: data.options.map((option) => ({
+        create: data.options.map((option, optionIndex) => ({
           name: option.name,
+          displayType: option.displayType,
+          sortOrder: optionIndex,
           isRequired: option.isRequired,
           values: {
-            create: option.values.map((value) => ({ value: value.value })),
+            create: option.values.map((value, valueIndex) => ({
+              value: value.value,
+              colorHex: value.colorHex || null,
+              sortOrder: valueIndex,
+            })),
           },
         })),
       },
@@ -221,7 +227,10 @@ export async function createProduct(formData: FormData) {
       }
     },
     include: {
-      options: { include: { values: true } },
+      options: {
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      },
     },
   })
 
@@ -235,6 +244,7 @@ export async function createProduct(formData: FormData) {
           price: variant.price,
           sku: variant.sku,
           stock: data.categoryIsService ? undefined : variant.stock,
+          imageUrl: variant.imageUrl || null,
           options: {
             create: optionValueIds.map((optionValueId) => ({ optionValueId })),
           },
@@ -281,11 +291,17 @@ export async function updateProduct(id: string, formData: FormData) {
       mediaList: data.mediaList,
       active: data.active,
       options: {
-        create: data.options.map((option) => ({
+        create: data.options.map((option, optionIndex) => ({
           name: option.name,
+          displayType: option.displayType,
+          sortOrder: optionIndex,
           isRequired: option.isRequired,
           values: {
-            create: option.values.map((value) => ({ value: value.value })),
+            create: option.values.map((value, valueIndex) => ({
+              value: value.value,
+              colorHex: value.colorHex || null,
+              sortOrder: valueIndex,
+            })),
           },
         })),
       },
@@ -307,7 +323,10 @@ export async function updateProduct(id: string, formData: FormData) {
         }
       },
     include: {
-      options: { include: { values: true } },
+      options: {
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      },
     },
   })
 
@@ -321,6 +340,7 @@ export async function updateProduct(id: string, formData: FormData) {
           price: variant.price,
           sku: variant.sku,
           stock: data.categoryIsService ? undefined : variant.stock,
+          imageUrl: variant.imageUrl || null,
           options: {
             create: optionValueIds.map((optionValueId) => ({ optionValueId })),
           },
@@ -361,7 +381,8 @@ export async function duplicateProduct(id: string) {
     where: { id },
     include: {
       options: {
-        include: { values: true },
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
       variants: {
         include: {
@@ -409,11 +430,17 @@ export async function duplicateProduct(id: string) {
       comboPricingMode: original.comboPricingMode,
       comboDiscountPercent: original.comboDiscountPercent,
       options: {
-        create: original.options.map((option) => ({
+        create: original.options.map((option, optionIndex) => ({
           name: option.name,
+          displayType: option.displayType,
+          sortOrder: option.sortOrder ?? optionIndex,
           isRequired: option.isRequired,
           values: {
-            create: option.values.map((value) => ({ value: value.value })),
+            create: option.values.map((value, valueIndex) => ({
+              value: value.value,
+              colorHex: value.colorHex,
+              sortOrder: value.sortOrder ?? valueIndex,
+            })),
           },
         })),
       },
@@ -433,7 +460,10 @@ export async function duplicateProduct(id: string) {
       },
     },
     include: {
-      options: { include: { values: true } },
+      options: {
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      },
     },
   })
 
@@ -452,6 +482,7 @@ export async function duplicateProduct(id: string) {
         price: variant.price,
         sku: variant.sku,
         stock: variant.stock,
+        imageUrl: variant.imageUrl,
         options: {
           create: optionValueIds.map((optionValueId) => ({ optionValueId })),
         },

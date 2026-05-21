@@ -1,5 +1,5 @@
 import { registerSeller } from '@/lib/actions/auth'
-import { getActiveBusinessTypes } from '@/lib/business-types'
+import { getPublicBusinessTypes } from '@/lib/business-types'
 import Link from 'next/link'
 import { Zap, Briefcase } from 'lucide-react'
 import PasswordInput from '@/components/ui/PasswordInput'
@@ -20,7 +20,7 @@ export default async function SellerRegistroPage({
     redirect('/perfil')
   }
 
-  const businessTypes = await getActiveBusinessTypes()
+  const businessTypes = await getPublicBusinessTypes()
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

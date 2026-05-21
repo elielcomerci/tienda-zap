@@ -26,7 +26,10 @@ export async function GET(req: Request) {
         select: { id: true, price: true, options: { include: { optionValue: { include: { option: true } } } } },
         orderBy: { price: 'asc' },
       },
-      options: { include: { values: true }, orderBy: { id: 'asc' } },
+      options: {
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      },
     },
     orderBy: { createdAt: 'desc' },
   })

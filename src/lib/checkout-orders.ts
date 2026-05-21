@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 
 function sortSelectedOptions(options: Array<{ name: string; value: string }> = []) {
   return [...options].sort((a, b) => a.name.localeCompare(b.name))
@@ -79,6 +80,29 @@ export async function resolveCheckoutOrderItems(
           },
         },
       },
+      quoterConfig: {
+        include: {
+          rawMaterial: {
+            include: { tiers: { orderBy: { minQty: 'asc' } } },
+          },
+          allowedMaterials: {
+            include: {
+              rawMaterial: {
+                include: { tiers: { orderBy: { minQty: 'asc' } } },
+              },
+            },
+          },
+          finishings: {
+            include: {
+              finishing: {
+                include: { tiers: { orderBy: { minQty: 'asc' } } },
+              },
+            },
+          },
+          quantityPresets: { orderBy: { sortOrder: 'asc' } },
+          sizePresets: { orderBy: { sortOrder: 'asc' } },
+        },
+      },
     },
   })
 
@@ -108,7 +132,34 @@ export async function resolveCheckoutOrderItems(
     }
 
     let unitPrice = product.price
-    if (product.variants.length > 0) {
+    if (product.quoterConfig) {
+      const materialName = selectedMap.get('Material')
+      const sizeLabel = selectedMap.get('Medida')
+      const quantity = Number(selectedMap.get('Cantidad') || 0)
+      const finishingNames = (selectedMap.get('Terminaciones') || '')
+        .split('+')
+        .map((value) => value.trim())
+        .filter((value) => value && value !== 'Sin terminaciones')
+      const rawMaterial = getQuoterMaterials(product.quoterConfig).find(
+        (material) => material.name === materialName
+      )
+      const finishingIds = product.quoterConfig.finishings
+        .filter((entry) => finishingNames.includes(entry.finishing.name))
+        .map((entry) => entry.finishing.id)
+
+      if (!rawMaterial || !quantity) {
+        throw new Error(`No encontramos una cotizacion valida para ${product.name}.`)
+      }
+
+      const quote = calculateProductQuote(product.quoterConfig, {
+        rawMaterialId: rawMaterial.id,
+        quantity,
+        sizeLabel: sizeLabel || undefined,
+        finishingIds,
+      })
+
+      unitPrice = quote.totalPrice
+    } else if (product.variants.length > 0) {
       const matchingVariant = product.variants.find((variant) =>
         matchesVariant(selectedOptions, variant)
       )

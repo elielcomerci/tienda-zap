@@ -17,8 +17,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     include: {
       category: true,
       options: {
-        include: { values: true },
-        orderBy: { id: 'asc' },
+        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
+        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
       variants: {
         include: {
@@ -55,8 +55,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const initialOptions = product.options.map(opt => ({
     id: opt.id,
     name: opt.name,
+    displayType: opt.displayType,
     isRequired: opt.isRequired,
-    values: opt.values.map(v => v.value),  // Flatten to string[]
+    values: opt.values.map(v => ({ value: v.value, colorHex: v.colorHex ?? undefined })),
   }))
 
   // Variants: { combinations: { optionName: value }, price, sku, stock }
@@ -72,6 +73,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       price: variant.price,
       sku: variant.sku ?? undefined,
       stock: variant.stock ?? undefined,
+      imageUrl: variant.imageUrl ?? undefined,
     }
   })
 
