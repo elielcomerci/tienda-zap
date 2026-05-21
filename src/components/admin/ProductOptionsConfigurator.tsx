@@ -128,7 +128,7 @@ const OPTION_TEMPLATES: OptionTemplate[] = [
   {
     id: 'packaging',
     label: 'Packaging',
-    description: 'Material, medida y terminacion para cajas, bolsas y etiquetas.',
+    description: 'Material y medida para cajas, bolsas, etiquetas y piezas de packaging.',
     options: [
       {
         name: 'Material',
@@ -142,18 +142,12 @@ const OPTION_TEMPLATES: OptionTemplate[] = [
         isRequired: true,
         values: ['Chica', 'Mediana', 'Grande'].map((value) => ({ value })),
       },
-      {
-        name: 'Terminacion',
-        displayType: 'BUTTON',
-        isRequired: true,
-        values: ['Sin laminado', 'Mate', 'Brillante'].map((value) => ({ value })),
-      },
     ],
   },
   {
     id: 'printing',
     label: 'Imprenta',
-    description: 'Papel, cantidad y terminacion para tarjetas, flyers y folletos.',
+    description: 'Papel y cantidad para tarjetas, flyers, folletos y piezas simples.',
     options: [
       {
         name: 'Papel',
@@ -166,12 +160,6 @@ const OPTION_TEMPLATES: OptionTemplate[] = [
         displayType: 'SIZE',
         isRequired: true,
         values: ['100', '250', '500', '1000'].map((value) => ({ value })),
-      },
-      {
-        name: 'Terminacion',
-        displayType: 'BUTTON',
-        isRequired: true,
-        values: ['Simple', 'Laminado mate', 'Laminado brillo'].map((value) => ({ value })),
       },
     ],
   },
@@ -236,6 +224,19 @@ const VALUE_PRESETS: ValuePreset[] = [
       { value: 'Rojo', colorHex: '#dc2626' },
       { value: 'Azul', colorHex: '#1d4ed8' },
     ],
+  },
+  {
+    id: 'graphic-finishings',
+    label: 'Terminaciones',
+    values: [
+      'Sin terminacion',
+      'Troquelado',
+      'Laminado mate',
+      'Laminado brillo',
+      'Laca UV',
+      'Sectorizado',
+      'Plegado',
+    ].map((value) => ({ value })),
   },
 ]
 
@@ -425,6 +426,10 @@ export default function ProductOptionsConfigurator({
     }
     if (preset.id === 'basic-colors') {
       nextOptions[optionIndex].displayType = 'COLOR_SWATCH'
+    }
+    if (preset.id === 'graphic-finishings') {
+      nextOptions[optionIndex].displayType = 'BUTTON'
+      nextOptions[optionIndex].isRequired = true
     }
 
     setOptions(nextOptions)

@@ -379,12 +379,16 @@ Estado: implementada la primera iteracion con filtros, precio masivo, stock masi
 
 Estado: implementada la primera iteracion con plantillas editables que agregan solo opciones faltantes.
 
+Criterio operativo: las plantillas base no deben forzar terminaciones. En grafica, muchas piezas se venden solo con impresion y corte. Cuando un producto requiera terminaciones, conviene agregarlas como dimension explicita con un valor "Sin terminacion" para mantener la matriz de precios consistente.
+
 ### Fase 3: Orden y presets de valores
 
 - Agregar atajos para valores frecuentes: talles, cantidades, medidas de impresion y formatos.
 - Permitir reordenar valores para que la tienda muestre una secuencia comercial correcta.
 
 Estado: implementada la primera iteracion con presets de talles, cantidades, formatos, medidas y colores, mas orden manual de valores.
+
+Se agrega el criterio de preset de terminaciones graficas para productos que realmente las necesiten: sin terminacion, troquelado, laminados, laca UV, sectorizado y plegado.
 
 ### Fase 4: Alertas de publicacion
 
