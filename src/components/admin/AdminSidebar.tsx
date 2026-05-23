@@ -25,6 +25,7 @@ import {
   Layers,
   Repeat,
   Scissors,
+  Search,
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -71,6 +72,12 @@ const navSections = [
     items: [
       { href: '/admin/cotizador/materiales', label: 'Materias Primas', icon: Layers },
       { href: '/admin/cotizador/terminaciones', label: 'Terminaciones', icon: Scissors },
+    ],
+  },
+  {
+    title: 'Crecimiento',
+    items: [
+      { href: '/admin/seo', label: 'SEO y tráfico', icon: Search },
     ],
   },
 ]

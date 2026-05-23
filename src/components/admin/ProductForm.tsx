@@ -224,18 +224,23 @@ export default function ProductForm({
     setImages(images.filter((_, i) => i !== index))
   }
 
-  const availableColorValues = useMemo(() => {
+  const availableColorOption = useMemo(() => {
     const sourceOptions = initialOptions || product?.options || []
     const colorOption = sourceOptions.find((option: any) => {
       const name = String(option.name || '').toLowerCase()
       return option.displayType === 'COLOR_SWATCH' || name.includes('color')
     })
 
-    return (colorOption?.values || []).map((value: any) => ({
-      value: value.value,
-      colorHex: value.colorHex || null,
-    }))
+    return {
+      name: colorOption?.name || 'Color',
+      values: (colorOption?.values || []).map((value: any) => ({
+        value: value.value,
+        colorHex: value.colorHex || null,
+      })),
+    }
   }, [initialOptions, product?.options])
+  const availableColorValues = availableColorOption.values
+  const resolvedColorOptionName = apparelMockup.colorOptionName || availableColorOption.name || 'Color'
 
   const syncMockupColorsFromOptions = () => {
     if (availableColorValues.length === 0) return
@@ -243,6 +248,7 @@ export default function ProductForm({
       const existing = new Map(previous.colors.map((color) => [color.value, color]))
       return {
         ...previous,
+        colorOptionName: previous.colorOptionName || availableColorOption.name,
         colors: availableColorValues.map((color) => ({
           ...color,
           ...(existing.get(color.value) || {}),
@@ -281,6 +287,22 @@ export default function ProductForm({
       ...previous,
       colors: previous.colors.filter((_, colorIndex) => colorIndex !== index),
     }))
+  }
+
+  const applyMockupImageToColorVariants = (index: number) => {
+    const color = apparelMockup.colors[index]
+    const imageUrl = color?.frontImageUrl || color?.backImageUrl
+    if (!color?.value || !imageUrl) return
+
+    window.dispatchEvent(
+      new CustomEvent('apply-variant-image-by-option', {
+        detail: {
+          optionName: resolvedColorOptionName,
+          optionValue: color.value,
+          imageUrl,
+        },
+      })
+    )
   }
 
   const addPresetDesign = () => {
@@ -353,6 +375,19 @@ export default function ProductForm({
       if (!res.ok) throw new Error()
       const data = await res.json()
       updateMockupColor(colorIndex, field, data.url)
+      const color = apparelMockup.colors[colorIndex]
+      const shouldApplyToVariants = field === 'frontImageUrl' || !color?.frontImageUrl
+      if (color?.value && shouldApplyToVariants) {
+        window.dispatchEvent(
+          new CustomEvent('apply-variant-image-by-option', {
+            detail: {
+              optionName: resolvedColorOptionName,
+              optionValue: color.value,
+              imageUrl: data.url,
+            },
+          })
+        )
+      }
     } catch {
       setError('No pudimos subir la imagen del mockup. Intenta de nuevo.')
     } finally {
@@ -1122,39 +1157,6 @@ export default function ProductForm({
                 </button>
               </div>
 
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="label">Opcion que controla el color</label>
-                  <input
-                    type="text"
-                    value={apparelMockup.colorOptionName || ''}
-                    onChange={(event) =>
-                      setApparelMockup((previous) => ({
-                        ...previous,
-                        colorOptionName: event.target.value,
-                      }))
-                    }
-                    className="input"
-                    placeholder="Color remera"
-                  />
-                </div>
-                <div>
-                  <label className="label">Opcion que controla frente/espalda</label>
-                  <input
-                    type="text"
-                    value={apparelMockup.placementOptionName || ''}
-                    onChange={(event) =>
-                      setApparelMockup((previous) => ({
-                        ...previous,
-                        placementOptionName: event.target.value,
-                      }))
-                    }
-                    className="input"
-                    placeholder="Ubicacion"
-                  />
-                </div>
-              </div>
-
               <div className="mt-6 flex rounded-2xl border border-gray-200 bg-gray-50 p-1">
                 {[
                   { id: 'photos' as const, label: 'Fotos por color', count: mockupPhotoCount },
@@ -1233,13 +1235,23 @@ export default function ProductForm({
                                 placeholder="Blanca"
                               />
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeMockupColor(index)}
-                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-100"
-                            >
-                              <Trash2 size={17} />
-                            </button>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => applyMockupImageToColorVariants(index)}
+                                disabled={!color.value || (!color.frontImageUrl && !color.backImageUrl)}
+                                className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-black text-gray-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                Aplicar a variantes
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeMockupColor(index)}
+                                className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-100"
+                              >
+                                <Trash2 size={17} />
+                              </button>
+                            </div>
                           </div>
 
                           <div className="grid gap-3 sm:grid-cols-2">
@@ -1370,36 +1382,76 @@ export default function ProductForm({
                 </button>
 
                 {showApparelAdvanced && (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {(['front', 'back'] as const).map((side) => {
-                      const area = apparelMockup.printAreas[side]
-                      return (
-                        <div key={side} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                          <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-gray-600">
-                            Area {side === 'front' ? 'frente' : 'espalda'}
-                          </p>
-                          <div className="grid grid-cols-2 gap-3">
-                            {(['x', 'y', 'width', 'height'] as const).map((field) => (
-                              <label key={field} className="block">
-                                <span className="mb-1 block text-[10px] font-bold uppercase text-gray-500">
-                                  {field === 'width' ? 'ancho' : field === 'height' ? 'alto' : field}
-                                </span>
-                                <input
-                                  type="number"
-                                  min={field === 'width' || field === 'height' ? 1 : 0}
-                                  max="100"
-                                  value={area[field]}
-                                  onChange={(event) =>
-                                    updatePrintArea(side, field, Number(event.target.value))
-                                  }
-                                  className="input !py-2"
-                                />
-                              </label>
-                            ))}
-                          </div>
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                      <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-gray-600">
+                        Vinculacion con variantes
+                      </p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="label">Variante de color</label>
+                          <input
+                            type="text"
+                            value={apparelMockup.colorOptionName || ''}
+                            onChange={(event) =>
+                              setApparelMockup((previous) => ({
+                                ...previous,
+                                colorOptionName: event.target.value,
+                              }))
+                            }
+                            className="input"
+                            placeholder="Color"
+                          />
                         </div>
-                      )
-                    })}
+                        <div>
+                          <label className="label">Variante de frente/espalda</label>
+                          <input
+                            type="text"
+                            value={apparelMockup.placementOptionName || ''}
+                            onChange={(event) =>
+                              setApparelMockup((previous) => ({
+                                ...previous,
+                                placementOptionName: event.target.value,
+                              }))
+                            }
+                            className="input"
+                            placeholder="Ubicacion"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(['front', 'back'] as const).map((side) => {
+                        const area = apparelMockup.printAreas[side]
+                        return (
+                          <div key={side} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                            <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-gray-600">
+                              Area {side === 'front' ? 'frente' : 'espalda'}
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                              {(['x', 'y', 'width', 'height'] as const).map((field) => (
+                                <label key={field} className="block">
+                                  <span className="mb-1 block text-[10px] font-bold uppercase text-gray-500">
+                                    {field === 'width' ? 'ancho' : field === 'height' ? 'alto' : field}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min={field === 'width' || field === 'height' ? 1 : 0}
+                                    max="100"
+                                    value={area[field]}
+                                    onChange={(event) =>
+                                      updatePrintArea(side, field, Number(event.target.value))
+                                    }
+                                    className="input !py-2"
+                                  />
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

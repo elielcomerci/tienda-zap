@@ -405,3 +405,163 @@ Estado: implementada la primera iteracion con alertas de imagen general, matriz 
 - Permitir revisar colores, talles, botones y disponibilidad antes de salir de la edicion.
 
 Estado: implementada la primera iteracion con preview visual de opciones, orden y tipos de selector. La disponibilidad, precio y fotos se revisan desde la matriz.
+
+## 11. Combos de salida a la calle
+
+Fecha: 2026-05-22.
+
+Objetivo: crear una primera grilla de packs comerciales por rubro para que la tienda no dependa solo del catalogo generico. Los combos se cargaron como productos `isCombo` con precio fijo, categoria `Packs y Combos`, rubro objetivo y relaciones a los productos incluidos.
+
+Criterio tecnico-comercial:
+
+- Se uso precio fijo para evitar que los productos con cotizador por m2/pliego o variantes incompletas bloqueen la compra del combo.
+- Las relaciones muestran las piezas incluidas y sirven como guia comercial dentro de la ficha del pack.
+- Los precios son primera version vendible y deben revisarse contra costos reales antes de pauta fuerte.
+- Cuando los productos cotizables tengan precio base/combinaciones cerradas, se puede evaluar migrar algunos packs a combo dinamico con descuento.
+
+### Productos nuevos cargados para cerrar los combos
+
+| Producto | Categoria | Precio base | Rubro principal |
+| --- | --- | ---: | --- |
+| Menu gastronomico impreso | Flyers y Folletos | $85.000 | Gastronomia |
+| Menu QR para restaurantes | Web y Digital | $120.000 | Gastronomia |
+| Pack de piezas para redes | Diseno | $95.000 | Multirubro |
+| Ecommerce simple | Web y Digital | $450.000 | Moda / Retail |
+| WhatsApp comercial configurado | Web y Digital | $160.000 | Retail |
+| Etiquetas para packaging | Stickers y Etiquetas | $45.000 | Gastronomia / Moda / Retail |
+| Etiquetas colgantes para indumentaria | Tarjetas y Papeleria | $65.000 | Moda |
+| Voucher o gift card | Tarjetas y Papeleria | $45.000 | Belleza / Retail |
+| Tarjetas de turnos | Tarjetas y Papeleria | $35.000 | Belleza |
+| Roll up listo para evento | Banners | $185.000 | Eventos |
+| Backdrop para eventos | Carteleria | $220.000 | Eventos |
+| Credenciales para eventos | Tarjetas y Papeleria | $70.000 | Eventos |
+| Landing de captacion inmobiliaria | Web y Digital | $260.000 | Inmobiliarias |
+
+### Los 7 combos cargados
+
+| Combo | Rubro | Precio | Descuento comunicado | Productos incluidos |
+| --- | --- | ---: | ---: | --- |
+| Pack Gastronomia Local Activo | Gastronomia | $240.000 | 12% | Menu QR, Google Business, stickers, imanes, vinilo para vidriera |
+| Pack Inmobiliaria Captacion Total | Inmobiliarias | $390.000 | 15% | Cartel venta/alquiler, tarjetas, carpetas A4, landing de captacion, Google Business |
+| Pack Belleza Agenda Llena | Belleza & Salud | $220.000 | 12% | Tarjetas de turnos, voucher/gift card, stickers, Google Business, piezas para redes |
+| Pack Gym Inscripciones | Gym & Yoga | $360.000 | 13% | Landing page, Google Business, flyer/volante, vinilo para vidriera, piezas para redes |
+| Pack Moda Packaging y Venta Online | Moda & Showrooms | $560.000 | 14% | Bolsa de papel, etiquetas colgantes, stickers, tarjetas, ecommerce simple |
+| Pack Retail Vidriera y WhatsApp | Retail & Comercios | $290.000 | 12% | Vinilo para vidriera, flyer/volante, display, Google Business, WhatsApp comercial |
+| Pack Eventos Presencia Completa | Eventos & BTL | $520.000 | 15% | Roll up, backdrop, credenciales, flyer/volante, senaletica interior |
+
+### Estado posterior a la carga
+
+- Categorias: 19.
+- Productos totales: 50.
+- Productos activos: 48.
+- Combos activos: 7.
+- La categoria Diseno dejo de estar vacia gracias al producto `Pack de piezas para redes`.
+- La categoria Tarjetas y Papeleria dejo de estar vacia con vouchers, tarjetas de turnos, credenciales y etiquetas colgantes.
+
+### Pendiente antes de empujar trafico fuerte
+
+- Revisar costos/margenes reales de los 13 productos nuevos.
+- Agregar imagen principal o mockup a cada combo.
+- Revisar copy comercial de cada ficha.
+- Definir si los combos deben incluir brief especifico o notas internas de produccion.
+- Corregir matrices con variantes en cero que siguen activas en productos incluidos, especialmente `Imanes` y `Cartel Venta / Alquiler`.
+
+## 12. Remeras configurables
+
+Fecha: 2026-05-22.
+
+Se cargo la familia de indumentaria con un producto configurable inicial: `Remera personalizada`.
+
+### Materias primas cargadas
+
+| Materia prima | Unidad | Medida base | Costo |
+| --- | --- | --- | ---: |
+| Remera lisa base | Unidad | 1 unidad | $10.000 |
+| Sublimacion insumo 50 cm x 1 m | Metro lineal | 50x100 cm | $9.800 |
+| DTF 50 cm x 1 m | Metro lineal | 50x100 cm | $9.800 |
+| Vinilo termotransferible 50 cm x 1 m | Metro lineal | 50x100 cm | $9.800 |
+
+### Producto cargado
+
+| Producto | Categoria | Variantes | Precio desde | Precio maximo |
+| --- | --- | ---: | ---: | ---: |
+| Remera personalizada | Indumentaria Personalizada | 235 | $25.090 | $36.790 |
+
+### Configuracion comercial
+
+Opciones visibles:
+
+- Talle: S, M, L, XL, XXL.
+- Color: Blanca, Negra.
+- Tecnica: Lisa sin estampa, Sublimacion, DTF, Vinilo termotransferible.
+- Ubicacion: Sin estampado, Frente, Espalda, Frente y espalda.
+- Tamano maximo de estampa: Sin estampado, Pecho 10x10 cm, Mediano 20x25 cm, Maximo 30x40 cm.
+
+Reglas aplicadas:
+
+- Remera lisa solo habilita `Sin estampado`.
+- Sublimacion solo habilita remera blanca.
+- DTF y vinilo termotransferible habilitan remera blanca y negra.
+- Frente y espalda calcula dos estampas.
+- El tamano maximo cargado por estampa es 30x40 cm.
+- Los precios se calcularon con margen `costo x 2.5`, usando el area del estampado sobre el material de 50x100 cm.
+
+Actualizacion:
+
+- La carga quedo reproducible en `scratch/seed-custom-shirts.cjs`.
+- Si cambia el costo de remera, DTF, sublimacion o vinilo, se actualiza la materia prima y se vuelve a correr el seed para regenerar las 235 variantes con precios nuevos.
+
+## 13. Imanes estandar costeados
+
+Fecha: 2026-05-22.
+
+Se reemplazo la matriz incompleta de `Imanes` por una matriz estandar de corte recto, basada en la lista de proveedor `lista-low.txt`.
+
+### Configuracion cargada
+
+| Dimension | Valores |
+| --- | --- |
+| Medidas | 6x4 cm, 7x5 cm, 9x5 cm, 10x7 cm |
+| Terminaciones | Sin laca UV, Con laca UV |
+| Cantidades | 100, 200, 300, 500, 1000 |
+
+### Estado
+
+| Producto | Variantes | Precio desde | Precio maximo | Variantes en cero |
+| --- | ---: | ---: | ---: | ---: |
+| Imanes | 40 | $18.890 | $384.290 | 0 |
+
+### Materias primas y actualizacion
+
+- Se cargaron materias primas por tanda para cada combinacion de medida, terminacion y cantidad.
+- Cada materia prima guarda el costo proveedor sin IVA de la lista.
+- El precio publico se calcula como `costo proveedor x 2.5`, con redondeo comercial.
+- La carga quedo reproducible en `scratch/seed-standard-magnets.cjs`.
+- Si cambia la lista de proveedor, se actualizan los costos del seed y se vuelve a correr para regenerar la matriz completa.
+
+## 14. Banners y portabanners segun proveedor
+
+Fecha: 2026-05-22.
+
+Se reemplazo la matriz vieja de `Banners` por opciones reales tomadas de `lista-mega.pdf`, seccion Rull-Up / Portabanners. La lista indica que estos productos incluyen estructura e impresion.
+
+### Configuracion cargada
+
+| Dimension | Valores |
+| --- | --- |
+| Formato | Spider PVC 80x180, 1 tensor 90x190, 2 tensores 90x190, Roll-up 85x200, Portabanner 150x200, Portabanner 200x200, Portabanner 300x200 |
+| Material | Frontlight, Blackout |
+
+### Estado
+
+| Producto | Variantes | Precio desde | Precio maximo | Variantes en cero |
+| --- | ---: | ---: | ---: | ---: |
+| Banners y portabanners | 14 | $88.890 | $639.090 | 0 |
+
+### Materias primas y actualizacion
+
+- Se cargaron materias primas tipo `KIT` por cada combinacion de formato y material.
+- Cada materia prima guarda el costo proveedor sin IVA de `lista-mega.pdf`.
+- El precio publico se calcula como `costo proveedor x 2.5`, con redondeo comercial.
+- La carga quedo reproducible en `scratch/seed-provider-banners.cjs`.
+- Si cambia la lista de proveedor, se actualizan los costos del seed y se vuelve a correr para regenerar la matriz completa.

@@ -97,6 +97,164 @@ function normalizeOptions(options: Option[]): Option[] {
 
 const OPTION_TEMPLATES: OptionTemplate[] = [
   {
+    id: 'unit-volume',
+    label: 'Volumen',
+    description: 'Litros, mililitros o cm3 para bebidas, limpieza, perfumeria, lubricantes o quimicos.',
+    options: [
+      {
+        name: 'Presentacion',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['250 ml', '500 ml', '1 L', '5 L', 'Personalizado'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'unit-weight',
+    label: 'Peso',
+    description: 'Gramos y kilos para alimentos, insumos, ferreteria, pet shop o venta a granel.',
+    options: [
+      {
+        name: 'Peso',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['100 g', '250 g', '500 g', '1 kg', 'Personalizado'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'unit-length',
+    label: 'Longitud',
+    description: 'Metros o centimetros para cables, telas, cintas, perfiles o materiales por tramo.',
+    options: [
+      {
+        name: 'Largo',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['50 cm', '1 m', '2 m', '5 m', 'Personalizado'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'unit-area',
+    label: 'Superficie',
+    description: 'Medidas por m2 o ancho x alto para placas, vidrios, lonas, pisos o revestimientos.',
+    options: [
+      {
+        name: 'Medida',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['30x30 cm', '50x50 cm', '1 m2', 'Personalizado'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'pack-size',
+    label: 'Pack / cantidad',
+    description: 'Unidades por caja, pack o combo para mayoristas, kioscos, alimentos e insumos.',
+    options: [
+      {
+        name: 'Pack',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['Unidad', 'Pack x6', 'Pack x12', 'Caja x24', 'Personalizado'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'flavor-color-size',
+    label: 'Sabor / color / talle',
+    description: 'Base flexible para indumentaria, alimentos, cosmetica, bazar y productos con atributos simples.',
+    options: [
+      {
+        name: 'Variante',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Clasico', 'Premium', 'Especial'].map((value) => ({ value })),
+      },
+      {
+        name: 'Color',
+        displayType: 'COLOR_SWATCH',
+        isRequired: false,
+        values: [
+          { value: 'Negro', colorHex: '#111827' },
+          { value: 'Blanco', colorHex: '#ffffff' },
+          { value: 'Rojo', colorHex: '#dc2626' },
+        ],
+      },
+      {
+        name: 'Talle',
+        displayType: 'SIZE',
+        isRequired: false,
+        values: ['S', 'M', 'L', 'XL'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'business-card',
+    label: 'Tarjeta personal',
+    description: 'Formato, papel, impresion, terminacion y cantidad para tarjetas comerciales.',
+    options: [
+      {
+        name: 'Formato',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['9x5 cm', '8.5x5.5 cm'].map((value) => ({ value })),
+      },
+      {
+        name: 'Papel',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Ilustracion 300g', 'Ilustracion 350g', 'Premium'].map((value) => ({ value })),
+      },
+      {
+        name: 'Impresion',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Frente', 'Frente y dorso'].map((value) => ({ value })),
+      },
+      {
+        name: 'Terminacion',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Sin terminacion', 'Laminado mate', 'Laminado brillo', 'Laca UV'].map((value) => ({
+          value,
+        })),
+      },
+      {
+        name: 'Cantidad',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['100', '200', '500', '1000'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
+    id: 'magnet',
+    label: 'Iman',
+    description: 'Medida, laca UV y cantidad para imanes promocionales.',
+    options: [
+      {
+        name: 'Medida',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['6x4 cm', '7x5 cm', '9x5 cm', '10x7 cm'].map((value) => ({ value })),
+      },
+      {
+        name: 'Terminacion',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Sin laca UV', 'Con laca UV'].map((value) => ({ value })),
+      },
+      {
+        name: 'Cantidad',
+        displayType: 'SIZE',
+        isRequired: true,
+        values: ['100', '200', '300', '500', '1000'].map((value) => ({ value })),
+      },
+    ],
+  },
+  {
     id: 'apparel',
     label: 'Indumentaria',
     description: 'Color, talle y corte para remeras, buzos, uniformes o gorras.',
@@ -330,6 +488,36 @@ export default function ProductOptionsConfigurator({
     window.addEventListener('apply-quoter-variants', handleApplyVariants)
     return () => window.removeEventListener('apply-quoter-variants', handleApplyVariants)
   }, [options, variants, basePrice])
+
+  useEffect(() => {
+    const handleApplyImageToOption = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        optionName?: string
+        optionValue?: string
+        imageUrl?: string
+        onlyEmpty?: boolean
+      }>
+      const { optionName, optionValue, imageUrl, onlyEmpty = false } = customEvent.detail || {}
+      if (!optionName || !optionValue || !imageUrl) return
+
+      const normalize = (value: string) => value.trim().toLowerCase()
+      setVariants((current) =>
+        current.map((variant) => {
+          const variantValue = variant.combinations[optionName]
+          const matches =
+            variantValue === optionValue ||
+            normalize(variantValue || '') === normalize(optionValue)
+
+          if (!matches) return variant
+          if (onlyEmpty && variant.imageUrl) return variant
+          return { ...variant, imageUrl }
+        })
+      )
+    }
+
+    window.addEventListener('apply-variant-image-by-option', handleApplyImageToOption)
+    return () => window.removeEventListener('apply-variant-image-by-option', handleApplyImageToOption)
+  }, [])
 
   const addOption = () => {
     setOptions([...options, { name: '', displayType: 'BUTTON', isRequired: true, values: [{ value: '' }] }])

@@ -117,6 +117,21 @@ model SellerLeadEvent {
   @@index([leadId, createdAt])
 }
 
+model SiteSettings {
+  id                     String   @id @default("site-settings")
+  siteTitle              String   @default("ZAP Tienda - Agencia Creativa")
+  siteDescription        String   @default("Piezas graficas, diseño y produccion para marcas que cuidan como se ven.")
+  metaKeywords           String?
+  canonicalUrl           String?
+  ogImageUrl             String?
+  googleAnalyticsId      String?
+  googleAdsId            String?
+  googleTagManagerId     String?
+  googleSiteVerification String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
 model Category {
   id            String         @id @default(cuid())
   name          String

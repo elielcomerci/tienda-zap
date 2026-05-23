@@ -54,7 +54,7 @@ export const DEFAULT_APPAREL_MOCKUP: ApparelMockupConfig = {
   title: 'Mockup de indumentaria',
   allowCustomDesign: true,
   allowPresetDesigns: true,
-  colorOptionName: 'Color remera',
+  colorOptionName: 'Color',
   placementOptionName: 'Ubicacion',
   defaultSide: 'front',
   printAreas: {
