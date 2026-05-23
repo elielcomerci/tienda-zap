@@ -1,9 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import ApparelMockupPreview, {
+  type ApparelDesignSelection,
+} from '@/components/public/ApparelMockupPreview'
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import ProductMediaBlock from '@/components/public/ProductMediaBlock'
+import { getApparelMockupConfig, hasApparelMockupImages } from '@/lib/apparel-mockup'
 
 export default function ProductDetailExperience({
   product,
@@ -13,15 +17,31 @@ export default function ProductDetailExperience({
   inquiryUrl?: string | null
 }) {
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null)
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+  const [apparelDesignSelection, setApparelDesignSelection] =
+    useState<ApparelDesignSelection | null>(null)
+  const apparelMockup = getApparelMockupConfig(product.mediaList)
+  const showApparelMockup = hasApparelMockupImages(apparelMockup)
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)] 2xl:gap-12">
       <div className="self-start xl:sticky xl:top-24">
-        <ProductImageGallery
-          images={product.images}
-          productName={product.name}
-          selectedImageUrl={selectedImageUrl}
-        />
+        {showApparelMockup && apparelMockup ? (
+          <ApparelMockupPreview
+            images={product.images}
+            productName={product.name}
+            selectedImageUrl={selectedImageUrl}
+            selectedOptions={selectedOptions}
+            config={apparelMockup}
+            onDesignSelectionChange={setApparelDesignSelection}
+          />
+        ) : (
+          <ProductImageGallery
+            images={product.images}
+            productName={product.name}
+            selectedImageUrl={selectedImageUrl}
+          />
+        )}
         <ProductMediaBlock
           mediaType={product.mediaType}
           mediaUrl={product.mediaUrl}
@@ -84,6 +104,8 @@ export default function ProductDetailExperience({
           product={product}
           inquiryUrl={inquiryUrl}
           onPreviewImageChange={setSelectedImageUrl}
+          onSelectionChange={setSelectedOptions}
+          apparelDesignSelection={apparelDesignSelection}
         />
       </div>
     </div>

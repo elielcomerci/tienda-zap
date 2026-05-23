@@ -6,6 +6,7 @@ import { Check, MessageCircleMore, PackageCheck, ShoppingCart } from 'lucide-rea
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
+import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
 
 type ProductWithOptions = {
   id: string
@@ -58,10 +59,14 @@ export default function ProductConfigurator({
   product,
   inquiryUrl,
   onPreviewImageChange,
+  onSelectionChange,
+  apparelDesignSelection,
 }: {
   product: ProductWithOptions
   inquiryUrl?: string | null
   onPreviewImageChange?: (imageUrl: string | null) => void
+  onSelectionChange?: (selectedOptions: Record<string, string>) => void
+  apparelDesignSelection?: ApparelDesignSelection | null
 }) {
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [comboSelections, setComboSelections] = useState<Record<string, Record<string, string>>>({})
@@ -265,6 +270,10 @@ export default function ProductConfigurator({
     onPreviewImageChange?.(previewImageUrl)
   }, [onPreviewImageChange, previewImageUrl])
 
+  useEffect(() => {
+    onSelectionChange?.(selected)
+  }, [onSelectionChange, selected])
+
   const canAddToCart = hasOptions
     ? Boolean(activeVariant) && allRequiredSelected && selectedVariantAvailable
     : simpleProductAvailable
@@ -402,7 +411,26 @@ export default function ProductConfigurator({
         .map(([name, value]) => ({ name: `${part.name} / ${name}`, value }))
     )
 
-    return [...productOptions, ...comboOptions]
+    const apparelOptions = apparelDesignSelection
+      ? [
+          {
+            name: 'Modo de diseno',
+            value:
+              apparelDesignSelection.mode === 'PRESET_DESIGN'
+                ? 'Diseno de catalogo'
+                : 'Archivo propio',
+          },
+          ...(apparelDesignSelection.designName
+            ? [{ name: 'Diseno elegido', value: apparelDesignSelection.designName }]
+            : []),
+          {
+            name: 'Escala de diseno',
+            value: `${apparelDesignSelection.designScale || 100}%`,
+          },
+        ]
+      : []
+
+    return [...productOptions, ...comboOptions, ...apparelOptions]
   }
 
   const handleAddToCart = () => {
@@ -419,6 +447,7 @@ export default function ProductConfigurator({
       quantity: 1,
       isService: isServiceProduct,
       briefType: normalizeBriefType(product.briefType),
+      designRequested: apparelDesignSelection?.requiresPrintFile === false ? true : undefined,
       selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
     })
 

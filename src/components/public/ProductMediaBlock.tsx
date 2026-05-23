@@ -13,6 +13,7 @@ import {
   LinkIcon,
   AlignLeft,
 } from 'lucide-react'
+import { getProductMediaTracks } from '@/lib/apparel-mockup'
 
 type ProductMediaBlockProps = {
   mediaType?: string | null
@@ -33,7 +34,7 @@ export default function ProductMediaBlock({
   const tracks = (() => {
     if (mediaList) {
       try {
-        const parsed = typeof mediaList === 'string' ? JSON.parse(mediaList) : mediaList
+        const parsed = getProductMediaTracks(mediaList)
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed
         }

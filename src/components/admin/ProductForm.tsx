@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -10,8 +10,13 @@ import {
   Save,
   AlertCircle,
   Calculator,
+  CheckCircle2,
+  Images,
   Music,
+  Palette,
+  SlidersHorizontal,
   Video,
+  ImageIcon,
   LinkIcon,
   Plus,
   Trash2,
@@ -23,6 +28,13 @@ import ProductRelationsPicker from './ProductRelationsPicker'
 import ProductQuoterModal from './ProductQuoterModal'
 import { slugify } from '@/lib/slug'
 import { getFirstValidationError, productSchema } from '@/lib/validations'
+import {
+  DEFAULT_APPAREL_MOCKUP,
+  getApparelMockupConfig,
+  getProductMediaTracks,
+  type ApparelMockupConfig,
+  type ApparelMockupSide,
+} from '@/lib/apparel-mockup'
 
 type ProductMediaType = 'NONE' | 'AUDIO' | 'VIDEO' | 'YOUTUBE'
 
@@ -121,8 +133,9 @@ export default function ProductForm({
   }
 
   const [mediaList, setMediaList] = useState<MediaTrack[]>(() => {
-    if (product?.mediaList && Array.isArray(product.mediaList)) {
-      return product.mediaList as MediaTrack[]
+    const tracks = getProductMediaTracks(product?.mediaList)
+    if (tracks.length > 0) {
+      return tracks as MediaTrack[]
     }
     if (product?.mediaUrl && product?.mediaType && product.mediaType !== 'NONE') {
       return [
@@ -136,6 +149,25 @@ export default function ProductForm({
     }
     return []
   })
+  const [apparelMockup, setApparelMockup] = useState<ApparelMockupConfig>(() => {
+    return getApparelMockupConfig(product?.mediaList) || DEFAULT_APPAREL_MOCKUP
+  })
+  const [apparelMockupTab, setApparelMockupTab] = useState<'photos' | 'designs'>('photos')
+  const [showApparelAdvanced, setShowApparelAdvanced] = useState(false)
+
+  const mediaPayload = useMemo(() => {
+    const cleanedMockup = {
+      ...apparelMockup,
+      colors: apparelMockup.colors.filter(
+        (color) => color.value.trim() || color.frontImageUrl || color.backImageUrl
+      ),
+      presetDesigns: (apparelMockup.presetDesigns || []).filter(
+        (design) => design.name.trim() && design.imageUrl.trim()
+      ),
+    }
+
+    return cleanedMockup.enabled ? [...mediaList, cleanedMockup] : mediaList
+  }, [apparelMockup, mediaList])
 
   const [expandedLyricsTrackId, setExpandedLyricsTrackId] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
@@ -146,6 +178,13 @@ export default function ProductForm({
   const derivedMediaType = firstTrack ? firstTrack.type : 'NONE'
   const derivedMediaUrl = firstTrack ? firstTrack.url : ''
   const derivedMediaTitle = firstTrack ? firstTrack.title : ''
+  const mockupPhotoCount = apparelMockup.colors.reduce(
+    (total, color) => total + Number(Boolean(color.frontImageUrl)) + Number(Boolean(color.backImageUrl)),
+    0
+  )
+  const presetDesignCount = (apparelMockup.presetDesigns || []).filter(
+    (design) => design.name.trim() && design.imageUrl.trim()
+  ).length
   
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
   const isServiceCategory = Boolean(selectedCategory?.isService)
@@ -183,6 +222,176 @@ export default function ProductForm({
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index))
+  }
+
+  const availableColorValues = useMemo(() => {
+    const sourceOptions = initialOptions || product?.options || []
+    const colorOption = sourceOptions.find((option: any) => {
+      const name = String(option.name || '').toLowerCase()
+      return option.displayType === 'COLOR_SWATCH' || name.includes('color')
+    })
+
+    return (colorOption?.values || []).map((value: any) => ({
+      value: value.value,
+      colorHex: value.colorHex || null,
+    }))
+  }, [initialOptions, product?.options])
+
+  const syncMockupColorsFromOptions = () => {
+    if (availableColorValues.length === 0) return
+    setApparelMockup((previous) => {
+      const existing = new Map(previous.colors.map((color) => [color.value, color]))
+      return {
+        ...previous,
+        colors: availableColorValues.map((color) => ({
+          ...color,
+          ...(existing.get(color.value) || {}),
+          value: color.value,
+          colorHex: existing.get(color.value)?.colorHex || color.colorHex,
+        })),
+      }
+    })
+  }
+
+  const addMockupColor = () => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      colors: [
+        ...previous.colors,
+        { value: '', colorHex: '#ffffff', frontImageUrl: '', backImageUrl: '' },
+      ],
+    }))
+  }
+
+  const updateMockupColor = (
+    index: number,
+    field: 'value' | 'colorHex' | 'frontImageUrl' | 'backImageUrl',
+    value: string
+  ) => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      colors: previous.colors.map((color, colorIndex) =>
+        colorIndex === index ? { ...color, [field]: value } : color
+      ),
+    }))
+  }
+
+  const removeMockupColor = (index: number) => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      colors: previous.colors.filter((_, colorIndex) => colorIndex !== index),
+    }))
+  }
+
+  const addPresetDesign = () => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      presetDesigns: [
+        ...(previous.presetDesigns || []),
+        {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: '',
+          imageUrl: '',
+          description: '',
+        },
+      ],
+    }))
+  }
+
+  const updatePresetDesign = (
+    index: number,
+    field: 'name' | 'imageUrl' | 'description',
+    value: string
+  ) => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      presetDesigns: (previous.presetDesigns || []).map((design, designIndex) =>
+        designIndex === index ? { ...design, [field]: value } : design
+      ),
+    }))
+  }
+
+  const removePresetDesign = (index: number) => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      presetDesigns: (previous.presetDesigns || []).filter((_, designIndex) => designIndex !== index),
+    }))
+  }
+
+  const updatePrintArea = (
+    side: ApparelMockupSide,
+    field: keyof ApparelMockupConfig['printAreas']['front'],
+    value: number
+  ) => {
+    setApparelMockup((previous) => ({
+      ...previous,
+      printAreas: {
+        ...previous.printAreas,
+        [side]: {
+          ...previous.printAreas[side],
+          [field]: value,
+        },
+      },
+    }))
+  }
+
+  const handleMockupImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    colorIndex: number,
+    field: 'frontImageUrl' | 'backImageUrl'
+  ) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError('')
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      updateMockupColor(colorIndex, field, data.url)
+    } catch {
+      setError('No pudimos subir la imagen del mockup. Intenta de nuevo.')
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
+  }
+
+  const handlePresetDesignUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    designIndex: number
+  ) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError('')
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      updatePresetDesign(designIndex, 'imageUrl', data.url)
+      setApparelMockup((previous) => ({
+        ...previous,
+        presetDesigns: (previous.presetDesigns || []).map((design, index) =>
+          index === designIndex && !design.name.trim()
+            ? { ...design, name: file.name.replace(/\.[^.]+$/, '') }
+            : design
+        ),
+      }))
+    } catch {
+      setError('No pudimos subir el diseno listo. Intenta de nuevo.')
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
   }
 
   const handleTrackUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -305,7 +514,7 @@ export default function ProductForm({
     try {
       const formData = new FormData(e.currentTarget)
       formData.append('images', JSON.stringify(images))
-      formData.append('mediaList', JSON.stringify(mediaList))
+      formData.append('mediaList', JSON.stringify(mediaPayload))
 
       if (!formData.get('active')) formData.set('active', 'false')
       else formData.set('active', 'true')
@@ -327,7 +536,7 @@ export default function ProductForm({
         mediaType: derivedMediaType,
         mediaUrl: derivedMediaUrl,
         mediaTitle: derivedMediaTitle,
-        mediaList,
+        mediaList: mediaPayload,
         active: formData.get('active') === 'true',
         isCombo: isCombo,
         comboPricingMode: isCombo ? comboPricingMode : 'FIXED',
@@ -390,7 +599,7 @@ export default function ProductForm({
         <input type="hidden" name="mediaType" value={derivedMediaType} />
         <input type="hidden" name="mediaUrl" value={derivedMediaUrl} />
         <input type="hidden" name="mediaTitle" value={derivedMediaTitle} />
-        <input type="hidden" name="mediaList" value={JSON.stringify(mediaList)} />
+        <input type="hidden" name="mediaList" value={JSON.stringify(mediaPayload)} />
 
         <div className="grid gap-6 md:col-span-3 md:grid-cols-2">
           <div className="card space-y-4 p-6">
@@ -802,6 +1011,399 @@ export default function ProductForm({
               </label>
             </div>
             <p className="text-center text-xs text-gray-400">JPG, PNG o WEBP. Max 5MB c/u.</p>
+          </div>
+
+          <div className="card overflow-hidden p-0">
+            <div className="border-b border-gray-100 bg-gray-950 p-6 text-white">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-white/75">
+                    <Palette size={14} />
+                    Indumentaria
+                  </div>
+                  <h2 className="text-xl font-black">Mockup comercial de prendas</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">
+                    Gestiona fotos por color, disenos listos y personalizacion del cliente desde un flujo simple para venta.
+                  </p>
+                </div>
+
+                <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-bold text-white lg:min-w-[220px]">
+                  <span>{apparelMockup.enabled ? 'Publicado en tienda' : 'Desactivado'}</span>
+                  <input
+                    type="checkbox"
+                    checked={apparelMockup.enabled}
+                    onChange={(event) =>
+                      setApparelMockup((previous) => ({
+                        ...previous,
+                        enabled: event.target.checked,
+                      }))
+                    }
+                    className="h-5 w-5 rounded border-white/30 bg-white/10 text-[#ED2C71] focus:ring-[#ED2C71]"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/50">Colores</p>
+                  <p className="mt-2 text-2xl font-black">{apparelMockup.colors.length}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/50">Fotos</p>
+                  <p className="mt-2 text-2xl font-black">{mockupPhotoCount}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/50">Disenos</p>
+                  <p className="mt-2 text-2xl font-black">{presetDesignCount}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid gap-3 lg:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setApparelMockup((previous) => ({
+                      ...previous,
+                      allowCustomDesign: previous.allowCustomDesign === false,
+                    }))
+                  }
+                  className={`rounded-2xl border p-4 text-left transition ${
+                    apparelMockup.allowCustomDesign !== false
+                      ? 'border-[#ED2C71]/30 bg-[#FEF1F6] shadow-sm'
+                      : 'border-gray-200 bg-gray-50 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#ED2C71] shadow-sm">
+                        <UploadCloud size={19} />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-black text-gray-950">Cliente sube su diseno</span>
+                        <span className="mt-1 block text-xs leading-5 text-gray-600">
+                          Prueba el logo en pantalla y despues envia el archivo final para imprimir.
+                        </span>
+                      </span>
+                    </div>
+                    {apparelMockup.allowCustomDesign !== false && <CheckCircle2 size={20} className="text-[#ED2C71]" />}
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setApparelMockup((previous) => ({
+                      ...previous,
+                      allowPresetDesigns: previous.allowPresetDesigns === false,
+                    }))
+                  }
+                  className={`rounded-2xl border p-4 text-left transition ${
+                    apparelMockup.allowPresetDesigns !== false
+                      ? 'border-[#4576B9]/30 bg-[#EEF4FC]'
+                      : 'border-gray-200 bg-gray-50 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#2F5F9F] shadow-sm">
+                        <Images size={19} />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-black text-gray-950">Cliente elige diseno listo</span>
+                        <span className="mt-1 block text-xs leading-5 text-gray-600">
+                          Ideal para tiendas de ropa: compra un arte del catalogo sin cargar archivos.
+                        </span>
+                      </span>
+                    </div>
+                    {apparelMockup.allowPresetDesigns !== false && <CheckCircle2 size={20} className="text-[#2F5F9F]" />}
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="label">Opcion que controla el color</label>
+                  <input
+                    type="text"
+                    value={apparelMockup.colorOptionName || ''}
+                    onChange={(event) =>
+                      setApparelMockup((previous) => ({
+                        ...previous,
+                        colorOptionName: event.target.value,
+                      }))
+                    }
+                    className="input"
+                    placeholder="Color remera"
+                  />
+                </div>
+                <div>
+                  <label className="label">Opcion que controla frente/espalda</label>
+                  <input
+                    type="text"
+                    value={apparelMockup.placementOptionName || ''}
+                    onChange={(event) =>
+                      setApparelMockup((previous) => ({
+                        ...previous,
+                        placementOptionName: event.target.value,
+                      }))
+                    }
+                    className="input"
+                    placeholder="Ubicacion"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex rounded-2xl border border-gray-200 bg-gray-50 p-1">
+                {[
+                  { id: 'photos' as const, label: 'Fotos por color', count: mockupPhotoCount },
+                  { id: 'designs' as const, label: 'Disenos listos', count: presetDesignCount },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setApparelMockupTab(tab.id)}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black transition ${
+                      apparelMockupTab === tab.id
+                        ? 'bg-white text-gray-950 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    {tab.label}
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
+                      {tab.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {apparelMockupTab === 'photos' && (
+                <div className="mt-5">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-black text-gray-950">Galeria de colores</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Cada color puede tener foto de frente y espalda. La tienda cambia la prenda automaticamente.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={syncMockupColorsFromOptions}
+                        disabled={availableColorValues.length === 0}
+                        className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Sincronizar variantes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={addMockupColor}
+                        className="rounded-xl bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                      >
+                        Agregar color
+                      </button>
+                    </div>
+                  </div>
+
+                  {apparelMockup.colors.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
+                      <Palette size={34} className="mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm font-bold text-gray-600">Todavia no hay colores cargados</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {apparelMockup.colors.map((color, index) => (
+                        <div key={index} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                          <div className="mb-4 flex items-center justify-between gap-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                              <input
+                                type="color"
+                                value={color.colorHex || '#ffffff'}
+                                onChange={(event) =>
+                                  updateMockupColor(index, 'colorHex', event.target.value)
+                                }
+                                className="h-10 w-10 shrink-0 rounded-xl border border-gray-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                value={color.value}
+                                onChange={(event) => updateMockupColor(index, 'value', event.target.value)}
+                                className="input min-w-0 !py-2 font-bold"
+                                placeholder="Blanca"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeMockupColor(index)}
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-100"
+                            >
+                              <Trash2 size={17} />
+                            </button>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {(['frontImageUrl', 'backImageUrl'] as const).map((field) => (
+                              <div key={field} className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+                                <div className="relative aspect-[4/5] bg-white">
+                                  {color[field] ? (
+                                    <img src={color[field] || ''} alt="" className="h-full w-full object-contain" />
+                                  ) : (
+                                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-300">
+                                      <ImageIcon size={28} />
+                                      <span className="text-xs font-bold">
+                                        {field === 'frontImageUrl' ? 'Frente' : 'Espalda'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="border-t border-gray-200 p-2">
+                                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-950 px-3 py-2 text-xs font-black text-white transition hover:bg-gray-800">
+                                    <UploadCloud size={15} />
+                                    {color[field] ? 'Cambiar' : 'Subir'} {field === 'frontImageUrl' ? 'frente' : 'espalda'}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(event) => handleMockupImageUpload(event, index, field)}
+                                      className="hidden"
+                                    />
+                                  </label>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {apparelMockupTab === 'designs' && (
+                <div className="mt-5">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-black text-gray-950">Catalogo vendible de disenos</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        El arte elegido se guarda en el pedido como opcion comercial.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addPresetDesign}
+                      className="rounded-xl bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                    >
+                      Agregar diseno
+                    </button>
+                  </div>
+
+                  {(apparelMockup.presetDesigns || []).length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
+                      <Images size={34} className="mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm font-bold text-gray-600">No hay disenos listos cargados</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {(apparelMockup.presetDesigns || []).map((design, index) => (
+                        <div key={design.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                          <div className="aspect-square bg-gray-50">
+                            {design.imageUrl ? (
+                              <img src={design.imageUrl} alt="" className="h-full w-full object-contain p-4" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-gray-300">
+                                <ImageIcon size={32} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-3 border-t border-gray-100 p-3">
+                            <input
+                              type="text"
+                              value={design.name}
+                              onChange={(event) => updatePresetDesign(index, 'name', event.target.value)}
+                              className="input !py-2 text-sm font-bold"
+                              placeholder="Nombre del diseno"
+                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="url"
+                                value={design.imageUrl}
+                                onChange={(event) => updatePresetDesign(index, 'imageUrl', event.target.value)}
+                                className="input min-w-0 !py-2 text-xs"
+                                placeholder="https://..."
+                              />
+                              <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-500 hover:text-orange-600">
+                                <UploadCloud size={17} />
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(event) => handlePresetDesignUpload(event, index)}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => removePresetDesign(index)}
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-100"
+                              >
+                                <Trash2 size={17} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-6 border-t border-gray-100 pt-5">
+                <button
+                  type="button"
+                  onClick={() => setShowApparelAdvanced((current) => !current)}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-sm font-black text-gray-800 transition hover:bg-white"
+                >
+                  <span className="flex items-center gap-2">
+                    <SlidersHorizontal size={18} />
+                    Ajuste avanzado del area imprimible
+                  </span>
+                  <span className="text-xs font-bold text-gray-500">{showApparelAdvanced ? 'Ocultar' : 'Abrir'}</span>
+                </button>
+
+                {showApparelAdvanced && (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {(['front', 'back'] as const).map((side) => {
+                      const area = apparelMockup.printAreas[side]
+                      return (
+                        <div key={side} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                          <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-gray-600">
+                            Area {side === 'front' ? 'frente' : 'espalda'}
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {(['x', 'y', 'width', 'height'] as const).map((field) => (
+                              <label key={field} className="block">
+                                <span className="mb-1 block text-[10px] font-bold uppercase text-gray-500">
+                                  {field === 'width' ? 'ancho' : field === 'height' ? 'alto' : field}
+                                </span>
+                                <input
+                                  type="number"
+                                  min={field === 'width' || field === 'height' ? 1 : 0}
+                                  max="100"
+                                  value={area[field]}
+                                  onChange={(event) =>
+                                    updatePrintArea(side, field, Number(event.target.value))
+                                  }
+                                  className="input !py-2"
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="card p-6">
