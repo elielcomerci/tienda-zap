@@ -120,7 +120,11 @@ export default function ProductConfigurator({
     if (!quoterConfig || quoterMaterials.length === 0) return null
 
     const rawMaterialId = quoteSelection.rawMaterialId || quoterMaterials[0]?.id
-    const sizeLabel = quoteSelection.sizeLabel || quoterConfig.sizePresets?.[0]?.label
+    const useCustomSize =
+      quoteSelection.sizeMode === 'custom' || (quoterConfig.allowCustomSize && quoterConfig.sizePresets.length === 0)
+    const sizeLabel = useCustomSize ? undefined : quoteSelection.sizeLabel || quoterConfig.sizePresets?.[0]?.label
+    const width = Number(quoteSelection.width || 0)
+    const height = Number(quoteSelection.height || 0)
     const quantity = Number(quoteSelection.quantity || quoterConfig.quantityPresets?.[0]?.quantity || 0)
     const finishingIds = quoteSelection.finishingIds
       ? quoteSelection.finishingIds.split(',').filter(Boolean)
@@ -133,6 +137,8 @@ export default function ProductConfigurator({
         rawMaterialId,
         quantity,
         sizeLabel,
+        width: useCustomSize ? width : undefined,
+        height: useCustomSize ? height : undefined,
         finishingIds,
       })
     } catch {
@@ -545,14 +551,23 @@ export default function ProductConfigurator({
             </select>
           </label>
 
-          {quoterConfig.sizePresets.length > 0 && (
+          {(quoterConfig.sizePresets.length > 0 || quoterConfig.allowCustomSize) && (
             <label className="block">
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Medida</span>
               <select
-                value={quoteSelection.sizeLabel || quoterConfig.sizePresets[0]?.label || ''}
-                onChange={(event) =>
-                  setQuoteSelection((previous) => ({ ...previous, sizeLabel: event.target.value }))
+                value={
+                  quoteSelection.sizeMode === 'custom' || quoterConfig.sizePresets.length === 0
+                    ? '__custom'
+                    : quoteSelection.sizeLabel || quoterConfig.sizePresets[0]?.label || ''
                 }
+                onChange={(event) => {
+                  const value = event.target.value
+                  setQuoteSelection((previous) => ({
+                    ...previous,
+                    sizeMode: value === '__custom' ? 'custom' : '',
+                    sizeLabel: value === '__custom' ? '' : value,
+                  }))
+                }}
                 className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
               >
                 {quoterConfig.sizePresets.map((size: any) => (
@@ -560,8 +575,44 @@ export default function ProductConfigurator({
                     {size.label}
                   </option>
                 ))}
+                {quoterConfig.allowCustomSize && <option value="__custom">Medida personalizada</option>}
               </select>
             </label>
+          )}
+
+          {quoterConfig.allowCustomSize && (quoteSelection.sizeMode === 'custom' || quoterConfig.sizePresets.length === 0) && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Ancho (cm)</span>
+                <input
+                  type="number"
+                  min={quoterConfig.minWidth || 1}
+                  max={quoterConfig.maxWidth || undefined}
+                  step="0.1"
+                  value={quoteSelection.width || ''}
+                  onChange={(event) =>
+                    setQuoteSelection((previous) => ({ ...previous, width: event.target.value }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+                  placeholder="Ej: 120"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">Alto (cm)</span>
+                <input
+                  type="number"
+                  min={quoterConfig.minHeight || 1}
+                  max={quoterConfig.maxHeight || undefined}
+                  step="0.1"
+                  value={quoteSelection.height || ''}
+                  onChange={(event) =>
+                    setQuoteSelection((previous) => ({ ...previous, height: event.target.value }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+                  placeholder="Ej: 80"
+                />
+              </label>
+            </div>
           )}
 
           <label className="block">

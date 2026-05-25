@@ -284,6 +284,41 @@ const OPTION_TEMPLATES: OptionTemplate[] = [
     ],
   },
   {
+    id: 'signage',
+    label: 'Carteleria',
+    description: 'Sustrato, medida, bastidor, impresion y backlight para carteles y lonas.',
+    options: [
+      {
+        name: 'Sustrato',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Lona front', 'Vinilo impreso', 'Backlight', 'PVC espumado', 'Alto impacto', 'Acrilico'].map(
+          (value) => ({ value })
+        ),
+      },
+      {
+        name: 'Estructura',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Solo impresion', 'Bastidor madera', 'Bastidor metalico'].map((value) => ({ value })),
+      },
+      {
+        name: 'Iluminacion',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Sin iluminacion', 'Backlight'].map((value) => ({ value })),
+      },
+      {
+        name: 'Terminacion',
+        displayType: 'BUTTON',
+        isRequired: true,
+        values: ['Corte al ras', 'Ojales', 'Dobladillo', 'Laminado', 'Tensado en bastidor'].map((value) => ({
+          value,
+        })),
+      },
+    ],
+  },
+  {
     id: 'packaging',
     label: 'Packaging',
     description: 'Material y medida para cajas, bolsas, etiquetas y piezas de packaging.',

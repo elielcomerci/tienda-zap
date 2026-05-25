@@ -31,6 +31,16 @@ function matchesVariant(selectedOptions: Array<{ name: string; value: string }>,
   )
 }
 
+function parseSizeLabel(value?: string) {
+  const match = value?.match(/(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)/i)
+  if (!match) return {}
+
+  return {
+    width: Number(match[1].replace(',', '.')),
+    height: Number(match[2].replace(',', '.')),
+  }
+}
+
 export async function resolveCheckoutOrderItems(
   items: Array<{
     productId: string
@@ -141,6 +151,7 @@ export async function resolveCheckoutOrderItems(
     if (product.quoterConfig) {
       const materialName = selectedMap.get('Material')
       const sizeLabel = selectedMap.get('Medida')
+      const parsedSize = parseSizeLabel(sizeLabel)
       const quantity = Number(selectedMap.get('Cantidad') || 0)
       const finishingNames = (selectedMap.get('Terminaciones') || '')
         .split('+')
@@ -161,6 +172,8 @@ export async function resolveCheckoutOrderItems(
         rawMaterialId: rawMaterial.id,
         quantity,
         sizeLabel: sizeLabel || undefined,
+        width: parsedSize.width,
+        height: parsedSize.height,
         finishingIds,
       })
 
