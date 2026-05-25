@@ -19,7 +19,11 @@ export async function getWelcomePromoDetails(couponCode: string) {
   const promo = coupon.promotion
   const presenterName = getCouponPresenterName(coupon)
 
-  if (!promo.welcomeTitle && !promo.welcomeMessage && !presenterName) {
+  const recipientName = coupon.recipientName?.trim() || null
+  const recipientBusiness = coupon.recipientBusiness?.trim() || null
+  const recipientLabel = recipientName || recipientBusiness
+
+  if (!promo.welcomeTitle && !promo.welcomeMessage && !presenterName && !recipientLabel) {
     return null
   }
 
@@ -35,6 +39,9 @@ export async function getWelcomePromoDetails(couponCode: string) {
     conditions: promo.welcomeConditions,
     logoUrl: promo.welcomeLogoUrl,
     presenterName,
+    recipientName,
+    recipientBusiness,
+    recipientLabel,
     discountKind: promo.discountKind,
     discountValue: promo.discountValue,
   }

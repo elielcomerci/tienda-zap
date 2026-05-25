@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   Briefcase,
   Building2,
+  ClipboardList,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -78,6 +79,7 @@ const navSections = [
     title: 'Crecimiento',
     items: [
       { href: '/admin/seo', label: 'SEO y tráfico', icon: Search },
+      { href: '/admin/auditoria', label: 'Auditoria', icon: ClipboardList },
     ],
   },
 ]

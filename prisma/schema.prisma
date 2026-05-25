@@ -132,6 +132,24 @@ model SiteSettings {
   updatedAt              DateTime @updatedAt
 }
 
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  actorId     String?
+  actorEmail  String?
+  action      String
+  entityType  String
+  entityId    String?
+  description String?
+  before      Json?
+  after       Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}
+
 model Category {
   id            String         @id @default(cuid())
   name          String
@@ -363,24 +381,24 @@ model OrderItemOption {
 }
 
 model ProductOption {
-  id         String               @id @default(cuid())
-  productId  String
-  name       String
-  displayType String              @default("BUTTON")
-  sortOrder Int                   @default(0)
-  isRequired Boolean              @default(true)
-  product    Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
-  values     ProductOptionValue[]
+  id          String               @id @default(cuid())
+  productId   String
+  name        String
+  displayType String               @default("BUTTON")
+  sortOrder   Int                  @default(0)
+  isRequired  Boolean              @default(true)
+  product     Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values      ProductOptionValue[]
 }
 
 model ProductOptionValue {
-  id       String          @id @default(cuid())
-  optionId String
-  value    String
-  colorHex String?
-  sortOrder Int           @default(0)
-  option   ProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  variants VariantOption[]
+  id        String          @id @default(cuid())
+  optionId  String
+  value     String
+  colorHex  String?
+  sortOrder Int             @default(0)
+  option    ProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  variants  VariantOption[]
 }
 
 model ProductVariant {
@@ -489,21 +507,27 @@ model PartnerCampaign {
 }
 
 model Promotion {
-  id            String          @id @default(cuid())
-  name          String
-  type          PromotionType   @default(COUPON)
-  status        PromotionStatus @default(DRAFT)
-  campaignKind  String?
-  audienceLabel String?
-  qrBaseUrl     String?
-  priority      Int             @default(0)
-  stackable     Boolean         @default(false)
-  activeFrom    DateTime?
-  activeTo      DateTime?
-  discountKind  DiscountKind
-  discountValue Float
-  maxUses       Int?
-  perUserLimit  Int?
+  id                  String          @id @default(cuid())
+  name                String
+  type                PromotionType   @default(COUPON)
+  status              PromotionStatus @default(DRAFT)
+  campaignKind        String?
+  audienceLabel       String?
+  qrBaseUrl           String?
+  priority            Int             @default(0)
+  stackable           Boolean         @default(false)
+  activeFrom          DateTime?
+  activeTo            DateTime?
+  discountKind        DiscountKind
+  discountValue       Float
+  maxUses             Int?
+  perUserLimit        Int?
+  minOrderAmount      Float?
+  firstOrderOnly      Boolean         @default(false)
+  allowedProductIds   String[]        @default([])
+  excludedProductIds  String[]        @default([])
+  allowedCategoryIds  String[]        @default([])
+  excludedCategoryIds String[]        @default([])
 
   welcomeTitle      String?
   welcomeMessage    String?

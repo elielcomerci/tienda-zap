@@ -1,6 +1,7 @@
 'use server'
 
 import crypto from 'crypto'
+import { Prisma } from '@prisma/client'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { buildCouponLandingUrl } from '@/lib/coupons'
@@ -19,6 +20,36 @@ async function requireAdmin() {
   if (!session || session.user?.role !== 'ADMIN') {
     throw new Error('Unauthorized')
   }
+  return session
+}
+
+function toAuditJson(value: unknown) {
+  return value == null ? Prisma.JsonNull : JSON.parse(JSON.stringify(value))
+}
+
+async function writeAdminAuditLog(input: {
+  actor: Awaited<ReturnType<typeof requireAdmin>>
+  action: string
+  entityType: string
+  entityId?: string | null
+  description?: string
+  before?: unknown
+  after?: unknown
+  metadata?: unknown
+}) {
+  await prisma.adminAuditLog.create({
+    data: {
+      actorId: input.actor.user?.id ?? null,
+      actorEmail: input.actor.user?.email ?? null,
+      action: input.action,
+      entityType: input.entityType,
+      entityId: input.entityId ?? null,
+      description: input.description,
+      before: toAuditJson(input.before),
+      after: toAuditJson(input.after),
+      metadata: toAuditJson(input.metadata),
+    },
+  })
 }
 
 function normalizeOptionalDate(value?: string | null) {
@@ -70,6 +101,10 @@ type RecipientRow = {
 function normalizeOptionalText(value?: string | null) {
   const trimmed = value?.trim()
   return trimmed ? trimmed : null
+}
+
+function normalizeIdList(values?: string[] | null) {
+  return [...new Set((values ?? []).map((value) => value.trim()).filter(Boolean))]
 }
 
 function splitRecipientLine(line: string) {
@@ -140,10 +175,60 @@ async function generateUniqueCouponCodes(quantity: number, prefix: string) {
   return generateUniqueCouponCodes(quantity, prefix)
 }
 
+const COUPONS_PAGE_SIZE = 20
+
+type PromotionCouponFilters = {
+  promotionId: string
+  query?: string
+  status?: 'ALL' | 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED'
+  batchName?: string
+  expiresMode?: 'ALL' | 'ACTIVE' | 'EXPIRED' | 'NO_EXPIRATION'
+}
+
+function buildPromotionCouponWhere(input: PromotionCouponFilters) {
+  const query = input.query?.trim()
+  const status = input.status && input.status !== 'ALL' ? input.status : null
+  const batchName = input.batchName?.trim()
+  const now = new Date()
+  const filters: Prisma.PromotionCouponWhereInput[] = []
+
+  if (input.expiresMode === 'ACTIVE') {
+    filters.push({ OR: [{ expiresAt: null }, { expiresAt: { gte: now } }] })
+  }
+
+  if (input.expiresMode === 'EXPIRED') {
+    filters.push({ expiresAt: { lt: now } })
+  }
+
+  if (input.expiresMode === 'NO_EXPIRATION') {
+    filters.push({ expiresAt: null })
+  }
+
+  if (query) {
+    filters.push({
+      OR: [
+        { code: { contains: query, mode: 'insensitive' } },
+        { recipientName: { contains: query, mode: 'insensitive' } },
+        { recipientBusiness: { contains: query, mode: 'insensitive' } },
+        { recipientEmail: { contains: query, mode: 'insensitive' } },
+        { recipientPhone: { contains: query, mode: 'insensitive' } },
+        { batchName: { contains: query, mode: 'insensitive' } },
+      ],
+    })
+  }
+
+  return {
+    promotionId: input.promotionId,
+    ...(status ? { status } : {}),
+    ...(batchName ? { batchName: { contains: batchName, mode: 'insensitive' } } : {}),
+    ...(filters.length ? { AND: filters } : {}),
+  } satisfies Prisma.PromotionCouponWhereInput
+}
+
 export async function getPromotions() {
   await requireAdmin()
 
-  return prisma.promotion.findMany({
+  const promotions = await prisma.promotion.findMany({
     include: {
       _count: {
         select: {
@@ -153,7 +238,7 @@ export async function getPromotions() {
       },
       coupons: {
         orderBy: { createdAt: 'desc' },
-        take: 8,
+        take: COUPONS_PAGE_SIZE,
         include: {
           _count: {
             select: {
@@ -166,6 +251,111 @@ export async function getPromotions() {
     },
     orderBy: { updatedAt: 'desc' },
   })
+
+  return Promise.all(
+    promotions.map(async (promotion) => {
+      const [scanAggregate, reservedRedemptions, confirmedRedemptions] = await Promise.all([
+        prisma.promotionCoupon.aggregate({
+          where: { promotionId: promotion.id },
+          _sum: { scanCount: true },
+        }),
+        prisma.couponRedemption.count({
+          where: {
+            promotionId: promotion.id,
+            status: 'RESERVED',
+          },
+        }),
+        prisma.couponRedemption.findMany({
+          where: {
+            promotionId: promotion.id,
+            status: 'CONFIRMED',
+          },
+          select: {
+            discountAmount: true,
+            order: {
+              select: {
+                total: true,
+                subtotal: true,
+              },
+            },
+          },
+        }),
+      ])
+
+      const confirmedCount = confirmedRedemptions.length
+      const totalScans = scanAggregate._sum.scanCount ?? 0
+      const attributedRevenue = confirmedRedemptions.reduce(
+        (sum, redemption) => sum + redemption.order.total,
+        0
+      )
+      const attributedSubtotal = confirmedRedemptions.reduce(
+        (sum, redemption) => sum + (redemption.order.subtotal ?? redemption.order.total),
+        0
+      )
+      const discountGranted = confirmedRedemptions.reduce(
+        (sum, redemption) => sum + redemption.discountAmount,
+        0
+      )
+
+      return {
+        ...promotion,
+        analytics: {
+          totalScans,
+          reservedRedemptions,
+          confirmedRedemptions: confirmedCount,
+          attributedRevenue,
+          attributedSubtotal,
+          discountGranted,
+          scanConversionRate: totalScans > 0 ? (confirmedCount / totalScans) * 100 : 0,
+          couponConversionRate:
+            promotion._count.coupons > 0 ? (confirmedCount / promotion._count.coupons) * 100 : 0,
+          revenuePerDiscountPeso: discountGranted > 0 ? attributedRevenue / discountGranted : null,
+        },
+      }
+    })
+  )
+}
+
+export async function getPromotionCoupons(input: {
+  promotionId: string
+  query?: string
+  status?: 'ALL' | 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED'
+  batchName?: string
+  expiresMode?: 'ALL' | 'ACTIVE' | 'EXPIRED' | 'NO_EXPIRATION'
+  page?: number
+  pageSize?: number
+}) {
+  await requireAdmin()
+
+  const pageSize = Math.min(Math.max(Math.floor(input.pageSize || COUPONS_PAGE_SIZE), 1), 100)
+  const page = Math.max(Math.floor(input.page || 1), 1)
+  const where = buildPromotionCouponWhere(input)
+
+  const [total, coupons] = await Promise.all([
+    prisma.promotionCoupon.count({ where }),
+    prisma.promotionCoupon.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        _count: {
+          select: {
+            scans: true,
+            redemptions: true,
+          },
+        },
+      },
+    }),
+  ])
+
+  return {
+    coupons,
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  }
 }
 
 export type PromotionInput = {
@@ -182,6 +372,12 @@ export type PromotionInput = {
   activeTo?: string | null
   maxUses?: number | null
   perUserLimit?: number | null
+  minOrderAmount?: number | null
+  firstOrderOnly?: boolean
+  allowedProductIds?: string[]
+  excludedProductIds?: string[]
+  allowedCategoryIds?: string[]
+  excludedCategoryIds?: string[]
 
   welcomeTitle?: string | null
   welcomeMessage?: string | null
@@ -222,6 +418,15 @@ function toPromotionData(data: PromotionInput) {
     activeTo: normalizeOptionalDate(data.activeTo),
     maxUses: normalizeOptionalInt(data.maxUses),
     perUserLimit: normalizeOptionalInt(data.perUserLimit),
+    minOrderAmount:
+      data.minOrderAmount != null && Number.isFinite(data.minOrderAmount) && data.minOrderAmount > 0
+        ? Number(data.minOrderAmount)
+        : null,
+    firstOrderOnly: Boolean(data.firstOrderOnly),
+    allowedProductIds: normalizeIdList(data.allowedProductIds),
+    excludedProductIds: normalizeIdList(data.excludedProductIds),
+    allowedCategoryIds: normalizeIdList(data.allowedCategoryIds),
+    excludedCategoryIds: normalizeIdList(data.excludedCategoryIds),
     welcomeTitle: normalizeOptionalText(data.welcomeTitle),
     welcomeMessage: normalizeOptionalText(data.welcomeMessage),
     welcomeConditions: normalizeOptionalText(data.welcomeConditions),
@@ -230,11 +435,20 @@ function toPromotionData(data: PromotionInput) {
 }
 
 export async function createPromotion(data: PromotionInput) {
-  await requireAdmin()
+  const actor = await requireAdmin()
   assertPromotionInput(data)
 
   const promotion = await prisma.promotion.create({
     data: toPromotionData(data),
+  })
+
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotion.create',
+    entityType: 'Promotion',
+    entityId: promotion.id,
+    description: `Creo la promocion ${promotion.name}`,
+    after: promotion,
   })
 
   revalidatePath('/admin/promociones')
@@ -242,12 +456,25 @@ export async function createPromotion(data: PromotionInput) {
 }
 
 export async function updatePromotion(id: string, data: PromotionInput) {
-  await requireAdmin()
+  const actor = await requireAdmin()
   assertPromotionInput(data)
+
+  const before = await prisma.promotion.findUnique({ where: { id } })
+  if (!before) throw new Error('Promocion no encontrada.')
 
   const promotion = await prisma.promotion.update({
     where: { id },
     data: toPromotionData(data),
+  })
+
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotion.update',
+    entityType: 'Promotion',
+    entityId: promotion.id,
+    description: `Edito la promocion ${promotion.name}`,
+    before,
+    after: promotion,
   })
 
   revalidatePath('/admin/promociones')
@@ -258,11 +485,24 @@ export async function togglePromotionStatus(
   id: string,
   status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED'
 ) {
-  await requireAdmin()
+  const actor = await requireAdmin()
+
+  const before = await prisma.promotion.findUnique({ where: { id } })
+  if (!before) throw new Error('Promocion no encontrada.')
 
   const promotion = await prisma.promotion.update({
     where: { id },
     data: { status },
+  })
+
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotion.status.update',
+    entityType: 'Promotion',
+    entityId: promotion.id,
+    description: `Cambio estado de promocion a ${status}`,
+    before: { status: before.status },
+    after: { status: promotion.status },
   })
 
   revalidatePath('/admin/promociones')
@@ -270,11 +510,11 @@ export async function togglePromotionStatus(
 }
 
 export async function deletePromotion(id: string) {
-  await requireAdmin()
+  const actor = await requireAdmin()
 
   const promotion = await prisma.promotion.findUnique({
     where: { id },
-    select: {
+    include: {
       _count: {
         select: {
           coupons: true,
@@ -292,6 +532,15 @@ export async function deletePromotion(id: string) {
 
   await prisma.promotion.delete({
     where: { id },
+  })
+
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotion.delete',
+    entityType: 'Promotion',
+    entityId: id,
+    description: `Elimino la promocion ${promotion.name}`,
+    before: promotion,
   })
 
   revalidatePath('/admin/promociones')
@@ -332,7 +581,7 @@ export async function generatePromotionCoupons(input: {
   qrBaseUrl?: string | null
   expiresAt?: string | null
 }) {
-  await requireAdmin()
+  const actor = await requireAdmin()
 
   const quantity = Math.floor(input.quantity)
   if (!Number.isFinite(quantity) || quantity < 1 || quantity > 500) {
@@ -383,33 +632,119 @@ export async function generatePromotionCoupons(input: {
     }),
   })
 
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotion.coupons.generate',
+    entityType: 'Promotion',
+    entityId: input.promotionId,
+    description: `Genero ${totalToGenerate} cupones con prefijo ${prefix}`,
+    metadata: {
+      quantity: totalToGenerate,
+      prefix,
+      batchName,
+      expiresAt,
+      hasRecipients: recipients.length > 0,
+      qrBaseUrl,
+    },
+  })
+
   revalidatePath('/admin/promociones')
   return { quantity: totalToGenerate, prefix }
 }
 
-export async function exportPromotionCouponsCsv(promotionId: string) {
-  await requireAdmin()
+export async function updatePromotionCoupon(input: {
+  code: string
+  recipientName?: string | null
+  recipientBusiness?: string | null
+  recipientEmail?: string | null
+  recipientPhone?: string | null
+  batchName?: string | null
+  publicPresenterName?: string | null
+  expiresAt?: string | null
+  status?: 'AVAILABLE' | 'EXPIRED'
+}) {
+  const actor = await requireAdmin()
+
+  const code = input.code.trim().toUpperCase()
+  if (!code) throw new Error('El codigo del cupon es obligatorio.')
+
+  const coupon = await prisma.promotionCoupon.findUnique({
+    where: { code },
+  })
+
+  if (!coupon) throw new Error('Cupon no encontrado.')
+  if (coupon.status === 'RESERVED' || coupon.status === 'USED') {
+    throw new Error('Este cupon ya esta reservado o usado. No se puede editar.')
+  }
+
+  const currentMetadata =
+    coupon.metadata && typeof coupon.metadata === 'object' && !Array.isArray(coupon.metadata)
+      ? (coupon.metadata as Record<string, unknown>)
+      : {}
+  const publicPresenterName = normalizeOptionalText(input.publicPresenterName)
+  const metadata = {
+    ...currentMetadata,
+    ...(publicPresenterName ? { publicPresenterName } : {}),
+  }
+
+  if (!publicPresenterName) {
+    delete metadata.publicPresenterName
+  }
+
+  const updatedCoupon = await prisma.promotionCoupon.update({
+    where: { code },
+    data: {
+      status: input.status || coupon.status,
+      recipientName: normalizeOptionalText(input.recipientName),
+      recipientBusiness: normalizeOptionalText(input.recipientBusiness),
+      recipientEmail: normalizeOptionalText(input.recipientEmail),
+      recipientPhone: normalizeOptionalText(input.recipientPhone),
+      batchName: normalizeOptionalText(input.batchName),
+      expiresAt: normalizeOptionalDate(input.expiresAt),
+      metadata: Object.keys(metadata).length ? metadata : Prisma.JsonNull,
+    },
+  })
+
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotionCoupon.update',
+    entityType: 'PromotionCoupon',
+    entityId: code,
+    description: `Edito el cupon ${code}`,
+    before: coupon,
+    after: updatedCoupon,
+  })
+
+  revalidatePath('/admin/promociones')
+  revalidatePath(`/cupon/${encodeURIComponent(code)}`)
+}
+
+export async function exportPromotionCouponsCsv(input: PromotionCouponFilters & { filtered?: boolean }) {
+  const actor = await requireAdmin()
 
   const promotion = await prisma.promotion.findUnique({
-    where: { id: promotionId },
-    include: {
-      coupons: {
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: {
-            select: {
-              scans: true,
-              redemptions: true,
-            },
-          },
-        },
-      },
-    },
+    where: { id: input.promotionId },
   })
 
   if (!promotion) {
     throw new Error('Promocion no encontrada.')
   }
+
+  const where = input.filtered
+    ? buildPromotionCouponWhere(input)
+    : { promotionId: input.promotionId }
+  const coupons = await prisma.promotionCoupon.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      _count: {
+        select: {
+          scans: true,
+          redemptions: true,
+        },
+      },
+    },
+  })
 
   const escapeCsv = (value: unknown) => {
     const rawValue = value == null ? '' : String(value)
@@ -433,7 +768,7 @@ export async function exportPromotionCouponsCsv(promotionId: string) {
       'vence',
       'creado',
     ],
-    ...promotion.coupons.map((coupon) => [
+    ...coupons.map((coupon) => [
       coupon.code,
       promotion.name,
       coupon.status,
@@ -450,6 +785,24 @@ export async function exportPromotionCouponsCsv(promotionId: string) {
       coupon.createdAt.toISOString(),
     ]),
   ]
+
+  await writeAdminAuditLog({
+    actor,
+    action: 'promotion.coupons.exportCsv',
+    entityType: 'Promotion',
+    entityId: input.promotionId,
+    description: input.filtered
+      ? `Exporto CSV filtrado de cupones de ${promotion.name}`
+      : `Exporto CSV total de cupones de ${promotion.name}`,
+    metadata: {
+      coupons: coupons.length,
+      filtered: Boolean(input.filtered),
+      query: input.query?.trim() || null,
+      status: input.status || 'ALL',
+      batchName: input.batchName?.trim() || null,
+      expiresMode: input.expiresMode || 'ALL',
+    },
+  })
 
   return rows.map((row) => row.map(escapeCsv).join(',')).join('\n')
 }

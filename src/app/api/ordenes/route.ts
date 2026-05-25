@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
           pricingSnapshot: pricing.pricingSnapshot,
           notes: data.notes,
           items: {
-            create: pricing.resolvedItems,
+            create: pricing.resolvedItems.map(({ categoryId, ...item }) => item),
           },
           zapCreditPlan: zapCreditPlan
             ? {
@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
           couponCode: pricing.couponCode,
           subtotal: pricing.subtotal,
           discountTotal: pricing.discountTotal,
+          resolvedItems: pricing.resolvedItems,
           userId: session?.user?.id,
         })
       }

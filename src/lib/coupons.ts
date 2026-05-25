@@ -133,6 +133,37 @@ function calculateDiscountAmount(subtotal: number, discountKind: DiscountKind, d
   return Math.min(roundCurrency(rawDiscount), roundCurrency(subtotal))
 }
 
+function calculateEligibleSubtotal(
+  items: ResolvedCheckoutItems,
+  promotion: {
+    allowedProductIds: string[]
+    excludedProductIds: string[]
+    allowedCategoryIds: string[]
+    excludedCategoryIds: string[]
+  }
+) {
+  const allowedProductIds = new Set(promotion.allowedProductIds)
+  const excludedProductIds = new Set(promotion.excludedProductIds)
+  const allowedCategoryIds = new Set(promotion.allowedCategoryIds)
+  const excludedCategoryIds = new Set(promotion.excludedCategoryIds)
+  const hasAllowedScope = allowedProductIds.size > 0 || allowedCategoryIds.size > 0
+
+  return roundCurrency(
+    items.reduce((sum, item) => {
+      if (excludedProductIds.has(item.productId) || excludedCategoryIds.has(item.categoryId)) {
+        return sum
+      }
+
+      const isAllowed =
+        !hasAllowedScope ||
+        allowedProductIds.has(item.productId) ||
+        allowedCategoryIds.has(item.categoryId)
+
+      return isAllowed ? sum + item.unitPrice * item.quantity : sum
+    }, 0)
+  )
+}
+
 async function loadCouponRecord(db: CouponDbClient, normalizedCode: string) {
   return db.promotionCoupon.findUnique({
     where: { code: normalizedCode },
@@ -146,10 +177,12 @@ async function evaluateCouponRecord(input: {
   db: CouponDbClient
   coupon: NonNullable<CouponLookup>
   subtotal: number
+  resolvedItems: ResolvedCheckoutItems
   userId?: string
+  orderId?: string
   now?: Date
 }) {
-  const { db, coupon, subtotal, userId } = input
+  const { db, coupon, subtotal, resolvedItems, userId } = input
   const now = input.now ?? new Date()
 
   if (!isPromotionCurrentlyActive(coupon.promotion, now)) {
@@ -182,6 +215,47 @@ async function evaluateCouponRecord(input: {
     return {
       ok: false as const,
       detail: 'Este cupon ya no tiene usos disponibles.',
+    }
+  }
+
+  if (coupon.promotion.minOrderAmount != null && subtotal < coupon.promotion.minOrderAmount) {
+    return {
+      ok: false as const,
+      detail: `Este cupon requiere una compra minima de $${coupon.promotion.minOrderAmount.toLocaleString('es-AR')}.`,
+    }
+  }
+
+  if (coupon.promotion.firstOrderOnly) {
+    if (!userId) {
+      return {
+        ok: false as const,
+        detail: 'Este cupon es solo para primera compra. Inicia sesion para validarlo.',
+      }
+    }
+
+    const previousPaidOrders = await db.order.count({
+      where: {
+        userId,
+        ...(input.orderId ? { id: { not: input.orderId } } : {}),
+        status: {
+          not: 'CANCELLED',
+        },
+      },
+    })
+
+    if (previousPaidOrders > 0) {
+      return {
+        ok: false as const,
+        detail: 'Este cupon es exclusivo para la primera compra.',
+      }
+    }
+  }
+
+  const eligibleSubtotal = calculateEligibleSubtotal(resolvedItems, coupon.promotion)
+  if (eligibleSubtotal <= 0) {
+    return {
+      ok: false as const,
+      detail: 'Este cupon no aplica a los productos del pedido actual.',
     }
   }
 
@@ -221,7 +295,7 @@ async function evaluateCouponRecord(input: {
   }
 
   const discountAmount = calculateDiscountAmount(
-    subtotal,
+    eligibleSubtotal,
     coupon.promotion.discountKind,
     coupon.promotion.discountValue
   )
@@ -393,6 +467,7 @@ export async function evaluateCheckoutPricing(input: {
     db,
     coupon,
     subtotal,
+    resolvedItems,
     userId: input.userId,
   })
 
@@ -465,6 +540,7 @@ export async function reserveCouponRedemptionForOrder(input: {
   couponCode: string
   subtotal: number
   discountTotal: number
+  resolvedItems: ResolvedCheckoutItems
   userId?: string
 }) {
   const normalizedCode = normalizeCouponCode(input.couponCode)
@@ -478,7 +554,9 @@ export async function reserveCouponRedemptionForOrder(input: {
     db: input.tx,
     coupon,
     subtotal: input.subtotal,
+    resolvedItems: input.resolvedItems,
     userId: input.userId,
+    orderId: input.orderId,
   })
 
   if (!evaluation.ok) {

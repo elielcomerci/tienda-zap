@@ -55,6 +55,33 @@ function normalizeBriefType(value?: string | null) {
   return value === 'DESIGN' || value === 'MUSIC' || value === 'VIDEO' ? value : 'NONE'
 }
 
+function getVariantCombos(variant: ProductWithOptions['variants'][number]) {
+  const combos: Record<string, string> = {}
+  variant.options.forEach((option) => {
+    combos[option.optionValue.option.name] = option.optionValue.value
+  })
+  return combos
+}
+
+function findMatchingPartVariant(
+  part: ProductWithOptions,
+  selections: Record<string, string>
+) {
+  if (!part.variants || part.variants.length === 0) return null
+
+  const selectedEntries = Object.entries(selections).filter(([, value]) => value)
+  if (selectedEntries.length === 0) return null
+
+  return (
+    part.variants.find((variant) => {
+      const combos = getVariantCombos(variant)
+      const comboEntries = Object.entries(combos)
+      if (comboEntries.length !== selectedEntries.length) return false
+      return comboEntries.every(([optionName, value]) => selections[optionName] === value)
+    }) || null
+  )
+}
+
 export default function ProductConfigurator({
   product,
   inquiryUrl,
@@ -176,14 +203,29 @@ export default function ProductConfigurator({
       .every((option) => Boolean(selected[option.name]))
   }, [hasOptions, product.options, selected])
 
+  const comboPartVariants = useMemo(() => {
+    const entries = comboParts.map((part) => {
+      const selections = comboSelections[part.id] || {}
+      return [part.id, findMatchingPartVariant(part, selections)] as const
+    })
+    return new Map(entries)
+  }, [comboParts, comboSelections])
+
   const comboPartsReady = useMemo(
     () =>
-      comboParts.every((part) =>
-        (part.options || [])
+      comboParts.every((part) => {
+        const partSelections = comboSelections[part.id] || {}
+        const requiredOptionsReady = (part.options || [])
           .filter((option) => option.isRequired)
-          .every((option) => Boolean(comboSelections[part.id]?.[option.name]))
-      ),
-    [comboParts, comboSelections]
+          .every((option) => Boolean(partSelections[option.name]))
+
+        if (!requiredOptionsReady) return false
+        if (!part.variants || part.variants.length === 0) return true
+
+        const matchingVariant = comboPartVariants.get(part.id)
+        return Boolean(matchingVariant && isPurchasablePrice(matchingVariant.price))
+      }),
+    [comboPartVariants, comboParts, comboSelections]
   )
 
   const comboPartsBaseTotal = useMemo(() => {
@@ -198,21 +240,11 @@ export default function ProductConfigurator({
       }
 
       const partSelections = comboSelections[part.id] || {}
-      const selectedEntries = Object.entries(partSelections).filter(([, value]) => value)
       const requiredOptions = part.options.filter((option) => option.isRequired)
       const hasRequiredOptions = requiredOptions.every((option) => Boolean(partSelections[option.name]))
       if (!hasRequiredOptions) return null
 
-      const matchingVariant = (part.variants || []).find((variant) => {
-        const combos: Record<string, string> = {}
-        variant.options.forEach((option) => {
-          combos[option.optionValue.option.name] = option.optionValue.value
-        })
-
-        const comboKeys = Object.keys(combos)
-        if (comboKeys.length !== selectedEntries.length) return false
-        return selectedEntries.every(([key, value]) => combos[key] === value)
-      })
+      const matchingVariant = findMatchingPartVariant(part, partSelections)
 
       if (!matchingVariant || !isPurchasablePrice(matchingVariant.price)) return null
       total += matchingVariant.price
@@ -406,9 +438,14 @@ export default function ProductConfigurator({
       .map(([name, value]) => ({ name, value }))
 
     const comboOptions = comboParts.flatMap((part) =>
-      Object.entries(comboSelections[part.id] || {})
-        .filter(([, value]) => value !== '')
-        .map(([name, value]) => ({ name: `${part.name} / ${name}`, value }))
+      [
+        ...Object.entries(comboSelections[part.id] || {})
+          .filter(([, value]) => value !== '')
+          .map(([name, value]) => ({ name: `${part.name} / ${name}`, value })),
+        ...(comboPartVariants.get(part.id)?.sku
+          ? [{ name: `${part.name} / SKU`, value: comboPartVariants.get(part.id)!.sku! }]
+          : []),
+      ]
     )
 
     const apparelOptions = apparelDesignSelection

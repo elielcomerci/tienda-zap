@@ -35,6 +35,7 @@ export async function resolveCheckoutOrderItems(
   items: Array<{
     productId: string
     quantity: number
+    unitPrice?: number
     notes?: string
     briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
     briefResponses?: Record<string, string>
@@ -59,6 +60,7 @@ export async function resolveCheckoutOrderItems(
     include: {
       category: {
         select: {
+          id: true,
           isService: true,
         },
       },
@@ -132,6 +134,10 @@ export async function resolveCheckoutOrderItems(
     }
 
     let unitPrice = product.price
+    if (product.isCombo && product.comboPricingMode === 'DYNAMIC' && item.unitPrice && item.unitPrice > 0) {
+      unitPrice = item.unitPrice
+    }
+
     if (product.quoterConfig) {
       const materialName = selectedMap.get('Material')
       const sizeLabel = selectedMap.get('Medida')
@@ -177,6 +183,7 @@ export async function resolveCheckoutOrderItems(
 
     return {
       productId: product.id,
+      categoryId: product.category.id,
       quantity: item.quantity,
       unitPrice,
       creditDownPaymentPercent: product.creditDownPaymentPercent,

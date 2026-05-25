@@ -104,6 +104,22 @@ export default function WelcomePromoModal() {
             {promo.message || `Tenés un beneficio especial aplicable a toda tu compra. El código ${promo.code} ya fue guardado en tu sesión y se aplicará en el checkout.`}
           </p>
 
+          {promo.recipientLabel && (
+            <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-center">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                Cupon preparado para
+              </p>
+              <p className="mt-1 text-base font-black text-gray-900">
+                {promo.recipientLabel}
+              </p>
+              {promo.recipientName && promo.recipientBusiness && (
+                <p className="mt-0.5 text-sm font-semibold text-gray-500">
+                  {promo.recipientBusiness}
+                </p>
+              )}
+            </div>
+          )}
+
           {promo.presenterName && (
             <p className="mt-4 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-center text-sm font-semibold text-orange-900">
               Beneficio acercado por {promo.presenterName}.
