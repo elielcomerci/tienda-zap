@@ -97,6 +97,44 @@ function normalizeOptions(options: Option[]): Option[] {
   }))
 }
 
+function normalizeText(value: string) {
+  return value.trim().toLowerCase()
+}
+
+function findExactVariant(variants: Variant[], combination: Record<string, string>) {
+  return variants.find((variant) => {
+    const variantKeys = Object.keys(variant.combinations)
+    const combinationKeys = Object.keys(combination)
+    if (variantKeys.length !== combinationKeys.length) return false
+    return variantKeys.every((key) => variant.combinations[key] === combination[key])
+  })
+}
+
+function getVisualMatchOptionNames(options: Option[]) {
+  const colorOptions = options
+    .filter((option) => option.displayType === 'COLOR_SWATCH' || option.name.toLowerCase().includes('color'))
+    .map((option) => option.name)
+
+  return colorOptions.length > 0 ? colorOptions : []
+}
+
+function findVisualVariant(
+  variants: Variant[],
+  combination: Record<string, string>,
+  optionNames: string[]
+) {
+  if (optionNames.length === 0) return undefined
+
+  return variants.find((variant) => {
+    if (!variant.imageUrl) return false
+    return optionNames.every((optionName) => {
+      const currentValue = variant.combinations[optionName]
+      const nextValue = combination[optionName]
+      return currentValue && nextValue && normalizeText(currentValue) === normalizeText(nextValue)
+    })
+  })
+}
+
 const OPTION_TEMPLATES: OptionTemplate[] = [
   {
     id: 'unit-volume',
@@ -505,11 +543,7 @@ export default function ProductOptionsConfigurator({
       // Start from existing options that are NOT managed by the quoter (manual ones)
       const quoterOptionNames = new Set(Object.keys(incomingOptionsMap).map(k => k.toLowerCase()))
       const manualOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
-      const manualOptionNames = manualOptions.map((option) => option.name)
-      const imageMatchOptionNames =
-        manualOptions
-          .filter((option) => option.displayType === 'COLOR_SWATCH' || option.name.toLowerCase().includes('color'))
-          .map((option) => option.name)
+      const imageMatchOptionNames = getVisualMatchOptionNames(manualOptions)
       let nextOptions = [...manualOptions]
 
       // Add/replace quoter-managed options with fresh values (no merging)
@@ -530,26 +564,8 @@ export default function ProductOptionsConfigurator({
         const incoming = incomingVariants.find(v =>
           Object.entries(v.options).every(([k, val]) => combination[k] === val)
         )
-        const existing = variants.find((variant) => {
-          const variantKeys = Object.keys(variant.combinations)
-          const combinationKeys = Object.keys(combination)
-          if (variantKeys.length !== combinationKeys.length) return false
-          return variantKeys.every((key) => variant.combinations[key] === combination[key])
-        })
-        const imageSource = existing || variants.find((variant) => {
-          if (!variant.imageUrl) return false
-          const optionNames = imageMatchOptionNames.length > 0 ? imageMatchOptionNames : manualOptionNames
-          if (optionNames.length === 0) return false
-          return optionNames.every((optionName) => {
-            const currentValue = variant.combinations[optionName]
-            const nextValue = combination[optionName]
-            return (
-              currentValue &&
-              nextValue &&
-              currentValue.trim().toLowerCase() === nextValue.trim().toLowerCase()
-            )
-          })
-        })
+        const existing = findExactVariant(variants, combination)
+        const imageSource = existing || findVisualVariant(variants, combination, imageMatchOptionNames)
         return existing
           ? { ...existing, price: incoming ? incoming.price : existing.price, imageUrl: existing.imageUrl || imageSource?.imageUrl }
           : { combinations: combination, price: incoming ? incoming.price : basePrice, imageUrl: imageSource?.imageUrl }
@@ -704,22 +720,16 @@ export default function ProductOptionsConfigurator({
 
   const generateVariants = () => {
     const combinations = cartesianProduct(options)
+    const imageMatchOptionNames = getVisualMatchOptionNames(options)
 
     const nextVariants = combinations.map((combination) => {
-      const existing = variants.find((variant) => {
-        const variantKeys = Object.keys(variant.combinations)
-        const combinationKeys = Object.keys(combination)
-
-        if (variantKeys.length !== combinationKeys.length) {
-          return false
-        }
-
-        return variantKeys.every((key) => variant.combinations[key] === combination[key])
-      })
+      const existing = findExactVariant(variants, combination)
+      const imageSource = existing || findVisualVariant(variants, combination, imageMatchOptionNames)
 
       return existing || {
         combinations: combination,
         price: basePrice,
+        imageUrl: imageSource?.imageUrl,
       }
     })
 
