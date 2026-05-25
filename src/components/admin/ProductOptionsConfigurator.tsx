@@ -504,7 +504,13 @@ export default function ProductOptionsConfigurator({
 
       // Start from existing options that are NOT managed by the quoter (manual ones)
       const quoterOptionNames = new Set(Object.keys(incomingOptionsMap).map(k => k.toLowerCase()))
-      let nextOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
+      const manualOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
+      const manualOptionNames = manualOptions.map((option) => option.name)
+      const imageMatchOptionNames =
+        manualOptions
+          .filter((option) => option.displayType === 'COLOR_SWATCH' || option.name.toLowerCase().includes('color'))
+          .map((option) => option.name)
+      let nextOptions = [...manualOptions]
 
       // Add/replace quoter-managed options with fresh values (no merging)
       Object.entries(incomingOptionsMap).forEach(([optName, optValuesSet]) => {
@@ -530,9 +536,23 @@ export default function ProductOptionsConfigurator({
           if (variantKeys.length !== combinationKeys.length) return false
           return variantKeys.every((key) => variant.combinations[key] === combination[key])
         })
+        const imageSource = existing || variants.find((variant) => {
+          if (!variant.imageUrl) return false
+          const optionNames = imageMatchOptionNames.length > 0 ? imageMatchOptionNames : manualOptionNames
+          if (optionNames.length === 0) return false
+          return optionNames.every((optionName) => {
+            const currentValue = variant.combinations[optionName]
+            const nextValue = combination[optionName]
+            return (
+              currentValue &&
+              nextValue &&
+              currentValue.trim().toLowerCase() === nextValue.trim().toLowerCase()
+            )
+          })
+        })
         return existing
-          ? { ...existing, price: incoming ? incoming.price : existing.price }
-          : { combinations: combination, price: incoming ? incoming.price : basePrice }
+          ? { ...existing, price: incoming ? incoming.price : existing.price, imageUrl: existing.imageUrl || imageSource?.imageUrl }
+          : { combinations: combination, price: incoming ? incoming.price : basePrice, imageUrl: imageSource?.imageUrl }
       })
       setVariants(nextVariants)
     }
