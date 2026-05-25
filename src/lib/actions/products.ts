@@ -480,7 +480,7 @@ export async function updateProduct(id: string, formData: FormData) {
     }
 
     return product
-  })
+  }, { maxWait: 10000, timeout: 30000 })
 
   if (originalProduct?.slug) {
     revalidatePath(`/productos/${originalProduct.slug}`)
