@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -100,6 +100,7 @@ export default function ProductForm({
   availableBusinessTypes?: Array<{ id: string; name: string; slug: string }>
   initialTargetBusinessTypeIds?: string[]
 }) {
+  const formRef = useRef<HTMLFormElement>(null)
   const [images, setImages] = useState<string[]>(product?.images || [])
   const [uploading, setUploading] = useState(false)
   const [mediaUploading, setMediaUploading] = useState(false)
@@ -416,10 +417,38 @@ export default function ProductForm({
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) throw new Error()
       const data = await res.json()
-      updateMockupColor(colorIndex, field, data.url)
       const color = apparelMockup.colors[colorIndex]
+      const nextColors = apparelMockup.colors.map((mockupColor, index) =>
+        index === colorIndex ? { ...mockupColor, [field]: data.url } : mockupColor
+      )
+      const nextApparelMockup = { ...apparelMockup, colors: nextColors }
+      const nextMediaPayload = [
+        {
+          ...nextApparelMockup,
+          colors: nextApparelMockup.colors.filter(
+            (mockupColor) => mockupColor.value.trim() || mockupColor.frontImageUrl || mockupColor.backImageUrl
+          ),
+          presetDesigns: (nextApparelMockup.presetDesigns || []).filter(
+            (design) => design.name.trim() || design.imageUrl.trim()
+          ),
+          type: 'APPAREL_MOCKUP' as const,
+        },
+        ...mediaList,
+      ]
+      updateMockupColor(colorIndex, field, data.url)
       const shouldApplyToVariants = field === 'frontImageUrl' || !color?.frontImageUrl
+      let nextVariants = currentVariants
       if (color?.value && shouldApplyToVariants) {
+        const normalize = (value: string) => value.trim().toLowerCase()
+        nextVariants = currentVariants.map((variant) => {
+          const variantValue = variant.combinations?.[resolvedColorOptionName]
+          const matches =
+            variantValue === color.value ||
+            normalize(variantValue || '') === normalize(color.value)
+
+          return matches ? { ...variant, imageUrl: data.url } : variant
+        })
+        setCurrentVariants(nextVariants)
         window.dispatchEvent(
           new CustomEvent('apply-variant-image-by-option', {
             detail: {
@@ -429,6 +458,14 @@ export default function ProductForm({
             },
           })
         )
+      }
+
+      if (product && formRef.current) {
+        await saveProductForm(formRef.current, {
+          mediaList: nextMediaPayload,
+          variants: nextVariants,
+          stayOnPage: true,
+        })
       }
     } catch {
       setError('No pudimos subir la imagen del mockup. Intenta de nuevo.')
@@ -583,25 +620,54 @@ export default function ProductForm({
     setSlugManuallyEdited(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const buildProductFormData = (
+    form: HTMLFormElement,
+    overrides: {
+      images?: string[]
+      mediaList?: typeof mediaPayload
+      options?: any[]
+      variants?: any[]
+      relatedProductIds?: string[]
+      stayOnPage?: boolean
+    } = {}
+  ) => {
+    const nextImages = overrides.images || images
+    const nextMediaList = overrides.mediaList || mediaPayload
+    const nextOptions = overrides.options || currentOptions
+    const nextVariants = overrides.variants || currentVariants
+    const nextRelatedProductIds = overrides.relatedProductIds || currentRelatedProductIds
+    const formData = new FormData(form)
+
+    formData.set('images', JSON.stringify(nextImages))
+    formData.set('mediaList', JSON.stringify(nextMediaList))
+    formData.set('options', JSON.stringify(nextOptions))
+    formData.set('variants', JSON.stringify(nextVariants))
+    formData.set('relatedProductIds', JSON.stringify(nextRelatedProductIds))
+
+    if (!formData.get('active')) formData.set('active', 'false')
+    else formData.set('active', 'true')
+
+    if (isCombo) formData.set('isCombo', 'on')
+    else formData.delete('isCombo')
+    formData.set('comboPricingMode', isCombo ? comboPricingMode : 'FIXED')
+
+    if (overrides.stayOnPage) {
+      formData.set('stayOnPage', 'true')
+    }
+
+    return { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextRelatedProductIds }
+  }
+
+  const saveProductForm = async (
+    form: HTMLFormElement,
+    overrides: Parameters<typeof buildProductFormData>[1] = {}
+  ) => {
     setLoading(true)
     setError('')
 
     try {
-      const formData = new FormData(e.currentTarget)
-      formData.append('images', JSON.stringify(images))
-      formData.append('mediaList', JSON.stringify(mediaPayload))
-      formData.set('options', JSON.stringify(currentOptions))
-      formData.set('variants', JSON.stringify(currentVariants))
-      formData.set('relatedProductIds', JSON.stringify(currentRelatedProductIds))
-
-      if (!formData.get('active')) formData.set('active', 'false')
-      else formData.set('active', 'true')
-
-      if (isCombo) formData.set('isCombo', 'on')
-      else formData.delete('isCombo')
-      formData.set('comboPricingMode', isCombo ? comboPricingMode : 'FIXED')
+      const { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextRelatedProductIds } =
+        buildProductFormData(form, overrides)
 
       const raw = {
         name: formData.get('name') as string,
@@ -611,22 +677,20 @@ export default function ProductForm({
         creditDownPaymentPercent: formData.get('creditDownPaymentPercent'),
         categoryId: selectedCategoryId,
         stock: isServiceCategory ? 0 : formData.get('stock'),
-        images,
+        images: nextImages,
         briefType: formData.get('briefType') as string,
         mediaType: derivedMediaType,
         mediaUrl: derivedMediaUrl,
         mediaTitle: derivedMediaTitle,
-        mediaList: mediaPayload,
+        mediaList: nextMediaList,
         active: formData.get('active') === 'true',
         isCombo: isCombo,
         comboPricingMode: isCombo ? comboPricingMode : 'FIXED',
         comboDiscountPercent: formData.get('comboDiscountPercent') || 0,
         targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds'),
-        options: formData.get('options') ? JSON.parse(formData.get('options') as string) : [],
-        variants: formData.get('variants') ? JSON.parse(formData.get('variants') as string) : [],
-        relatedProductIds: formData.get('relatedProductIds')
-          ? JSON.parse(formData.get('relatedProductIds') as string)
-          : [],
+        options: nextOptions,
+        variants: nextVariants,
+        relatedProductIds: nextRelatedProductIds,
         intentionIds: formData.getAll('intentionIds'),
       }
 
@@ -638,10 +702,18 @@ export default function ProductForm({
       }
 
       await action(formData)
+      if (overrides.stayOnPage) {
+        setLoading(false)
+      }
     } catch (err: any) {
       setError(err.message || 'Error al guardar el producto')
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    await saveProductForm(e.currentTarget)
   }
 
   return (
@@ -676,7 +748,7 @@ export default function ProductForm({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">
+      <form ref={formRef} onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">
         <input type="hidden" name="mediaType" value={derivedMediaType} />
         <input type="hidden" name="mediaUrl" value={derivedMediaUrl} />
         <input type="hidden" name="mediaTitle" value={derivedMediaTitle} />

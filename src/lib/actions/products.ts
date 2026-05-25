@@ -552,6 +552,9 @@ export async function updateProduct(id: string, formData: FormData) {
   revalidatePath('/admin/productos')
   revalidatePath('/productos')
   revalidatePath(`/productos/${updatedProduct.slug}`)
+  if (formData.get('stayOnPage') === 'true') {
+    return
+  }
   redirect('/admin/productos')
 }
 
