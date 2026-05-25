@@ -57,7 +57,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     name: opt.name,
     displayType: opt.displayType,
     isRequired: opt.isRequired,
-    values: opt.values.map(v => ({ value: v.value, colorHex: v.colorHex ?? undefined })),
+    values: opt.values.map(v => ({ id: v.id, value: v.value, colorHex: v.colorHex ?? undefined })),
   }))
 
   // Variants: { combinations: { optionName: value }, price, sku, stock }

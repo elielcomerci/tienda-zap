@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { Link2, Search, Boxes } from 'lucide-react'
 
@@ -19,15 +19,21 @@ export default function ProductRelationsPicker({
   products,
   initialSelectedIds = [],
   isCombo = false,
+  onSelectionChange,
 }: {
   products: RelatedProductOption[]
   initialSelectedIds?: string[]
   isCombo?: boolean
+  onSelectionChange?: (selectedIds: string[]) => void
 }) {
   const [query, setQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState(initialSelectedIds)
 
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds])
+
+  useEffect(() => {
+    onSelectionChange?.(selectedIds)
+  }, [selectedIds, onSelectionChange])
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -53,8 +59,6 @@ export default function ProductRelationsPicker({
 
   return (
     <div className="card p-6">
-      <input type="hidden" name="relatedProductIds" value={JSON.stringify(selectedIds)} />
-
       <div className="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
         {isCombo ? (
           <Boxes size={18} className="text-[#ED2C71]" />

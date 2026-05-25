@@ -109,6 +109,8 @@ export default function ProductForm({
     (initialOptions?.length || product?.options?.length) > 0 || false
   )
   const [currentOptions, setCurrentOptions] = useState<any[]>(() => initialOptions || product?.options || [])
+  const [currentVariants, setCurrentVariants] = useState<any[]>(() => initialVariants || product?.variants || [])
+  const [currentRelatedProductIds, setCurrentRelatedProductIds] = useState<string[]>(() => initialRelatedProductIds || [])
   const [selectedCategoryId, setSelectedCategoryId] = useState(product?.categoryId || '')
 
   const initialName = product?.name || ''
@@ -590,6 +592,9 @@ export default function ProductForm({
       const formData = new FormData(e.currentTarget)
       formData.append('images', JSON.stringify(images))
       formData.append('mediaList', JSON.stringify(mediaPayload))
+      formData.set('options', JSON.stringify(currentOptions))
+      formData.set('variants', JSON.stringify(currentVariants))
+      formData.set('relatedProductIds', JSON.stringify(currentRelatedProductIds))
 
       if (!formData.get('active')) formData.set('active', 'false')
       else formData.set('active', 'true')
@@ -896,6 +901,7 @@ export default function ProductForm({
             disableStock={isServiceCategory}
             onOptionsChange={setHasVariants}
             onOptionsDataChange={setCurrentOptions}
+            onVariantsDataChange={setCurrentVariants}
           />
         </div>
 
@@ -1011,6 +1017,7 @@ export default function ProductForm({
             isCombo={isCombo}
             products={availableProducts}
             initialSelectedIds={initialRelatedProductIds || []}
+            onSelectionChange={setCurrentRelatedProductIds}
           />
 
           {availableIntentions && availableIntentions.length > 0 && (

@@ -19,6 +19,7 @@ import {
 type OptionDisplayType = 'BUTTON' | 'COLOR_SWATCH' | 'SIZE'
 
 type OptionValue = {
+  id?: string
   value: string
   colorHex?: string
 }
@@ -82,6 +83,7 @@ function normalizeOptionValue(value: string | OptionValue): OptionValue {
   }
 
   return {
+    id: value.id,
     value: value.value || '',
     colorHex: value.colorHex || '',
   }
@@ -440,6 +442,7 @@ export default function ProductOptionsConfigurator({
   disableStock = false,
   onOptionsChange,
   onOptionsDataChange,
+  onVariantsDataChange,
 }: {
   initialOptions?: Option[]
   initialVariants?: Variant[]
@@ -447,6 +450,7 @@ export default function ProductOptionsConfigurator({
   disableStock?: boolean
   onOptionsChange?: (hasOptions: boolean) => void
   onOptionsDataChange?: (options: Option[]) => void
+  onVariantsDataChange?: (variants: Variant[]) => void
 }) {
   const [options, setOptions] = useState<Option[]>(() => normalizeOptions(initialOptions))
   const [variants, setVariants] = useState<Variant[]>(initialVariants)
@@ -458,11 +462,21 @@ export default function ProductOptionsConfigurator({
   const [bulkImageUrl, setBulkImageUrl] = useState('')
   const [bulkImageUploading, setBulkImageUploading] = useState(false)
   const [previewSelections, setPreviewSelections] = useState<Record<string, string>>({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [variantFilters, searchQuery, variants.length])
 
   useEffect(() => {
     onOptionsChange?.(options.length > 0)
     onOptionsDataChange?.(options)
   }, [onOptionsChange, onOptionsDataChange, options])
+
+  useEffect(() => {
+    onVariantsDataChange?.(variants)
+  }, [variants, onVariantsDataChange])
 
   useEffect(() => {
     if (!disableStock) {
@@ -717,19 +731,38 @@ export default function ProductOptionsConfigurator({
   }
 
   const visibleVariants = useMemo(
-    () =>
-      variants
+    () => {
+      const query = searchQuery.trim().toLowerCase()
+      return variants
         .map((variant, index) => ({ variant, index }))
-        .filter(({ variant }) =>
-          Object.entries(variantFilters).every(
+        .filter(({ variant }) => {
+          const matchesFilters = Object.entries(variantFilters).every(
             ([optionName, value]) => !value || variant.combinations[optionName] === value
           )
-        ),
-    [variantFilters, variants]
+          if (!matchesFilters) return false
+
+          if (query) {
+            const combinationValues = Object.values(variant.combinations).map((v) => v.toLowerCase())
+            const skuMatch = variant.sku ? variant.sku.toLowerCase().includes(query) : false
+            const combinationMatch = combinationValues.some((val) => val.includes(query))
+            return skuMatch || combinationMatch
+          }
+
+          return true
+        })
+    },
+    [variantFilters, variants, searchQuery]
   )
 
   const filteredCount = visibleVariants.length
-  const hasActiveFilters = Object.values(variantFilters).some(Boolean)
+  const itemsPerPage = 25
+  const totalPages = Math.ceil(filteredCount / itemsPerPage) || 1
+  const paginatedVariants = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return visibleVariants.slice(startIndex, startIndex + itemsPerPage)
+  }, [visibleVariants, currentPage, itemsPerPage])
+
+  const hasActiveFilters = Object.values(variantFilters).some(Boolean) || Boolean(searchQuery)
   const zeroPriceVariantsCount = variants.filter((variant) => !variant.price || variant.price <= 0).length
   const variantsWithoutImageCount = variants.filter((variant) => !variant.imageUrl).length
   const colorValuesWithoutSwatchCount = options
@@ -749,6 +782,7 @@ export default function ProductOptionsConfigurator({
 
   const clearVariantFilters = () => {
     setVariantFilters({})
+    setSearchQuery('')
   }
 
   const applyBulkPriceToVisible = () => {
@@ -855,20 +889,6 @@ export default function ProductOptionsConfigurator({
 
   return (
     <div className="space-y-8">
-      <input
-        type="hidden"
-        name="options"
-        value={JSON.stringify(options.map((option) => ({
-          ...option,
-          displayType: option.displayType || 'BUTTON',
-          values: option.values.map((value) => ({
-            value: value.value,
-            colorHex: value.colorHex || undefined,
-          })),
-        })))}
-      />
-      <input type="hidden" name="variants" value={JSON.stringify(variants)} />
-
       <div className="card border-orange-100 bg-orange-50/30 p-6">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <h2 className="flex items-center gap-2 font-bold text-gray-900">
@@ -1194,6 +1214,17 @@ export default function ProductOptionsConfigurator({
 
           <div className="space-y-4 border-b border-orange-100 bg-orange-50/50 p-4">
             <div className="flex flex-wrap items-end gap-3">
+              <label className="min-w-[200px] flex-[2] text-xs font-semibold text-gray-600">
+                Buscar por texto (talle, color, SKU...)
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input mt-1 !py-2 !text-sm"
+                  placeholder="Ej: Negro, XL, TJ-100..."
+                />
+              </label>
+
               {options.map((option) => (
                 <label key={option.name} className="min-w-36 flex-1 text-xs font-semibold text-gray-600">
                   {option.name || 'Opcion'}
@@ -1343,7 +1374,7 @@ export default function ProductOptionsConfigurator({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {visibleVariants.map(({ variant, index }) => (
+                {paginatedVariants.map(({ variant, index }) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {Object.entries(variant.combinations).map(([key, value]) => (
@@ -1446,6 +1477,71 @@ export default function ProductOptionsConfigurator({
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-100 bg-white px-4 py-4 sm:flex-row">
+              <p className="text-xs font-semibold text-gray-500">
+                Mostrando <span className="font-bold text-gray-900">{Math.min((currentPage - 1) * itemsPerPage + 1, filteredCount)}</span> a{' '}
+                <span className="font-bold text-gray-900">{Math.min(currentPage * itemsPerPage, filteredCount)}</span> de{' '}
+                <span className="font-bold text-gray-900">{filteredCount}</span> variantes
+              </p>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((c) => Math.max(1, c - 1))}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Anterior
+                </button>
+
+                {(() => {
+                  const pageNumbers = []
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) pageNumbers.push(i)
+                  } else {
+                    pageNumbers.push(1)
+                    if (currentPage > 3) pageNumbers.push('ellipsis')
+                    const start = Math.max(2, currentPage - 1)
+                    const end = Math.min(totalPages - 1, currentPage + 1)
+                    for (let i = start; i <= end; i++) pageNumbers.push(i)
+                    if (currentPage < totalPages - 2) pageNumbers.push('ellipsis')
+                    pageNumbers.push(totalPages)
+                  }
+                  return pageNumbers.map((page, i) =>
+                    page === 'ellipsis' ? (
+                      <span key={`ellipsis-${i}`} className="px-1.5 text-xs font-semibold text-gray-400 select-none">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page as number)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold border transition-all ${
+                          currentPage === page
+                            ? 'bg-orange-500 border-orange-500 text-white shadow-sm'
+                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )
+                })()}
+
+                <button
+                  type="button"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((c) => Math.min(totalPages, c + 1))}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
           {uploadError && (
             <p className="border-t border-red-100 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
               {uploadError}

@@ -271,85 +271,216 @@ export async function updateProduct(id: string, formData: FormData) {
     select: { slug: true },
   })
 
-  await prisma.productOption.deleteMany({ where: { productId: id } })
-  await prisma.productVariant.deleteMany({ where: { productId: id } })
-  await prisma.productRelation.deleteMany({ where: { productId: id } })
-
-  const updatedProduct = await prisma.product.update({
-    where: { id },
-    data: {
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      price: data.price,
-      creditDownPaymentPercent: data.creditDownPaymentPercent,
-      categoryId: data.categoryId,
-      stock: data.stock,
-      images: data.images,
-      briefType: data.briefType,
-      mediaType: data.mediaType,
-      mediaUrl: data.mediaType === 'NONE' ? null : data.mediaUrl,
-      mediaTitle: data.mediaType === 'NONE' ? null : data.mediaTitle || null,
-      mediaList: data.mediaList,
-      active: data.active,
-      options: {
-        create: data.options.map((option, optionIndex) => ({
-          name: option.name,
-          displayType: option.displayType,
-          sortOrder: optionIndex,
-          isRequired: option.isRequired,
-          values: {
-            create: option.values.map((value, valueIndex) => ({
-              value: value.value,
-              colorHex: value.colorHex || null,
-              sortOrder: valueIndex,
-            })),
-          },
-        })),
-      },
-        outgoingRelations: data.relatedProductIds.length > 0
-          ? {
-              create: data.relatedProductIds.map((relatedProductId) => ({
-                relatedProductId,
-              })),
-            }
-          : undefined,
-        intentions: {
-          set: data.intentionIds.map(id => ({ id }))
-        },
+  const updatedProduct = await prisma.$transaction(async (tx) => {
+    const product = await tx.product.update({
+      where: { id },
+      data: {
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        price: data.price,
+        creditDownPaymentPercent: data.creditDownPaymentPercent,
+        categoryId: data.categoryId,
+        stock: data.stock,
+        images: data.images,
+        briefType: data.briefType,
+        mediaType: data.mediaType,
+        mediaUrl: data.mediaType === 'NONE' ? null : data.mediaUrl,
+        mediaTitle: data.mediaType === 'NONE' ? null : data.mediaTitle || null,
+        mediaList: data.mediaList,
+        active: data.active,
         isCombo: data.isCombo,
         comboPricingMode: data.isCombo ? data.comboPricingMode : 'FIXED',
         comboDiscountPercent: data.isCombo && data.comboPricingMode === 'DYNAMIC' ? data.comboDiscountPercent : 0,
+        intentions: {
+          set: data.intentionIds.map((intentionId) => ({ id: intentionId })),
+        },
         targetBusinessTypes: {
-          set: data.targetBusinessTypeIds.map(id => ({ id }))
+          set: data.targetBusinessTypeIds.map((btId) => ({ id: btId })),
+        },
+      },
+    })
+
+    await tx.productRelation.deleteMany({ where: { productId: id } })
+    if (data.relatedProductIds.length > 0) {
+      await tx.productRelation.createMany({
+        data: data.relatedProductIds.map((relatedProductId) => ({
+          productId: id,
+          relatedProductId,
+        })),
+      })
+    }
+
+    const incomingOptionIds = data.options.filter((option) => option.id).map((option) => option.id as string)
+    if (incomingOptionIds.length > 0) {
+      const ownedOptionCount = await tx.productOption.count({
+        where: { productId: id, id: { in: incomingOptionIds } },
+      })
+      if (ownedOptionCount !== incomingOptionIds.length) {
+        throw new Error('Una opcion del producto ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
+      }
+    }
+
+    await tx.productOption.deleteMany({
+      where: { productId: id, id: { notIn: incomingOptionIds } },
+    })
+
+    const dbOptions: Array<{
+      id: string
+      name: string
+      values: Array<{ id: string; value: string }>
+    }> = []
+
+    for (let optionIndex = 0; optionIndex < data.options.length; optionIndex++) {
+      const option = data.options[optionIndex]
+      const incomingValueIds = option.values.filter((value) => value.id).map((value) => value.id as string)
+
+      let optionId = option.id
+      if (optionId) {
+        const updatedOption = await tx.productOption.updateMany({
+          where: { id: optionId, productId: id },
+          data: {
+            name: option.name,
+            displayType: option.displayType,
+            sortOrder: optionIndex,
+            isRequired: option.isRequired,
+          },
+        })
+        if (updatedOption.count !== 1) {
+          throw new Error('No pudimos actualizar una opcion del producto. Recarga la pagina e intenta de nuevo.')
         }
-      },
-    include: {
-      options: {
-        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
-        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
-      },
-    },
-  })
+      } else {
+        const createdOption = await tx.productOption.create({
+          data: {
+            productId: id,
+            name: option.name,
+            displayType: option.displayType,
+            sortOrder: optionIndex,
+            isRequired: option.isRequired,
+          },
+        })
+        optionId = createdOption.id
+      }
 
-  if (data.variants.length > 0 && updatedProduct.options.length > 0) {
-    for (const variant of data.variants) {
-      const optionValueIds = buildVariantOptionValueIds(updatedProduct.options, variant.combinations)
+      if (incomingValueIds.length > 0) {
+        const ownedValueCount = await tx.productOptionValue.count({
+          where: { optionId, id: { in: incomingValueIds } },
+        })
+        if (ownedValueCount !== incomingValueIds.length) {
+          throw new Error('Un valor de opcion ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
+        }
+      }
 
-      await prisma.productVariant.create({
-        data: {
-          productId: updatedProduct.id,
-          price: variant.price,
-          sku: variant.sku,
-          stock: data.categoryIsService ? undefined : variant.stock,
-          imageUrl: variant.imageUrl || null,
-          options: {
-            create: optionValueIds.map((optionValueId) => ({ optionValueId })),
+      await tx.productOptionValue.deleteMany({
+        where: { optionId, id: { notIn: incomingValueIds } },
+      })
+
+      for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
+        const value = option.values[valueIndex]
+        if (value.id) {
+          const updatedValue = await tx.productOptionValue.updateMany({
+            where: { id: value.id, optionId },
+            data: {
+              value: value.value,
+              colorHex: value.colorHex || null,
+              sortOrder: valueIndex,
+            },
+          })
+          if (updatedValue.count !== 1) {
+            throw new Error('No pudimos actualizar un valor de opcion. Recarga la pagina e intenta de nuevo.')
+          }
+        } else {
+          await tx.productOptionValue.create({
+            data: {
+              optionId,
+              value: value.value,
+              colorHex: value.colorHex || null,
+              sortOrder: valueIndex,
+            },
+          })
+        }
+      }
+
+      const syncedOption = await tx.productOption.findUniqueOrThrow({
+        where: { id: optionId },
+        select: {
+          id: true,
+          name: true,
+          values: {
+            select: { id: true, value: true },
+            orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
           },
         },
       })
+      dbOptions.push(syncedOption)
     }
-  }
+
+    const incomingVariantIds = data.variants.filter((variant) => variant.id).map((variant) => variant.id as string)
+    if (incomingVariantIds.length > 0) {
+      const ownedVariantCount = await tx.productVariant.count({
+        where: { productId: id, id: { in: incomingVariantIds } },
+      })
+      if (ownedVariantCount !== incomingVariantIds.length) {
+        throw new Error('Una variante ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
+      }
+    }
+
+    await tx.productVariant.deleteMany({
+      where: { productId: id, id: { notIn: incomingVariantIds } },
+    })
+
+    if (data.variants.length > 0 && dbOptions.length > 0) {
+      for (const variant of data.variants) {
+        const optionValueIds = buildVariantOptionValueIds(dbOptions, variant.combinations)
+
+        if (variant.id) {
+          const updatedVariant = await tx.productVariant.updateMany({
+            where: { id: variant.id, productId: id },
+            data: {
+              price: variant.price,
+              sku: variant.sku,
+              stock: data.categoryIsService ? null : variant.stock,
+              imageUrl: variant.imageUrl || null,
+            },
+          })
+          if (updatedVariant.count !== 1) {
+            throw new Error('No pudimos actualizar una variante. Recarga la pagina e intenta de nuevo.')
+          }
+
+          await tx.variantOption.deleteMany({ where: { variantId: variant.id } })
+          if (optionValueIds.length > 0) {
+            await tx.variantOption.createMany({
+              data: optionValueIds.map((optionValueId) => ({
+                variantId: variant.id as string,
+                optionValueId,
+              })),
+            })
+          }
+        } else {
+          const createdVariant = await tx.productVariant.create({
+            data: {
+              productId: id,
+              price: variant.price,
+              sku: variant.sku,
+              stock: data.categoryIsService ? undefined : variant.stock,
+              imageUrl: variant.imageUrl || null,
+            },
+          })
+
+          if (optionValueIds.length > 0) {
+            await tx.variantOption.createMany({
+              data: optionValueIds.map((optionValueId) => ({
+                variantId: createdVariant.id,
+                optionValueId,
+              })),
+            })
+          }
+        }
+      }
+    }
+
+    return product
+  })
 
   if (originalProduct?.slug) {
     revalidatePath(`/productos/${originalProduct.slug}`)
