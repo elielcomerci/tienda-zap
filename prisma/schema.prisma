@@ -39,6 +39,9 @@ model User {
   operationalClients                User[]                        @relation("OperationalSellerClients")
   sellerLeads                       SellerLead[]                  @relation("SellerLeadOwner")
   convertedLeads                    SellerLead[]                  @relation("SellerLeadConvertedUser")
+  businessAccounts                  BusinessAccount[]             @relation("BusinessAccountUser")
+  assignedBusinessAccounts          BusinessAccount[]             @relation("BusinessAccountSeller")
+  operationalBusinessAccounts       BusinessAccount[]             @relation("BusinessAccountOperationalSeller")
   sellerProfile                     SellerProfile?
   incentiveProgress                 SellerIncentiveProgress[]
   sellerPayouts                     SellerPayout[]
@@ -69,13 +72,66 @@ model SellerProfile {
 }
 
 model BusinessType {
-  id          String       @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
-  slug        String       @unique
+  slug        String            @unique
   categories  Category[]
   users       User[]
   sellerLeads SellerLead[]
-  combos      Product[]    @relation("ComboBusinessTypes")
+  accounts    BusinessAccount[]
+  combos      Product[]         @relation("ComboBusinessTypes")
+}
+
+model BusinessAccount {
+  id                  String                @id @default(cuid())
+  name                String
+  legalName           String?
+  taxId               String?
+  businessTypeId      String?
+  status              BusinessAccountStatus @default(PROSPECT)
+  source              String?
+  tags                String[]              @default([])
+  notes               String?               @db.Text
+  nextActionAt        DateTime?
+  assignedSellerId    String?
+  operationalSellerId String?
+  userId              String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  businessType      BusinessType?     @relation(fields: [businessTypeId], references: [id])
+  assignedSeller    User?             @relation("BusinessAccountSeller", fields: [assignedSellerId], references: [id])
+  operationalSeller User?             @relation("BusinessAccountOperationalSeller", fields: [operationalSellerId], references: [id])
+  user              User?             @relation("BusinessAccountUser", fields: [userId], references: [id])
+  contacts          BusinessContact[]
+  coupons           PromotionCoupon[]
+
+  @@index([name])
+  @@index([status, nextActionAt])
+  @@index([businessTypeId])
+  @@index([assignedSellerId, status])
+}
+
+model BusinessContact {
+  id        String   @id @default(cuid())
+  accountId String
+  firstName String
+  lastName  String?
+  role      String?
+  email     String?
+  phone     String?
+  whatsapp  String?
+  isPrimary Boolean  @default(false)
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account BusinessAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  coupons PromotionCoupon[]
+
+  @@index([accountId, isPrimary])
+  @@index([email])
+  @@index([phone])
 }
 
 model SellerLead {
@@ -549,6 +605,8 @@ model PromotionCoupon {
   recipientBusiness String?
   recipientEmail    String?
   recipientPhone    String?
+  businessAccountId String?
+  businessContactId String?
   batchName         String?
   qrPayload         String?
   scanCount         Int                @default(0)
@@ -558,11 +616,15 @@ model PromotionCoupon {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   promotion         Promotion          @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  businessAccount   BusinessAccount?   @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
+  businessContact   BusinessContact?   @relation(fields: [businessContactId], references: [id], onDelete: SetNull)
   redemptions       CouponRedemption[]
   scans             CouponScan[]
 
   @@index([promotionId, status])
   @@index([batchName])
+  @@index([businessAccountId])
+  @@index([businessContactId])
 }
 
 model CouponScan {
@@ -648,6 +710,13 @@ enum SellerLeadStatus {
   CONTACTED
   QUOTED
   WON
+  LOST
+}
+
+enum BusinessAccountStatus {
+  PROSPECT
+  ACTIVE
+  INACTIVE
   LOST
 }
 

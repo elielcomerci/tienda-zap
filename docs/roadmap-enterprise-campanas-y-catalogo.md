@@ -137,12 +137,12 @@ La plantilla debe permitir cotizar por:
 
 Objetivo: dejar de asignar cupones a textos libres y pasar a entidades comerciales reales.
 
-- Crear `BusinessAccount` o `CustomerCompany`.
-- Crear `CustomerContact`.
-- Crear tags comerciales.
-- Agregar origen del lead.
-- Vincular vendedor asignado.
-- Vincular cupon a negocio/contacto.
+- Crear `BusinessAccount` o `CustomerCompany`. Estado: hecho como `BusinessAccount`.
+- Crear `CustomerContact`. Estado: hecho como `BusinessContact`.
+- Crear tags comerciales. Estado: hecho en cuenta comercial.
+- Agregar origen del lead. Estado: hecho como campo `source`.
+- Vincular vendedor asignado. Estado: hecho con asesor titular y operativo.
+- Vincular cupon a negocio/contacto. Estado: schema listo, falta selector en admin de cupones.
 - Mostrar ficha de negocio:
   - datos
   - contactos
