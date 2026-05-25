@@ -26,7 +26,7 @@ export const productSchema = z.object({
     .max(50, 'El anticipo maximo para Crédito ZAP es 50%'),
   categoryId: z.string().min(1, 'Selecciona una categoria'),
   stock: z.coerce.number().int().min(0).default(0),
-  images: z.array(z.string().url()).min(1, 'Agrega al menos una imagen'),
+  images: z.array(z.string().url()).default([]),
   briefType: z.enum(['NONE', 'DESIGN', 'MUSIC', 'VIDEO']).default('NONE'),
   mediaType: z.enum(['NONE', 'AUDIO', 'VIDEO', 'YOUTUBE']).default('NONE'),
   mediaUrl: z.string().trim().optional().default(''),
@@ -112,6 +112,21 @@ export const productSchema = z.object({
   comboDiscountPercent: z.coerce.number().min(0).max(100).default(0),
   targetBusinessTypeIds: z.array(z.string()).optional().default([]),
 }).superRefine((data, ctx) => {
+  const apparelMockup = data.mediaList.find((item) => item.type === 'APPAREL_MOCKUP')
+  const hasApparelColorCatalog =
+    apparelMockup?.enabled &&
+    Array.isArray(apparelMockup.colors) &&
+    apparelMockup.colors.some((color) => color.value.trim())
+  const hasVariantImages = data.variants.some((variant) => Boolean(variant.imageUrl?.trim()))
+
+  if (data.images.length === 0 && !hasApparelColorCatalog && !hasVariantImages) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['images'],
+      message: 'Agrega al menos una imagen o configura una galeria de indumentaria.',
+    })
+  }
+
   if (data.mediaType !== 'NONE') {
     if (!data.mediaUrl) {
       ctx.addIssue({

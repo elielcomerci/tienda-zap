@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -108,6 +108,7 @@ export default function ProductForm({
   const [hasVariants, setHasVariants] = useState(
     (initialOptions?.length || product?.options?.length) > 0 || false
   )
+  const [currentOptions, setCurrentOptions] = useState<any[]>(() => initialOptions || product?.options || [])
   const [selectedCategoryId, setSelectedCategoryId] = useState(product?.categoryId || '')
 
   const initialName = product?.name || ''
@@ -225,11 +226,12 @@ export default function ProductForm({
   }
 
   const availableColorOption = useMemo(() => {
-    const sourceOptions = initialOptions || product?.options || []
-    const colorOption = sourceOptions.find((option: any) => {
+    const colorOptions = currentOptions.filter((option: any) => {
       const name = String(option.name || '').toLowerCase()
       return option.displayType === 'COLOR_SWATCH' || name.includes('color')
     })
+    const colorOption =
+      colorOptions.find((option: any) => option.displayType === 'COLOR_SWATCH') || colorOptions[0]
 
     return {
       name: colorOption?.name || 'Color',
@@ -238,9 +240,44 @@ export default function ProductForm({
         colorHex: value.colorHex || null,
       })),
     }
-  }, [initialOptions, product?.options])
+  }, [currentOptions])
   const availableColorValues = availableColorOption.values
-  const resolvedColorOptionName = apparelMockup.colorOptionName || availableColorOption.name || 'Color'
+  const currentOptionNames = useMemo(
+    () => new Set(currentOptions.map((option: any) => String(option.name || '').trim()).filter(Boolean)),
+    [currentOptions]
+  )
+  const resolvedColorOptionName =
+    apparelMockup.colorOptionName && currentOptionNames.has(apparelMockup.colorOptionName)
+      ? apparelMockup.colorOptionName
+      : availableColorOption.name || apparelMockup.colorOptionName || 'Color'
+
+  useEffect(() => {
+    if (availableColorValues.length === 0) return
+
+    setApparelMockup((previous) => {
+      const existing = new Map(previous.colors.map((color) => [color.value, color]))
+      const hasMissingColors = availableColorValues.some((color) => !existing.has(color.value))
+      if (!hasMissingColors) return previous
+
+      return {
+        ...previous,
+        colorOptionName:
+          previous.colorOptionName && currentOptionNames.has(previous.colorOptionName)
+            ? previous.colorOptionName
+            : availableColorOption.name,
+        colors: [
+          ...previous.colors,
+          ...availableColorValues
+            .filter((color) => !existing.has(color.value))
+            .map((color) => ({
+              ...color,
+              value: color.value,
+              colorHex: color.colorHex,
+            })),
+        ],
+      }
+    })
+  }, [availableColorOption.name, availableColorValues, currentOptionNames])
 
   const syncMockupColorsFromOptions = () => {
     if (availableColorValues.length === 0) return
@@ -248,7 +285,10 @@ export default function ProductForm({
       const existing = new Map(previous.colors.map((color) => [color.value, color]))
       return {
         ...previous,
-        colorOptionName: previous.colorOptionName || availableColorOption.name,
+        colorOptionName:
+          previous.colorOptionName && currentOptionNames.has(previous.colorOptionName)
+            ? previous.colorOptionName
+            : availableColorOption.name,
         colors: availableColorValues.map((color) => ({
           ...color,
           ...(existing.get(color.value) || {}),
@@ -854,6 +894,7 @@ export default function ProductForm({
             basePrice={product?.price || 0}
             disableStock={isServiceCategory}
             onOptionsChange={setHasVariants}
+            onOptionsDataChange={setCurrentOptions}
           />
         </div>
 

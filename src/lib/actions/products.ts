@@ -79,10 +79,12 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
   let mediaUrl = (formData.get('mediaUrl') as string) || ''
   let mediaTitle = (formData.get('mediaTitle') as string) || ''
 
-  if (mediaList.length > 0) {
-    mediaType = mediaList[0].type
-    mediaUrl = mediaList[0].url
-    mediaTitle = mediaList[0].title
+  const firstPlayableMedia = mediaList.find((item) => ['AUDIO', 'VIDEO', 'YOUTUBE'].includes(item?.type))
+
+  if (firstPlayableMedia) {
+    mediaType = firstPlayableMedia.type
+    mediaUrl = firstPlayableMedia.url
+    mediaTitle = firstPlayableMedia.title
   }
 
   const raw = {

@@ -439,12 +439,14 @@ export default function ProductOptionsConfigurator({
   basePrice = 0,
   disableStock = false,
   onOptionsChange,
+  onOptionsDataChange,
 }: {
   initialOptions?: Option[]
   initialVariants?: Variant[]
   basePrice?: number
   disableStock?: boolean
   onOptionsChange?: (hasOptions: boolean) => void
+  onOptionsDataChange?: (options: Option[]) => void
 }) {
   const [options, setOptions] = useState<Option[]>(() => normalizeOptions(initialOptions))
   const [variants, setVariants] = useState<Variant[]>(initialVariants)
@@ -459,7 +461,8 @@ export default function ProductOptionsConfigurator({
 
   useEffect(() => {
     onOptionsChange?.(options.length > 0)
-  }, [onOptionsChange, options])
+    onOptionsDataChange?.(options)
+  }, [onOptionsChange, onOptionsDataChange, options])
 
   useEffect(() => {
     if (!disableStock) {
