@@ -37,6 +37,8 @@ type ValuePreset = {
   values: OptionValue[]
 }
 
+const MAX_VARIANT_MATRIX_SIZE = 500
+
 export interface Option {
   id?: string
   name: string
@@ -75,6 +77,16 @@ function cartesianProduct(options: Option[]): Record<string, string>[] {
 
     return next
   }, [])
+}
+
+function countVariantCombinations(options: Option[]) {
+  return options
+    .map((option) => ({
+      name: option.name.trim(),
+      valueCount: option.values.filter((value) => value.value.trim()).length,
+    }))
+    .filter((option) => option.name && option.valueCount > 0)
+    .reduce((total, option) => total * option.valueCount, 1)
 }
 
 function normalizeOptionValue(value: string | OptionValue): OptionValue {
@@ -118,6 +130,16 @@ function getVisualMatchOptionNames(options: Option[]) {
   return colorOptions.length > 0 ? colorOptions : []
 }
 
+function isVisualOnlyOption(option: Option) {
+  const name = normalizeText(option.name)
+  return option.displayType === 'COLOR_SWATCH' || name.includes('color') || name.includes('talle')
+}
+
+function getPriceMatrixOptions(options: Option[]) {
+  const priceOptions = options.filter((option) => !isVisualOnlyOption(option))
+  return priceOptions.length > 0 ? priceOptions : options
+}
+
 function findVisualVariant(
   variants: Variant[],
   combination: Record<string, string>,
@@ -133,6 +155,15 @@ function findVisualVariant(
       return currentValue && nextValue && normalizeText(currentValue) === normalizeText(nextValue)
     })
   })
+}
+
+function findSubsetVariant(variants: Variant[], combination: Record<string, string>) {
+  const combinationEntries = Object.entries(combination)
+  if (combinationEntries.length === 0) return undefined
+
+  return variants.find((variant) =>
+    combinationEntries.every(([optionName, value]) => variant.combinations[optionName] === value)
+  )
 }
 
 const OPTION_TEMPLATES: OptionTemplate[] = [
@@ -540,6 +571,13 @@ export default function ProductOptionsConfigurator({
         })
       })
 
+      if (incomingVariants.length > MAX_VARIANT_MATRIX_SIZE) {
+        setUploadError(
+          `El cotizador intento generar ${incomingVariants.length} variantes. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Ajusta materiales, cantidades o terminaciones antes de aplicar.`
+        )
+        return
+      }
+
       // Start from existing options that are NOT managed by the quoter (manual ones)
       const quoterOptionNames = new Set(Object.keys(incomingOptionsMap).map(k => k.toLowerCase()))
       const manualOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
@@ -556,15 +594,30 @@ export default function ProductOptionsConfigurator({
         })
       })
 
+      const quoterOptions = Object.entries(incomingOptionsMap).map(([optName, optValuesSet]) => ({
+        name: optName,
+        displayType: 'BUTTON' as OptionDisplayType,
+        isRequired: true,
+        values: Array.from(optValuesSet).map((value) => ({ value })),
+      }))
+      const nextCombinationCount = countVariantCombinations(quoterOptions)
+      if (nextCombinationCount > MAX_VARIANT_MATRIX_SIZE) {
+        setUploadError(
+          `La cotizacion generaria ${nextCombinationCount} variantes de precio. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Reduce cantidades, materiales o terminaciones.`
+        )
+        return
+      }
+
       setOptions(nextOptions)
 
-      // Rebuild variant matrix from cartesian product
-      const combinations = cartesianProduct(nextOptions)
+      // The quoter only owns price-driving options. Visual options such as Color/Talle stay selectable,
+      // but they must not multiply the price matrix.
+      const combinations = cartesianProduct(quoterOptions)
       const nextVariants = combinations.map((combination) => {
         const incoming = incomingVariants.find(v =>
           Object.entries(v.options).every(([k, val]) => combination[k] === val)
         )
-        const existing = findExactVariant(variants, combination)
+        const existing = findExactVariant(variants, combination) || findSubsetVariant(variants, combination)
         const imageSource = existing || findVisualVariant(variants, combination, imageMatchOptionNames)
         return existing
           ? { ...existing, price: incoming ? incoming.price : existing.price, imageUrl: existing.imageUrl || imageSource?.imageUrl }
@@ -719,7 +772,17 @@ export default function ProductOptionsConfigurator({
   }
 
   const generateVariants = () => {
-    const combinations = cartesianProduct(options)
+    const priceMatrixOptions = getPriceMatrixOptions(options)
+    const combinationCount = countVariantCombinations(priceMatrixOptions)
+    if (combinationCount > MAX_VARIANT_MATRIX_SIZE) {
+      setUploadError(
+        `La matriz generaria ${combinationCount} variantes. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Reduce la cantidad de opciones antes de generarla.`
+      )
+      return
+    }
+
+    setUploadError('')
+    const combinations = cartesianProduct(priceMatrixOptions)
     const imageMatchOptionNames = getVisualMatchOptionNames(options)
 
     const nextVariants = combinations.map((combination) => {
@@ -785,6 +848,8 @@ export default function ProductOptionsConfigurator({
   )
 
   const filteredCount = visibleVariants.length
+  const matrixExpectedCount = countVariantCombinations(getPriceMatrixOptions(options))
+  const matrixExceedsLimit = matrixExpectedCount > MAX_VARIANT_MATRIX_SIZE
   const itemsPerPage = 25
   const totalPages = Math.ceil(filteredCount / itemsPerPage) || 1
   const paginatedVariants = useMemo(() => {
@@ -799,7 +864,6 @@ export default function ProductOptionsConfigurator({
     .filter((option) => option.displayType === 'COLOR_SWATCH')
     .flatMap((option) => option.values)
     .filter((value) => value.value.trim() && !value.colorHex).length
-  const matrixExpectedCount = cartesianProduct(options).length
   const matrixNeedsRegeneration =
     options.length > 0 && matrixExpectedCount > 0 && variants.length !== matrixExpectedCount
 
@@ -982,7 +1046,9 @@ export default function ProductOptionsConfigurator({
             </div>
             <div className="grid gap-2 text-xs font-semibold text-gray-700 sm:grid-cols-2">
               <div className="rounded-lg bg-white px-3 py-2">
-                {matrixNeedsRegeneration
+                {matrixExceedsLimit
+                  ? `La matriz generaria ${matrixExpectedCount} variantes. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}.`
+                  : matrixNeedsRegeneration
                   ? `La matriz tiene ${variants.length} variantes y deberia tener ${matrixExpectedCount}.`
                   : variants.length > 0
                     ? 'La matriz coincide con las opciones actuales.'
@@ -1136,7 +1202,12 @@ export default function ProductOptionsConfigurator({
             ))}
 
             <div className="border-t border-gray-200 pt-4">
-              <button type="button" onClick={generateVariants} className="btn-primary w-full justify-center">
+              <button
+                type="button"
+                onClick={generateVariants}
+                disabled={matrixExceedsLimit}
+                className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-55"
+              >
                 <RefreshCcw size={16} />
                 Generar matriz de precios
               </button>

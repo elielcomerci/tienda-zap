@@ -207,31 +207,44 @@ export const productSchema = z.object({
   }
 
   const optionNames = data.options.map((option) => option.name)
+  const optionMap = new Map(data.options.map((option) => [option.name, option]))
   const seenCombinations = new Set<string>()
 
   data.variants.forEach((variant, variantIndex) => {
-    if (data.options.length > 0 && Object.keys(variant.combinations).length !== data.options.length) {
+    const combinationEntries = Object.entries(variant.combinations).filter(([, value]) => value)
+
+    if (combinationEntries.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['variants', variantIndex, 'combinations'],
-        message: 'La variante no coincide con las opciones cargadas. Regenera la matriz.',
+        message: 'La variante debe incluir al menos una opcion de precio.',
       })
     }
 
-    data.options.forEach((option) => {
-      const selectedValue = variant.combinations[option.name]
-      const optionHasValue = option.values.some((value) => value.value === selectedValue)
-
-      if (!selectedValue || !optionHasValue) {
+    combinationEntries.forEach(([optionName, selectedValue]) => {
+      const option = optionMap.get(optionName)
+      if (!option) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['variants', variantIndex, 'combinations'],
-          message: 'Hay variantes incompletas o con valores inválidos. Regenera la matriz.',
+          message: 'La variante usa una opcion que ya no existe. Regenera la matriz.',
+        })
+        return
+      }
+
+      const optionHasValue = option.values.some((value) => value.value === selectedValue)
+
+      if (!optionHasValue) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['variants', variantIndex, 'combinations'],
+          message: 'Hay variantes con valores invalidos. Regenera la matriz.',
         })
       }
     })
 
     const combinationSignature = optionNames
+      .filter((optionName) => variant.combinations[optionName])
       .map((optionName) => `${optionName}:${variant.combinations[optionName] || ''}`)
       .join('|')
 

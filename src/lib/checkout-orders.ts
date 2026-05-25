@@ -22,7 +22,7 @@ function matchesVariant(selectedOptions: Array<{ name: string; value: string }>,
   const selectedMap = optionsToMap(selectedOptions)
   const variantMap = getVariantCombinationMap(variant) as Map<string, string>
 
-  if (selectedMap.size !== variantMap.size) {
+  if (variantMap.size === 0) {
     return false
   }
 

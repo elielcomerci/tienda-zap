@@ -76,10 +76,24 @@ function findMatchingPartVariant(
     part.variants.find((variant) => {
       const combos = getVariantCombos(variant)
       const comboEntries = Object.entries(combos)
-      if (comboEntries.length !== selectedEntries.length) return false
       return comboEntries.every(([optionName, value]) => selections[optionName] === value)
     }) || null
   )
+}
+
+function variantMatchesSelectedOptions(
+  variant: { combos: Record<string, string> },
+  selectedOptions: Record<string, string>,
+  requireVariantOptionsSelected: boolean
+) {
+  const comboEntries = Object.entries(variant.combos)
+  if (comboEntries.length === 0) return false
+
+  return comboEntries.every(([optionName, value]) => {
+    const selectedValue = selectedOptions[optionName]
+    if (!selectedValue) return !requireVariantOptionsSelected
+    return selectedValue === value
+  })
 }
 
 export default function ProductConfigurator({
@@ -168,10 +182,7 @@ export default function ProductConfigurator({
 
     return (
       variantCombinations.find((variant) => {
-        const comboKeys = Object.keys(variant.combos)
-        if (comboKeys.length !== selectedKeys.length) return false
-
-        return selectedKeys.every((key) => variant.combos[key] === selected[key])
+        return variantMatchesSelectedOptions(variant, selected, true)
       }) || null
     )
   }, [hasOptions, selected, variantCombinations])
@@ -197,7 +208,7 @@ export default function ProductConfigurator({
     return variantCombinations.filter(
       (variant) =>
         isPurchasablePrice(variant.price) &&
-        selectedEntries.every(([key, value]) => variant.combos[key] === value)
+        selectedEntries.every(([key, value]) => !variant.combos[key] || variant.combos[key] === value)
     )
   }, [hasOptions, selected, variantCombinations])
 
@@ -388,11 +399,11 @@ export default function ProductConfigurator({
 
     return variantCombinations.some((variant) => {
       if (!isPurchasablePrice(variant.price)) return false
-      if (variant.combos[optionName] !== value) return false
+      if (variant.combos[optionName] && variant.combos[optionName] !== value) return false
 
       return Object.entries(selected).every(([selectedOptionName, selectedValue]) => {
         if (!selectedValue || selectedOptionName === optionName) return true
-        return variant.combos[selectedOptionName] === selectedValue
+        return !variant.combos[selectedOptionName] || variant.combos[selectedOptionName] === selectedValue
       })
     })
   }
@@ -429,11 +440,11 @@ export default function ProductConfigurator({
       })
 
       if (!isPurchasablePrice(variant.price)) return false
-      if (combos[optionName] !== value) return false
+      if (combos[optionName] && combos[optionName] !== value) return false
 
       return Object.entries(partSelected).every(([selectedOptionName, selectedValue]) => {
         if (!selectedValue || selectedOptionName === optionName) return true
-        return combos[selectedOptionName] === selectedValue
+        return !combos[selectedOptionName] || combos[selectedOptionName] === selectedValue
       })
     })
   }
