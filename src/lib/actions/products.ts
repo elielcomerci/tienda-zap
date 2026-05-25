@@ -175,6 +175,13 @@ function buildVariantOptionValueIds(
   return optionValueIds
 }
 
+function sameStringSet(left: string[], right: string[]) {
+  if (left.length !== right.length) return false
+  const normalizedLeft = [...left].sort()
+  const normalizedRight = [...right].sort()
+  return normalizedLeft.every((value, index) => value === normalizedRight[index])
+}
+
 export async function createProduct(formData: FormData) {
   await requireAdmin()
 
@@ -301,10 +308,23 @@ export async function updateProduct(id: string, formData: FormData) {
       },
     })
 
-    await tx.productRelation.deleteMany({ where: { productId: id } })
-    if (data.relatedProductIds.length > 0) {
+    const existingRelations = await tx.productRelation.findMany({
+      where: { productId: id },
+      select: { relatedProductId: true },
+    })
+    const existingRelatedIds = new Set(existingRelations.map((relation) => relation.relatedProductId))
+    const nextRelatedIds = new Set(data.relatedProductIds)
+    const relationIdsToDelete = [...existingRelatedIds].filter((relatedProductId) => !nextRelatedIds.has(relatedProductId))
+    const relationIdsToCreate = data.relatedProductIds.filter((relatedProductId) => !existingRelatedIds.has(relatedProductId))
+
+    if (relationIdsToDelete.length > 0) {
+      await tx.productRelation.deleteMany({
+        where: { productId: id, relatedProductId: { in: relationIdsToDelete } },
+      })
+    }
+    if (relationIdsToCreate.length > 0) {
       await tx.productRelation.createMany({
-        data: data.relatedProductIds.map((relatedProductId) => ({
+        data: relationIdsToCreate.map((relatedProductId) => ({
           productId: id,
           relatedProductId,
         })),
@@ -312,13 +332,19 @@ export async function updateProduct(id: string, formData: FormData) {
     }
 
     const incomingOptionIds = data.options.filter((option) => option.id).map((option) => option.id as string)
-    if (incomingOptionIds.length > 0) {
-      const ownedOptionCount = await tx.productOption.count({
-        where: { productId: id, id: { in: incomingOptionIds } },
-      })
-      if (ownedOptionCount !== incomingOptionIds.length) {
-        throw new Error('Una opcion del producto ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
-      }
+    const existingOptions = await tx.productOption.findMany({
+      where: { productId: id },
+      include: {
+        values: {
+          orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+        },
+      },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    })
+    const existingOptionMap = new Map(existingOptions.map((option) => [option.id, option]))
+    const ownedOptionCount = incomingOptionIds.filter((optionId) => existingOptionMap.has(optionId)).length
+    if (ownedOptionCount !== incomingOptionIds.length) {
+      throw new Error('Una opcion del producto ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
     }
 
     await tx.productOption.deleteMany({
@@ -337,17 +363,26 @@ export async function updateProduct(id: string, formData: FormData) {
 
       let optionId = option.id
       if (optionId) {
-        const updatedOption = await tx.productOption.updateMany({
-          where: { id: optionId, productId: id },
-          data: {
-            name: option.name,
-            displayType: option.displayType,
-            sortOrder: optionIndex,
-            isRequired: option.isRequired,
-          },
-        })
-        if (updatedOption.count !== 1) {
+        const existingOption = existingOptionMap.get(optionId)
+        if (!existingOption) {
           throw new Error('No pudimos actualizar una opcion del producto. Recarga la pagina e intenta de nuevo.')
+        }
+
+        if (
+          existingOption.name !== option.name ||
+          existingOption.displayType !== option.displayType ||
+          existingOption.sortOrder !== optionIndex ||
+          existingOption.isRequired !== option.isRequired
+        ) {
+          await tx.productOption.update({
+            where: { id: optionId },
+            data: {
+              name: option.name,
+              displayType: option.displayType,
+              sortOrder: optionIndex,
+              isRequired: option.isRequired,
+            },
+          })
         }
       } else {
         const createdOption = await tx.productOption.create({
@@ -362,13 +397,12 @@ export async function updateProduct(id: string, formData: FormData) {
         optionId = createdOption.id
       }
 
-      if (incomingValueIds.length > 0) {
-        const ownedValueCount = await tx.productOptionValue.count({
-          where: { optionId, id: { in: incomingValueIds } },
-        })
-        if (ownedValueCount !== incomingValueIds.length) {
-          throw new Error('Un valor de opcion ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
-        }
+      const existingValueMap = new Map(
+        (existingOptionMap.get(optionId)?.values || []).map((value) => [value.id, value])
+      )
+      const ownedValueCount = incomingValueIds.filter((valueId) => existingValueMap.has(valueId)).length
+      if (ownedValueCount !== incomingValueIds.length) {
+        throw new Error('Un valor de opcion ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
       }
 
       await tx.productOptionValue.deleteMany({
@@ -378,16 +412,25 @@ export async function updateProduct(id: string, formData: FormData) {
       for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
         const value = option.values[valueIndex]
         if (value.id) {
-          const updatedValue = await tx.productOptionValue.updateMany({
-            where: { id: value.id, optionId },
-            data: {
-              value: value.value,
-              colorHex: value.colorHex || null,
-              sortOrder: valueIndex,
-            },
-          })
-          if (updatedValue.count !== 1) {
+          const existingValue = existingValueMap.get(value.id)
+          if (!existingValue) {
             throw new Error('No pudimos actualizar un valor de opcion. Recarga la pagina e intenta de nuevo.')
+          }
+
+          const nextColorHex = value.colorHex || null
+          if (
+            existingValue.value !== value.value ||
+            existingValue.colorHex !== nextColorHex ||
+            existingValue.sortOrder !== valueIndex
+          ) {
+            await tx.productOptionValue.update({
+              where: { id: value.id },
+              data: {
+                value: value.value,
+                colorHex: nextColorHex,
+                sortOrder: valueIndex,
+              },
+            })
           }
         } else {
           await tx.productOptionValue.create({
@@ -416,13 +459,18 @@ export async function updateProduct(id: string, formData: FormData) {
     }
 
     const incomingVariantIds = data.variants.filter((variant) => variant.id).map((variant) => variant.id as string)
-    if (incomingVariantIds.length > 0) {
-      const ownedVariantCount = await tx.productVariant.count({
-        where: { productId: id, id: { in: incomingVariantIds } },
-      })
-      if (ownedVariantCount !== incomingVariantIds.length) {
-        throw new Error('Una variante ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
-      }
+    const existingVariants = await tx.productVariant.findMany({
+      where: { productId: id },
+      include: {
+        options: {
+          select: { optionValueId: true },
+        },
+      },
+    })
+    const existingVariantMap = new Map(existingVariants.map((variant) => [variant.id, variant]))
+    const ownedVariantCount = incomingVariantIds.filter((variantId) => existingVariantMap.has(variantId)).length
+    if (ownedVariantCount !== incomingVariantIds.length) {
+      throw new Error('Una variante ya no existe o no pertenece a este producto. Recarga la pagina e intenta de nuevo.')
     }
 
     await tx.productVariant.deleteMany({
@@ -434,27 +482,42 @@ export async function updateProduct(id: string, formData: FormData) {
         const optionValueIds = buildVariantOptionValueIds(dbOptions, variant.combinations)
 
         if (variant.id) {
-          const updatedVariant = await tx.productVariant.updateMany({
-            where: { id: variant.id, productId: id },
-            data: {
-              price: variant.price,
-              sku: variant.sku,
-              stock: data.categoryIsService ? null : variant.stock,
-              imageUrl: variant.imageUrl || null,
-            },
-          })
-          if (updatedVariant.count !== 1) {
+          const existingVariant = existingVariantMap.get(variant.id)
+          if (!existingVariant) {
             throw new Error('No pudimos actualizar una variante. Recarga la pagina e intenta de nuevo.')
           }
 
-          await tx.variantOption.deleteMany({ where: { variantId: variant.id } })
-          if (optionValueIds.length > 0) {
-            await tx.variantOption.createMany({
-              data: optionValueIds.map((optionValueId) => ({
-                variantId: variant.id as string,
-                optionValueId,
-              })),
+          const nextStock = data.categoryIsService ? null : variant.stock
+          const nextImageUrl = variant.imageUrl || null
+          const scalarChanged =
+            existingVariant.price !== variant.price ||
+            existingVariant.sku !== (variant.sku || null) ||
+            existingVariant.stock !== nextStock ||
+            existingVariant.imageUrl !== nextImageUrl
+
+          if (scalarChanged) {
+            await tx.productVariant.update({
+              where: { id: variant.id },
+              data: {
+                price: variant.price,
+                sku: variant.sku,
+                stock: nextStock,
+                imageUrl: nextImageUrl,
+              },
             })
+          }
+
+          const existingOptionValueIds = existingVariant.options.map((option) => option.optionValueId)
+          if (!sameStringSet(existingOptionValueIds, optionValueIds)) {
+            await tx.variantOption.deleteMany({ where: { variantId: variant.id } })
+            if (optionValueIds.length > 0) {
+              await tx.variantOption.createMany({
+                data: optionValueIds.map((optionValueId) => ({
+                  variantId: variant.id as string,
+                  optionValueId,
+                })),
+              })
+            }
           }
         } else {
           const createdVariant = await tx.productVariant.create({
