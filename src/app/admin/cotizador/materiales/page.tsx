@@ -6,18 +6,28 @@ export const metadata = {
 }
 
 export default async function MaterialesPage() {
-  const materiales = await prisma.rawMaterial.findMany({
-    include: {
-      tiers: {
-        orderBy: { minQty: 'asc' },
+  const [materiales, categories] = await Promise.all([
+    prisma.rawMaterial.findMany({
+      include: {
+        tiers: {
+          orderBy: { minQty: 'asc' },
+        },
+        applicableCategories: {
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.category.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true },
+    }),
+  ])
 
   return (
     <div className="mx-auto max-w-6xl py-8">
-      <MaterialesClient initialMateriales={materiales} />
+      <MaterialesClient initialMateriales={materiales} categories={categories} />
     </div>
   )
 }

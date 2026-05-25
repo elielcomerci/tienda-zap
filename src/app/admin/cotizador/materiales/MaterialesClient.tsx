@@ -20,12 +20,15 @@ type Material = {
   unit: string
   active: boolean
   tiers: Tier[]
+  applicableCategories: Array<{ id: string; name: string }>
 }
 
 export default function MaterialesClient({
   initialMateriales,
+  categories,
 }: {
   initialMateriales: Material[]
+  categories: Array<{ id: string; name: string }>
 }) {
   const router = useRouter()
   const [materiales] = useState<Material[]>(initialMateriales)
@@ -38,6 +41,7 @@ export default function MaterialesClient({
     height: 0,
     unit: 'PLIEGO',
     active: true,
+    categoryIds: [] as string[],
   })
   
   const [tiers, setTiers] = useState<Tier[]>([])
@@ -45,14 +49,21 @@ export default function MaterialesClient({
 
   const openNew = () => {
     setEditingId(null)
-    setForm({ name: '', width: 0, height: 0, unit: 'PLIEGO', active: true })
+    setForm({ name: '', width: 0, height: 0, unit: 'PLIEGO', active: true, categoryIds: [] })
     setTiers([{ minQty: 1, maxQty: null, unitPrice: 0 }])
     setIsModalOpen(true)
   }
 
   const openEdit = (m: Material) => {
     setEditingId(m.id)
-    setForm({ name: m.name, width: m.width, height: m.height, unit: m.unit, active: m.active })
+    setForm({
+      name: m.name,
+      width: m.width,
+      height: m.height,
+      unit: m.unit,
+      active: m.active,
+      categoryIds: m.applicableCategories.map((category) => category.id),
+    })
     setTiers(m.tiers.map(t => ({ ...t })))
     setIsModalOpen(true)
   }
@@ -91,6 +102,15 @@ export default function MaterialesClient({
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const toggleCategory = (id: string) => {
+    setForm((current) => ({
+      ...current,
+      categoryIds: current.categoryIds.includes(id)
+        ? current.categoryIds.filter((categoryId) => categoryId !== id)
+        : [...current.categoryIds, id],
+    }))
   }
 
   const handleDelete = async (id: string) => {
@@ -132,6 +152,19 @@ export default function MaterialesClient({
                   <Trash2 size={16} />
                 </button>
               </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {m.applicableCategories.length > 0 ? (
+                m.applicableCategories.map((category) => (
+                  <span key={category.id} className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                    {category.name}
+                  </span>
+                ))
+              ) : (
+                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                  Sin aplicabilidad definida
+                </span>
+              )}
             </div>
             
             <div className="space-y-2 mt-4 pt-4 border-t border-gray-100">
@@ -197,6 +230,26 @@ export default function MaterialesClient({
                     onChange={(e) => setForm({ ...form, height: Number(e.target.value) })}
                     className="input"
                   />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-6">
+                <h3 className="mb-2 font-semibold text-gray-900">Aplicabilidad</h3>
+                <p className="mb-3 text-xs text-gray-500">
+                  Marcá en qué categorías se puede usar este material. Si queda vacío, el cotizador no lo tomará como sugerencia automática.
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {categories.map((category) => (
+                    <label key={category.id} className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={form.categoryIds.includes(category.id)}
+                        onChange={() => toggleCategory(category.id)}
+                        className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                      />
+                      {category.name}
+                    </label>
+                  ))}
                 </div>
               </div>
 

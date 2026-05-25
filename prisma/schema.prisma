@@ -213,6 +213,7 @@ model Category {
   isService     Boolean        @default(false)
   products      Product[]
   businessTypes BusinessType[]
+  rawMaterials  RawMaterial[]  @relation("RawMaterialCategories")
 }
 
 model Intention {
@@ -1026,6 +1027,7 @@ model RawMaterial {
   tiers                 RawMaterialTier[]
   configs               ProductQuoterConfig[]
   quoterConfigMaterials ProductQuoterConfigMaterial[]
+  applicableCategories  Category[]                    @relation("RawMaterialCategories")
 
   @@map("raw_materials")
 }

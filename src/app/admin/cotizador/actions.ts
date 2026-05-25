@@ -21,6 +21,7 @@ export async function createRawMaterial(data: {
   width: number
   height: number
   unit: string
+  categoryIds?: string[]
   tiers: { minQty: number; maxQty: number | null; unitPrice: number }[]
 }) {
   await requireAdmin()
@@ -31,6 +32,9 @@ export async function createRawMaterial(data: {
       width: data.width,
       height: data.height,
       unit: data.unit,
+      applicableCategories: {
+        connect: (data.categoryIds || []).map((id) => ({ id })),
+      },
       tiers: {
         create: data.tiers.map((tier) => ({
           minQty: tier.minQty,
@@ -53,6 +57,7 @@ export async function updateRawMaterial(
     height: number
     unit: string
     active: boolean
+    categoryIds?: string[]
     tiers: { id?: string; minQty: number; maxQty: number | null; unitPrice: number }[]
   }
 ) {
@@ -67,6 +72,9 @@ export async function updateRawMaterial(
       height: data.height,
       unit: data.unit,
       active: data.active,
+      applicableCategories: {
+        set: (data.categoryIds || []).map((id) => ({ id })),
+      },
     },
   })
 
@@ -204,15 +212,18 @@ export async function deleteFinishing(id: string) {
 // DATOS PARA EL COTIZADOR
 // ----------------------------------------------------
 
-export async function getQuoterData() {
+export async function getQuoterData(categoryId?: string | null) {
   await requireAdmin()
   const materials = await prisma.rawMaterial.findMany({
     where: { active: true },
-    include: { tiers: { orderBy: { minQty: 'asc' } } },
+    include: {
+      tiers: { orderBy: { minQty: 'asc' } },
+      applicableCategories: { select: { id: true, name: true, slug: true } },
+    },
   })
   const finishings = await prisma.finishingOperation.findMany({
     where: { active: true },
     include: { tiers: { orderBy: { minQty: 'asc' } } },
   })
-  return { materials, finishings }
+  return { materials, finishings, categoryId: categoryId || null }
 }

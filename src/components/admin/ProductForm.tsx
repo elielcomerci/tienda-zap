@@ -644,6 +644,7 @@ export default function ProductForm({
       <ProductQuoterModal 
         isOpen={isQuoterOpen} 
         onClose={() => setIsQuoterOpen(false)} 
+        productCategoryId={selectedCategoryId || null}
         onApplyVariants={(variants) => {
           const event = new CustomEvent('apply-quoter-variants', { detail: variants })
           window.dispatchEvent(event)

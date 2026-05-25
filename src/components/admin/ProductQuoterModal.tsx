@@ -60,6 +60,7 @@ interface SavedConfig {
   selectedFinishingIds: string[]
   combineFinishings: boolean
   includeNoFinishing: boolean
+  productCategoryId?: string | null
   // material selections: base name → sides chosen
   materialSelections: Record<string, SideSelection>
 }
@@ -83,10 +84,12 @@ export default function ProductQuoterModal({
   isOpen,
   onClose,
   onApplyVariants,
+  productCategoryId,
 }: {
   isOpen: boolean
   onClose: () => void
   onApplyVariants: (variants: { options: Record<string, string>; price: number }[]) => void
+  productCategoryId?: string | null
 }) {
   const [data, setData] = useState<QuoterData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -121,35 +124,30 @@ export default function ProductQuoterModal({
     if (saved.selectedFinishingIds) setSelectedFinishingIds(saved.selectedFinishingIds)
     if (saved.combineFinishings !== undefined) setCombineFinishings(saved.combineFinishings)
     if (saved.includeNoFinishing !== undefined) setIncludeNoFinishing(saved.includeNoFinishing)
-    if (saved.materialSelections) setMaterialSelections(saved.materialSelections)
+    if (saved.materialSelections && saved.productCategoryId === productCategoryId) {
+      setMaterialSelections(saved.materialSelections)
+    } else {
+      setMaterialSelections({})
+    }
 
     if (!data) {
-      getQuoterData().then(d => {
+      getQuoterData(productCategoryId).then(d => {
         setData(d)
         setLoading(false)
-        // If no saved selection, default: first group, single side
-        if (!saved.materialSelections) {
-          const groups = groupMaterials(d.materials)
-          if (groups.length > 0) {
-            const first = groups[0]
-            setMaterialSelections({
-              [first.base]: { single: !!first.single || !!first.noSide, double: false, noSide: !!first.noSide }
-            })
-          }
-        }
       })
     }
-  }, [isOpen])
+  }, [isOpen, productCategoryId])
 
   const persistConfig = useCallback(() => {
     saveConfig({
       itemWidth, itemHeight, margin, bleed,
       maxMarginPercent, minMarginPercent, quantities,
       selectedFinishingIds, combineFinishings, includeNoFinishing,
+      productCategoryId,
       materialSelections,
     })
   }, [itemWidth, itemHeight, margin, bleed, maxMarginPercent, minMarginPercent,
-      quantities, selectedFinishingIds, combineFinishings, includeNoFinishing, materialSelections])
+      quantities, selectedFinishingIds, combineFinishings, includeNoFinishing, productCategoryId, materialSelections])
 
   if (!isOpen) return null
 
@@ -162,6 +160,24 @@ export default function ProductQuoterModal({
   }
 
   const groups = groupMaterials(data.materials)
+  const getGroupMaterials = (group: MaterialGroup) =>
+    [group.single, group.double, group.noSide].filter(Boolean) as RawMaterial[]
+  const getGroupScore = (group: MaterialGroup) => {
+    const materials = getGroupMaterials(group)
+    if (
+      productCategoryId &&
+      materials.some((material) =>
+        material.applicableCategories?.some((category) => category.id === productCategoryId)
+      )
+    ) {
+      return 2
+    }
+    if (materials.every((material) => (material.applicableCategories || []).length === 0)) {
+      return 1
+    }
+    return 0
+  }
+  const sortedGroups = [...groups].sort((left, right) => getGroupScore(right) - getGroupScore(left))
   const finishings = data.finishings.filter(f => selectedFinishingIds.includes(f.id))
 
   // Resolve which actual material objects are selected
@@ -284,12 +300,24 @@ export default function ProductQuoterModal({
             <div>
               <h3 className="text-sm font-bold text-gray-900 mb-3">Sustratos</h3>
               <div className="space-y-1">
-                {groups.map(group => {
+                {sortedGroups.map(group => {
                   const sel = materialSelections[group.base] ?? { single: false, double: false, noSide: false }
                   const hasSides = !!(group.single || group.double)
+                  const score = getGroupScore(group)
                   return (
                     <div key={group.base} className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 hover:bg-gray-50">
-                      <span className="flex-1 text-sm font-medium text-gray-800 truncate">{group.base}</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-gray-800">{group.base}</span>
+                        <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          score === 2
+                            ? 'bg-green-50 text-green-700'
+                            : score === 1
+                              ? 'bg-amber-50 text-amber-700'
+                              : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {score === 2 ? 'Compatible con categoria' : score === 1 ? 'Sin categoria definida' : 'Otra categoria'}
+                        </span>
+                      </div>
                       {hasSides ? (
                         <div className="flex gap-3">
                           {group.single && (
