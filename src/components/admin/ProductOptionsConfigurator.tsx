@@ -37,7 +37,7 @@ type ValuePreset = {
   values: OptionValue[]
 }
 
-const MAX_VARIANT_MATRIX_SIZE = 500
+const MAX_VARIANT_MATRIX_SIZE = 2500
 
 export interface Option {
   id?: string
@@ -130,14 +130,10 @@ function getVisualMatchOptionNames(options: Option[]) {
   return colorOptions.length > 0 ? colorOptions : []
 }
 
-function isVisualOnlyOption(option: Option) {
-  const name = normalizeText(option.name)
-  return option.displayType === 'COLOR_SWATCH' || name.includes('color') || name.includes('talle')
-}
-
 function getPriceMatrixOptions(options: Option[]) {
-  const priceOptions = options.filter((option) => !isVisualOnlyOption(option))
-  return priceOptions.length > 0 ? priceOptions : options
+  return options.filter(
+    (option) => option.name.trim() && option.values.some((value) => value.value.trim())
+  )
 }
 
 function findVisualVariant(
@@ -176,8 +172,17 @@ function findBestVariantForCombination(variants: Variant[], combination: Record<
   )
   const pricedSubset = subsetMatches.find((variant) => variant.price > 0)
   if (pricedSubset) return pricedSubset
+  if (subsetMatches[0]) return subsetMatches[0]
 
-  return exact || subsetMatches[0]
+  const partialMatches = variants.filter((variant) =>
+    Object.entries(variant.combinations).every(
+      ([optionName, value]) => !value || combination[optionName] === value
+    )
+  )
+  const pricedPartial = partialMatches.find((variant) => variant.price > 0)
+  if (pricedPartial) return pricedPartial
+
+  return exact || partialMatches[0]
 }
 
 const OPTION_TEMPLATES: OptionTemplate[] = [
@@ -623,7 +628,7 @@ export default function ProductOptionsConfigurator({
       const nextCombinationCount = countVariantCombinations(quoterOptions)
       if (nextCombinationCount > MAX_VARIANT_MATRIX_SIZE) {
         setUploadError(
-          `La cotizacion generaria ${nextCombinationCount} variantes de precio. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Reduce cantidades, materiales o terminaciones.`
+          `La cotizacion generaria ${nextCombinationCount} variantes de venta. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Reduce cantidades, materiales o terminaciones.`
         )
         return
       }
@@ -656,7 +661,7 @@ export default function ProductOptionsConfigurator({
   useEffect(() => {
     const compactCount = countVariantCombinations(priceMatrixOptions)
     if (compactCount <= 0 || compactCount > MAX_VARIANT_MATRIX_SIZE) return
-    if (variants.length <= compactCount) return
+    if (variants.length === compactCount) return
 
     const combinations = cartesianProduct(priceMatrixOptions)
     const nextVariants = combinations.map((combination) => {
@@ -674,7 +679,7 @@ export default function ProductOptionsConfigurator({
     })
 
     setUploadError(
-      `Se compacto la matriz de ${variants.length} a ${nextVariants.length} variantes de precio. Las demas opciones quedan como seleccionables.`
+      `Se sincronizo la matriz de ${variants.length} a ${nextVariants.length} variantes de venta.`
     )
     setVariants(nextVariants)
   }, [basePrice, priceMatrixOptions, variants])
@@ -1103,7 +1108,7 @@ export default function ProductOptionsConfigurator({
                     : 'Genera la matriz antes de guardar un producto configurable.'}
               </div>
               <div className="rounded-lg bg-white px-3 py-2">
-                La matriz de precio usa: {priceMatrixOptions.map((option) => option.name).join(', ') || 'opciones configuradas'}.
+                La matriz de venta usa: {priceMatrixOptions.map((option) => option.name).join(', ') || 'opciones configuradas'}.
               </div>
               <div className="rounded-lg bg-white px-3 py-2">
                 {zeroPriceVariantsCount > 0
@@ -1255,7 +1260,7 @@ export default function ProductOptionsConfigurator({
                 className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-55"
               >
                 <RefreshCcw size={16} />
-                Generar matriz de precios
+                Generar matriz de venta
               </button>
               <p className="mt-2 text-center text-xs text-gray-500">
                 Regenerala cada vez que agregues o modifiques opciones para actualizar la tabla.
@@ -1352,7 +1357,7 @@ export default function ProductOptionsConfigurator({
           <div className="flex items-center justify-between bg-orange-500 p-4 text-white">
             <h3 className="flex items-center gap-2 font-bold">
               <DollarSign size={18} />
-              Matriz de precios
+              Matriz de venta
             </h3>
             <span className="rounded-full bg-orange-600 px-2 py-1 text-xs font-semibold">
               {variants.length} combinaciones
