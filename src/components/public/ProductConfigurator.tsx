@@ -476,6 +476,12 @@ export default function ProductConfigurator({
           .filter(([, file]) => Boolean(file))
           .map(([side]) => (side === 'front' ? 'Frente' : 'Espalda'))
       : []
+    const alignmentLabel =
+      apparelDesignSelection?.designAlignment === 'left'
+        ? 'Izquierda'
+        : apparelDesignSelection?.designAlignment === 'right'
+          ? 'Derecha'
+          : 'Centro'
 
     const apparelOptions = apparelDesignSelection && apparelDesignSelection.mode !== 'NO_DESIGN'
       ? [
@@ -492,6 +498,10 @@ export default function ProductConfigurator({
           {
             name: 'Escala de diseno',
             value: `${apparelDesignSelection.designScale || 100}%`,
+          },
+          {
+            name: 'Posicion del diseno',
+            value: alignmentLabel,
           },
           ...(uploadedSides.length > 0
             ? [{ name: 'Archivos cargados', value: uploadedSides.join(' + ') }]

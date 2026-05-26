@@ -1,7 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CheckCircle2, ImagePlus, Maximize2, RotateCcw, Upload, X } from 'lucide-react'
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  CheckCircle2,
+  ImagePlus,
+  Maximize2,
+  RotateCcw,
+  Upload,
+  X,
+} from 'lucide-react'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import type {
   ApparelMockupConfig,
@@ -22,6 +32,7 @@ export type ApparelDesignSelection = {
   mode: 'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'
   designName?: string
   designScale?: number
+  designAlignment?: ApparelDesignAlignment
   designFile?: File
   designFiles?: Partial<Record<ApparelMockupSide, File>>
   fileUrl?: string
@@ -29,6 +40,7 @@ export type ApparelDesignSelection = {
 }
 
 type CustomDesignState = Partial<Record<ApparelMockupSide, { url: string; file: File }>>
+export type ApparelDesignAlignment = 'left' | 'center' | 'right'
 
 function normalize(value?: string | null) {
   return (value || '')
@@ -46,6 +58,29 @@ function inferSide(selection: string | undefined, fallback: ApparelMockupSide): 
   return fallback
 }
 
+function getSelectedPrintSize(selectedOptions: Record<string, string>) {
+  return Object.entries(selectedOptions).find(([name, value]) => {
+    const normalizedName = normalize(name)
+    const normalizedValue = normalize(value)
+    return (
+      normalizedName.includes('estampa') ||
+      normalizedName.includes('impresion') ||
+      normalizedValue.includes('10x10') ||
+      normalizedValue.includes('20x25') ||
+      normalizedValue.includes('30x40')
+    )
+  })?.[1]
+}
+
+function inferDesignScaleFromPrintSize(printSize?: string) {
+  const value = normalize(printSize)
+  if (!value || value.includes('sin')) return 100
+  if (value.includes('10x10') || value.includes('pecho')) return 45
+  if (value.includes('20x25') || value.includes('mediano')) return 72
+  if (value.includes('30x40') || value.includes('maximo')) return 100
+  return 100
+}
+
 export default function ApparelMockupPreview({
   productName,
   images,
@@ -58,6 +93,7 @@ export default function ApparelMockupPreview({
   const [customDesigns, setCustomDesigns] = useState<CustomDesignState>({})
   const customDesignsRef = useRef<CustomDesignState>({})
   const [designScale, setDesignScale] = useState(100)
+  const [designAlignment, setDesignAlignment] = useState<ApparelDesignAlignment>('center')
   const [mode, setMode] = useState<'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'>(
     config.allowCustomDesign === false && config.allowPresetDesigns !== false
       ? 'PRESET_DESIGN'
@@ -68,6 +104,7 @@ export default function ApparelMockupPreview({
   const selectedColorValue = config.colorOptionName
     ? selectedOptions[config.colorOptionName]
     : undefined
+  const selectedPrintSize = getSelectedPrintSize(selectedOptions)
 
   const selectedColor = useMemo(() => {
     if (selectedColorValue) {
@@ -108,6 +145,10 @@ export default function ApparelMockupPreview({
   }, [mode, presetDesigns, selectedPresetId])
 
   useEffect(() => {
+    setDesignScale(inferDesignScaleFromPrintSize(selectedPrintSize))
+  }, [selectedPrintSize])
+
+  useEffect(() => {
     const designFiles: Partial<Record<ApparelMockupSide, File>> = {}
     if (customDesigns.front?.file) designFiles.front = customDesigns.front.file
     if (customDesigns.back?.file) designFiles.back = customDesigns.back.file
@@ -121,11 +162,20 @@ export default function ApparelMockupPreview({
             ? 'Archivo propio'
             : undefined,
       designScale,
+      designAlignment,
       designFile: mode === 'CUSTOM_FILE' ? customDesigns.front?.file || customDesigns.back?.file : undefined,
       designFiles: mode === 'CUSTOM_FILE' ? designFiles : undefined,
       requiresPrintFile: mode === 'CUSTOM_FILE' && hasCustomDesigns,
     })
-  }, [customDesigns, designScale, hasCustomDesigns, mode, onDesignSelectionChange, selectedPreset?.name])
+  }, [
+    customDesigns,
+    designAlignment,
+    designScale,
+    hasCustomDesigns,
+    mode,
+    onDesignSelectionChange,
+    selectedPreset?.name,
+  ])
 
   useEffect(() => {
     customDesignsRef.current = customDesigns
@@ -184,6 +234,21 @@ export default function ApparelMockupPreview({
   }
 
   const uploadSides = ['front', 'back'] as const
+  const alignmentOptions: Array<{
+    value: ApparelDesignAlignment
+    icon: typeof AlignLeft
+    label: string
+  }> = [
+    { value: 'left', icon: AlignLeft, label: 'Izquierda' },
+    { value: 'center', icon: AlignCenter, label: 'Centro' },
+    { value: 'right', icon: AlignRight, label: 'Derecha' },
+  ]
+  const designAlignmentClass =
+    designAlignment === 'left'
+      ? 'justify-start'
+      : designAlignment === 'right'
+        ? 'justify-end'
+        : 'justify-center'
 
   return (
     <section className="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
@@ -224,7 +289,7 @@ export default function ApparelMockupPreview({
 
         {activeDesignUrl ? (
           <div
-            className="pointer-events-none absolute"
+            className={`pointer-events-none absolute flex items-center ${designAlignmentClass}`}
             style={{
               left: `${activeArea.x}%`,
               top: `${activeArea.y}%`,
@@ -238,8 +303,10 @@ export default function ApparelMockupPreview({
             <img
               src={activeDesignUrl}
               alt=""
-              className="h-full w-full object-contain"
-              style={{ transform: `scale(${designScale / 100})` }}
+              className="max-h-full max-w-full object-contain"
+              style={{
+                transform: `scale(${designScale / 100})`,
+              }}
               draggable={false}
             />
           </div>
@@ -382,25 +449,50 @@ export default function ApparelMockupPreview({
         )}
 
         {activeDesignUrl && (
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-gray-600">
-                <Maximize2 size={15} />
-                Escala
-              </span>
-              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-700">
-                {designScale}%
-              </span>
+          <div className="space-y-3 rounded-2xl border border-gray-200 bg-gray-50 p-3">
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-gray-600">
+                  <Maximize2 size={15} />
+                  Escala
+                </span>
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-700">
+                  {designScale}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="35"
+                max="120"
+                step="5"
+                value={designScale}
+                onChange={(event) => setDesignScale(Number(event.target.value))}
+                className="h-2 w-full cursor-pointer accent-[#ED2C71]"
+              />
             </div>
-            <input
-              type="range"
-              min="40"
-              max="180"
-              step="5"
-              value={designScale}
-              onChange={(event) => setDesignScale(Number(event.target.value))}
-              className="h-2 w-full cursor-pointer accent-[#ED2C71]"
-            />
+
+            <div className="grid grid-cols-3 gap-2">
+              {alignmentOptions.map((option) => {
+                const Icon = option.icon
+                const isSelected = designAlignment === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setDesignAlignment(option.value)}
+                    className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-black transition ${
+                      isSelected
+                        ? 'border-gray-950 bg-gray-950 text-white'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    aria-label={`Alinear diseno a ${option.label.toLowerCase()}`}
+                  >
+                    <Icon size={16} />
+                    <span className="hidden sm:inline">{option.label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
