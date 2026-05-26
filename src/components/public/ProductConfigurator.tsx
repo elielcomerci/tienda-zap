@@ -19,6 +19,7 @@ type ProductWithOptions = {
   images: string[]
   category: {
     name: string
+    slug?: string
     isService: boolean
   }
   options: {
@@ -470,6 +471,12 @@ export default function ProductConfigurator({
       ]
     )
 
+    const uploadedSides = apparelDesignSelection?.designFiles
+      ? Object.entries(apparelDesignSelection.designFiles)
+          .filter(([, file]) => Boolean(file))
+          .map(([side]) => (side === 'front' ? 'Frente' : 'Espalda'))
+      : []
+
     const apparelOptions = apparelDesignSelection && apparelDesignSelection.mode !== 'NO_DESIGN'
       ? [
           {
@@ -486,6 +493,9 @@ export default function ProductConfigurator({
             name: 'Escala de diseno',
             value: `${apparelDesignSelection.designScale || 100}%`,
           },
+          ...(uploadedSides.length > 0
+            ? [{ name: 'Archivos cargados', value: uploadedSides.join(' + ') }]
+            : []),
         ]
       : []
 
@@ -503,16 +513,54 @@ export default function ProductConfigurator({
     setDesignUploadError('')
 
     let designFileUrl = apparelDesignSelection?.fileUrl
+    let designReferenceFiles:
+      | Array<{
+          url: string
+          fileName: string
+          contentType?: string
+          sizeBytes?: number
+        }>
+      | undefined
 
     try {
-      if (apparelDesignSelection?.mode === 'CUSTOM_FILE' && apparelDesignSelection.designFile && !designFileUrl) {
-        const formData = new FormData()
-        formData.append('file', apparelDesignSelection.designFile)
+      if (apparelDesignSelection?.mode === 'CUSTOM_FILE' && !designFileUrl) {
+        const filesBySide = apparelDesignSelection.designFiles || {
+          front: apparelDesignSelection.designFile,
+        }
+        const uploadEntries = Object.entries(filesBySide).filter(
+          (entry): entry is [string, File] => entry[1] instanceof File
+        )
 
-        const response = await fetch('/api/product-design-upload', { method: 'POST', body: formData })
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.error || 'No pudimos subir el PNG.')
-        designFileUrl = data.url
+        if (uploadEntries.length > 0) {
+          const uploadedFiles = await Promise.all(
+            uploadEntries.map(async ([side, file]) => {
+              const formData = new FormData()
+              formData.append('file', file)
+
+              const response = await fetch('/api/product-design-upload', { method: 'POST', body: formData })
+              const data = await response.json()
+              if (!response.ok) throw new Error(data.error || 'No pudimos subir el PNG.')
+
+              return {
+                side,
+                url: data.url as string,
+                file,
+              }
+            })
+          )
+
+          designFileUrl =
+            uploadedFiles.find((file) => file.side === 'front')?.url ||
+            uploadedFiles.find((file) => file.side === 'back')?.url ||
+            uploadedFiles[0]?.url
+
+          designReferenceFiles = uploadedFiles.map(({ side, url, file }) => ({
+            url,
+            fileName: `${side === 'front' ? 'frente' : 'espalda'}-${file.name}`,
+            contentType: file.type,
+            sizeBytes: file.size,
+          }))
+        }
       }
 
       const optionsArray = buildSelectedOptions()
@@ -527,6 +575,7 @@ export default function ProductConfigurator({
         isService: isServiceProduct,
         briefType: normalizeBriefType(product.briefType),
         fileUrl: designFileUrl,
+        briefReferenceFiles: designReferenceFiles,
         designRequested: apparelDesignSelection?.requiresPrintFile && !designFileUrl ? true : undefined,
         selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
         cartItemId: designFileUrl

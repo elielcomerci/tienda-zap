@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ImagePlus, Maximize2, RotateCcw } from 'lucide-react'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import type {
@@ -23,9 +23,12 @@ export type ApparelDesignSelection = {
   designName?: string
   designScale?: number
   designFile?: File
+  designFiles?: Partial<Record<ApparelMockupSide, File>>
   fileUrl?: string
   requiresPrintFile: boolean
 }
+
+type CustomDesignState = Partial<Record<ApparelMockupSide, { url: string; file: File }>>
 
 function normalize(value?: string | null) {
   return (value || '')
@@ -52,8 +55,8 @@ export default function ApparelMockupPreview({
   onDesignSelectionChange,
 }: ApparelMockupPreviewProps) {
   const [side, setSide] = useState<ApparelMockupSide>(config.defaultSide || 'front')
-  const [designUrl, setDesignUrl] = useState<string | null>(null)
-  const [designFile, setDesignFile] = useState<File | null>(null)
+  const [customDesigns, setCustomDesigns] = useState<CustomDesignState>({})
+  const customDesignsRef = useRef<CustomDesignState>({})
   const [designScale, setDesignScale] = useState(100)
   const [mode, setMode] = useState<'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'>(
     config.allowCustomDesign === false && config.allowPresetDesigns !== false
@@ -82,12 +85,6 @@ export default function ApparelMockupPreview({
     setSide(inferred)
   }, [config.defaultSide, config.placementOptionName, selectedOptions])
 
-  useEffect(() => {
-    return () => {
-      if (designUrl) URL.revokeObjectURL(designUrl)
-    }
-  }, [designUrl])
-
   const frontUrl = selectedColor?.frontImageUrl || selectedColor?.backImageUrl || ''
   const backUrl = selectedColor?.backImageUrl || selectedColor?.frontImageUrl || ''
   const baseUrl = side === 'front' ? frontUrl : backUrl
@@ -95,8 +92,14 @@ export default function ApparelMockupPreview({
   const showSideToggle = Boolean(selectedColor?.frontImageUrl && selectedColor?.backImageUrl)
   const presetDesigns = config.presetDesigns || []
   const selectedPreset = presetDesigns.find((design) => design.id === selectedPresetId) || presetDesigns[0]
+  const activeCustomDesign = customDesigns[side]
+  const hasCustomDesigns = Boolean(customDesigns.front?.file || customDesigns.back?.file)
   const activeDesignUrl =
-    mode === 'PRESET_DESIGN' ? selectedPreset?.imageUrl || null : mode === 'CUSTOM_FILE' ? designUrl : null
+    mode === 'PRESET_DESIGN'
+      ? selectedPreset?.imageUrl || null
+      : mode === 'CUSTOM_FILE'
+        ? activeCustomDesign?.url || null
+        : null
 
   useEffect(() => {
     if (mode === 'PRESET_DESIGN' && !selectedPresetId && presetDesigns[0]) {
@@ -105,27 +108,69 @@ export default function ApparelMockupPreview({
   }, [mode, presetDesigns, selectedPresetId])
 
   useEffect(() => {
+    const designFiles: Partial<Record<ApparelMockupSide, File>> = {}
+    if (customDesigns.front?.file) designFiles.front = customDesigns.front.file
+    if (customDesigns.back?.file) designFiles.back = customDesigns.back.file
+
     onDesignSelectionChange?.({
       mode,
       designName:
         mode === 'PRESET_DESIGN'
           ? selectedPreset?.name
-          : mode === 'CUSTOM_FILE' && designUrl
+          : mode === 'CUSTOM_FILE' && hasCustomDesigns
             ? 'Archivo propio'
             : undefined,
       designScale,
-      designFile: mode === 'CUSTOM_FILE' ? designFile || undefined : undefined,
-      requiresPrintFile: mode === 'CUSTOM_FILE' && Boolean(designFile),
+      designFile: mode === 'CUSTOM_FILE' ? customDesigns.front?.file || customDesigns.back?.file : undefined,
+      designFiles: mode === 'CUSTOM_FILE' ? designFiles : undefined,
+      requiresPrintFile: mode === 'CUSTOM_FILE' && hasCustomDesigns,
     })
-  }, [designFile, designScale, designUrl, mode, onDesignSelectionChange, selectedPreset?.name])
+  }, [customDesigns, designScale, hasCustomDesigns, mode, onDesignSelectionChange, selectedPreset?.name])
 
-  const handleDesignChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    customDesignsRef.current = customDesigns
+  }, [customDesigns])
+
+  useEffect(() => {
+    return () => {
+      Object.values(customDesignsRef.current).forEach((design) => {
+        if (design?.url) URL.revokeObjectURL(design.url)
+      })
+    }
+  }, [])
+
+  const handleDesignChange = (targetSide: ApparelMockupSide, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    if (designUrl) URL.revokeObjectURL(designUrl)
-    setDesignUrl(URL.createObjectURL(file))
-    setDesignFile(file)
+    setCustomDesigns((previous) => {
+      if (previous[targetSide]?.url) URL.revokeObjectURL(previous[targetSide].url)
+      return {
+        ...previous,
+        [targetSide]: {
+          url: URL.createObjectURL(file),
+          file,
+        },
+      }
+    })
     event.target.value = ''
+  }
+
+  const clearDesign = (targetSide: ApparelMockupSide) => {
+    setCustomDesigns((previous) => {
+      if (previous[targetSide]?.url) URL.revokeObjectURL(previous[targetSide].url)
+      const next = { ...previous }
+      delete next[targetSide]
+      return next
+    })
+  }
+
+  const clearAllCustomDesigns = () => {
+    setCustomDesigns((previous) => {
+      Object.values(previous).forEach((design) => {
+        if (design?.url) URL.revokeObjectURL(design.url)
+      })
+      return {}
+    })
   }
 
   if (!baseUrl) {
@@ -239,28 +284,56 @@ export default function ApparelMockupPreview({
             </button>
           )}
         </div>
-        {mode === 'CUSTOM_FILE' && (
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-gray-950 px-4 py-3 text-sm font-black text-white transition hover:bg-gray-800">
-            <ImagePlus size={18} />
-            Probar diseno
-            <input type="file" accept="image/png" onChange={handleDesignChange} className="hidden" />
-          </label>
-        )}
-        {mode === 'CUSTOM_FILE' && designUrl && (
-          <button
-            type="button"
-          onClick={() => {
-            URL.revokeObjectURL(designUrl)
-            setDesignUrl(null)
-            setDesignFile(null)
-          }}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
-          >
-            <RotateCcw size={17} />
-          Limpiar
-        </button>
-      )}
       </div>
+
+      {mode === 'CUSTOM_FILE' && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(['front', 'back'] as const).map((targetSide) => {
+            const uploaded = customDesigns[targetSide]
+            return (
+              <div key={targetSide} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-sm font-black text-gray-900">
+                    {targetSide === 'front' ? 'Frente' : 'Espalda'}
+                  </p>
+                  {uploaded && (
+                    <button
+                      type="button"
+                      onClick={() => clearDesign(targetSide)}
+                      className="rounded-full px-2 py-1 text-xs font-bold text-gray-500 transition hover:bg-white hover:text-gray-950"
+                    >
+                      Quitar
+                    </button>
+                  )}
+                </div>
+                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-black text-gray-800 transition hover:border-gray-300 hover:bg-gray-100">
+                  <ImagePlus size={18} />
+                  <span className="min-w-0 truncate">
+                    {uploaded ? uploaded.file.name : `Subir PNG ${targetSide === 'front' ? 'frente' : 'espalda'}`}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/png"
+                    onChange={(event) => handleDesignChange(targetSide, event)}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            )
+          })}
+
+          {hasCustomDesigns && (
+            <button
+              type="button"
+              onClick={clearAllCustomDesigns}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50 sm:col-span-2"
+            >
+              <RotateCcw size={17} />
+              Limpiar archivos
+            </button>
+          )}
+        </div>
+      )}
 
       {mode === 'PRESET_DESIGN' && presetDesigns.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">

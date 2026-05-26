@@ -195,6 +195,8 @@ export async function resolveCheckoutOrderItems(
       throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
     }
 
+    const hasArtworkFile = Boolean(item.fileUrl || item.briefReferenceFiles?.length)
+
     return {
       productId: product.id,
       categoryId: product.category.id,
@@ -208,10 +210,10 @@ export async function resolveCheckoutOrderItems(
       briefReferenceFiles: item.briefReferenceFiles || undefined,
       isService: product.category.isService,
       fileUrl: product.category.isService ? undefined : item.fileUrl,
-      designRequested: product.category.isService || item.fileUrl ? false : Boolean(item.designRequested),
+      designRequested: product.category.isService || hasArtworkFile ? false : Boolean(item.designRequested),
       artworkSubmissionChannel: product.category.isService
         ? ('PENDING' as const)
-        : item.fileUrl
+        : hasArtworkFile
           ? ('R2' as const)
           : ('PENDING' as const),
       selectedOptions: selectedOptions.length > 0

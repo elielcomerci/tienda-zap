@@ -7,7 +7,32 @@ import ApparelMockupPreview, {
 import ProductConfigurator from '@/components/public/ProductConfigurator'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import ProductMediaBlock from '@/components/public/ProductMediaBlock'
-import { getApparelMockupConfig, hasApparelMockupImages } from '@/lib/apparel-mockup'
+import {
+  DEFAULT_APPAREL_MOCKUP,
+  getApparelMockupConfig,
+  hasApparelMockupImages,
+} from '@/lib/apparel-mockup'
+
+function normalize(value?: string | null) {
+  return (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+function isApparelProduct(product: any) {
+  const categoryName = normalize(product.category?.name)
+  const categorySlug = normalize(product.category?.slug)
+  const productName = normalize(product.name)
+  const productSlug = normalize(product.slug)
+  const haystack = `${categoryName} ${categorySlug} ${productName} ${productSlug}`
+
+  return ['indumentaria', 'remera', 'camiseta', 'buzo', 'hoodie', 'textil'].some((term) =>
+    haystack.includes(term)
+  )
+}
 
 export default function ProductDetailExperience({
   product,
@@ -21,18 +46,35 @@ export default function ProductDetailExperience({
   const [apparelDesignSelection, setApparelDesignSelection] =
     useState<ApparelDesignSelection | null>(null)
   const apparelMockup = getApparelMockupConfig(product.mediaList)
-  const showApparelMockup = hasApparelMockupImages(apparelMockup)
+  const fallbackApparelMockup =
+    !hasApparelMockupImages(apparelMockup) && isApparelProduct(product) && product.images?.[0]
+      ? {
+          ...DEFAULT_APPAREL_MOCKUP,
+          enabled: true,
+          colors: [
+            {
+              value: 'Base',
+              frontImageUrl: product.images[0],
+              backImageUrl: product.images[1] || product.images[0],
+            },
+          ],
+        }
+      : null
+  const activeApparelMockup = hasApparelMockupImages(apparelMockup)
+    ? apparelMockup
+    : fallbackApparelMockup
+  const showApparelMockup = hasApparelMockupImages(activeApparelMockup)
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)] 2xl:gap-12">
       <div className="self-start xl:sticky xl:top-24">
-        {showApparelMockup && apparelMockup ? (
+        {showApparelMockup && activeApparelMockup ? (
           <ApparelMockupPreview
             images={product.images}
             productName={product.name}
             selectedImageUrl={selectedImageUrl}
             selectedOptions={selectedOptions}
-            config={apparelMockup}
+            config={activeApparelMockup}
             onDesignSelectionChange={setApparelDesignSelection}
           />
         ) : (
