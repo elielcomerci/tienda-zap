@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { X, ZoomIn } from 'lucide-react'
+import { ZoomIn } from 'lucide-react'
 
 export default function ProductImageGallery({
   images,
@@ -24,7 +24,17 @@ export default function ProductImageGallery({
 
   useEffect(() => {
     if (zoomOpen) {
+      const previousOverflow = document.body.style.overflow
       document.body.style.overflow = 'hidden'
+      const handleEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') setZoomOpen(false)
+      }
+
+      window.addEventListener('keydown', handleEscape)
+      return () => {
+        window.removeEventListener('keydown', handleEscape)
+        document.body.style.overflow = previousOverflow
+      }
     } else {
       document.body.style.overflow = 'auto'
     }
@@ -118,32 +128,18 @@ export default function ProductImageGallery({
       )}
 
       {zoomOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm sm:p-8"
+        <button
+          type="button"
+          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/70 p-3 text-left backdrop-blur-md sm:p-8"
           onClick={() => setZoomOpen(false)}
+          aria-label={`Cerrar imagen ampliada de ${productName}`}
         >
-          <button
-            type="button"
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-3 text-white backdrop-blur transition-colors hover:bg-white/20 sm:right-8 sm:top-8"
-            onClick={(event) => {
-              event.stopPropagation()
-              setZoomOpen(false)
-            }}
-          >
-            <X size={24} />
-          </button>
-
-          <div
-            className="relative aspect-square w-full max-w-5xl overflow-hidden rounded-lg sm:aspect-video"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <img
-              src={safeImages[activeIndex]}
-              alt={`${productName} zoom`}
-              className="h-full w-full object-contain"
-            />
-          </div>
-        </div>
+          <img
+            src={safeImages[activeIndex]}
+            alt={`${productName} ampliado`}
+            className="max-h-[92vh] max-w-[96vw] rounded-2xl object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
+          />
+        </button>
       )}
     </div>
   )
