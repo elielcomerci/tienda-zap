@@ -38,6 +38,16 @@ type ValuePreset = {
 }
 
 const MAX_VARIANT_MATRIX_SIZE = 2500
+const APPAREL_SHIRT_COST = 10000
+const APPAREL_TRANSFER_LINEAR_METER_COST = 9800
+const APPAREL_TRANSFER_AREA_CM2 = 50 * 100
+const APPAREL_MARKUP = 2.5
+
+function roundPsychological(price: number) {
+  if (price < 100) return Math.ceil(price / 10) * 10
+  const rounded = Math.ceil(price / 100) * 100 - 10
+  return rounded < price ? rounded + 100 : rounded
+}
 
 export interface Option {
   id?: string
@@ -87,6 +97,94 @@ function countVariantCombinations(options: Option[]) {
     }))
     .filter((option) => option.name && option.valueCount > 0)
     .reduce((total, option) => total * option.valueCount, 1)
+}
+
+function getOptionByNames(options: Option[], names: string[]) {
+  return options.find((option) => {
+    const optionName = normalizeText(option.name)
+    return names.some((name) => optionName === normalizeText(name))
+  })
+}
+
+function getCleanValues(option?: Option) {
+  return option?.values.map((value) => value.value.trim()).filter(Boolean) || []
+}
+
+function getPrintSizeArea(sizeLabel: string) {
+  const normalized = normalizeText(sizeLabel)
+  if (normalized.includes('10x10')) return { width: 10, height: 10 }
+  if (normalized.includes('20x25')) return { width: 20, height: 25 }
+  if (normalized.includes('30x40')) return { width: 30, height: 40 }
+  return { width: 0, height: 0 }
+}
+
+function calculateApparelVariantPrice(technique: string, placement: string, printSize: string) {
+  const normalizedTechnique = normalizeText(technique)
+  const normalizedPlacement = normalizeText(placement)
+  const normalizedSize = normalizeText(printSize)
+
+  if (normalizedTechnique.includes('lisa') || normalizedPlacement.includes('sin estampado') || normalizedSize.includes('sin estampado')) {
+    return roundPsychological(APPAREL_SHIRT_COST * APPAREL_MARKUP)
+  }
+
+  const size = getPrintSizeArea(printSize)
+  const sides = normalizedPlacement.includes('frente y espalda') ? 2 : 1
+  const transferCost = (size.width * size.height * sides * APPAREL_TRANSFER_LINEAR_METER_COST) / APPAREL_TRANSFER_AREA_CM2
+
+  return roundPsychological((APPAREL_SHIRT_COST + transferCost) * APPAREL_MARKUP)
+}
+
+function getApparelMatrixCombinations(options: Option[]) {
+  const sizeOption = getOptionByNames(options, ['Talle'])
+  const colorOption =
+    options.find((option) => option.displayType === 'COLOR_SWATCH') ||
+    getOptionByNames(options, ['Color', 'Color remera'])
+  const techniqueOption = getOptionByNames(options, ['Tecnica', 'Técnica'])
+  const placementOption = getOptionByNames(options, ['Ubicacion', 'Ubicación'])
+  const printSizeOption = options.find((option) => normalizeText(option.name).includes('estampa'))
+
+  if (!sizeOption || !colorOption || !techniqueOption || !placementOption || !printSizeOption) {
+    return null
+  }
+
+  const sizes = getCleanValues(sizeOption)
+  const colors = getCleanValues(colorOption)
+  const techniques = getCleanValues(techniqueOption)
+  const placements = getCleanValues(placementOption)
+  const printSizes = getCleanValues(printSizeOption)
+  const noPrintPlacement = placements.find((value) => normalizeText(value).includes('sin estampado')) || 'Sin estampado'
+  const noPrintSize = printSizes.find((value) => normalizeText(value).includes('sin estampado')) || 'Sin estampado'
+  const printablePlacements = placements.filter((value) => !normalizeText(value).includes('sin estampado'))
+  const printableSizes = printSizes.filter((value) => !normalizeText(value).includes('sin estampado'))
+  const combinations: Array<{ combination: Record<string, string>; price: number }> = []
+
+  for (const size of sizes) {
+    for (const color of colors) {
+      for (const technique of techniques) {
+        const normalizedTechnique = normalizeText(technique)
+        const isPlain = normalizedTechnique.includes('lisa') || normalizedTechnique.includes('sin estampa')
+        const validPlacements = isPlain ? [noPrintPlacement] : printablePlacements
+        const validPrintSizes = isPlain ? [noPrintSize] : printableSizes
+
+        for (const placement of validPlacements) {
+          for (const printSize of validPrintSizes) {
+            combinations.push({
+              combination: {
+                [sizeOption.name]: size,
+                [colorOption.name]: color,
+                [techniqueOption.name]: technique,
+                [placementOption.name]: placement,
+                [printSizeOption.name]: printSize,
+              },
+              price: calculateApparelVariantPrice(technique, placement, printSize),
+            })
+          }
+        }
+      }
+    }
+  }
+
+  return combinations
 }
 
 function normalizeOptionValue(value: string | OptionValue): OptionValue {
@@ -575,6 +673,7 @@ export default function ProductOptionsConfigurator({
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const priceMatrixOptions = useMemo(() => getPriceMatrixOptions(options), [options])
+  const apparelMatrix = useMemo(() => getApparelMatrixCombinations(options), [options])
   const priceMatrixOptionNames = useMemo(
     () => new Set(priceMatrixOptions.map((option) => option.name)),
     [priceMatrixOptions]
@@ -621,20 +720,24 @@ export default function ProductOptionsConfigurator({
       const quoterOptionNames = new Set(Object.keys(incomingOptionsMap).map(k => k.toLowerCase()))
       const manualOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
       const imageMatchOptionNames = getVisualMatchOptionNames(manualOptions)
+      const manualHasApparelPricing = hasApparelPrintOptions(manualOptions)
       const nextOptions = [...manualOptions]
 
       // Add/replace quoter-managed options with fresh values (no merging)
-      Object.entries(incomingOptionsMap).forEach(([optName, optValuesSet]) => {
-        nextOptions.push({
-          name: optName,
-          displayType: 'BUTTON',
-          isRequired: true,
-          values: Array.from(optValuesSet).map((value) => ({ value })),
+      if (!manualHasApparelPricing) {
+        Object.entries(incomingOptionsMap).forEach(([optName, optValuesSet]) => {
+          nextOptions.push({
+            name: optName,
+            displayType: 'BUTTON',
+            isRequired: true,
+            values: Array.from(optValuesSet).map((value) => ({ value })),
+          })
         })
-      })
+      }
 
+      const nextApparelMatrix = getApparelMatrixCombinations(nextOptions)
       const quoterOptions = getPriceMatrixOptions(nextOptions)
-      const nextCombinationCount = countVariantCombinations(quoterOptions)
+      const nextCombinationCount = nextApparelMatrix?.length || countVariantCombinations(quoterOptions)
       if (nextCombinationCount > MAX_VARIANT_MATRIX_SIZE) {
         setUploadError(
           `La cotizacion generaria ${nextCombinationCount} variantes de venta. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Reduce cantidades, materiales o terminaciones.`
@@ -644,10 +747,10 @@ export default function ProductOptionsConfigurator({
 
       setOptions(nextOptions)
 
-      // The quoter only owns price-driving options. Visual options such as Color/Talle stay selectable,
-      // but they must not multiply the price matrix.
-      const combinations = cartesianProduct(quoterOptions)
-      const nextVariants = combinations.map((combination) => {
+      const matrixEntries =
+        nextApparelMatrix?.map((entry) => entry) ||
+        cartesianProduct(quoterOptions).map((combination) => ({ combination, price: basePrice }))
+      const nextVariants = matrixEntries.map(({ combination, price }) => {
         const incomingCombinationEntries = Object.entries(combination).filter(([optionName]) =>
           incomingOptionsMap[optionName]
         )
@@ -660,8 +763,12 @@ export default function ProductOptionsConfigurator({
         const existing = findExactVariant(variants, combination) || findSubsetVariant(variants, combination)
         const imageSource = existing || findVisualVariant(variants, combination, imageMatchOptionNames)
         return existing
-          ? { ...existing, price: incoming ? incoming.price : existing.price, imageUrl: existing.imageUrl || imageSource?.imageUrl }
-          : { combinations: combination, price: incoming ? incoming.price : basePrice, imageUrl: imageSource?.imageUrl }
+          ? {
+              ...existing,
+              price: nextApparelMatrix ? price : incoming ? incoming.price : existing.price || price,
+              imageUrl: existing.imageUrl || imageSource?.imageUrl,
+            }
+          : { combinations: combination, price: nextApparelMatrix ? price : incoming ? incoming.price : price, imageUrl: imageSource?.imageUrl }
       })
       setVariants(nextVariants)
     }
@@ -671,30 +778,32 @@ export default function ProductOptionsConfigurator({
   }, [options, variants, basePrice])
 
   useEffect(() => {
-    const compactCount = countVariantCombinations(priceMatrixOptions)
+    const compactCount = apparelMatrix?.length || countVariantCombinations(priceMatrixOptions)
     if (compactCount <= 0 || compactCount > MAX_VARIANT_MATRIX_SIZE) return
     if (variants.length === compactCount) return
 
-    const combinations = cartesianProduct(priceMatrixOptions)
-    const nextVariants = combinations.map((combination) => {
+    const matrixEntries =
+      apparelMatrix?.map((entry) => entry) ||
+      cartesianProduct(priceMatrixOptions).map((combination) => ({ combination, price: basePrice }))
+    const nextVariants = matrixEntries.map(({ combination, price }) => {
       const existing = findBestVariantForCombination(variants, combination)
 
       return existing
         ? {
             combinations: combination,
-            price: existing.price,
+            price: existing.price > 0 ? existing.price : price,
             sku: existing.sku,
             stock: existing.stock,
             imageUrl: existing.imageUrl,
           }
-        : { combinations: combination, price: basePrice }
+        : { combinations: combination, price }
     })
 
     setUploadError(
       `Se sincronizo la matriz de ${variants.length} a ${nextVariants.length} variantes de venta.`
     )
     setVariants(nextVariants)
-  }, [basePrice, priceMatrixOptions, variants])
+  }, [apparelMatrix, basePrice, priceMatrixOptions, variants])
 
   useEffect(() => {
     const handleApplyImageToOption = (event: Event) => {
@@ -838,7 +947,7 @@ export default function ProductOptionsConfigurator({
   }
 
   const generateVariants = () => {
-    const combinationCount = countVariantCombinations(priceMatrixOptions)
+    const combinationCount = apparelMatrix?.length || countVariantCombinations(priceMatrixOptions)
     if (combinationCount > MAX_VARIANT_MATRIX_SIZE) {
       setUploadError(
         `La matriz generaria ${combinationCount} variantes. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Reduce la cantidad de opciones antes de generarla.`
@@ -847,16 +956,20 @@ export default function ProductOptionsConfigurator({
     }
 
     setUploadError('')
-    const combinations = cartesianProduct(priceMatrixOptions)
+    const matrixEntries =
+      apparelMatrix?.map((entry) => entry) ||
+      cartesianProduct(priceMatrixOptions).map((combination) => ({ combination, price: basePrice }))
     const imageMatchOptionNames = getVisualMatchOptionNames(options)
 
-    const nextVariants = combinations.map((combination) => {
+    const nextVariants = matrixEntries.map(({ combination, price }) => {
       const existing = findExactVariant(variants, combination)
       const imageSource = existing || findVisualVariant(variants, combination, imageMatchOptionNames)
 
-      return existing || {
+      return existing
+        ? { ...existing, price: existing.price > 0 ? existing.price : price }
+        : {
         combinations: combination,
-        price: basePrice,
+        price,
         imageUrl: imageSource?.imageUrl,
       }
     })
@@ -914,7 +1027,7 @@ export default function ProductOptionsConfigurator({
   )
 
   const filteredCount = visibleVariants.length
-  const matrixExpectedCount = countVariantCombinations(priceMatrixOptions)
+  const matrixExpectedCount = apparelMatrix?.length || countVariantCombinations(priceMatrixOptions)
   const matrixExceedsLimit = matrixExpectedCount > MAX_VARIANT_MATRIX_SIZE
   const itemsPerPage = 25
   const totalPages = Math.ceil(filteredCount / itemsPerPage) || 1
