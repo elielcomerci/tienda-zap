@@ -465,7 +465,7 @@ export default function ProductConfigurator({
       ]
     )
 
-    const apparelOptions = apparelDesignSelection
+    const apparelOptions = apparelDesignSelection && apparelDesignSelection.mode !== 'NO_DESIGN'
       ? [
           {
             name: 'Modo de diseno',
@@ -501,7 +501,7 @@ export default function ProductConfigurator({
       quantity: 1,
       isService: isServiceProduct,
       briefType: normalizeBriefType(product.briefType),
-      designRequested: apparelDesignSelection?.requiresPrintFile === false ? true : undefined,
+      designRequested: apparelDesignSelection?.requiresPrintFile ? true : undefined,
       selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
     })
 

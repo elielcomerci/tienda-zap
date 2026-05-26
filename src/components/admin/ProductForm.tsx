@@ -708,12 +708,84 @@ export default function ProductForm({
         ...previous,
         presetDesigns: (previous.presetDesigns || []).map((design, index) =>
           index === designIndex && !design.name.trim()
-            ? { ...design, name: file.name.replace(/\.[^.]+$/, '') }
+            ? { ...design, name: titleFromFileName(file.name) }
             : design
         ),
       }))
     } catch {
       setError('No pudimos subir el diseno listo. Intenta de nuevo.')
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleBulkPresetDesignUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length === 0) return
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const uploadedDesigns = []
+
+      for (const file of files) {
+        if (file.type && file.type !== 'image/png') {
+          setError('Los disenos superpuestos deben ser PNG.')
+          continue
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          setError('Cada PNG de diseno debe pesar como maximo 5MB.')
+          continue
+        }
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const res = await fetch('/api/upload', { method: 'POST', body: formData })
+        if (!res.ok) throw new Error()
+        const data = await res.json()
+
+        uploadedDesigns.push({
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: titleFromFileName(file.name) || `Diseno ${uploadedDesigns.length + 1}`,
+          imageUrl: data.url,
+          description: '',
+        })
+      }
+
+      if (uploadedDesigns.length === 0) return
+
+      const nextApparelMockup = {
+        ...apparelMockup,
+        enabled: true,
+        allowPresetDesigns: true,
+        presetDesigns: [...(apparelMockup.presetDesigns || []), ...uploadedDesigns],
+      }
+      setApparelMockup(nextApparelMockup)
+
+      if (product && formRef.current) {
+        await saveProductForm(formRef.current, {
+          mediaList: [
+            {
+              ...nextApparelMockup,
+              colors: nextApparelMockup.colors.filter(
+                (color) => color.value.trim() || color.frontImageUrl || color.backImageUrl
+              ),
+              presetDesigns: (nextApparelMockup.presetDesigns || []).filter(
+                (design) => design.name.trim() || design.imageUrl.trim()
+              ),
+              type: 'APPAREL_MOCKUP' as const,
+            },
+            ...mediaList,
+          ],
+          stayOnPage: true,
+        })
+      }
+    } catch {
+      setError('No pudimos subir los PNGs de diseno. Intenta de nuevo.')
     } finally {
       setUploading(false)
       event.target.value = ''
@@ -1653,13 +1725,27 @@ export default function ProductForm({
                         El arte elegido se guarda en el pedido como opcion comercial.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={addPresetDesign}
-                      className="rounded-xl bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
-                    >
-                      Agregar diseno
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                        <UploadCloud size={16} />
+                        Subir PNGs
+                        <input
+                          type="file"
+                          accept="image/png"
+                          multiple
+                          onChange={handleBulkPresetDesignUpload}
+                          disabled={uploading}
+                          className="hidden"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addPresetDesign}
+                        className="rounded-xl bg-gray-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+                      >
+                        Agregar diseno
+                      </button>
+                    </div>
                   </div>
 
                   {(apparelMockup.presetDesigns || []).length === 0 ? (
@@ -1700,7 +1786,7 @@ export default function ProductForm({
                                 <UploadCloud size={17} />
                                 <input
                                   type="file"
-                                  accept="image/*"
+                                  accept="image/png"
                                   onChange={(event) => handlePresetDesignUpload(event, index)}
                                   className="hidden"
                                 />

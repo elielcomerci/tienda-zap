@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ImagePlus, Maximize2, RotateCcw, Shirt } from 'lucide-react'
+import { ImagePlus, Maximize2, RotateCcw } from 'lucide-react'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import type {
   ApparelMockupConfig,
@@ -19,7 +19,7 @@ type ApparelMockupPreviewProps = {
 }
 
 export type ApparelDesignSelection = {
-  mode: 'CUSTOM_FILE' | 'PRESET_DESIGN'
+  mode: 'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'
   designName?: string
   designScale?: number
   requiresPrintFile: boolean
@@ -52,10 +52,10 @@ export default function ApparelMockupPreview({
   const [side, setSide] = useState<ApparelMockupSide>(config.defaultSide || 'front')
   const [designUrl, setDesignUrl] = useState<string | null>(null)
   const [designScale, setDesignScale] = useState(100)
-  const [mode, setMode] = useState<'CUSTOM_FILE' | 'PRESET_DESIGN'>(
+  const [mode, setMode] = useState<'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'>(
     config.allowCustomDesign === false && config.allowPresetDesigns !== false
       ? 'PRESET_DESIGN'
-      : 'CUSTOM_FILE'
+      : 'NO_DESIGN'
   )
   const [selectedPresetId, setSelectedPresetId] = useState('')
 
@@ -92,7 +92,8 @@ export default function ApparelMockupPreview({
   const showSideToggle = Boolean(selectedColor?.frontImageUrl && selectedColor?.backImageUrl)
   const presetDesigns = config.presetDesigns || []
   const selectedPreset = presetDesigns.find((design) => design.id === selectedPresetId) || presetDesigns[0]
-  const activeDesignUrl = mode === 'PRESET_DESIGN' ? selectedPreset?.imageUrl || null : designUrl
+  const activeDesignUrl =
+    mode === 'PRESET_DESIGN' ? selectedPreset?.imageUrl || null : mode === 'CUSTOM_FILE' ? designUrl : null
 
   useEffect(() => {
     if (mode === 'PRESET_DESIGN' && !selectedPresetId && presetDesigns[0]) {
@@ -103,9 +104,14 @@ export default function ApparelMockupPreview({
   useEffect(() => {
     onDesignSelectionChange?.({
       mode,
-      designName: mode === 'PRESET_DESIGN' ? selectedPreset?.name : designUrl ? 'Archivo propio' : undefined,
+      designName:
+        mode === 'PRESET_DESIGN'
+          ? selectedPreset?.name
+          : mode === 'CUSTOM_FILE' && designUrl
+            ? 'Archivo propio'
+            : undefined,
       designScale,
-      requiresPrintFile: mode === 'CUSTOM_FILE',
+      requiresPrintFile: mode === 'CUSTOM_FILE' && Boolean(designUrl),
     })
   }, [designScale, designUrl, mode, onDesignSelectionChange, selectedPreset?.name])
 
@@ -174,7 +180,6 @@ export default function ApparelMockupPreview({
               height: `${activeArea.height}%`,
               transform: `rotate(${activeArea.rotate || 0}deg)`,
               opacity: activeArea.opacity ?? 0.92,
-              mixBlendMode: 'multiply',
               filter: 'drop-shadow(0 10px 18px rgba(15,23,42,0.18))',
             }}
           >
@@ -186,24 +191,22 @@ export default function ApparelMockupPreview({
               draggable={false}
             />
           </div>
-        ) : (
-          <div
-            className="pointer-events-none absolute flex items-center justify-center rounded-[18px] border border-dashed border-gray-400/40 bg-white/18 text-gray-500/80"
-            style={{
-              left: `${activeArea.x}%`,
-              top: `${activeArea.y}%`,
-              width: `${activeArea.width}%`,
-              height: `${activeArea.height}%`,
-              transform: `rotate(${activeArea.rotate || 0}deg)`,
-            }}
-          >
-            <Shirt size={26} />
-          </div>
-        )}
+        ) : null}
       </div>
 
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => setMode('NO_DESIGN')}
+            className={`rounded-2xl border px-4 py-3 text-sm font-black transition ${
+              mode === 'NO_DESIGN'
+                ? 'border-gray-950 bg-gray-950 text-white'
+                : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Sin estampa
+          </button>
           {config.allowCustomDesign !== false && (
             <button
               type="button"
@@ -235,7 +238,7 @@ export default function ApparelMockupPreview({
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-gray-950 px-4 py-3 text-sm font-black text-white transition hover:bg-gray-800">
             <ImagePlus size={18} />
             Probar diseno
-            <input type="file" accept="image/*" onChange={handleDesignChange} className="hidden" />
+            <input type="file" accept="image/png" onChange={handleDesignChange} className="hidden" />
           </label>
         )}
         {mode === 'CUSTOM_FILE' && designUrl && (
