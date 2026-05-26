@@ -22,6 +22,8 @@ export type ApparelDesignSelection = {
   mode: 'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'
   designName?: string
   designScale?: number
+  fileUrl?: string
+  uploadPending?: boolean
   requiresPrintFile: boolean
 }
 
@@ -51,7 +53,9 @@ export default function ApparelMockupPreview({
 }: ApparelMockupPreviewProps) {
   const [side, setSide] = useState<ApparelMockupSide>(config.defaultSide || 'front')
   const [designUrl, setDesignUrl] = useState<string | null>(null)
+  const [uploadedDesignUrl, setUploadedDesignUrl] = useState<string | null>(null)
   const [designScale, setDesignScale] = useState(100)
+  const [uploadingDesign, setUploadingDesign] = useState(false)
   const [mode, setMode] = useState<'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'>(
     config.allowCustomDesign === false && config.allowPresetDesigns !== false
       ? 'PRESET_DESIGN'
@@ -111,15 +115,33 @@ export default function ApparelMockupPreview({
             ? 'Archivo propio'
             : undefined,
       designScale,
-      requiresPrintFile: mode === 'CUSTOM_FILE' && Boolean(designUrl),
+      fileUrl: mode === 'CUSTOM_FILE' ? uploadedDesignUrl || undefined : undefined,
+      uploadPending: mode === 'CUSTOM_FILE' && uploadingDesign,
+      requiresPrintFile: mode === 'CUSTOM_FILE' && Boolean(designUrl) && !uploadedDesignUrl,
     })
-  }, [designScale, designUrl, mode, onDesignSelectionChange, selectedPreset?.name])
+  }, [designScale, designUrl, mode, onDesignSelectionChange, selectedPreset?.name, uploadedDesignUrl, uploadingDesign])
 
-  const handleDesignChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDesignChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
     if (designUrl) URL.revokeObjectURL(designUrl)
     setDesignUrl(URL.createObjectURL(file))
+    setUploadedDesignUrl(null)
+    setUploadingDesign(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await fetch('/api/product-design-upload', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error()
+      const data = await response.json()
+      setUploadedDesignUrl(data.url)
+    } catch {
+      setUploadedDesignUrl(null)
+    } finally {
+      setUploadingDesign(false)
+    }
+
     event.target.value = ''
   }
 
@@ -244,16 +266,22 @@ export default function ApparelMockupPreview({
         {mode === 'CUSTOM_FILE' && designUrl && (
           <button
             type="button"
-            onClick={() => {
-              URL.revokeObjectURL(designUrl)
-              setDesignUrl(null)
-            }}
+          onClick={() => {
+            URL.revokeObjectURL(designUrl)
+            setDesignUrl(null)
+            setUploadedDesignUrl(null)
+          }}
             className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
           >
             <RotateCcw size={17} />
-            Limpiar
-          </button>
-        )}
+          Limpiar
+        </button>
+      )}
+      {mode === 'CUSTOM_FILE' && uploadingDesign && (
+        <p className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs font-bold text-gray-600">
+          Subiendo PNG para produccion...
+        </p>
+      )}
       </div>
 
       {mode === 'PRESET_DESIGN' && presetDesigns.length > 0 && (

@@ -25,6 +25,7 @@ type CouponPreviewItem = {
     contentType?: string
     sizeBytes?: number
   }>
+  fileUrl?: string
   designRequested?: boolean
   selectedOptions?: Array<{ name: string; value: string }>
 }

@@ -329,7 +329,7 @@ export default function ProductConfigurator({
 
   const canAddConfiguredProduct = isDynamicCombo
     ? comboPartsReady && dynamicComboPrice !== null && dynamicComboPrice > 0
-    : canAddToCart && comboPartsReady
+    : canAddToCart && comboPartsReady && !apparelDesignSelection?.uploadPending
 
   const contextualMinPrice = useMemo(() => {
     if (!hasOptions) return minPrice
@@ -501,8 +501,12 @@ export default function ProductConfigurator({
       quantity: 1,
       isService: isServiceProduct,
       briefType: normalizeBriefType(product.briefType),
+      fileUrl: apparelDesignSelection?.fileUrl,
       designRequested: apparelDesignSelection?.requiresPrintFile ? true : undefined,
       selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
+      cartItemId: apparelDesignSelection?.fileUrl
+        ? `${product.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+        : undefined,
     })
 
     setAdded(true)

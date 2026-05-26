@@ -24,6 +24,7 @@ const couponPreviewSchema = z.object({
           })
         )
         .optional(),
+      fileUrl: z.string().url().optional(),
       designRequested: z.boolean().optional(),
       selectedOptions: z
         .array(

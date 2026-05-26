@@ -57,6 +57,7 @@ export async function resolveCheckoutOrderItems(
       contentType?: string
       sizeBytes?: number
     }>
+    fileUrl?: string
     designRequested?: boolean
     selectedOptions?: Array<{ name: string; value: string }>
   }>
@@ -206,8 +207,13 @@ export async function resolveCheckoutOrderItems(
       briefReferenceLinks: item.briefReferenceLinks || [],
       briefReferenceFiles: item.briefReferenceFiles || undefined,
       isService: product.category.isService,
-      designRequested: product.category.isService ? false : Boolean(item.designRequested),
-      artworkSubmissionChannel: 'PENDING' as const,
+      fileUrl: product.category.isService ? undefined : item.fileUrl,
+      designRequested: product.category.isService || item.fileUrl ? false : Boolean(item.designRequested),
+      artworkSubmissionChannel: product.category.isService
+        ? ('PENDING' as const)
+        : item.fileUrl
+          ? ('R2' as const)
+          : ('PENDING' as const),
       selectedOptions: selectedOptions.length > 0
         ? {
             create: selectedOptions.map((option) => ({
