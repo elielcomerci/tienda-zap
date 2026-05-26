@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, Calculator, Plus, Trash2 } from 'lucide-react'
+import { X, Calculator, Search } from 'lucide-react'
 import { getQuoterData } from '@/app/admin/cotizador/actions'
 import { calculateNesting, calculateQuote } from '@/lib/pricing/nesting'
 
@@ -9,6 +9,9 @@ type QuoterData = Awaited<ReturnType<typeof getQuoterData>>
 type RawMaterial = QuoterData['materials'][number]
 
 const STORAGE_KEY = 'quoter_last_config'
+const MATERIALS_PER_PAGE = 8
+const FINISHINGS_PER_PAGE = 8
+const PREVIEW_ROWS_PER_PAGE = 20
 
 const roundPsychological = (price: number) => {
   if (price < 100) return Math.ceil(price / 10) * 10
@@ -109,6 +112,13 @@ export default function ProductQuoterModal({
   const [includeNoFinishing, setIncludeNoFinishing] = useState(true)
   // keyed by group.base
   const [materialSelections, setMaterialSelections] = useState<Record<string, SideSelection>>({})
+  const [materialSearch, setMaterialSearch] = useState('')
+  const [materialFitFilter, setMaterialFitFilter] = useState<'ALL' | 'MATCHING' | 'UNCATEGORIZED' | 'OTHER'>('ALL')
+  const [materialPage, setMaterialPage] = useState(1)
+  const [finishingSearch, setFinishingSearch] = useState('')
+  const [finishingCostTypeFilter, setFinishingCostTypeFilter] = useState<string>('ALL')
+  const [finishingPage, setFinishingPage] = useState(1)
+  const [previewPage, setPreviewPage] = useState(1)
 
   // Load data + restore saved config
   useEffect(() => {
@@ -149,6 +159,30 @@ export default function ProductQuoterModal({
   }, [itemWidth, itemHeight, margin, bleed, maxMarginPercent, minMarginPercent,
       quantities, selectedFinishingIds, combineFinishings, includeNoFinishing, productCategoryId, materialSelections])
 
+  useEffect(() => {
+    setMaterialPage(1)
+  }, [materialFitFilter, materialSearch])
+
+  useEffect(() => {
+    setFinishingPage(1)
+  }, [finishingCostTypeFilter, finishingSearch])
+
+  useEffect(() => {
+    setPreviewPage(1)
+  }, [
+    itemWidth,
+    itemHeight,
+    margin,
+    bleed,
+    maxMarginPercent,
+    minMarginPercent,
+    quantities,
+    selectedFinishingIds,
+    combineFinishings,
+    includeNoFinishing,
+    materialSelections,
+  ])
+
   if (!isOpen) return null
 
   if (loading || !data) {
@@ -178,7 +212,56 @@ export default function ProductQuoterModal({
     return 0
   }
   const sortedGroups = [...groups].sort((left, right) => getGroupScore(right) - getGroupScore(left))
+  const filteredGroups = sortedGroups.filter((group) => {
+    const materials = getGroupMaterials(group)
+    const query = materialSearch.trim().toLowerCase()
+    const score = getGroupScore(group)
+    const matchesSearch =
+      !query ||
+      group.base.toLowerCase().includes(query) ||
+      materials.some((material) =>
+        [
+          material.name,
+          material.unit,
+          `${material.width}x${material.height}`,
+          ...(material.applicableCategories || []).map((category) => category.name),
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(query)
+      )
+    const matchesFit =
+      materialFitFilter === 'ALL' ||
+      (materialFitFilter === 'MATCHING' && score === 2) ||
+      (materialFitFilter === 'UNCATEGORIZED' && score === 1) ||
+      (materialFitFilter === 'OTHER' && score === 0)
+
+    return matchesSearch && matchesFit
+  })
+  const materialTotalPages = Math.max(1, Math.ceil(filteredGroups.length / MATERIALS_PER_PAGE))
+  const visibleMaterialPage = Math.min(materialPage, materialTotalPages)
+  const paginatedGroups = filteredGroups.slice(
+    (visibleMaterialPage - 1) * MATERIALS_PER_PAGE,
+    visibleMaterialPage * MATERIALS_PER_PAGE
+  )
   const finishings = data.finishings.filter(f => selectedFinishingIds.includes(f.id))
+  const filteredFinishings = data.finishings.filter((finishing) => {
+    const query = finishingSearch.trim().toLowerCase()
+    const matchesSearch =
+      !query ||
+      finishing.name.toLowerCase().includes(query) ||
+      finishing.costType.toLowerCase().includes(query)
+    const matchesCostType =
+      finishingCostTypeFilter === 'ALL' || finishing.costType === finishingCostTypeFilter
+
+    return matchesSearch && matchesCostType
+  })
+  const finishingTotalPages = Math.max(1, Math.ceil(filteredFinishings.length / FINISHINGS_PER_PAGE))
+  const visibleFinishingPage = Math.min(finishingPage, finishingTotalPages)
+  const paginatedFinishings = filteredFinishings.slice(
+    (visibleFinishingPage - 1) * FINISHINGS_PER_PAGE,
+    visibleFinishingPage * FINISHINGS_PER_PAGE
+  )
 
   // Resolve which actual material objects are selected
   const selectedMaterials: RawMaterial[] = []
@@ -246,6 +329,12 @@ export default function ProductQuoterModal({
       })
     })
   }).filter(Boolean)
+  const previewTotalPages = Math.max(1, Math.ceil(matrix.length / PREVIEW_ROWS_PER_PAGE))
+  const visiblePreviewPage = Math.min(previewPage, previewTotalPages)
+  const paginatedMatrix = matrix.slice(
+    (visiblePreviewPage - 1) * PREVIEW_ROWS_PER_PAGE,
+    visiblePreviewPage * PREVIEW_ROWS_PER_PAGE
+  )
 
   const handleApply = () => {
     persistConfig()
@@ -298,9 +387,36 @@ export default function ProductQuoterModal({
 
             {/* MATERIALES */}
             <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-3">Sustratos</h3>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-bold text-gray-900">Sustratos</h3>
+                <span className="text-xs font-semibold text-gray-400">
+                  {filteredGroups.length} de {groups.length}
+                </span>
+              </div>
+              <div className="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_170px]">
+                <label className="relative">
+                  <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="search"
+                    value={materialSearch}
+                    onChange={(event) => setMaterialSearch(event.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm outline-none focus:border-orange-400"
+                    placeholder="Buscar sustrato, medida o categoria"
+                  />
+                </label>
+                <select
+                  value={materialFitFilter}
+                  onChange={(event) => setMaterialFitFilter(event.target.value as typeof materialFitFilter)}
+                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-orange-400"
+                >
+                  <option value="ALL">Todos</option>
+                  <option value="MATCHING">Compatibles</option>
+                  <option value="UNCATEGORIZED">Sin categoria</option>
+                  <option value="OTHER">Otra categoria</option>
+                </select>
+              </div>
               <div className="space-y-1">
-                {sortedGroups.map(group => {
+                {paginatedGroups.map(group => {
                   const sel = materialSelections[group.base] ?? { single: false, double: false, noSide: false }
                   const hasSides = !!(group.single || group.double)
                   const score = getGroupScore(group)
@@ -357,7 +473,37 @@ export default function ProductQuoterModal({
                     </div>
                   )
                 })}
+                {filteredGroups.length === 0 && (
+                  <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm font-semibold text-gray-400">
+                    No hay sustratos que coincidan con los filtros.
+                  </div>
+                )}
               </div>
+              {materialTotalPages > 1 && (
+                <div className="mt-3 flex items-center justify-between gap-3 text-xs font-semibold text-gray-500">
+                  <span>
+                    Pagina {visibleMaterialPage} de {materialTotalPages}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMaterialPage((page) => Math.max(1, page - 1))}
+                      disabled={visibleMaterialPage === 1}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMaterialPage((page) => Math.min(materialTotalPages, page + 1))}
+                      disabled={visibleMaterialPage === materialTotalPages}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* MEDIDAS */}
@@ -386,7 +532,9 @@ export default function ProductQuoterModal({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-bold text-gray-900">Terminaciones</h3>
-                <span className="text-xs text-gray-400">{selectedFinishingIds.length} elegidas</span>
+                <span className="text-xs text-gray-400">
+                  {selectedFinishingIds.length} elegidas · {filteredFinishings.length} de {data.finishings.length}
+                </span>
               </div>
 
               <div className="bg-gray-50 rounded-xl p-3 mb-3 space-y-2 text-sm text-gray-700">
@@ -404,8 +552,31 @@ export default function ProductQuoterModal({
                 )}
               </div>
 
+              <div className="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_170px]">
+                <label className="relative">
+                  <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="search"
+                    value={finishingSearch}
+                    onChange={(event) => setFinishingSearch(event.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm outline-none focus:border-orange-400"
+                    placeholder="Buscar terminacion"
+                  />
+                </label>
+                <select
+                  value={finishingCostTypeFilter}
+                  onChange={(event) => setFinishingCostTypeFilter(event.target.value)}
+                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 outline-none focus:border-orange-400"
+                >
+                  <option value="ALL">Todos</option>
+                  <option value="FIXED_SETUP">Setup</option>
+                  <option value="PER_SHEET">Por pliego</option>
+                  <option value="PER_UNIT">Por unidad</option>
+                </select>
+              </div>
+
               <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                {data.finishings.map(f => (
+                {paginatedFinishings.map(f => (
                   <label key={f.id} className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2 hover:bg-gray-50 cursor-pointer">
                     <input type="checkbox" checked={selectedFinishingIds.includes(f.id)}
                       onChange={() => toggleFinishing(f.id)}
@@ -414,7 +585,37 @@ export default function ProductQuoterModal({
                     <span className="text-xs text-gray-400">{f.costType}</span>
                   </label>
                 ))}
+                {filteredFinishings.length === 0 && (
+                  <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm font-semibold text-gray-400">
+                    No hay terminaciones que coincidan con los filtros.
+                  </div>
+                )}
               </div>
+              {finishingTotalPages > 1 && (
+                <div className="mt-3 flex items-center justify-between gap-3 text-xs font-semibold text-gray-500">
+                  <span>
+                    Pagina {visibleFinishingPage} de {finishingTotalPages}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFinishingPage((page) => Math.max(1, page - 1))}
+                      disabled={visibleFinishingPage === 1}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFinishingPage((page) => Math.min(finishingTotalPages, page + 1))}
+                      disabled={visibleFinishingPage === finishingTotalPages}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* MARGENES */}
@@ -498,7 +699,7 @@ export default function ProductQuoterModal({
                       </tr>
                     </thead>
                     <tbody>
-                      {matrix.map((m, i) => (
+                      {paginatedMatrix.map((m, i) => (
                         <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                           <td className="px-3 py-2 text-xs text-gray-700 max-w-[120px] truncate" title={m!.material.name}>
                             {parseMaterialName(m!.material.name).base.replace(/\d+g/, g => g)}
@@ -520,6 +721,32 @@ export default function ProductQuoterModal({
                   </table>
                 )}
               </div>
+              {matrix.length > PREVIEW_ROWS_PER_PAGE && (
+                <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-white px-4 py-3 text-xs font-semibold text-gray-500">
+                  <span>
+                    Mostrando {Math.min((visiblePreviewPage - 1) * PREVIEW_ROWS_PER_PAGE + 1, matrix.length)} a{' '}
+                    {Math.min(visiblePreviewPage * PREVIEW_ROWS_PER_PAGE, matrix.length)} de {matrix.length}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewPage((page) => Math.max(1, page - 1))}
+                      disabled={visiblePreviewPage === 1}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewPage((page) => Math.min(previewTotalPages, page + 1))}
+                      disabled={visiblePreviewPage === previewTotalPages}
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* APPLY */}
