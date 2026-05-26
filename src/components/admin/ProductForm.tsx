@@ -47,6 +47,25 @@ function normalizeOptionValue(value: unknown) {
   return String(value || '').trim().toLowerCase()
 }
 
+function titleFromFileName(fileName: string) {
+  return fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b(frente|front|espalda|back|dorso|atras)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function inferMockupSide(fileName: string): 'frontImageUrl' | 'backImageUrl' {
+  const normalized = fileName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+  return /\b(espalda|back|dorso|atras)\b/.test(normalized) ? 'backImageUrl' : 'frontImageUrl'
+}
+
 function getYouTubeEmbedUrl(url: string) {
   try {
     const parsed = new URL(url)
@@ -414,6 +433,113 @@ export default function ProductForm({
       ...previous,
       colors: previous.colors.filter((_, colorIndex) => colorIndex !== index),
     }))
+  }
+
+  const handleBulkMockupImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length === 0) return
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const uploads: Array<{
+        colorName: string
+        colorKey: string
+        field: 'frontImageUrl' | 'backImageUrl'
+        url: string
+      }> = []
+
+      for (const file of files) {
+        if (file.type && file.type !== 'image/png') {
+          setError('La carga masiva de mockups acepta solo PNG.')
+          continue
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          setError('Cada PNG de mockup debe pesar como maximo 5MB.')
+          continue
+        }
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const res = await fetch('/api/upload', { method: 'POST', body: formData })
+        if (!res.ok) throw new Error()
+        const data = await res.json()
+        const colorName = titleFromFileName(file.name) || `Color ${uploads.length + 1}`
+
+        uploads.push({
+          colorName,
+          colorKey: normalizeOptionValue(colorName),
+          field: inferMockupSide(file.name),
+          url: data.url,
+        })
+      }
+
+      if (uploads.length === 0) return
+
+      const colorValueByKey = new Map<string, { value: string; colorHex?: string | null }>(
+        availableColorValues.map((color: { value: string; colorHex?: string | null }) => [
+          normalizeOptionValue(color.value),
+          color,
+        ])
+      )
+
+      const nextColors = [...apparelMockup.colors]
+      uploads.forEach((upload) => {
+        const matchedOption = colorValueByKey.get(upload.colorKey)
+        const targetValue = matchedOption?.value || upload.colorName
+        const targetKey = normalizeOptionValue(targetValue)
+        const existingIndex = nextColors.findIndex(
+          (color) => normalizeOptionValue(color.value) === targetKey
+        )
+        const nextColor = {
+          value: targetValue,
+          colorHex: matchedOption?.colorHex || '#ffffff',
+          ...(existingIndex >= 0 ? nextColors[existingIndex] : {}),
+          [upload.field]: upload.url,
+        }
+
+        if (existingIndex >= 0) {
+          nextColors[existingIndex] = nextColor
+        } else {
+          nextColors.push(nextColor)
+        }
+      })
+
+      const nextApparelMockup = {
+        ...apparelMockup,
+        enabled: true,
+        colorOptionName: apparelMockup.colorOptionName || availableColorOption.name,
+        colors: nextColors,
+      }
+      setApparelMockup(nextApparelMockup)
+
+      if (product && formRef.current) {
+        await saveProductForm(formRef.current, {
+          mediaList: [
+            {
+              ...nextApparelMockup,
+              colors: nextApparelMockup.colors.filter(
+                (color) => color.value.trim() || color.frontImageUrl || color.backImageUrl
+              ),
+              presetDesigns: (nextApparelMockup.presetDesigns || []).filter(
+                (design) => design.name.trim() || design.imageUrl.trim()
+              ),
+              type: 'APPAREL_MOCKUP' as const,
+            },
+            ...mediaList,
+          ],
+          stayOnPage: true,
+        })
+      }
+    } catch {
+      setError('No pudimos subir los PNGs del mockup. Intenta de nuevo.')
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
   }
 
   const applyMockupImageToColorVariants = (index: number) => {
@@ -1405,6 +1531,18 @@ export default function ProductForm({
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                        <UploadCloud size={16} />
+                        Subir PNGs
+                        <input
+                          type="file"
+                          accept="image/png"
+                          multiple
+                          onChange={handleBulkMockupImageUpload}
+                          disabled={uploading}
+                          className="hidden"
+                        />
+                      </label>
                       <button
                         type="button"
                         onClick={syncMockupColorsFromOptions}
