@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Edit2, Trash2, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, Edit2, Trash2, X, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createRawMaterial, updateRawMaterial, deleteRawMaterial } from '../actions'
 
@@ -34,6 +34,9 @@ export default function MaterialesClient({
   const [materiales] = useState<Material[]>(initialMateriales)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL')
+  const [categoryFilter, setCategoryFilter] = useState('ALL')
   
   const [form, setForm] = useState({
     name: '',
@@ -120,6 +123,29 @@ export default function MaterialesClient({
     }
   }
 
+  const filteredMateriales = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
+    return materiales.filter((material) => {
+      const matchesSearch =
+        !query ||
+        material.name.toLowerCase().includes(query) ||
+        material.unit.toLowerCase().includes(query) ||
+        `${material.width}x${material.height}`.includes(query) ||
+        material.applicableCategories.some((category) => category.name.toLowerCase().includes(query))
+      const matchesStatus =
+        statusFilter === 'ALL' ||
+        (statusFilter === 'ACTIVE' && material.active) ||
+        (statusFilter === 'INACTIVE' && !material.active)
+      const matchesCategory =
+        categoryFilter === 'ALL' ||
+        material.applicableCategories.some((category) => category.id === categoryFilter) ||
+        (categoryFilter === 'NONE' && material.applicableCategories.length === 0)
+
+      return matchesSearch && matchesStatus && matchesCategory
+    })
+  }, [categoryFilter, materiales, searchQuery, statusFilter])
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -136,8 +162,57 @@ export default function MaterialesClient({
         </button>
       </div>
 
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_220px]">
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Buscar
+            <div className="relative mt-2">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="input !pl-9 !text-sm"
+                placeholder="Nombre, medida, unidad o categoria"
+              />
+            </div>
+          </label>
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Estado
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+              className="input mt-2 !text-sm"
+            >
+              <option value="ALL">Todos</option>
+              <option value="ACTIVE">Activos</option>
+              <option value="INACTIVE">Inactivos</option>
+            </select>
+          </label>
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Aplicabilidad
+            <select
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+              className="input mt-2 !text-sm"
+            >
+              <option value="ALL">Todas</option>
+              <option value="NONE">Sin aplicabilidad</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="mt-3 text-xs font-semibold text-gray-500">
+          Mostrando {filteredMateriales.length} de {materiales.length} materias primas.
+        </p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {materiales.map((m) => (
+        {filteredMateriales.map((m) => (
           <div key={m.id} className={`rounded-xl border p-5 ${m.active ? 'bg-white' : 'bg-gray-50 opacity-75'}`}>
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -180,6 +255,11 @@ export default function MaterialesClient({
             </div>
           </div>
         ))}
+        {filteredMateriales.length === 0 && (
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm font-semibold text-gray-400 md:col-span-2 lg:col-span-3">
+            No hay materias primas que coincidan con los filtros.
+          </div>
+        )}
       </div>
 
       {isModalOpen && (

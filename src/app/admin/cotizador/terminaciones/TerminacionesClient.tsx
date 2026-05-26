@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Edit2, Trash2, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, Edit2, Trash2, X, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createFinishing, updateFinishing, deleteFinishing } from '../actions'
 import { FinishingCostType } from '@prisma/client'
@@ -36,6 +36,9 @@ export default function TerminacionesClient({
   const [finishings] = useState<Finishing[]>(initialFinishings)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL')
+  const [costTypeFilter, setCostTypeFilter] = useState<FinishingCostType | 'ALL'>('ALL')
   
   const [form, setForm] = useState<{
     name: string
@@ -107,6 +110,26 @@ export default function TerminacionesClient({
     }
   }
 
+  const filteredFinishings = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
+    return finishings.filter((finishing) => {
+      const costTypeLabel = COST_TYPE_LABELS[finishing.costType].toLowerCase()
+      const matchesSearch =
+        !query ||
+        finishing.name.toLowerCase().includes(query) ||
+        finishing.costType.toLowerCase().includes(query) ||
+        costTypeLabel.includes(query)
+      const matchesStatus =
+        statusFilter === 'ALL' ||
+        (statusFilter === 'ACTIVE' && finishing.active) ||
+        (statusFilter === 'INACTIVE' && !finishing.active)
+      const matchesCostType = costTypeFilter === 'ALL' || finishing.costType === costTypeFilter
+
+      return matchesSearch && matchesStatus && matchesCostType
+    })
+  }, [costTypeFilter, finishings, searchQuery, statusFilter])
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -123,8 +146,56 @@ export default function TerminacionesClient({
         </button>
       </div>
 
+      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_240px]">
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Buscar
+            <div className="relative mt-2">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="input !pl-9 !text-sm"
+                placeholder="Nombre o tipo de costo"
+              />
+            </div>
+          </label>
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Estado
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+              className="input mt-2 !text-sm"
+            >
+              <option value="ALL">Todos</option>
+              <option value="ACTIVE">Activas</option>
+              <option value="INACTIVE">Inactivas</option>
+            </select>
+          </label>
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Tipo de costo
+            <select
+              value={costTypeFilter}
+              onChange={(event) => setCostTypeFilter(event.target.value as typeof costTypeFilter)}
+              className="input mt-2 !text-sm"
+            >
+              <option value="ALL">Todos</option>
+              {Object.entries(COST_TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="mt-3 text-xs font-semibold text-gray-500">
+          Mostrando {filteredFinishings.length} de {finishings.length} terminaciones.
+        </p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {finishings.map((f) => (
+        {filteredFinishings.map((f) => (
           <div key={f.id} className={`rounded-xl border p-5 ${f.active ? 'bg-white' : 'bg-gray-50 opacity-75'}`}>
             <div className="flex items-center justify-between">
               <div>
@@ -153,6 +224,11 @@ export default function TerminacionesClient({
             </div>
           </div>
         ))}
+        {filteredFinishings.length === 0 && (
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm font-semibold text-gray-400 md:col-span-2 lg:col-span-3">
+            No hay terminaciones que coincidan con los filtros.
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
