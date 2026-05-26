@@ -130,9 +130,31 @@ function getVisualMatchOptionNames(options: Option[]) {
   return colorOptions.length > 0 ? colorOptions : []
 }
 
+function isGenericGraphicQuoterOption(option: Option) {
+  const name = normalizeText(option.name)
+  return name === 'sustrato' || name === 'medida' || name === 'terminaciones'
+}
+
+function hasApparelPrintOptions(options: Option[]) {
+  return options.some((option) => {
+    const name = normalizeText(option.name)
+    return (
+      name.includes('tecnica') ||
+      name.includes('técnica') ||
+      name.includes('ubicacion') ||
+      name.includes('ubicación') ||
+      name.includes('estampa')
+    )
+  })
+}
+
 function getPriceMatrixOptions(options: Option[]) {
+  const ignoreGenericGraphicOptions = hasApparelPrintOptions(options)
+
   return options.filter(
     (option) => option.name.trim() && option.values.some((value) => value.value.trim())
+  ).filter(
+    (option) => !ignoreGenericGraphicOptions || !isGenericGraphicQuoterOption(option)
   )
 }
 
@@ -595,18 +617,11 @@ export default function ProductOptionsConfigurator({
         })
       })
 
-      if (incomingVariants.length > MAX_VARIANT_MATRIX_SIZE) {
-        setUploadError(
-          `El cotizador intento generar ${incomingVariants.length} variantes. El maximo operativo es ${MAX_VARIANT_MATRIX_SIZE}. Ajusta materiales, cantidades o terminaciones antes de aplicar.`
-        )
-        return
-      }
-
       // Start from existing options that are NOT managed by the quoter (manual ones)
       const quoterOptionNames = new Set(Object.keys(incomingOptionsMap).map(k => k.toLowerCase()))
       const manualOptions = options.filter(o => !quoterOptionNames.has(o.name.toLowerCase()))
       const imageMatchOptionNames = getVisualMatchOptionNames(manualOptions)
-      let nextOptions = [...manualOptions]
+      const nextOptions = [...manualOptions]
 
       // Add/replace quoter-managed options with fresh values (no merging)
       Object.entries(incomingOptionsMap).forEach(([optName, optValuesSet]) => {
@@ -618,13 +633,7 @@ export default function ProductOptionsConfigurator({
         })
       })
 
-      const incomingOptions = Object.entries(incomingOptionsMap).map(([optName, optValuesSet]) => ({
-        name: optName,
-        displayType: 'BUTTON' as OptionDisplayType,
-        isRequired: true,
-        values: Array.from(optValuesSet).map((value) => ({ value })),
-      }))
-      const quoterOptions = getPriceMatrixOptions(incomingOptions)
+      const quoterOptions = getPriceMatrixOptions(nextOptions)
       const nextCombinationCount = countVariantCombinations(quoterOptions)
       if (nextCombinationCount > MAX_VARIANT_MATRIX_SIZE) {
         setUploadError(
@@ -639,9 +648,12 @@ export default function ProductOptionsConfigurator({
       // but they must not multiply the price matrix.
       const combinations = cartesianProduct(quoterOptions)
       const nextVariants = combinations.map((combination) => {
+        const incomingCombinationEntries = Object.entries(combination).filter(([optionName]) =>
+          incomingOptionsMap[optionName]
+        )
         const matchingIncoming = incomingVariants
           .filter((variant) =>
-            Object.entries(combination).every(([optionName, value]) => variant.options[optionName] === value)
+            incomingCombinationEntries.every(([optionName, value]) => variant.options[optionName] === value)
           )
           .sort((a, b) => a.price - b.price)
         const incoming = matchingIncoming[0]
