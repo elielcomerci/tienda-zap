@@ -1,16 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Tag, Sparkles } from 'lucide-react'
+import { Sparkles, Tag, X } from 'lucide-react'
 import { getWelcomePromoDetails } from '@/lib/actions/welcome-promo'
 
 export default function WelcomePromoModal() {
   const [promo, setPromo] = useState<any>(null)
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // 1. Verificar si hay cookie de promo
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`
       const parts = value.split(`; ${name}=`)
@@ -19,28 +17,19 @@ export default function WelcomePromoModal() {
     }
 
     const promoCode = getCookie('zap_welcome_promo')
-    if (!promoCode) {
-      setIsLoading(false)
-      return
-    }
+    if (!promoCode) return
 
-    // 2. Verificar si ya la vió para no molestar en cada carga de página
     const hasSeen = localStorage.getItem(`has_seen_promo_${promoCode}`)
-    if (hasSeen) {
-      setIsLoading(false)
-      return
-    }
+    if (hasSeen) return
 
-    // 3. Consultar datos de la promo en el servidor
-    getWelcomePromoDetails(promoCode).then((data) => {
-      if (data) {
-        setPromo(data)
-        setIsOpen(true)
-      }
-      setIsLoading(false)
-    }).catch(() => {
-      setIsLoading(false)
-    })
+    getWelcomePromoDetails(promoCode)
+      .then((data) => {
+        if (data) {
+          setPromo(data)
+          setIsOpen(true)
+        }
+      })
+      .catch(() => {})
   }, [])
 
   const handleClose = () => {
@@ -53,95 +42,93 @@ export default function WelcomePromoModal() {
   if (!isOpen || !promo) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" 
-        onClick={handleClose} 
-      />
-      
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-300">
-        
-        {/* Header Decorativo */}
-        <div className="bg-gradient-to-br from-gray-900 to-black p-8 text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4">
-            <button 
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={handleClose} />
+
+      <section className="relative flex max-h-[min(92svh,760px)] w-full max-w-md animate-in flex-col overflow-hidden rounded-3xl bg-white shadow-2xl fade-in zoom-in-95 duration-300">
+        <div className="relative shrink-0 overflow-hidden bg-gradient-to-br from-gray-900 to-black px-6 py-5 text-center sm:px-8 sm:py-7 [@media(max-height:720px)]:py-4">
+          <div className="absolute right-0 top-0 p-4">
+            <button
+              type="button"
               onClick={handleClose}
               className="rounded-full bg-white/10 p-1.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+              aria-label="Cerrar beneficio"
             >
               <X size={18} />
             </button>
           </div>
 
           {promo.logoUrl ? (
-            <img 
-              src={promo.logoUrl} 
-              alt="Partner Logo" 
-              className="mx-auto mb-4 max-h-16 object-contain"
+            <img
+              src={promo.logoUrl}
+              alt="Logo del beneficio"
+              className="mx-auto mb-3 max-h-14 object-contain sm:max-h-16 [@media(max-height:720px)]:max-h-10"
             />
           ) : (
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-white/90">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white/90 sm:h-16 sm:w-16 [@media(max-height:720px)]:h-11 [@media(max-height:720px)]:w-11">
               <Sparkles size={32} />
             </div>
           )}
 
-          <h2 className="text-2xl font-black text-white balance leading-tight">
-            {promo.title || '¡Beneficio Exclusivo!'}
+          <h2 className="text-xl font-black leading-tight text-white balance sm:text-2xl [@media(max-height:720px)]:text-lg">
+            {promo.title || 'Beneficio exclusivo'}
           </h2>
-          
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-orange-500/20 border border-orange-500/30 px-4 py-1.5 text-orange-400">
+
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/20 px-4 py-1.5 text-orange-400 [@media(max-height:720px)]:mt-2">
             <Tag size={16} />
-            <span className="font-bold tracking-wide uppercase text-sm">
-              {promo.discountKind === 'PERCENTAGE' 
-                ? `${promo.discountValue}% OFF` 
+            <span className="text-sm font-bold uppercase tracking-wide">
+              {promo.discountKind === 'PERCENTAGE'
+                ? `${promo.discountValue}% OFF`
                 : `$${promo.discountValue.toLocaleString('es-AR')} OFF`}
             </span>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-8">
-          <p className="text-center text-lg text-gray-700 font-medium">
-            {promo.message || `Tenés un beneficio especial aplicable a toda tu compra. El código ${promo.code} ya fue guardado en tu sesión y se aplicará en el checkout.`}
-          </p>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="px-6 py-6 sm:px-8 sm:py-7 [@media(max-height:720px)]:py-5">
+            <p className="text-center text-base font-medium leading-7 text-gray-700 sm:text-lg sm:leading-8 [@media(max-height:720px)]:text-sm [@media(max-height:720px)]:leading-6">
+              {promo.message ||
+                `Tenes un beneficio especial aplicable a toda tu compra. El codigo ${promo.code} ya fue guardado en tu sesion y se aplicara en el checkout.`}
+            </p>
 
-          {promo.recipientLabel && (
-            <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
-                Cupon preparado para
-              </p>
-              <p className="mt-1 text-base font-black text-gray-900">
-                {promo.recipientLabel}
-              </p>
-              {promo.recipientName && promo.recipientBusiness && (
-                <p className="mt-0.5 text-sm font-semibold text-gray-500">
-                  {promo.recipientBusiness}
+            {promo.recipientLabel && (
+              <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-center [@media(max-height:720px)]:py-2.5">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                  Cupon preparado para
                 </p>
-              )}
-            </div>
-          )}
+                <p className="mt-1 text-base font-black text-gray-900">{promo.recipientLabel}</p>
+                {promo.recipientName && promo.recipientBusiness && (
+                  <p className="mt-0.5 text-sm font-semibold text-gray-500">
+                    {promo.recipientBusiness}
+                  </p>
+                )}
+              </div>
+            )}
 
-          {promo.presenterName && (
-            <p className="mt-4 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-center text-sm font-semibold text-orange-900">
-              Beneficio acercado por {promo.presenterName}.
-            </p>
-          )}
+            {promo.presenterName && (
+              <p className="mt-4 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-center text-sm font-semibold text-orange-900 [@media(max-height:720px)]:py-2.5">
+                Beneficio acercado por {promo.presenterName}.
+              </p>
+            )}
 
-          <div className="mt-8">
-            <button 
-              onClick={handleClose}
-              className="w-full rounded-2xl bg-orange-500 py-3.5 px-4 text-center font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 hover:-translate-y-0.5"
-            >
-              Aceptar y Continuar
-            </button>
+            {promo.conditions && (
+              <p className="mt-4 text-center text-xs leading-5 text-gray-400 balance">
+                {promo.conditions}
+              </p>
+            )}
           </div>
-
-          {promo.conditions && (
-            <p className="mt-4 text-center text-xs text-gray-400 balance">
-              {promo.conditions}
-            </p>
-          )}
         </div>
-      </div>
+
+        <div className="shrink-0 border-t border-gray-100 bg-white/95 px-6 py-4 backdrop-blur sm:px-8">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="w-full rounded-2xl bg-orange-500 px-4 py-3.5 text-center font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-orange-600"
+          >
+            Aceptar y continuar
+          </button>
+        </div>
+      </section>
     </div>
   )
 }
