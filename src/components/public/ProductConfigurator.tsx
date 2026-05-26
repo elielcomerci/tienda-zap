@@ -474,14 +474,33 @@ export default function ProductConfigurator({
     const uploadedSides = apparelDesignSelection?.designFiles
       ? Object.entries(apparelDesignSelection.designFiles)
           .filter(([, file]) => Boolean(file))
-          .map(([side]) => (side === 'front' ? 'Frente' : 'Espalda'))
+          .map(([side]) => side)
       : []
-    const alignmentLabel =
-      apparelDesignSelection?.designAlignment === 'left'
-        ? 'Izquierda'
-        : apparelDesignSelection?.designAlignment === 'right'
-          ? 'Derecha'
-          : 'Centro'
+    const formatSide = (side: string) => (side === 'front' ? 'Frente' : 'Espalda')
+    const formatAlignment = (alignment?: string) =>
+      alignment === 'left' ? 'Izquierda' : alignment === 'right' ? 'Derecha' : 'Centro'
+    const designAdjustmentOptions =
+      uploadedSides.length > 0
+        ? uploadedSides.flatMap((side) => [
+            {
+              name: `Escala ${formatSide(side).toLowerCase()}`,
+              value: `${apparelDesignSelection?.designScales?.[side as 'front' | 'back'] || 100}%`,
+            },
+            {
+              name: `Posicion ${formatSide(side).toLowerCase()}`,
+              value: formatAlignment(apparelDesignSelection?.designAlignments?.[side as 'front' | 'back']),
+            },
+          ])
+        : [
+            {
+              name: 'Escala de diseno',
+              value: `${apparelDesignSelection?.designScale || 100}%`,
+            },
+            {
+              name: 'Posicion del diseno',
+              value: formatAlignment(apparelDesignSelection?.designAlignment),
+            },
+          ]
 
     const apparelOptions = apparelDesignSelection && apparelDesignSelection.mode !== 'NO_DESIGN'
       ? [
@@ -495,16 +514,9 @@ export default function ProductConfigurator({
           ...(apparelDesignSelection.designName
             ? [{ name: 'Diseno elegido', value: apparelDesignSelection.designName }]
             : []),
-          {
-            name: 'Escala de diseno',
-            value: `${apparelDesignSelection.designScale || 100}%`,
-          },
-          {
-            name: 'Posicion del diseno',
-            value: alignmentLabel,
-          },
+          ...designAdjustmentOptions,
           ...(uploadedSides.length > 0
-            ? [{ name: 'Archivos cargados', value: uploadedSides.join(' + ') }]
+            ? [{ name: 'Archivos cargados', value: uploadedSides.map(formatSide).join(' + ') }]
             : []),
         ]
       : []

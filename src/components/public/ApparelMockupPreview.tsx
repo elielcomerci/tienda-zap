@@ -33,6 +33,8 @@ export type ApparelDesignSelection = {
   designName?: string
   designScale?: number
   designAlignment?: ApparelDesignAlignment
+  designScales?: Partial<Record<ApparelMockupSide, number>>
+  designAlignments?: Partial<Record<ApparelMockupSide, ApparelDesignAlignment>>
   designFile?: File
   designFiles?: Partial<Record<ApparelMockupSide, File>>
   fileUrl?: string
@@ -92,8 +94,14 @@ export default function ApparelMockupPreview({
   const [side, setSide] = useState<ApparelMockupSide>(config.defaultSide || 'front')
   const [customDesigns, setCustomDesigns] = useState<CustomDesignState>({})
   const customDesignsRef = useRef<CustomDesignState>({})
-  const [designScale, setDesignScale] = useState(100)
-  const [designAlignment, setDesignAlignment] = useState<ApparelDesignAlignment>('center')
+  const [designScales, setDesignScales] = useState<Record<ApparelMockupSide, number>>({
+    front: 100,
+    back: 100,
+  })
+  const [designAlignments, setDesignAlignments] = useState<Record<ApparelMockupSide, ApparelDesignAlignment>>({
+    front: 'center',
+    back: 'center',
+  })
   const [mode, setMode] = useState<'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'>(
     config.allowCustomDesign === false && config.allowPresetDesigns !== false
       ? 'PRESET_DESIGN'
@@ -131,6 +139,8 @@ export default function ApparelMockupPreview({
   const selectedPreset = presetDesigns.find((design) => design.id === selectedPresetId) || presetDesigns[0]
   const activeCustomDesign = customDesigns[side]
   const hasCustomDesigns = Boolean(customDesigns.front?.file || customDesigns.back?.file)
+  const activeDesignScale = designScales[side]
+  const activeDesignAlignment = designAlignments[side]
   const activeDesignUrl =
     mode === 'PRESET_DESIGN'
       ? selectedPreset?.imageUrl || null
@@ -145,7 +155,8 @@ export default function ApparelMockupPreview({
   }, [mode, presetDesigns, selectedPresetId])
 
   useEffect(() => {
-    setDesignScale(inferDesignScaleFromPrintSize(selectedPrintSize))
+    const nextScale = inferDesignScaleFromPrintSize(selectedPrintSize)
+    setDesignScales({ front: nextScale, back: nextScale })
   }, [selectedPrintSize])
 
   useEffect(() => {
@@ -161,16 +172,20 @@ export default function ApparelMockupPreview({
           : mode === 'CUSTOM_FILE' && hasCustomDesigns
             ? 'Archivo propio'
             : undefined,
-      designScale,
-      designAlignment,
+      designScale: activeDesignScale,
+      designAlignment: activeDesignAlignment,
+      designScales,
+      designAlignments,
       designFile: mode === 'CUSTOM_FILE' ? customDesigns.front?.file || customDesigns.back?.file : undefined,
       designFiles: mode === 'CUSTOM_FILE' ? designFiles : undefined,
       requiresPrintFile: mode === 'CUSTOM_FILE' && hasCustomDesigns,
     })
   }, [
     customDesigns,
-    designAlignment,
-    designScale,
+    activeDesignAlignment,
+    activeDesignScale,
+    designAlignments,
+    designScales,
     hasCustomDesigns,
     mode,
     onDesignSelectionChange,
@@ -223,6 +238,20 @@ export default function ApparelMockupPreview({
     })
   }
 
+  const updateActiveDesignScale = (nextScale: number) => {
+    setDesignScales((previous) => ({
+      ...previous,
+      [side]: nextScale,
+    }))
+  }
+
+  const updateActiveDesignAlignment = (nextAlignment: ApparelDesignAlignment) => {
+    setDesignAlignments((previous) => ({
+      ...previous,
+      [side]: nextAlignment,
+    }))
+  }
+
   if (!baseUrl) {
     return (
       <ProductImageGallery
@@ -244,9 +273,9 @@ export default function ApparelMockupPreview({
     { value: 'right', icon: AlignRight, label: 'Derecha' },
   ]
   const designAlignmentClass =
-    designAlignment === 'left'
+    activeDesignAlignment === 'left'
       ? 'justify-start'
-      : designAlignment === 'right'
+      : activeDesignAlignment === 'right'
         ? 'justify-end'
         : 'justify-center'
 
@@ -305,7 +334,7 @@ export default function ApparelMockupPreview({
               alt=""
               className="max-h-full max-w-full object-contain"
               style={{
-                transform: `scale(${designScale / 100})`,
+                transform: `scale(${activeDesignScale / 100})`,
               }}
               draggable={false}
             />
@@ -457,7 +486,7 @@ export default function ApparelMockupPreview({
                   Escala
                 </span>
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-700">
-                  {designScale}%
+                  {activeDesignScale}%
                 </span>
               </div>
               <input
@@ -465,8 +494,8 @@ export default function ApparelMockupPreview({
                 min="35"
                 max="120"
                 step="5"
-                value={designScale}
-                onChange={(event) => setDesignScale(Number(event.target.value))}
+                value={activeDesignScale}
+                onChange={(event) => updateActiveDesignScale(Number(event.target.value))}
                 className="h-2 w-full cursor-pointer accent-[#ED2C71]"
               />
             </div>
@@ -474,12 +503,12 @@ export default function ApparelMockupPreview({
             <div className="grid grid-cols-3 gap-2">
               {alignmentOptions.map((option) => {
                 const Icon = option.icon
-                const isSelected = designAlignment === option.value
+                const isSelected = activeDesignAlignment === option.value
                 return (
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setDesignAlignment(option.value)}
+                    onClick={() => updateActiveDesignAlignment(option.value)}
                     className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-black transition ${
                       isSelected
                         ? 'border-gray-950 bg-gray-950 text-white'
