@@ -105,6 +105,38 @@ export const productSchema = z.object({
       'La URL de imagen de una variante no es valida'
     ),
   })).optional().default([]),
+  quoterConfig: z
+    .object({
+      pricingMode: z.enum(['SHEET_NESTING', 'AREA_M2']).default('SHEET_NESTING'),
+      rawMaterialId: z.string().nullable().optional(),
+      itemWidth: z.coerce.number().positive('El ancho del cotizador debe ser mayor a cero').nullable().optional(),
+      itemHeight: z.coerce.number().positive('El alto del cotizador debe ser mayor a cero').nullable().optional(),
+      margin: z.coerce.number().min(0).default(0),
+      bleed: z.coerce.number().min(0).default(0),
+      profitMargin: z.coerce.number().min(0).default(150),
+      minProfitMargin: z.coerce.number().min(0).nullable().optional(),
+      maxProfitMargin: z.coerce.number().min(0).nullable().optional(),
+      allowCustomSize: z.boolean().default(false),
+      minWidth: z.coerce.number().positive().nullable().optional(),
+      maxWidth: z.coerce.number().positive().nullable().optional(),
+      minHeight: z.coerce.number().positive().nullable().optional(),
+      maxHeight: z.coerce.number().positive().nullable().optional(),
+      allowedMaterialIds: z.array(z.string()).default([]),
+      finishingIds: z.array(z.string()).default([]),
+      quantityPresets: z
+        .array(z.object({
+          quantity: z.coerce.number().int().positive(),
+          label: z.string().nullable().optional(),
+        }))
+        .min(1, 'El cotizador necesita al menos una cantidad.'),
+      sizePresets: z.array(z.object({
+        label: z.string().min(1),
+        width: z.coerce.number().positive(),
+        height: z.coerce.number().positive(),
+      })).default([]),
+    })
+    .nullable()
+    .optional(),
   relatedProductIds: z.array(z.string()).optional().default([]),
   intentionIds: z.array(z.string()).optional().default([]),
   isCombo: z.boolean().default(false),
@@ -204,6 +236,44 @@ export const productSchema = z.object({
       message: 'El producto no puede guardar variantes si ya no tiene opciones configuradas.',
     })
     return
+  }
+
+  if (
+    data.active &&
+    data.variants.length > 0 &&
+    data.variants.every((variant) => Number(variant.price || 0) <= 0)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['variants'],
+      message: 'No publiques una matriz donde todas las variantes quedan sin precio. Carga precios o desactiva el producto.',
+    })
+  }
+
+  if (data.active && data.quoterConfig) {
+    const materialIds = [
+      ...(data.quoterConfig.rawMaterialId ? [data.quoterConfig.rawMaterialId] : []),
+      ...data.quoterConfig.allowedMaterialIds,
+    ].filter(Boolean)
+
+    if (new Set(materialIds).size === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['quoterConfig'],
+        message: 'El cotizador necesita al menos un material disponible.',
+      })
+    }
+
+    if (
+      data.quoterConfig.sizePresets.length === 0 &&
+      (!data.quoterConfig.allowCustomSize || !data.quoterConfig.itemWidth || !data.quoterConfig.itemHeight)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['quoterConfig'],
+        message: 'El cotizador necesita una medida fija, presets de medida o medida personalizada.',
+      })
+    }
   }
 
   const optionNames = data.options.map((option) => option.name)

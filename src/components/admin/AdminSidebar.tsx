@@ -74,6 +74,7 @@ const navSections = [
     items: [
       { href: '/admin/cotizador/materiales', label: 'Materias Primas', icon: Layers },
       { href: '/admin/cotizador/terminaciones', label: 'Terminaciones', icon: Scissors },
+      { href: '/admin/cotizador/brechas', label: 'Brechas de Costos', icon: ClipboardList },
     ],
   },
   {

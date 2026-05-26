@@ -2,7 +2,20 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { getAllProductsAdmin } from '@/lib/products'
-import { Plus, Edit2, Copy, Trash2, Search, Check, X } from 'lucide-react'
+import { getProductOperationalStatus } from '@/lib/product-operational-status'
+import {
+  AlertTriangle,
+  Check,
+  CircleOff,
+  Copy,
+  Edit2,
+  ImageIcon,
+  Plus,
+  Search,
+  ShieldCheck,
+  Trash2,
+  X,
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Productos | ZAP Admin' }
@@ -15,6 +28,7 @@ export default async function AdminProductsPage({
     category?: string
     status?: string
     type?: string
+    ops?: string
   }>
 }) {
   const products = await getAllProductsAdmin()
@@ -23,10 +37,19 @@ export default async function AdminProductsPage({
   const categoryFilter = params.category || 'ALL'
   const statusFilter = params.status || 'ALL'
   const typeFilter = params.type || 'ALL'
+  const operationalFilter = params.ops || 'ALL'
+  const productsWithStatus = products.map((product) => ({
+    product,
+    operationalStatus: getProductOperationalStatus(product),
+  }))
   const categories = Array.from(
     new Map(products.map((product) => [product.category.id, product.category])).values()
   ).sort((a, b) => a.name.localeCompare(b.name))
-  const filteredProducts = products.filter((product) => {
+  const operationalCounts = productsWithStatus.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.operationalStatus.severity] = (acc[entry.operationalStatus.severity] || 0) + 1
+    return acc
+  }, {})
+  const filteredProducts = productsWithStatus.filter(({ product, operationalStatus }) => {
     const matchesSearch =
       !query ||
       product.name.toLowerCase().includes(query) ||
@@ -42,9 +65,18 @@ export default async function AdminProductsPage({
       (typeFilter === 'SERVICE' && product.category.isService) ||
       (typeFilter === 'PHYSICAL' && !product.category.isService && !product.isCombo) ||
       (typeFilter === 'COMBO' && product.isCombo)
+    const matchesOperational =
+      operationalFilter === 'ALL' || operationalStatus.severity === operationalFilter
 
-    return matchesSearch && matchesCategory && matchesStatus && matchesType
+    return matchesSearch && matchesCategory && matchesStatus && matchesType && matchesOperational
   })
+  const severityStyles = {
+    READY: 'border-green-200 bg-green-50 text-green-700',
+    REVIEW: 'border-blue-200 bg-blue-50 text-blue-700',
+    ATTENTION: 'border-amber-200 bg-amber-50 text-amber-700',
+    BLOCKED: 'border-red-200 bg-red-50 text-red-700',
+    INACTIVE: 'border-gray-200 bg-gray-100 text-gray-600',
+  } as const
 
   return (
     <div>
@@ -59,8 +91,27 @@ export default async function AdminProductsPage({
         </Link>
       </div>
 
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {[
+          { key: 'READY', label: 'Operativos' },
+          { key: 'REVIEW', label: 'Revisar costos' },
+          { key: 'ATTENTION', label: 'Atencion' },
+          { key: 'BLOCKED', label: 'Bloqueados' },
+          { key: 'INACTIVE', label: 'Inactivos' },
+        ].map((item) => (
+          <Link
+            key={item.key}
+            href={`/admin/productos?ops=${item.key}`}
+            className={`rounded-2xl border p-4 transition hover:-translate-y-0.5 ${severityStyles[item.key as keyof typeof severityStyles]}`}
+          >
+            <p className="text-xs font-black uppercase tracking-[0.14em] opacity-75">{item.label}</p>
+            <p className="mt-2 text-2xl font-black">{operationalCounts[item.key] || 0}</p>
+          </Link>
+        ))}
+      </div>
+
       <form className="mb-5 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_170px_180px_auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_170px_180px_190px_auto]">
           <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
             Buscar
             <div className="relative mt-2">
@@ -102,6 +153,17 @@ export default async function AdminProductsPage({
               <option value="COMBO">Combos</option>
             </select>
           </label>
+          <label className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+            Operacion
+            <select name="ops" defaultValue={operationalFilter} className="input mt-2 !text-sm">
+              <option value="ALL">Todos</option>
+              <option value="READY">Operativos</option>
+              <option value="REVIEW">Revisar costos</option>
+              <option value="ATTENTION">Atencion</option>
+              <option value="BLOCKED">Bloqueados</option>
+              <option value="INACTIVE">Inactivos</option>
+            </select>
+          </label>
           <div className="flex items-end gap-2">
             <button type="submit" className="btn-primary h-11 justify-center !px-4">
               Filtrar
@@ -122,6 +184,7 @@ export default async function AdminProductsPage({
             <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">Producto</th>
+                <th className="px-6 py-4">Operacion</th>
                 <th className="px-6 py-4">Categoría</th>
                 <th className="px-6 py-4">Precio</th>
                 <th className="px-6 py-4 text-center">Stock</th>
@@ -132,12 +195,12 @@ export default async function AdminProductsPage({
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
                     No hay productos que coincidan con los filtros.
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => (
+                filteredProducts.map(({ product, operationalStatus }) => (
                   <tr key={product.id} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -152,6 +215,28 @@ export default async function AdminProductsPage({
                           <p className="font-bold text-gray-900 group-hover:text-orange-500 transition-colors">{product.name}</p>
                           <p className="text-xs text-gray-500 mt-0.5">/{product.slug}</p>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="max-w-64">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-black ${severityStyles[operationalStatus.severity]}`}
+                        >
+                          {operationalStatus.severity === 'READY' && <ShieldCheck size={13} />}
+                          {operationalStatus.severity === 'REVIEW' && <Search size={13} />}
+                          {operationalStatus.severity === 'ATTENTION' && <AlertTriangle size={13} />}
+                          {operationalStatus.severity === 'BLOCKED' && <CircleOff size={13} />}
+                          {operationalStatus.severity === 'INACTIVE' && <X size={13} />}
+                          {operationalStatus.label}
+                        </span>
+                        <p className="mt-1 text-xs font-semibold text-gray-500">
+                          {operationalStatus.pricingMode} - {operationalStatus.summary}
+                        </p>
+                        {operationalStatus.issues[0] && (
+                          <p className="mt-1 truncate text-xs text-gray-400" title={operationalStatus.issues.join(' ')}>
+                            {operationalStatus.issues[0]}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -170,7 +255,11 @@ export default async function AdminProductsPage({
                       )}
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-900">
-                      ${product.price.toLocaleString('es-AR')}
+                      {product.quoterConfig || product.variants.length > 0 ? (
+                        <span className="text-gray-500">Matriz</span>
+                      ) : (
+                        `$${product.price.toLocaleString('es-AR')}`
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {product.category.isService ? (

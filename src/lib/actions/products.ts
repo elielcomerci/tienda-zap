@@ -104,6 +104,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     active: formData.get('active') === 'true',
     options: parseJsonField(formData, 'options', []),
     variants: parseJsonField(formData, 'variants', []),
+    quoterConfig: parseJsonField(formData, 'quoterConfig', undefined),
     relatedProductIds: parseJsonField<string[]>(formData, 'relatedProductIds', []),
     intentionIds: formData.getAll('intentionIds') as string[],
     isCombo: formData.get('isCombo') === 'on',
@@ -150,6 +151,117 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
   await assertRelatedProductsExist(relatedProductIds, excludeProductId)
 
   return { ...data, variants, relatedProductIds, categoryIsService: category.isService, intentionIds: data.intentionIds, targetBusinessTypeIds: data.targetBusinessTypeIds }
+}
+
+async function syncProductQuoterConfig(
+  tx: any,
+  productId: string,
+  quoterConfig: Awaited<ReturnType<typeof parseProductFormData>>['quoterConfig']
+) {
+  if (typeof quoterConfig === 'undefined') {
+    return
+  }
+
+  if (!quoterConfig) {
+    await tx.productQuoterConfig.deleteMany({ where: { productId } })
+    return
+  }
+
+  const allowedMaterialIds = [
+    ...new Set([
+      ...(quoterConfig.rawMaterialId ? [quoterConfig.rawMaterialId] : []),
+      ...quoterConfig.allowedMaterialIds,
+    ]),
+  ]
+  const finishingIds = [...new Set(quoterConfig.finishingIds)]
+  const quantityPresets = [...new Map(
+    quoterConfig.quantityPresets.map((preset) => [preset.quantity, preset])
+  ).values()].sort((left, right) => left.quantity - right.quantity)
+  const sizePresets = [...new Map(
+    quoterConfig.sizePresets.map((preset) => [preset.label, preset])
+  ).values()]
+
+  const config = await tx.productQuoterConfig.upsert({
+    where: { productId },
+    create: {
+      productId,
+      rawMaterialId: quoterConfig.rawMaterialId || allowedMaterialIds[0] || null,
+      itemWidth: quoterConfig.itemWidth ?? null,
+      itemHeight: quoterConfig.itemHeight ?? null,
+      margin: quoterConfig.margin,
+      bleed: quoterConfig.bleed,
+      profitMargin: quoterConfig.profitMargin,
+      minProfitMargin: quoterConfig.minProfitMargin ?? null,
+      maxProfitMargin: quoterConfig.maxProfitMargin ?? null,
+      pricingMode: quoterConfig.pricingMode,
+      allowCustomSize: quoterConfig.allowCustomSize,
+      minWidth: quoterConfig.minWidth ?? null,
+      maxWidth: quoterConfig.maxWidth ?? null,
+      minHeight: quoterConfig.minHeight ?? null,
+      maxHeight: quoterConfig.maxHeight ?? null,
+    },
+    update: {
+      rawMaterialId: quoterConfig.rawMaterialId || allowedMaterialIds[0] || null,
+      itemWidth: quoterConfig.itemWidth ?? null,
+      itemHeight: quoterConfig.itemHeight ?? null,
+      margin: quoterConfig.margin,
+      bleed: quoterConfig.bleed,
+      profitMargin: quoterConfig.profitMargin,
+      minProfitMargin: quoterConfig.minProfitMargin ?? null,
+      maxProfitMargin: quoterConfig.maxProfitMargin ?? null,
+      pricingMode: quoterConfig.pricingMode,
+      allowCustomSize: quoterConfig.allowCustomSize,
+      minWidth: quoterConfig.minWidth ?? null,
+      maxWidth: quoterConfig.maxWidth ?? null,
+      minHeight: quoterConfig.minHeight ?? null,
+      maxHeight: quoterConfig.maxHeight ?? null,
+    },
+  })
+
+  await tx.productQuoterConfigMaterial.deleteMany({ where: { configId: config.id } })
+  if (allowedMaterialIds.length > 0) {
+    await tx.productQuoterConfigMaterial.createMany({
+      data: allowedMaterialIds.map((rawMaterialId) => ({
+        configId: config.id,
+        rawMaterialId,
+      })),
+      skipDuplicates: true,
+    })
+  }
+
+  await tx.quoterConfigFinishing.deleteMany({ where: { configId: config.id } })
+  if (finishingIds.length > 0) {
+    await tx.quoterConfigFinishing.createMany({
+      data: finishingIds.map((finishingId) => ({
+        configId: config.id,
+        finishingId,
+      })),
+      skipDuplicates: true,
+    })
+  }
+
+  await tx.productQuoterQuantityPreset.deleteMany({ where: { configId: config.id } })
+  await tx.productQuoterQuantityPreset.createMany({
+    data: quantityPresets.map((preset, sortOrder) => ({
+      configId: config.id,
+      quantity: preset.quantity,
+      label: preset.label || String(preset.quantity),
+      sortOrder,
+    })),
+  })
+
+  await tx.productQuoterSizePreset.deleteMany({ where: { configId: config.id } })
+  if (sizePresets.length > 0) {
+    await tx.productQuoterSizePreset.createMany({
+      data: sizePresets.map((preset, sortOrder) => ({
+        configId: config.id,
+        label: preset.label,
+        width: preset.width,
+        height: preset.height,
+        sortOrder,
+      })),
+    })
+  }
 }
 
 function buildVariantOptionValueIds(
@@ -261,6 +373,8 @@ export async function createProduct(formData: FormData) {
       })
     }
   }
+
+  await syncProductQuoterConfig(prisma, createdProduct.id, data.quoterConfig)
 
   revalidatePath('/')
   revalidatePath('/admin/productos')
@@ -541,6 +655,8 @@ export async function updateProduct(id: string, formData: FormData) {
         }
       }
     }
+
+    await syncProductQuoterConfig(tx, id, data.quoterConfig)
 
     return product
   }, { maxWait: 10000, timeout: 30000 })

@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import ProductOptionsConfigurator from './ProductOptionsConfigurator'
 import ProductRelationsPicker from './ProductRelationsPicker'
-import ProductQuoterModal from './ProductQuoterModal'
+import ProductQuoterModal, { type ProductQuoterConfigPayload } from './ProductQuoterModal'
 import { slugify } from '@/lib/slug'
 import { getFirstValidationError, productSchema } from '@/lib/validations'
 import {
@@ -115,6 +115,37 @@ export default function ProductForm({
   )
   const [currentOptions, setCurrentOptions] = useState<any[]>(() => initialOptions || product?.options || [])
   const [currentVariants, setCurrentVariants] = useState<any[]>(() => initialVariants || product?.variants || [])
+  const [currentQuoterConfig, setCurrentQuoterConfig] = useState<ProductQuoterConfigPayload | null>(() =>
+    product?.quoterConfig
+      ? {
+          pricingMode: product.quoterConfig.pricingMode === 'AREA_M2' ? 'AREA_M2' : 'SHEET_NESTING',
+          rawMaterialId: product.quoterConfig.rawMaterialId || null,
+          itemWidth: Number(product.quoterConfig.itemWidth || 0),
+          itemHeight: Number(product.quoterConfig.itemHeight || 0),
+          margin: Number(product.quoterConfig.margin || 0),
+          bleed: Number(product.quoterConfig.bleed || 0),
+          profitMargin: Number(product.quoterConfig.profitMargin || 0),
+          minProfitMargin: product.quoterConfig.minProfitMargin ?? null,
+          maxProfitMargin: product.quoterConfig.maxProfitMargin ?? null,
+          allowCustomSize: Boolean(product.quoterConfig.allowCustomSize),
+          minWidth: product.quoterConfig.minWidth ?? null,
+          maxWidth: product.quoterConfig.maxWidth ?? null,
+          minHeight: product.quoterConfig.minHeight ?? null,
+          maxHeight: product.quoterConfig.maxHeight ?? null,
+          allowedMaterialIds: (product.quoterConfig.allowedMaterials || []).map((entry: any) => entry.rawMaterialId),
+          finishingIds: (product.quoterConfig.finishings || []).map((entry: any) => entry.finishingId),
+          quantityPresets: (product.quoterConfig.quantityPresets || []).map((preset: any) => ({
+            quantity: preset.quantity,
+            label: preset.label || String(preset.quantity),
+          })),
+          sizePresets: (product.quoterConfig.sizePresets || []).map((preset: any) => ({
+            label: preset.label,
+            width: preset.width,
+            height: preset.height,
+          })),
+        }
+      : null
+  )
   const [currentRelatedProductIds, setCurrentRelatedProductIds] = useState<string[]>(() => initialRelatedProductIds || [])
   const [selectedCategoryId, setSelectedCategoryId] = useState(product?.categoryId || '')
 
@@ -682,6 +713,7 @@ export default function ProductForm({
       mediaList?: typeof mediaPayload
       options?: any[]
       variants?: any[]
+      quoterConfig?: ProductQuoterConfigPayload | null
       relatedProductIds?: string[]
       stayOnPage?: boolean
     } = {}
@@ -690,6 +722,9 @@ export default function ProductForm({
     const nextMediaList = overrides.mediaList || mediaPayload
     const nextOptions = overrides.options || currentOptions
     const nextVariants = overrides.variants || currentVariants
+    const nextQuoterConfig = Object.prototype.hasOwnProperty.call(overrides, 'quoterConfig')
+      ? overrides.quoterConfig ?? null
+      : currentQuoterConfig
     const nextRelatedProductIds = overrides.relatedProductIds || currentRelatedProductIds
     const formData = new FormData(form)
 
@@ -697,6 +732,7 @@ export default function ProductForm({
     formData.set('mediaList', JSON.stringify(nextMediaList))
     formData.set('options', JSON.stringify(nextOptions))
     formData.set('variants', JSON.stringify(nextVariants))
+    formData.set('quoterConfig', JSON.stringify(nextQuoterConfig))
     formData.set('relatedProductIds', JSON.stringify(nextRelatedProductIds))
 
     if (!formData.get('active')) formData.set('active', 'false')
@@ -710,7 +746,7 @@ export default function ProductForm({
       formData.set('stayOnPage', 'true')
     }
 
-    return { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextRelatedProductIds }
+    return { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextQuoterConfig, nextRelatedProductIds }
   }
 
   const saveProductForm = async (
@@ -721,7 +757,7 @@ export default function ProductForm({
     setError('')
 
     try {
-      const { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextRelatedProductIds } =
+      const { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextQuoterConfig, nextRelatedProductIds } =
         buildProductFormData(form, overrides)
 
       const raw = {
@@ -745,6 +781,7 @@ export default function ProductForm({
         targetBusinessTypeIds: formData.getAll('targetBusinessTypeIds'),
         options: nextOptions,
         variants: nextVariants,
+        quoterConfig: nextQuoterConfig,
         relatedProductIds: nextRelatedProductIds,
         intentionIds: formData.getAll('intentionIds'),
       }
@@ -781,6 +818,7 @@ export default function ProductForm({
           const event = new CustomEvent('apply-quoter-variants', { detail: variants })
           window.dispatchEvent(event)
         }}
+        onApplyQuoterConfig={setCurrentQuoterConfig}
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -808,6 +846,7 @@ export default function ProductForm({
         <input type="hidden" name="mediaUrl" value={derivedMediaUrl} />
         <input type="hidden" name="mediaTitle" value={derivedMediaTitle} />
         <input type="hidden" name="mediaList" value={JSON.stringify(mediaPayload)} />
+        <input type="hidden" name="quoterConfig" value={JSON.stringify(currentQuoterConfig)} />
 
         <div className="grid gap-6 md:col-span-3 md:grid-cols-2">
           <div className="card space-y-4 p-6">

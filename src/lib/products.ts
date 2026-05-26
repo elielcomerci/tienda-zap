@@ -179,7 +179,20 @@ export async function getAllProductsAdmin() {
         include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
         orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
-      variants: { include: { options: { include: { optionValue: true } } } },
+      variants: {
+        include: {
+          costing: true,
+          options: { include: { optionValue: true } },
+        },
+      },
+      quoterConfig: {
+        include: {
+          allowedMaterials: true,
+          finishings: true,
+          quantityPresets: { orderBy: { sortOrder: 'asc' } },
+          sizePresets: { orderBy: { sortOrder: 'asc' } },
+        },
+      },
       targetBusinessTypes: { select: { id: true, name: true, slug: true } },
       outgoingRelations: {
         select: { relatedProductId: true },

@@ -37,7 +37,15 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       },
       targetBusinessTypes: {
         select: { id: true }
-      }
+      },
+      quoterConfig: {
+        include: {
+          allowedMaterials: true,
+          finishings: true,
+          quantityPresets: { orderBy: { sortOrder: 'asc' } },
+          sizePresets: { orderBy: { sortOrder: 'asc' } },
+        },
+      },
     },
   })
   if (!product) notFound()

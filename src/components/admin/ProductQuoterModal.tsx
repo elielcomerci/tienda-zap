@@ -68,6 +68,27 @@ interface SavedConfig {
   materialSelections: Record<string, SideSelection>
 }
 
+export type ProductQuoterConfigPayload = {
+  pricingMode: 'SHEET_NESTING' | 'AREA_M2'
+  rawMaterialId?: string | null
+  itemWidth: number
+  itemHeight: number
+  margin: number
+  bleed: number
+  profitMargin: number
+  minProfitMargin: number
+  maxProfitMargin: number
+  allowCustomSize: boolean
+  minWidth?: number | null
+  maxWidth?: number | null
+  minHeight?: number | null
+  maxHeight?: number | null
+  allowedMaterialIds: string[]
+  finishingIds: string[]
+  quantityPresets: Array<{ quantity: number; label?: string | null }>
+  sizePresets: Array<{ label: string; width: number; height: number }>
+}
+
 function loadSavedConfig(): Partial<SavedConfig> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -87,11 +108,13 @@ export default function ProductQuoterModal({
   isOpen,
   onClose,
   onApplyVariants,
+  onApplyQuoterConfig,
   productCategoryId,
 }: {
   isOpen: boolean
   onClose: () => void
   onApplyVariants: (variants: { options: Record<string, string>; price: number }[]) => void
+  onApplyQuoterConfig?: (config: ProductQuoterConfigPayload) => void
   productCategoryId?: string | null
 }) {
   const [data, setData] = useState<QuoterData | null>(null)
@@ -347,6 +370,35 @@ export default function ProductQuoterModal({
       },
       price: roundPsychological(m!.totalPrice),
     }))
+    onApplyQuoterConfig?.({
+      pricingMode: 'SHEET_NESTING',
+      rawMaterialId: selectedMaterials[0]?.id || null,
+      itemWidth,
+      itemHeight,
+      margin,
+      bleed,
+      profitMargin: maxMarginPercent,
+      minProfitMargin: minMarginPercent,
+      maxProfitMargin: maxMarginPercent,
+      allowCustomSize: false,
+      minWidth: null,
+      maxWidth: null,
+      minHeight: null,
+      maxHeight: null,
+      allowedMaterialIds: selectedMaterials.map((material) => material.id),
+      finishingIds: selectedFinishingIds,
+      quantityPresets: validQuantities
+        .slice()
+        .sort((left, right) => left - right)
+        .map((quantity) => ({ quantity, label: String(quantity) })),
+      sizePresets: [
+        {
+          label: `${itemWidth}x${itemHeight} cm`,
+          width: itemWidth,
+          height: itemHeight,
+        },
+      ],
+    })
     onApplyVariants(validVariants)
     onClose()
   }
