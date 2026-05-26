@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ImagePlus, Maximize2, RotateCcw } from 'lucide-react'
+import { CheckCircle2, ImagePlus, Maximize2, RotateCcw, Upload, X } from 'lucide-react'
 import ProductImageGallery from '@/components/public/ProductImageGallery'
 import type {
   ApparelMockupConfig,
@@ -183,23 +183,25 @@ export default function ApparelMockupPreview({
     )
   }
 
+  const uploadSides = ['front', 'back'] as const
+
   return (
-    <section className="space-y-4 rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
-        <div>
-          <p className="text-sm font-semibold text-gray-900">Vista de indumentaria</p>
-          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">
-            Color y estampa en vivo
+    <section className="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 sm:px-5">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-black text-gray-950">Personaliza tu prenda</p>
+          <p className="text-xs font-semibold text-gray-500">
+            {side === 'front' ? 'Vista frente' : 'Vista espalda'}
           </p>
         </div>
         {showSideToggle && (
-          <div className="flex rounded-2xl border border-gray-200 bg-gray-50 p-1">
+          <div className="grid grid-cols-2 rounded-full border border-gray-200 bg-gray-50 p-1">
             {(['front', 'back'] as const).map((nextSide) => (
               <button
                 key={nextSide}
                 type="button"
                 onClick={() => setSide(nextSide)}
-                className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
+                className={`min-w-24 rounded-full px-3 py-2 text-xs font-black transition ${
                   side === nextSide
                     ? 'bg-gray-950 text-white'
                     : 'text-gray-600 hover:bg-white hover:text-gray-950'
@@ -212,11 +214,11 @@ export default function ApparelMockupPreview({
         )}
       </div>
 
-      <div className="relative aspect-square overflow-hidden rounded-[28px] border border-gray-100 bg-[radial-gradient(circle_at_50%_16%,#ffffff_0%,#f3f4f6_58%,#e5e7eb_100%)]">
+      <div className="relative aspect-[4/3] max-h-[min(56svh,560px)] min-h-[360px] overflow-hidden bg-[radial-gradient(circle_at_50%_16%,#ffffff_0%,#f3f4f6_58%,#e5e7eb_100%)] sm:min-h-[430px] xl:min-h-[500px]">
         <img
           src={baseUrl}
           alt={`${productName} ${selectedColor?.value || ''}`}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain p-3 sm:p-5"
           loading="eager"
         />
 
@@ -242,10 +244,66 @@ export default function ApparelMockupPreview({
             />
           </div>
         ) : null}
+
+        {mode === 'CUSTOM_FILE' && (
+          <div className="absolute bottom-3 left-3 right-3 grid gap-2 sm:left-4 sm:right-4 sm:grid-cols-2">
+            {uploadSides.map((targetSide) => {
+              const uploaded = customDesigns[targetSide]
+              const isActiveSide = side === targetSide
+              return (
+                <div
+                  key={targetSide}
+                  className={`rounded-2xl border bg-white/90 p-2.5 shadow-lg shadow-gray-950/10 backdrop-blur-md transition ${
+                    isActiveSide ? 'border-[#ED2C71] ring-2 ring-[#FEF1F6]' : 'border-white/70'
+                  }`}
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSide(targetSide)}
+                      className="inline-flex min-w-0 items-center gap-2 text-left"
+                    >
+                      {uploaded ? (
+                        <CheckCircle2 size={16} className="shrink-0 text-emerald-500" />
+                      ) : (
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-300" />
+                      )}
+                      <span className="truncate text-sm font-black text-gray-950">
+                        {targetSide === 'front' ? 'Frente' : 'Espalda'}
+                      </span>
+                    </button>
+                    {uploaded && (
+                      <button
+                        type="button"
+                        onClick={() => clearDesign(targetSide)}
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-950"
+                        aria-label={`Quitar archivo ${targetSide === 'front' ? 'frente' : 'espalda'}`}
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-gray-950 px-3 py-2.5 text-sm font-black text-white transition hover:bg-gray-800">
+                    {uploaded ? <ImagePlus size={17} /> : <Upload size={17} />}
+                    <span className="min-w-0 truncate">
+                      {uploaded ? uploaded.file.name : `Subir ${targetSide === 'front' ? 'frente' : 'espalda'}`}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/png"
+                      onChange={(event) => handleDesignChange(targetSide, event)}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <div className="grid gap-2 sm:grid-cols-3">
+      <div className="space-y-3 p-4 sm:p-5">
+        <div className={`grid gap-2 ${presetDesigns.length > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
           <button
             type="button"
             onClick={() => setMode('NO_DESIGN')}
@@ -284,106 +342,68 @@ export default function ApparelMockupPreview({
             </button>
           )}
         </div>
-      </div>
 
-      {mode === 'CUSTOM_FILE' && (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {(['front', 'back'] as const).map((targetSide) => {
-            const uploaded = customDesigns[targetSide]
-            return (
-              <div key={targetSide} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-black text-gray-900">
-                    {targetSide === 'front' ? 'Frente' : 'Espalda'}
-                  </p>
-                  {uploaded && (
-                    <button
-                      type="button"
-                      onClick={() => clearDesign(targetSide)}
-                      className="rounded-full px-2 py-1 text-xs font-bold text-gray-500 transition hover:bg-white hover:text-gray-950"
-                    >
-                      Quitar
-                    </button>
-                  )}
-                </div>
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-black text-gray-800 transition hover:border-gray-300 hover:bg-gray-100">
-                  <ImagePlus size={18} />
-                  <span className="min-w-0 truncate">
-                    {uploaded ? uploaded.file.name : `Subir PNG ${targetSide === 'front' ? 'frente' : 'espalda'}`}
+        {mode === 'CUSTOM_FILE' && hasCustomDesigns && (
+          <button
+            type="button"
+            onClick={clearAllCustomDesigns}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+          >
+            <RotateCcw size={17} />
+            Limpiar archivos
+          </button>
+        )}
+
+        {mode === 'PRESET_DESIGN' && presetDesigns.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {presetDesigns.map((design: ApparelMockupPresetDesign) => {
+              const isSelected = selectedPreset?.id === design.id
+              return (
+                <button
+                  key={design.id}
+                  type="button"
+                  onClick={() => setSelectedPresetId(design.id)}
+                  className={`overflow-hidden rounded-2xl border-2 bg-white text-left transition ${
+                    isSelected
+                      ? 'border-[#ED2C71] ring-4 ring-[#FEF1F6]'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="block aspect-square bg-gray-50">
+                    <img src={design.imageUrl} alt={design.name} className="h-full w-full object-contain p-2" />
                   </span>
-                  <input
-                    type="file"
-                    accept="image/png"
-                    onChange={(event) => handleDesignChange(targetSide, event)}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            )
-          })}
-
-          {hasCustomDesigns && (
-            <button
-              type="button"
-              onClick={clearAllCustomDesigns}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50 sm:col-span-2"
-            >
-              <RotateCcw size={17} />
-              Limpiar archivos
-            </button>
-          )}
-        </div>
-      )}
-
-      {mode === 'PRESET_DESIGN' && presetDesigns.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {presetDesigns.map((design: ApparelMockupPresetDesign) => {
-            const isSelected = selectedPreset?.id === design.id
-            return (
-              <button
-                key={design.id}
-                type="button"
-                onClick={() => setSelectedPresetId(design.id)}
-                className={`overflow-hidden rounded-2xl border-2 bg-white text-left transition ${
-                  isSelected
-                    ? 'border-[#ED2C71] ring-4 ring-[#FEF1F6]'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <span className="block aspect-square bg-gray-50">
-                  <img src={design.imageUrl} alt={design.name} className="h-full w-full object-contain p-2" />
-                </span>
-                <span className="block truncate px-2 py-2 text-xs font-bold text-gray-700">
-                  {design.name}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      {activeDesignUrl && (
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-gray-600">
-              <Maximize2 size={15} />
-              Escala del diseno
-            </span>
-            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-700">
-              {designScale}%
-            </span>
+                  <span className="block truncate px-2 py-2 text-xs font-bold text-gray-700">
+                    {design.name}
+                  </span>
+                </button>
+              )
+            })}
           </div>
-          <input
-            type="range"
-            min="40"
-            max="180"
-            step="5"
-            value={designScale}
-            onChange={(event) => setDesignScale(Number(event.target.value))}
-            className="h-2 w-full cursor-pointer accent-[#ED2C71]"
-          />
-        </div>
-      )}
+        )}
+
+        {activeDesignUrl && (
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-gray-600">
+                <Maximize2 size={15} />
+                Escala
+              </span>
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-700">
+                {designScale}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="40"
+              max="180"
+              step="5"
+              value={designScale}
+              onChange={(event) => setDesignScale(Number(event.target.value))}
+              className="h-2 w-full cursor-pointer accent-[#ED2C71]"
+            />
+          </div>
+        )}
+      </div>
     </section>
   )
 }

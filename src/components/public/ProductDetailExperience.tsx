@@ -46,16 +46,17 @@ export default function ProductDetailExperience({
   const [apparelDesignSelection, setApparelDesignSelection] =
     useState<ApparelDesignSelection | null>(null)
   const apparelMockup = getApparelMockupConfig(product.mediaList)
+  const fallbackImageUrl = selectedImageUrl || product.images?.[0]
   const fallbackApparelMockup =
-    !hasApparelMockupImages(apparelMockup) && isApparelProduct(product) && product.images?.[0]
+    !hasApparelMockupImages(apparelMockup) && isApparelProduct(product) && fallbackImageUrl
       ? {
           ...DEFAULT_APPAREL_MOCKUP,
           enabled: true,
           colors: [
             {
               value: 'Base',
-              frontImageUrl: product.images[0],
-              backImageUrl: product.images[1] || product.images[0],
+              frontImageUrl: fallbackImageUrl,
+              backImageUrl: fallbackImageUrl,
             },
           ],
         }
