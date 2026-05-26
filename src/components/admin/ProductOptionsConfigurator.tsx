@@ -135,15 +135,7 @@ function isVisualOnlyOption(option: Option) {
   return option.displayType === 'COLOR_SWATCH' || name.includes('color') || name.includes('talle')
 }
 
-function isQuantityOption(option: Option) {
-  const name = normalizeText(option.name)
-  return name.includes('cantidad') || name.includes('pack')
-}
-
 function getPriceMatrixOptions(options: Option[]) {
-  const quantityOptions = options.filter(isQuantityOption)
-  if (quantityOptions.length > 0) return quantityOptions
-
   const priceOptions = options.filter((option) => !isVisualOnlyOption(option))
   return priceOptions.length > 0 ? priceOptions : options
 }
