@@ -174,6 +174,20 @@ function findSubsetVariant(variants: Variant[], combination: Record<string, stri
   )
 }
 
+function findBestVariantForCombination(variants: Variant[], combination: Record<string, string>) {
+  const exact = findExactVariant(variants, combination)
+  if (exact && exact.price > 0) return exact
+
+  const combinationEntries = Object.entries(combination)
+  const subsetMatches = variants.filter((variant) =>
+    combinationEntries.every(([optionName, value]) => variant.combinations[optionName] === value)
+  )
+  const pricedSubset = subsetMatches.find((variant) => variant.price > 0)
+  if (pricedSubset) return pricedSubset
+
+  return exact || subsetMatches[0]
+}
+
 const OPTION_TEMPLATES: OptionTemplate[] = [
   {
     id: 'unit-volume',
@@ -648,14 +662,13 @@ export default function ProductOptionsConfigurator({
   }, [options, variants, basePrice])
 
   useEffect(() => {
-    if (variants.length <= MAX_VARIANT_MATRIX_SIZE) return
-
     const compactCount = countVariantCombinations(priceMatrixOptions)
     if (compactCount <= 0 || compactCount > MAX_VARIANT_MATRIX_SIZE) return
+    if (variants.length <= compactCount) return
 
     const combinations = cartesianProduct(priceMatrixOptions)
     const nextVariants = combinations.map((combination) => {
-      const existing = findExactVariant(variants, combination) || findSubsetVariant(variants, combination)
+      const existing = findBestVariantForCombination(variants, combination)
 
       return existing
         ? {
