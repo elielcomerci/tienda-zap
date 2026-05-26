@@ -43,6 +43,10 @@ const PRODUCT_MEDIA_ACCEPT: Record<Exclude<ProductMediaType, 'NONE' | 'YOUTUBE'>
   VIDEO: 'video/mp4,.mp4',
 }
 
+function normalizeOptionValue(value: unknown) {
+  return String(value || '').trim().toLowerCase()
+}
+
 function getYouTubeEmbedUrl(url: string) {
   try {
     const parsed = new URL(url)
@@ -245,6 +249,17 @@ export default function ProductForm({
     }
   }, [currentOptions])
   const availableColorValues = availableColorOption.values
+  const colorOptionNames = useMemo(() => {
+    const names = currentOptions
+      .filter((option: any) => {
+        const name = String(option.name || '').toLowerCase()
+        return option.displayType === 'COLOR_SWATCH' || name.includes('color')
+      })
+      .map((option: any) => String(option.name || '').trim())
+      .filter(Boolean)
+
+    return Array.from(new Set(names))
+  }, [currentOptions])
   const currentOptionNames = useMemo(
     () => new Set(currentOptions.map((option: any) => String(option.name || '').trim()).filter(Boolean)),
     [currentOptions]
@@ -253,14 +268,51 @@ export default function ProductForm({
     apparelMockup.colorOptionName && currentOptionNames.has(apparelMockup.colorOptionName)
       ? apparelMockup.colorOptionName
       : availableColorOption.name || apparelMockup.colorOptionName || 'Color'
+  const variantImageByColor = useMemo(() => {
+    const imagesByColor = new Map<string, string>()
+    currentVariants.forEach((variant: any) => {
+      const imageUrl = String(variant.imageUrl || '').trim()
+      if (!imageUrl) return
+
+      const colorValues = [
+        variant.combinations?.[resolvedColorOptionName],
+        ...colorOptionNames.map((optionName) => variant.combinations?.[optionName]),
+      ]
+
+      colorValues.forEach((colorValue) => {
+        const normalizedColor = normalizeOptionValue(colorValue)
+        if (!normalizedColor || imagesByColor.has(normalizedColor)) return
+        imagesByColor.set(normalizedColor, imageUrl)
+      })
+    })
+    return imagesByColor
+  }, [colorOptionNames, currentVariants, resolvedColorOptionName])
 
   useEffect(() => {
     if (availableColorValues.length === 0) return
 
     setApparelMockup((previous) => {
-      const existing = new Map(previous.colors.map((color) => [color.value, color]))
-      const hasMissingColors = availableColorValues.some((color) => !existing.has(color.value))
-      if (!hasMissingColors) return previous
+      const existing = new Map(previous.colors.map((color) => [normalizeOptionValue(color.value), color]))
+      const hasMissingColors = availableColorValues.some((color) => !existing.has(normalizeOptionValue(color.value)))
+      const hasMissingImages = previous.colors.some(
+        (color) => color.value.trim() && !color.frontImageUrl && variantImageByColor.has(normalizeOptionValue(color.value))
+      )
+      if (!hasMissingColors && !hasMissingImages) return previous
+
+      const optionColorKeys = new Set(availableColorValues.map((color) => normalizeOptionValue(color.value)))
+      const syncedColors = availableColorValues.map((color) => {
+        const normalizedColor = normalizeOptionValue(color.value)
+        const existingColor = existing.get(normalizedColor)
+
+        return {
+          ...color,
+          ...(existingColor || {}),
+          value: color.value,
+          colorHex: existingColor?.colorHex || color.colorHex,
+          frontImageUrl: existingColor?.frontImageUrl || variantImageByColor.get(normalizedColor) || '',
+          backImageUrl: existingColor?.backImageUrl || '',
+        }
+      })
 
       return {
         ...previous,
@@ -269,35 +321,36 @@ export default function ProductForm({
             ? previous.colorOptionName
             : availableColorOption.name,
         colors: [
-          ...previous.colors,
-          ...availableColorValues
-            .filter((color) => !existing.has(color.value))
-            .map((color) => ({
-              ...color,
-              value: color.value,
-              colorHex: color.colorHex,
-            })),
+          ...syncedColors,
+          ...previous.colors.filter((color) => !optionColorKeys.has(normalizeOptionValue(color.value))),
         ],
       }
     })
-  }, [availableColorOption.name, availableColorValues, currentOptionNames])
+  }, [availableColorOption.name, availableColorValues, currentOptionNames, variantImageByColor])
 
   const syncMockupColorsFromOptions = () => {
     if (availableColorValues.length === 0) return
     setApparelMockup((previous) => {
-      const existing = new Map(previous.colors.map((color) => [color.value, color]))
+      const existing = new Map(previous.colors.map((color) => [normalizeOptionValue(color.value), color]))
       return {
         ...previous,
         colorOptionName:
           previous.colorOptionName && currentOptionNames.has(previous.colorOptionName)
             ? previous.colorOptionName
             : availableColorOption.name,
-        colors: availableColorValues.map((color) => ({
-          ...color,
-          ...(existing.get(color.value) || {}),
-          value: color.value,
-          colorHex: existing.get(color.value)?.colorHex || color.colorHex,
-        })),
+        colors: availableColorValues.map((color) => {
+          const normalizedColor = normalizeOptionValue(color.value)
+          const existingColor = existing.get(normalizedColor)
+
+          return {
+            ...color,
+            ...(existingColor || {}),
+            value: color.value,
+            colorHex: existingColor?.colorHex || color.colorHex,
+            frontImageUrl: existingColor?.frontImageUrl || variantImageByColor.get(normalizedColor) || '',
+            backImageUrl: existingColor?.backImageUrl || '',
+          }
+        }),
       }
     })
   }
@@ -439,12 +492,14 @@ export default function ProductForm({
       const shouldApplyToVariants = field === 'frontImageUrl' || !color?.frontImageUrl
       let nextVariants = currentVariants
       if (color?.value && shouldApplyToVariants) {
-        const normalize = (value: string) => value.trim().toLowerCase()
         nextVariants = currentVariants.map((variant) => {
-          const variantValue = variant.combinations?.[resolvedColorOptionName]
-          const matches =
-            variantValue === color.value ||
-            normalize(variantValue || '') === normalize(color.value)
+          const variantValues = [
+            variant.combinations?.[resolvedColorOptionName],
+            ...colorOptionNames.map((optionName) => variant.combinations?.[optionName]),
+          ]
+          const matches = variantValues.some(
+            (variantValue) => normalizeOptionValue(variantValue) === normalizeOptionValue(color.value)
+          )
 
           return matches ? { ...variant, imageUrl: data.url } : variant
         })
