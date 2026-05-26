@@ -112,6 +112,8 @@ export default function ProductConfigurator({
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [comboSelections, setComboSelections] = useState<Record<string, Record<string, string>>>({})
   const [added, setAdded] = useState(false)
+  const [addingToCart, setAddingToCart] = useState(false)
+  const [designUploadError, setDesignUploadError] = useState('')
   const addItem = useCartStore((state) => state.addItem)
 
   const hasOptions = product.options && product.options.length > 0
@@ -327,9 +329,10 @@ export default function ProductConfigurator({
     ? Boolean(activeVariant) && allRequiredSelected && selectedVariantAvailable
     : simpleProductAvailable
 
-  const canAddConfiguredProduct = isDynamicCombo
+  const configuredProductReady = isDynamicCombo
     ? comboPartsReady && dynamicComboPrice !== null && dynamicComboPrice > 0
-    : canAddToCart && comboPartsReady && !apparelDesignSelection?.uploadPending
+    : canAddToCart && comboPartsReady
+  const canAddConfiguredProduct = configuredProductReady && !addingToCart
 
   const contextualMinPrice = useMemo(() => {
     if (!hasOptions) return minPrice
@@ -349,6 +352,8 @@ export default function ProductConfigurator({
 
   const addToCartLabel = added
     ? 'Agregado'
+    : addingToCart
+      ? 'Preparando archivo...'
     : !comboPartsReady
       ? 'ConfigurÃ¡ el combo'
     : isDynamicCombo && dynamicComboPrice === null
@@ -488,29 +493,54 @@ export default function ProductConfigurator({
   }
 
   const handleAddToCart = () => {
+    void addConfiguredProductToCart()
+  }
+
+  const addConfiguredProductToCart = async () => {
     if (!canAddConfiguredProduct) return
 
-    const optionsArray = buildSelectedOptions()
+    setAddingToCart(true)
+    setDesignUploadError('')
 
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: currentPrice,
-      creditDownPaymentPercent,
-      image: previewImageUrl || product.images[0] || '',
-      quantity: 1,
-      isService: isServiceProduct,
-      briefType: normalizeBriefType(product.briefType),
-      fileUrl: apparelDesignSelection?.fileUrl,
-      designRequested: apparelDesignSelection?.requiresPrintFile ? true : undefined,
-      selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
-      cartItemId: apparelDesignSelection?.fileUrl
-        ? `${product.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-        : undefined,
-    })
+    let designFileUrl = apparelDesignSelection?.fileUrl
 
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
+    try {
+      if (apparelDesignSelection?.mode === 'CUSTOM_FILE' && apparelDesignSelection.designFile && !designFileUrl) {
+        const formData = new FormData()
+        formData.append('file', apparelDesignSelection.designFile)
+
+        const response = await fetch('/api/product-design-upload', { method: 'POST', body: formData })
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'No pudimos subir el PNG.')
+        designFileUrl = data.url
+      }
+
+      const optionsArray = buildSelectedOptions()
+
+      addItem({
+        productId: product.id,
+        name: product.name,
+        price: currentPrice,
+        creditDownPaymentPercent,
+        image: previewImageUrl || product.images[0] || '',
+        quantity: 1,
+        isService: isServiceProduct,
+        briefType: normalizeBriefType(product.briefType),
+        fileUrl: designFileUrl,
+        designRequested: apparelDesignSelection?.requiresPrintFile && !designFileUrl ? true : undefined,
+        selectedOptions: optionsArray.length > 0 ? optionsArray : undefined,
+        cartItemId: designFileUrl
+          ? `${product.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+          : undefined,
+      })
+
+      setAdded(true)
+      setTimeout(() => setAdded(false), 1500)
+    } catch (error: any) {
+      setDesignUploadError(error.message || 'No pudimos subir el PNG para produccion.')
+    } finally {
+      setAddingToCart(false)
+    }
   }
 
   const handleAddQuotedToCart = () => {
@@ -783,6 +813,9 @@ export default function ProductConfigurator({
                 {added ? <Check size={20} /> : <ShoppingCart size={20} />}
                 {added ? 'Agregado al carrito' : addToCartLabel}
               </button>
+              {designUploadError && (
+                <p className="text-sm font-semibold text-red-300 sm:col-span-2">{designUploadError}</p>
+              )}
 
               {inquiryUrl && (
                 <Link
@@ -986,6 +1019,9 @@ export default function ProductConfigurator({
               {added ? <Check size={20} /> : <ShoppingCart size={20} />}
               {added ? 'Agregado al carrito' : addToCartLabel}
             </button>
+            {designUploadError && (
+              <p className="text-sm font-semibold text-red-300 sm:col-span-2">{designUploadError}</p>
+            )}
 
             {inquiryUrl && (
               <Link

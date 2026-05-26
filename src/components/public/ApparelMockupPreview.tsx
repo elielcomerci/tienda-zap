@@ -22,8 +22,8 @@ export type ApparelDesignSelection = {
   mode: 'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'
   designName?: string
   designScale?: number
+  designFile?: File
   fileUrl?: string
-  uploadPending?: boolean
   requiresPrintFile: boolean
 }
 
@@ -53,9 +53,8 @@ export default function ApparelMockupPreview({
 }: ApparelMockupPreviewProps) {
   const [side, setSide] = useState<ApparelMockupSide>(config.defaultSide || 'front')
   const [designUrl, setDesignUrl] = useState<string | null>(null)
-  const [uploadedDesignUrl, setUploadedDesignUrl] = useState<string | null>(null)
+  const [designFile, setDesignFile] = useState<File | null>(null)
   const [designScale, setDesignScale] = useState(100)
-  const [uploadingDesign, setUploadingDesign] = useState(false)
   const [mode, setMode] = useState<'NO_DESIGN' | 'CUSTOM_FILE' | 'PRESET_DESIGN'>(
     config.allowCustomDesign === false && config.allowPresetDesigns !== false
       ? 'PRESET_DESIGN'
@@ -115,33 +114,17 @@ export default function ApparelMockupPreview({
             ? 'Archivo propio'
             : undefined,
       designScale,
-      fileUrl: mode === 'CUSTOM_FILE' ? uploadedDesignUrl || undefined : undefined,
-      uploadPending: mode === 'CUSTOM_FILE' && uploadingDesign,
-      requiresPrintFile: mode === 'CUSTOM_FILE' && Boolean(designUrl) && !uploadedDesignUrl,
+      designFile: mode === 'CUSTOM_FILE' ? designFile || undefined : undefined,
+      requiresPrintFile: mode === 'CUSTOM_FILE' && Boolean(designFile),
     })
-  }, [designScale, designUrl, mode, onDesignSelectionChange, selectedPreset?.name, uploadedDesignUrl, uploadingDesign])
+  }, [designFile, designScale, designUrl, mode, onDesignSelectionChange, selectedPreset?.name])
 
-  const handleDesignChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDesignChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
     if (designUrl) URL.revokeObjectURL(designUrl)
     setDesignUrl(URL.createObjectURL(file))
-    setUploadedDesignUrl(null)
-    setUploadingDesign(true)
-
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const response = await fetch('/api/product-design-upload', { method: 'POST', body: formData })
-      if (!response.ok) throw new Error()
-      const data = await response.json()
-      setUploadedDesignUrl(data.url)
-    } catch {
-      setUploadedDesignUrl(null)
-    } finally {
-      setUploadingDesign(false)
-    }
-
+    setDesignFile(file)
     event.target.value = ''
   }
 
@@ -269,18 +252,13 @@ export default function ApparelMockupPreview({
           onClick={() => {
             URL.revokeObjectURL(designUrl)
             setDesignUrl(null)
-            setUploadedDesignUrl(null)
+            setDesignFile(null)
           }}
             className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
           >
             <RotateCcw size={17} />
           Limpiar
         </button>
-      )}
-      {mode === 'CUSTOM_FILE' && uploadingDesign && (
-        <p className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs font-bold text-gray-600">
-          Subiendo PNG para produccion...
-        </p>
       )}
       </div>
 
