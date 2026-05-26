@@ -135,7 +135,15 @@ function isVisualOnlyOption(option: Option) {
   return option.displayType === 'COLOR_SWATCH' || name.includes('color') || name.includes('talle')
 }
 
+function isQuantityOption(option: Option) {
+  const name = normalizeText(option.name)
+  return name.includes('cantidad') || name.includes('pack')
+}
+
 function getPriceMatrixOptions(options: Option[]) {
+  const quantityOptions = options.filter(isQuantityOption)
+  if (quantityOptions.length > 0) return quantityOptions
+
   const priceOptions = options.filter((option) => !isVisualOnlyOption(option))
   return priceOptions.length > 0 ? priceOptions : options
 }
@@ -533,6 +541,11 @@ export default function ProductOptionsConfigurator({
   const [previewSelections, setPreviewSelections] = useState<Record<string, string>>({})
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const priceMatrixOptions = useMemo(() => getPriceMatrixOptions(options), [options])
+  const priceMatrixOptionNames = useMemo(
+    () => new Set(priceMatrixOptions.map((option) => option.name)),
+    [priceMatrixOptions]
+  )
 
   useEffect(() => {
     setCurrentPage(1)
@@ -594,12 +607,13 @@ export default function ProductOptionsConfigurator({
         })
       })
 
-      const quoterOptions = Object.entries(incomingOptionsMap).map(([optName, optValuesSet]) => ({
+      const incomingOptions = Object.entries(incomingOptionsMap).map(([optName, optValuesSet]) => ({
         name: optName,
         displayType: 'BUTTON' as OptionDisplayType,
         isRequired: true,
         values: Array.from(optValuesSet).map((value) => ({ value })),
       }))
+      const quoterOptions = getPriceMatrixOptions(incomingOptions)
       const nextCombinationCount = countVariantCombinations(quoterOptions)
       if (nextCombinationCount > MAX_VARIANT_MATRIX_SIZE) {
         setUploadError(
@@ -614,9 +628,12 @@ export default function ProductOptionsConfigurator({
       // but they must not multiply the price matrix.
       const combinations = cartesianProduct(quoterOptions)
       const nextVariants = combinations.map((combination) => {
-        const incoming = incomingVariants.find(v =>
-          Object.entries(v.options).every(([k, val]) => combination[k] === val)
-        )
+        const matchingIncoming = incomingVariants
+          .filter((variant) =>
+            Object.entries(combination).every(([optionName, value]) => variant.options[optionName] === value)
+          )
+          .sort((a, b) => a.price - b.price)
+        const incoming = matchingIncoming[0]
         const existing = findExactVariant(variants, combination) || findSubsetVariant(variants, combination)
         const imageSource = existing || findVisualVariant(variants, combination, imageMatchOptionNames)
         return existing
@@ -629,6 +646,33 @@ export default function ProductOptionsConfigurator({
     window.addEventListener('apply-quoter-variants', handleApplyVariants)
     return () => window.removeEventListener('apply-quoter-variants', handleApplyVariants)
   }, [options, variants, basePrice])
+
+  useEffect(() => {
+    if (variants.length <= MAX_VARIANT_MATRIX_SIZE) return
+
+    const compactCount = countVariantCombinations(priceMatrixOptions)
+    if (compactCount <= 0 || compactCount > MAX_VARIANT_MATRIX_SIZE) return
+
+    const combinations = cartesianProduct(priceMatrixOptions)
+    const nextVariants = combinations.map((combination) => {
+      const existing = findExactVariant(variants, combination) || findSubsetVariant(variants, combination)
+
+      return existing
+        ? {
+            combinations: combination,
+            price: existing.price,
+            sku: existing.sku,
+            stock: existing.stock,
+            imageUrl: existing.imageUrl,
+          }
+        : { combinations: combination, price: basePrice }
+    })
+
+    setUploadError(
+      `Se compacto la matriz de ${variants.length} a ${nextVariants.length} variantes de precio. Las demas opciones quedan como seleccionables.`
+    )
+    setVariants(nextVariants)
+  }, [basePrice, priceMatrixOptions, variants])
 
   useEffect(() => {
     const handleApplyImageToOption = (event: Event) => {
@@ -772,7 +816,6 @@ export default function ProductOptionsConfigurator({
   }
 
   const generateVariants = () => {
-    const priceMatrixOptions = getPriceMatrixOptions(options)
     const combinationCount = countVariantCombinations(priceMatrixOptions)
     if (combinationCount > MAX_VARIANT_MATRIX_SIZE) {
       setUploadError(
@@ -830,7 +873,8 @@ export default function ProductOptionsConfigurator({
         .map((variant, index) => ({ variant, index }))
         .filter(({ variant }) => {
           const matchesFilters = Object.entries(variantFilters).every(
-            ([optionName, value]) => !value || variant.combinations[optionName] === value
+            ([optionName, value]) =>
+              !value || !priceMatrixOptionNames.has(optionName) || variant.combinations[optionName] === value
           )
           if (!matchesFilters) return false
 
@@ -844,11 +888,11 @@ export default function ProductOptionsConfigurator({
           return true
         })
     },
-    [variantFilters, variants, searchQuery]
+    [priceMatrixOptionNames, variantFilters, variants, searchQuery]
   )
 
   const filteredCount = visibleVariants.length
-  const matrixExpectedCount = countVariantCombinations(getPriceMatrixOptions(options))
+  const matrixExpectedCount = countVariantCombinations(priceMatrixOptions)
   const matrixExceedsLimit = matrixExpectedCount > MAX_VARIANT_MATRIX_SIZE
   const itemsPerPage = 25
   const totalPages = Math.ceil(filteredCount / itemsPerPage) || 1
@@ -859,7 +903,6 @@ export default function ProductOptionsConfigurator({
 
   const hasActiveFilters = Object.values(variantFilters).some(Boolean) || Boolean(searchQuery)
   const zeroPriceVariantsCount = variants.filter((variant) => !variant.price || variant.price <= 0).length
-  const variantsWithoutImageCount = variants.filter((variant) => !variant.imageUrl).length
   const colorValuesWithoutSwatchCount = options
     .filter((option) => option.displayType === 'COLOR_SWATCH')
     .flatMap((option) => option.values)
@@ -1055,6 +1098,9 @@ export default function ProductOptionsConfigurator({
                     : 'Genera la matriz antes de guardar un producto configurable.'}
               </div>
               <div className="rounded-lg bg-white px-3 py-2">
+                La matriz de precio usa: {priceMatrixOptions.map((option) => option.name).join(', ') || 'opciones configuradas'}.
+              </div>
+              <div className="rounded-lg bg-white px-3 py-2">
                 {zeroPriceVariantsCount > 0
                   ? `${zeroPriceVariantsCount} variantes tienen precio 0 y no se compran online.`
                   : 'Todas las variantes generadas tienen precio mayor a 0.'}
@@ -1063,11 +1109,6 @@ export default function ProductOptionsConfigurator({
                 {colorValuesWithoutSwatchCount > 0
                   ? `${colorValuesWithoutSwatchCount} colores no tienen swatch definido.`
                   : 'Los valores visuales de color estan completos.'}
-              </div>
-              <div className="rounded-lg bg-white px-3 py-2">
-                {variantsWithoutImageCount > 0
-                  ? `${variantsWithoutImageCount} variantes no tienen foto propia. Usaran la imagen general.`
-                  : 'Todas las variantes tienen foto propia.'}
               </div>
             </div>
           </div>
@@ -1326,7 +1367,7 @@ export default function ProductOptionsConfigurator({
                 />
               </label>
 
-              {options.map((option) => (
+              {priceMatrixOptions.map((option) => (
                 <label key={option.name} className="min-w-36 flex-1 text-xs font-semibold text-gray-600">
                   {option.name || 'Opcion'}
                   <select
