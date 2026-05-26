@@ -39,6 +39,7 @@
 
 - [ ] Migrar productos con `variants-priced-no-costing` a quoter o BOM.
 - [x] Migrar `banners` a BOM por variante con costos de proveedor auditables.
+- [x] Migrar `carpeta-corporativa` a BOM por variante con costos de proveedor auditables.
 - [x] Migrar `folleto` a BOM por variante con costos de proveedor auditables.
 - [x] Resolver productos con `variants-incomplete`.
 - [ ] Revisar productos con precio fijo sin costing y decidir si quedan fijos o migran.
