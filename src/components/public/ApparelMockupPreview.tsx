@@ -18,6 +18,11 @@ import type {
   ApparelMockupPresetDesign,
   ApparelMockupSide,
 } from '@/lib/apparel-mockup'
+import {
+  getSelectedApparelOptionValue,
+  inferApparelMockupSide,
+  normalizeApparelValue,
+} from '@/lib/apparel-mockup'
 
 type ApparelMockupPreviewProps = {
   productName: string
@@ -44,29 +49,10 @@ export type ApparelDesignSelection = {
 type CustomDesignState = Partial<Record<ApparelMockupSide, { url: string; file: File }>>
 export type ApparelDesignAlignment = 'left' | 'center' | 'right'
 
-function normalize(value?: string | null) {
-  return (value || '')
-    .toString()
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
-
-function inferSide(selection: string | undefined, fallback: ApparelMockupSide): ApparelMockupSide {
-  const value = normalize(selection)
-  const hasBack = value.includes('espalda') || value.includes('atras') || value.includes('dorso')
-  const hasFront = value.includes('frente') || value.includes('adelante') || value.includes('pecho')
-  if (hasBack && hasFront) return fallback
-  if (hasBack) return 'back'
-  if (hasFront) return 'front'
-  return fallback
-}
-
 function getSelectedPrintSize(selectedOptions: Record<string, string>) {
   return Object.entries(selectedOptions).find(([name, value]) => {
-    const normalizedName = normalize(name)
-    const normalizedValue = normalize(value)
+    const normalizedName = normalizeApparelValue(name)
+    const normalizedValue = normalizeApparelValue(value)
     return (
       normalizedName.includes('estampa') ||
       normalizedName.includes('impresion') ||
@@ -78,7 +64,7 @@ function getSelectedPrintSize(selectedOptions: Record<string, string>) {
 }
 
 function inferDesignScaleFromPrintSize(printSize?: string) {
-  const value = normalize(printSize)
+  const value = normalizeApparelValue(printSize)
   if (!value || value.includes('sin')) return 100
   if (value.includes('10x10') || value.includes('pecho')) return 45
   if (value.includes('20x25') || value.includes('mediano')) return 72
@@ -112,24 +98,32 @@ export default function ApparelMockupPreview({
   )
   const [selectedPresetId, setSelectedPresetId] = useState('')
 
-  const selectedColorValue = config.colorOptionName
-    ? selectedOptions[config.colorOptionName]
-    : undefined
-  const selectedPlacementValue = config.placementOptionName
-    ? selectedOptions[config.placementOptionName]
-    : undefined
+  const selectedColorValue = getSelectedApparelOptionValue(
+    selectedOptions,
+    config.colorOptionName,
+    ['Color', 'Color remera', 'Color de remera', 'Color prenda']
+  )
+  const selectedPlacementValue = getSelectedApparelOptionValue(
+    selectedOptions,
+    config.placementOptionName,
+    ['Ubicacion', 'Ubicación', 'Lado', 'Vista', 'Impresion', 'Impresión']
+  )
   const selectedPrintSize = getSelectedPrintSize(selectedOptions)
 
   const selectedColor = useMemo(() => {
     if (selectedColorValue) {
-      const exact = config.colors.find((color) => normalize(color.value) === normalize(selectedColorValue))
+      const exact = config.colors.find(
+        (color) => normalizeApparelValue(color.value) === normalizeApparelValue(selectedColorValue)
+      )
       if (exact?.frontImageUrl || exact?.backImageUrl) return exact
     }
     return config.colors.find((color) => color.frontImageUrl || color.backImageUrl) || config.colors[0]
   }, [config.colors, selectedColorValue])
 
   useEffect(() => {
-    setSide((currentSide) => inferSide(selectedPlacementValue, currentSide || config.defaultSide || 'front'))
+    setSide((currentSide) =>
+      inferApparelMockupSide(selectedPlacementValue, currentSide || config.defaultSide || 'front')
+    )
   }, [config.defaultSide, selectedPlacementValue])
 
   const frontUrl = selectedColor?.frontImageUrl || selectedColor?.backImageUrl || selectedImageUrl || ''

@@ -148,7 +148,7 @@ export const productSchema = z.object({
   const hasApparelColorCatalog =
     apparelMockup?.enabled &&
     Array.isArray(apparelMockup.colors) &&
-    apparelMockup.colors.some((color) => color.value.trim())
+    apparelMockup.colors.some((color) => color.value.trim() && (color.frontImageUrl?.trim() || color.backImageUrl?.trim()))
   const hasVariantImages = data.variants.some((variant) => Boolean(variant.imageUrl?.trim()))
 
   if (data.images.length === 0 && !hasApparelColorCatalog && !hasVariantImages) {

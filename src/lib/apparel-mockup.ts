@@ -38,6 +38,52 @@ export type ApparelMockupConfig = {
   presetDesigns?: ApparelMockupPresetDesign[]
 }
 
+export function normalizeApparelValue(value?: string | null) {
+  return (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+export function inferApparelMockupSide(
+  selection: string | undefined,
+  fallback: ApparelMockupSide
+): ApparelMockupSide {
+  const value = normalizeApparelValue(selection)
+  const hasBack = value.includes('espalda') || value.includes('atras') || value.includes('dorso')
+  const hasFront = value.includes('frente') || value.includes('adelante') || value.includes('pecho')
+  if (hasBack && hasFront) return fallback
+  if (hasBack) return 'back'
+  if (hasFront) return 'front'
+  return fallback
+}
+
+export function getSelectedApparelOptionValue(
+  selectedOptions: Record<string, string>,
+  preferredName?: string,
+  aliases: string[] = []
+) {
+  const entries = Object.entries(selectedOptions)
+  const candidates = [preferredName, ...aliases].filter(Boolean).map((name) => normalizeApparelValue(name))
+
+  for (const candidate of candidates) {
+    const exact = entries.find(([name]) => normalizeApparelValue(name) === candidate)
+    if (exact?.[1]) return exact[1]
+  }
+
+  for (const candidate of candidates) {
+    const partial = entries.find(([name]) => {
+      const optionName = normalizeApparelValue(name)
+      return optionName.includes(candidate) || candidate.includes(optionName)
+    })
+    if (partial?.[1]) return partial[1]
+  }
+
+  return undefined
+}
+
 const DEFAULT_AREA: ApparelMockupArea = {
   x: 32,
   y: 24,

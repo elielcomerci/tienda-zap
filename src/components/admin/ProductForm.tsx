@@ -32,6 +32,7 @@ import {
   DEFAULT_APPAREL_MOCKUP,
   getApparelMockupConfig,
   getProductMediaTracks,
+  normalizeApparelValue,
   type ApparelMockupConfig,
   type ApparelMockupSide,
 } from '@/lib/apparel-mockup'
@@ -44,7 +45,22 @@ const PRODUCT_MEDIA_ACCEPT: Record<Exclude<ProductMediaType, 'NONE' | 'YOUTUBE'>
 }
 
 function normalizeOptionValue(value: unknown) {
-  return String(value || '').trim().toLowerCase()
+  return normalizeApparelValue(String(value || ''))
+}
+
+function findOptionNameByCandidates(options: any[], candidates: string[]) {
+  const normalizedCandidates = candidates.map(normalizeApparelValue)
+  const exact = options.find((option: any) =>
+    normalizedCandidates.includes(normalizeApparelValue(option.name))
+  )
+  if (exact?.name) return String(exact.name)
+
+  const partial = options.find((option: any) => {
+    const optionName = normalizeApparelValue(option.name)
+    return normalizedCandidates.some((candidate) => optionName.includes(candidate) || candidate.includes(optionName))
+  })
+
+  return partial?.name ? String(partial.name) : undefined
 }
 
 function titleFromFileName(fileName: string) {
@@ -62,6 +78,7 @@ function inferMockupSide(fileName: string): 'frontImageUrl' | 'backImageUrl' {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[-_]+/g, ' ')
 
   return /\b(espalda|back|dorso|atras)\b/.test(normalized) ? 'backImageUrl' : 'frontImageUrl'
 }
@@ -223,8 +240,12 @@ export default function ProductForm({
         (design) => design.name.trim() && design.imageUrl.trim()
       ),
     }
+    const hasMockupData =
+      cleanedMockup.colors.length > 0 ||
+      (cleanedMockup.presetDesigns || []).length > 0 ||
+      cleanedMockup.enabled
 
-    return cleanedMockup.enabled ? [...mediaList, cleanedMockup] : mediaList
+    return hasMockupData ? [...mediaList, cleanedMockup] : mediaList
   }, [apparelMockup, mediaList])
 
   const [expandedLyricsTrackId, setExpandedLyricsTrackId] = useState<string | null>(null)
@@ -315,9 +336,29 @@ export default function ProductForm({
     [currentOptions]
   )
   const resolvedColorOptionName =
-    apparelMockup.colorOptionName && currentOptionNames.has(apparelMockup.colorOptionName)
+    findOptionNameByCandidates(currentOptions, [
+      apparelMockup.colorOptionName || '',
+      availableColorOption.name,
+      'Color',
+      'Color remera',
+      'Color de remera',
+      'Color prenda',
+    ]) ||
+    (apparelMockup.colorOptionName && currentOptionNames.has(apparelMockup.colorOptionName)
       ? apparelMockup.colorOptionName
-      : availableColorOption.name || apparelMockup.colorOptionName || 'Color'
+      : availableColorOption.name || apparelMockup.colorOptionName || 'Color')
+  const resolvedPlacementOptionName =
+    findOptionNameByCandidates(currentOptions, [
+      apparelMockup.placementOptionName || '',
+      'Ubicacion',
+      'Ubicación',
+      'Lado',
+      'Vista',
+      'Impresion',
+      'Impresión',
+    ]) ||
+    apparelMockup.placementOptionName ||
+    'Ubicacion'
   const variantImageByColor = useMemo(() => {
     const imagesByColor = new Map<string, string>()
     currentVariants.forEach((variant: any) => {
@@ -366,17 +407,15 @@ export default function ProductForm({
 
       return {
         ...previous,
-        colorOptionName:
-          previous.colorOptionName && currentOptionNames.has(previous.colorOptionName)
-            ? previous.colorOptionName
-            : availableColorOption.name,
+        colorOptionName: resolvedColorOptionName,
+        placementOptionName: resolvedPlacementOptionName,
         colors: [
           ...syncedColors,
           ...previous.colors.filter((color) => !optionColorKeys.has(normalizeOptionValue(color.value))),
         ],
       }
     })
-  }, [availableColorOption.name, availableColorValues, currentOptionNames, variantImageByColor])
+  }, [availableColorValues, resolvedColorOptionName, resolvedPlacementOptionName, variantImageByColor])
 
   const syncMockupColorsFromOptions = () => {
     if (availableColorValues.length === 0) return
@@ -384,10 +423,8 @@ export default function ProductForm({
       const existing = new Map(previous.colors.map((color) => [normalizeOptionValue(color.value), color]))
       return {
         ...previous,
-        colorOptionName:
-          previous.colorOptionName && currentOptionNames.has(previous.colorOptionName)
-            ? previous.colorOptionName
-            : availableColorOption.name,
+        colorOptionName: resolvedColorOptionName,
+        placementOptionName: resolvedPlacementOptionName,
         colors: availableColorValues.map((color) => {
           const normalizedColor = normalizeOptionValue(color.value)
           const existingColor = existing.get(normalizedColor)
@@ -511,7 +548,8 @@ export default function ProductForm({
       const nextApparelMockup = {
         ...apparelMockup,
         enabled: true,
-        colorOptionName: apparelMockup.colorOptionName || availableColorOption.name,
+        colorOptionName: resolvedColorOptionName,
+        placementOptionName: resolvedPlacementOptionName,
         colors: nextColors,
       }
       setApparelMockup(nextApparelMockup)
@@ -631,7 +669,13 @@ export default function ProductForm({
       const nextColors = apparelMockup.colors.map((mockupColor, index) =>
         index === colorIndex ? { ...mockupColor, [field]: data.url } : mockupColor
       )
-      const nextApparelMockup = { ...apparelMockup, colors: nextColors }
+      const nextApparelMockup = {
+        ...apparelMockup,
+        enabled: true,
+        colorOptionName: resolvedColorOptionName,
+        placementOptionName: resolvedPlacementOptionName,
+        colors: nextColors,
+      }
       const nextMediaPayload = [
         {
           ...nextApparelMockup,
