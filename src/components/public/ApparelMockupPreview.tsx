@@ -55,8 +55,11 @@ function normalize(value?: string | null) {
 
 function inferSide(selection: string | undefined, fallback: ApparelMockupSide): ApparelMockupSide {
   const value = normalize(selection)
-  if (value.includes('espalda') || value.includes('atras') || value.includes('dorso')) return 'back'
-  if (value.includes('frente') || value.includes('adelante') || value.includes('pecho')) return 'front'
+  const hasBack = value.includes('espalda') || value.includes('atras') || value.includes('dorso')
+  const hasFront = value.includes('frente') || value.includes('adelante') || value.includes('pecho')
+  if (hasBack && hasFront) return fallback
+  if (hasBack) return 'back'
+  if (hasFront) return 'front'
   return fallback
 }
 
@@ -112,26 +115,25 @@ export default function ApparelMockupPreview({
   const selectedColorValue = config.colorOptionName
     ? selectedOptions[config.colorOptionName]
     : undefined
+  const selectedPlacementValue = config.placementOptionName
+    ? selectedOptions[config.placementOptionName]
+    : undefined
   const selectedPrintSize = getSelectedPrintSize(selectedOptions)
 
   const selectedColor = useMemo(() => {
     if (selectedColorValue) {
       const exact = config.colors.find((color) => normalize(color.value) === normalize(selectedColorValue))
-      if (exact) return exact
+      if (exact?.frontImageUrl || exact?.backImageUrl) return exact
     }
     return config.colors.find((color) => color.frontImageUrl || color.backImageUrl) || config.colors[0]
   }, [config.colors, selectedColorValue])
 
   useEffect(() => {
-    const inferred = inferSide(
-      config.placementOptionName ? selectedOptions[config.placementOptionName] : undefined,
-      config.defaultSide || 'front'
-    )
-    setSide(inferred)
-  }, [config.defaultSide, config.placementOptionName, selectedOptions])
+    setSide((currentSide) => inferSide(selectedPlacementValue, currentSide || config.defaultSide || 'front'))
+  }, [config.defaultSide, selectedPlacementValue])
 
-  const frontUrl = selectedColor?.frontImageUrl || selectedColor?.backImageUrl || ''
-  const backUrl = selectedColor?.backImageUrl || selectedColor?.frontImageUrl || ''
+  const frontUrl = selectedColor?.frontImageUrl || selectedColor?.backImageUrl || selectedImageUrl || ''
+  const backUrl = selectedColor?.backImageUrl || selectedColor?.frontImageUrl || selectedImageUrl || ''
   const baseUrl = side === 'front' ? frontUrl : backUrl
   const activeArea = config.printAreas[side]
   const showSideToggle = Boolean(selectedColor?.frontImageUrl && selectedColor?.backImageUrl)
