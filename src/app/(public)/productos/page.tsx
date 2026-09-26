@@ -1,4 +1,4 @@
-import Image from 'next/image'
+﻿import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts, getCombos } from '@/lib/products'
@@ -62,7 +62,7 @@ export default async function ProductsPage({
         <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
                 {mode === 'combo' ? 'Packs Comerciales' : 'Catálogo'}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
@@ -150,12 +150,12 @@ export default async function ProductsPage({
                     </span>
                   )}
                   {selectedIntention && mode === 'objective' && (
-                    <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
+                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
                       Objetivo: {selectedIntention.name}
                     </span>
                   )}
                   {selectedCategory && mode !== 'objective' && mode !== 'combo' && (
-                    <span className="rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]">
+                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
                       Categoría: {selectedCategory.name}
                     </span>
                   )}
@@ -210,7 +210,7 @@ export default async function ProductsPage({
                   return (
                     <article
                       key={product.id}
-                      className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition-all hover:-translate-y-1 hover:border-[#F66B9A]/25 hover:shadow-[0_28px_70px_-44px_rgba(237,44,113,0.28)]"
+                      className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/25 hover:shadow-[0_28px_70px_-44px_rgba(237, 22, 79,0.28)]"
                     >
                       <Link href={`/productos/${product.slug}`} className="block">
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
@@ -239,7 +239,7 @@ export default async function ProductsPage({
                       <div className="space-y-4 p-5">
                         <div>
                           <Link href={`/productos/${product.slug}`}>
-                            <h2 className="line-clamp-2 text-xl font-black tracking-tight text-gray-950 transition-colors hover:text-[#ED2C71]">
+                            <h2 className="line-clamp-2 text-xl font-black tracking-tight text-gray-950 transition-colors hover:text-[#ED164F]">
                               {product.name}
                             </h2>
                           </Link>
@@ -286,7 +286,7 @@ export default async function ProductsPage({
                                 href={inquiryUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6] hover:text-[#C91F5B]"
+                                className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
                               >
                                 <MessageCircleMore size={16} />
                                 Consultar

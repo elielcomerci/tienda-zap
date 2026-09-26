@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { BadgePercent, ChevronDown, MessageCircleMore } from 'lucide-react'
@@ -14,14 +14,14 @@ export default function ProductZapCreditPromo({
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <section className="overflow-hidden rounded-[28px] border border-[#F66B9A]/20 bg-gradient-to-r from-[#FEF1F6] via-white to-[#F0F5FA]">
+    <section className="overflow-hidden rounded-[28px] border border-[#F7638B]/20 bg-gradient-to-r from-[#FEF1F5] via-white to-[#F0F5FA]">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[#FEF1F6]/50"
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[#FEF1F5]/50"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FEF1F6] text-[#ED2C71]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FEF1F5] text-[#ED164F]">
             <BadgePercent size={18} />
           </div>
           <div className="min-w-0">
@@ -43,7 +43,7 @@ export default function ProductZapCreditPromo({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="flex flex-wrap gap-3 border-t border-[#F66B9A]/10 px-5 pb-5 pt-4">
+          <div className="flex flex-wrap gap-3 border-t border-[#F7638B]/10 px-5 pb-5 pt-4">
             <Link href="/credito-zap" className="btn-secondary !py-2 !px-4 !text-xs">
               Ver detalle
             </Link>

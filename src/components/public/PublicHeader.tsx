@@ -142,7 +142,7 @@ export default function PublicHeader({
                 <button 
                   className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
                     pathname === '/productos' && searchParams.get('mode') !== 'combo' && searchParams.get('mode') !== 'objective'
-                      ? 'text-[#ED2C71]'
+                      ? 'text-[#ED164F]'
                       : 'text-[#4576B9] hover:text-[#9951A1]'
                   }`}
                 >
@@ -160,7 +160,7 @@ export default function PublicHeader({
                       <div className="space-y-1 max-h-[220px] overflow-y-auto pr-1">
                         <Link 
                           href="/productos?mode=product" 
-                          className="block text-sm font-bold text-gray-800 hover:text-[#ED2C71] p-1.5 rounded-lg hover:bg-[#FEF1F6] transition-all"
+                          className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
                         >
                           Ver todo el catálogo
                         </Link>
@@ -168,7 +168,7 @@ export default function PublicHeader({
                           <Link 
                             key={cat.id} 
                             href={`/productos?mode=product&cat=${cat.slug}`} 
-                            className="block text-sm font-medium text-gray-600 hover:text-[#ED2C71] p-1.5 rounded-lg hover:bg-[#FEF1F6] transition-all"
+                            className="block text-sm font-medium text-gray-600 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
                           >
                             {cat.name}
                           </Link>
@@ -176,9 +176,9 @@ export default function PublicHeader({
                       </div>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-[#FEF1F6] via-white to-[#EEF4FC] p-4 rounded-xl flex flex-col justify-between border border-[#F66B9A]/15 shadow-sm">
+                    <div className="bg-gradient-to-br from-[#FEF1F5] via-white to-[#EEF4FC] p-4 rounded-xl flex flex-col justify-between border border-[#F7638B]/15 shadow-sm">
                       <div>
-                        <span className="bg-[#ED2C71] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-full shadow-sm shadow-[#ED2C71]/10">
+                        <span className="bg-[#ED164F] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-full shadow-sm shadow-[#ED164F]/10">
                           Recomendado
                         </span>
                         <h4 className="font-black text-gray-900 text-sm mt-2 leading-snug">
@@ -190,7 +190,7 @@ export default function PublicHeader({
                       </div>
                       <Link 
                         href="/productos?mode=combo" 
-                        className="mt-4 bg-white border border-[#4576B9]/20 hover:border-[#ED2C71] text-[#ED2C71] hover:bg-[#ED2C71] hover:text-white text-xs font-bold py-2 px-3 rounded-full text-center transition-all shadow-sm"
+                        className="mt-4 bg-white border border-[#4576B9]/20 hover:border-[#ED164F] text-[#ED164F] hover:bg-[#ED164F] hover:text-white text-xs font-bold py-2 px-3 rounded-full text-center transition-all shadow-sm"
                       >
                         Explorar Packs
                       </Link>
@@ -205,12 +205,12 @@ export default function PublicHeader({
                   href="/productos?mode=combo"
                   className={`relative text-lg transition-colors group ${
                     isLinkActive('/productos?mode=combo')
-                      ? 'text-[#ED2C71] font-bold'
+                      ? 'text-[#ED164F] font-bold'
                       : 'text-[#4576B9] font-semibold hover:text-[#9951A1]'
                   }`}
                 >
                   Packs y Combos
-                  <span className="pointer-events-none absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#ED2C71] to-[#4576B9] transition-all duration-300 group-hover:w-full" />
+                  <span className="pointer-events-none absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#ED164F] to-[#4576B9] transition-all duration-300 group-hover:w-full" />
                 </Link>
               </li>
 
@@ -219,7 +219,7 @@ export default function PublicHeader({
                 <button 
                   className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
                     searchParams.get('mode') === 'objective'
-                      ? 'text-[#ED2C71]'
+                      ? 'text-[#ED164F]'
                       : 'text-[#4576B9] hover:text-[#9951A1]'
                   }`}
                 >
@@ -236,7 +236,7 @@ export default function PublicHeader({
                     <div className="space-y-1 max-h-[250px] overflow-y-auto pr-1">
                       <Link 
                         href="/productos?mode=objective" 
-                        className="block text-sm font-bold text-gray-800 hover:text-[#ED2C71] p-2 rounded-lg hover:bg-[#FEF1F6] transition-all"
+                        className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
                       >
                         Todos los objetivos
                       </Link>
@@ -244,7 +244,7 @@ export default function PublicHeader({
                         <Link 
                           key={intent.id} 
                           href={`/productos?mode=objective&intent=${intent.slug}`} 
-                          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#ED2C71] p-2 rounded-lg hover:bg-[#FEF1F6] transition-all"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
                         >
                           {intent.icon && <span className="shrink-0 text-base">{intent.icon}</span>}
                           <span className="truncate">{intent.name}</span>
@@ -260,7 +260,7 @@ export default function PublicHeader({
                 {canOpenAdminPanel && (
                   <Link
                     href="/admin"
-                    className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] text-[#C91F5B] transition-colors hover:bg-[#F66B9A]/20"
+                    className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] text-[#C2103F] transition-colors hover:bg-[#F7638B]/20"
                     title="Ir al admin"
                   >
                     <LayoutDashboard size={17} />
@@ -280,9 +280,9 @@ export default function PublicHeader({
                 {user ? (
                   <Link
                     href="/perfil"
-                    className="flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full border border-gray-200 bg-white hover:border-[#F66B9A]/30 transition-all"
+                    className="flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full border border-gray-200 bg-white hover:border-[#F7638B]/30 transition-all"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ED2C71] to-[#4576B9] text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ED164F] to-[#4576B9] text-white flex items-center justify-center text-sm font-bold shadow-sm">
                       {user.name?.charAt(0) || 'U'}
                     </div>
                     <div className="flex flex-col items-start">
@@ -293,23 +293,36 @@ export default function PublicHeader({
                 ) : (
                   <Link
                     href="/login"
-                    className="group relative overflow-hidden bg-gradient-to-r from-[#ED2C71] to-[#4576B9] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-[#ED2C71]/30 transition-all duration-300 hover:scale-105"
+                    className="group relative overflow-hidden bg-gradient-to-r from-[#ED164F] to-[#4576B9] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-[#ED164F]/30 transition-all duration-300 hover:scale-105"
                   >
                     <span className="relative z-10">Ingresar</span>
                   </Link>
                 )}
               </li>
 
+              {/* Link back to zap.com.ar */}
+              <li className="h-full flex items-center">
+                <a
+                  href="https://zap.com.ar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-gray-500 hover:text-[#ED164F] border border-gray-200 rounded-full px-3 py-1.5 transition-colors hover:border-[#F7638B]/40"
+                  title="Volver al sitio principal de ZAP"
+                >
+                  ← zap.com.ar
+                </a>
+              </li>
+
               {/* Cart */}
               <li className="h-full flex items-center">
                 <Link
                   href="/carrito"
-                  className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-[#F66B9A]/30 hover:bg-[#FEF1F6] hover:text-[#ED2C71]"
+                  className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-[#F7638B]/30 hover:bg-[#FEF1F5] hover:text-[#ED164F]"
                   aria-label="Ir al carrito"
                 >
                   <ShoppingCart size={20} />
                   {itemCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#ED2C71] text-[11px] font-bold text-white">
+                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#ED164F] text-[11px] font-bold text-white">
                       {itemCount > 9 ? '9+' : itemCount}
                     </span>
                   )}
@@ -323,7 +336,7 @@ export default function PublicHeader({
             {canOpenAdminPanel && (
               <Link
                 href="/admin"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#F66B9A]/25 bg-[#FEF1F6] text-[#C91F5B] shadow-sm"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] text-[#C2103F] shadow-sm"
                 aria-label="Ir al admin"
               >
                 <LayoutDashboard size={18} />
@@ -345,7 +358,7 @@ export default function PublicHeader({
             >
               <ShoppingCart size={18} />
               {itemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#ED2C71] text-[9px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#ED164F] text-[9px] font-bold text-white">
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
@@ -356,17 +369,17 @@ export default function PublicHeader({
               aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
             >
               <span
-                className={`absolute block h-0.5 w-6 bg-gradient-to-r from-[#ED2C71] to-[#4576B9] transition-transform duration-300 ${
+                className={`absolute block h-0.5 w-6 bg-gradient-to-r from-[#ED164F] to-[#4576B9] transition-transform duration-300 ${
                   menuOpen ? 'rotate-45 translate-y-0' : '-translate-y-2'
                 }`}
               />
               <span
-                className={`absolute block h-0.5 w-6 bg-gradient-to-r from-[#ED2C71] to-[#4576B9] transition-opacity duration-300 ${
+                className={`absolute block h-0.5 w-6 bg-gradient-to-r from-[#ED164F] to-[#4576B9] transition-opacity duration-300 ${
                   menuOpen ? 'opacity-0' : 'opacity-100'
                 }`}
               />
               <span
-                className={`absolute block h-0.5 w-6 bg-gradient-to-r from-[#ED2C71] to-[#4576B9] transition-transform duration-300 ${
+                className={`absolute block h-0.5 w-6 bg-gradient-to-r from-[#ED164F] to-[#4576B9] transition-transform duration-300 ${
                   menuOpen ? '-rotate-45 translate-y-0' : 'translate-y-2'
                 }`}
               />
@@ -377,7 +390,7 @@ export default function PublicHeader({
 
       {showReferralBanner && referralSeller && (
         <div className="fixed left-0 right-0 top-[70px] z-40 border-y border-[#4576B9]/15 bg-white/95 px-4 py-2 text-center text-xs font-semibold text-gray-600 shadow-sm backdrop-blur">
-          Te está asesorando <span className="text-[#ED2C71]">{referralSeller.name || 'un asesor ZAP'}</span>
+          Te está asesorando <span className="text-[#ED164F]">{referralSeller.name || 'un asesor ZAP'}</span>
           <button
             type="button"
             onClick={() => {
@@ -385,7 +398,7 @@ export default function PublicHeader({
               setLeadSent(false)
               setLeadError(null)
             }}
-            className="ml-3 rounded-full bg-[#ED2C71] px-3 py-1 text-[11px] font-bold text-white"
+            className="ml-3 rounded-full bg-[#ED164F] px-3 py-1 text-[11px] font-bold text-white"
           >
             Quiero asesoría
           </button>
@@ -397,7 +410,7 @@ export default function PublicHeader({
         className={`md:hidden fixed inset-0 z-[60] flex flex-col w-full h-full text-white transition-all duration-500 ease-in-out ${
           menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
         }`}
-        style={{ background: 'linear-gradient(135deg, #ED2C71 0%, #4576B9 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #ED164F 0%, #4576B9 100%)' }}
         role="dialog"
         aria-modal="true"
       >
@@ -516,6 +529,19 @@ export default function PublicHeader({
               </div>
             </li>
 
+            {/* Link back to zap.com.ar */}
+            <li className="pt-2">
+              <a
+                href="https://zap.com.ar"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMenuOpen(false)}
+                className="block text-base font-bold text-white/90 hover:text-white hover:opacity-80 active:scale-[0.98] transition-all"
+              >
+                ¿Necesitás algo que no aparece acá? <span className="underline underline-offset-2">Hablemos →</span>
+              </a>
+            </li>
+
             {/* User area */}
             <li className="pt-4 border-t border-white/10">
               {user ? (
@@ -523,7 +549,7 @@ export default function PublicHeader({
                   <Link
                     href="/perfil"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center justify-center bg-white text-[#ED2C71] text-base py-2.5 px-6 rounded-full shadow-lg font-bold hover:bg-pink-50 active:scale-[0.98] transition-all"
+                    className="flex items-center justify-center bg-white text-[#ED164F] text-base py-2.5 px-6 rounded-full shadow-lg font-bold hover:bg-pink-50 active:scale-[0.98] transition-all"
                   >
                     Mi perfil
                   </Link>
@@ -550,7 +576,7 @@ export default function PublicHeader({
                 <Link
                   href="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center bg-white text-[#ED2C71] text-base font-bold py-3 px-6 rounded-full shadow-lg active:scale-95 transition-all"
+                  className="flex items-center justify-center bg-white text-[#ED164F] text-base font-bold py-3 px-6 rounded-full shadow-lg active:scale-95 transition-all"
                 >
                   ⚡ Ingresar a mi cuenta
                 </Link>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { Upload, X, FileImage, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react'
@@ -86,7 +86,7 @@ export default function ProofUploader({
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B] transition-colors hover:bg-[#FCE4EC]"
+            className="flex items-center gap-1.5 rounded-lg bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F] transition-colors hover:bg-[#FCE4EC]"
           >
             <Upload size={14} />
             {buttonText}

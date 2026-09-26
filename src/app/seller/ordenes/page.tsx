@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -78,7 +78,7 @@ export default async function SellerOrdenesPage() {
                   return (
                     <tr key={order.id} className="hover:bg-gray-50/50">
                       <td className="px-6 py-4">
-                        <Link href={`/seller/ordenes/${order.id}`} className="font-semibold text-[#ED2C71] hover:underline">
+                        <Link href={`/seller/ordenes/${order.id}`} className="font-semibold text-[#ED164F] hover:underline">
                           #{getOrderDisplayCode(order.id)}
                         </Link>
                         <p className="text-xs text-gray-400 mt-0.5">

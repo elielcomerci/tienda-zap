@@ -35,22 +35,27 @@ export default function ComboSection({
   if (typedCombos.length === 0) return null
 
   return (
-    <section className="border-y border-[#F66B9A]/15 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff]">
+    <section className="border-y border-[#F7638B]/15 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff]">
       <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
-              {businessTypeName ? `Pack exclusivo para ${businessTypeName}` : 'Packs especiales'}
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
+              {businessTypeName ? `Soluciones para ${businessTypeName}` : 'Soluciones'}
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
               {businessTypeName
                 ? `Todo lo que necesita tu ${businessTypeName.toLowerCase()} en un solo pedido.`
-                : 'Soluciones completas a precio especial.'}
+                : 'Soluciones completas para situaciones concretas.'}
             </h2>
+            <p className="mt-2 max-w-xl text-sm leading-7 text-gray-500">
+              {businessTypeName
+                ? `Piezas pensadas para tu rubro, combinadas para que puedas avanzar.`
+                : 'Combinamos piezas que tienen sentido juntas y las dejamos listas para que puedas avanzar.'}
+            </p>
             {!businessTypeName && (
-              <p className="mt-2 text-sm text-gray-500">
-                <Link href="/registro" className="underline hover:text-[#ED2C71]">Registrá tu negocio</Link>{' '}
-                para ver los packs pensados para tu rubro.
+              <p className="mt-2 text-xs text-gray-400">
+                <Link href="/registro" className="underline hover:text-[#ED164F]">Registrá tu negocio</Link>{' '}
+                para ver las soluciones pensadas para tu rubro.
               </p>
             )}
           </div>
@@ -65,15 +70,15 @@ export default function ComboSection({
               <Link
                 key={combo.id}
                 href={`/productos/${combo.slug}`}
-                className="group relative overflow-hidden rounded-[30px] border border-[#F66B9A]/20 bg-white shadow-[0_18px_50px_-42px_rgba(237,44,113,0.15)] transition-all hover:-translate-y-1 hover:border-[#F66B9A]/40 hover:shadow-[0_28px_70px_-44px_rgba(237,44,113,0.25)]"
+                className="group relative overflow-hidden rounded-[30px] border border-[#F7638B]/20 bg-white shadow-[0_18px_50px_-42px_rgba(237, 22, 79,0.15)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/40 hover:shadow-[0_28px_70px_-44px_rgba(237, 22, 79,0.25)]"
               >
                 {/* Badge */}
-                <div className="absolute right-4 top-4 z-10 rounded-full bg-[#ED2C71] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg">
+                <div className="absolute right-4 top-4 z-10 rounded-full bg-[#ED164F] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg">
                   Pack
                 </div>
 
                 {/* Image */}
-                <div className="relative aspect-[1.4/1] overflow-hidden bg-gradient-to-br from-[#FEF1F6] to-[#F0F5FF]">
+                <div className="relative aspect-[1.4/1] overflow-hidden bg-gradient-to-br from-[#FEF1F5] to-[#F0F5FF]">
                   {combo.images[0] ? (
                     <img
                       src={combo.images[0]}
@@ -82,13 +87,13 @@ export default function ComboSection({
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <Package2 size={48} className="text-[#F66B9A]/40" />
+                      <Package2 size={48} className="text-[#F7638B]/40" />
                     </div>
                   )}
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-xl font-black tracking-tight text-gray-950 transition-colors group-hover:text-[#ED2C71]">
+                  <h3 className="text-xl font-black tracking-tight text-gray-950 transition-colors group-hover:text-[#ED164F]">
                     {combo.name}
                   </h3>
 
@@ -97,7 +102,7 @@ export default function ComboSection({
                     <div className="mt-3 space-y-1">
                       {includedItems.map(({ relatedProduct }) => (
                         <div key={relatedProduct.id} className="flex items-center gap-2 text-xs text-gray-500">
-                          <span className="text-[#ED2C71]">✓</span>
+                          <span className="text-[#ED164F]">✓</span>
                           {relatedProduct.name}
                         </div>
                       ))}
@@ -120,8 +125,8 @@ export default function ComboSection({
                           : 'Consultar'}
                       </p>
                     </div>
-                    <span className="flex items-center gap-1 text-sm font-semibold text-[#ED2C71]">
-                      Ver pack <ArrowRight size={14} />
+                    <span className="flex items-center gap-1 text-sm font-semibold text-[#ED164F]">
+                      Ver solución <ArrowRight size={14} />
                     </span>
                   </div>
                 </div>

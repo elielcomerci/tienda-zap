@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { Scanner } from '@yudiel/react-qr-scanner'
@@ -64,7 +64,7 @@ export default function CouponScannerModal({
       <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-gray-950 text-white shadow-2xl">
         {/* Header — compact */}
         <div className="px-5 pt-5 pb-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#F66B9A]">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#F7638B]">
             Escáner de cupón
           </p>
           <p className="mt-1 text-sm text-gray-300">

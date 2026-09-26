@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { DollarSign, Send, Check } from 'lucide-react'
@@ -86,7 +86,7 @@ export default function PayoutsTable({ sellers }: { sellers: any[] }) {
                             placeholder="Monto" 
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            className="w-32 rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none focus:border-[#ED2C71]"
+                            className="w-32 rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none focus:border-[#ED164F]"
                             max={available}
                           />
                           <input 
@@ -94,7 +94,7 @@ export default function PayoutsTable({ sellers }: { sellers: any[] }) {
                             placeholder="Ref / Comprobante" 
                             value={reference}
                             onChange={(e) => setReference(e.target.value)}
-                            className="w-32 rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none focus:border-[#ED2C71]"
+                            className="w-32 rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none focus:border-[#ED164F]"
                           />
                           <div className="flex gap-2">
                             <button 

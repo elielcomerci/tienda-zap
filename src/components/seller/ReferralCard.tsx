@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { Copy, QrCode, Check, Smartphone } from 'lucide-react'
@@ -78,7 +78,7 @@ export default function ReferralCard({ sellerId, sellerName }: { sellerId: strin
 
         <button 
           onClick={downloadQR}
-          className="flex items-center gap-2 text-sm font-bold text-[#ED2C71] hover:text-[#C91F5B] transition-colors"
+          className="flex items-center gap-2 text-sm font-bold text-[#ED164F] hover:text-[#C2103F] transition-colors"
         >
           <QrCode size={18} />
           Descargar QR para imprimir

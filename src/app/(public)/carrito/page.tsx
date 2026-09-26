@@ -25,10 +25,10 @@ export default function CartPage() {
       <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_24%,#f8fafc_100%)]">
         <div className="mx-auto max-w-[980px] px-4 py-20 sm:py-24">
           <div className="rounded-[36px] border border-gray-200 bg-white px-6 py-16 text-center shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:px-10">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#FEF1F6] text-[#ED2C71]">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#FEF1F5] text-[#ED164F]">
               <ShoppingBag size={36} />
             </div>
-            <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+            <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
               Carrito vacio
             </p>
             <h1 className="mt-3 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
@@ -56,7 +56,7 @@ export default function CartPage() {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:items-end">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
+                <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
                   Paso 1 de 3
                 </span>
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
@@ -107,7 +107,7 @@ export default function CartPage() {
           <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
             <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
                   Tu carrito
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
@@ -231,7 +231,7 @@ export default function CartPage() {
                               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                                 Subtotal
                               </p>
-                              <p className="mt-2 text-lg font-black text-[#ED2C71]">
+                              <p className="mt-2 text-lg font-black text-[#ED164F]">
                                 ${(item.price * item.quantity).toLocaleString('es-AR')}
                               </p>
                             </div>
@@ -272,7 +272,7 @@ export default function CartPage() {
           <aside className="xl:sticky xl:top-24">
             <div className="rounded-[32px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
               <div className="border-b border-white/10 pb-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F66B9A]">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F7638B]">
                   Resumen del pedido
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
@@ -330,7 +330,7 @@ export default function CartPage() {
                         </p>
                       )}
                     </div>
-                    <span className="shrink-0 text-sm font-semibold text-[#F66B9A]">
+                    <span className="shrink-0 text-sm font-semibold text-[#F7638B]">
                       ${(item.price * item.quantity).toLocaleString('es-AR')}
                     </span>
                   </div>
@@ -360,7 +360,7 @@ export default function CartPage() {
                 ) : (
                   <Link
                     href="/checkout"
-                    className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED2C71] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-[#ED2C71]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F66B9A]"
+                    className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-[#ED164F]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F7638B]"
                   >
                     Cerrar pedido <ArrowRight size={18} />
                   </Link>
@@ -368,7 +368,7 @@ export default function CartPage() {
 
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-start gap-3">
-                    <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#F66B9A]" />
+                    <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#F7638B]" />
                     <p className="text-sm leading-7 text-gray-300">
                       En el siguiente paso confirmas datos, elegis medio de pago y dejamos el
                       trabajo listo para empezar.

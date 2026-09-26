@@ -67,16 +67,16 @@ export default function OrderItemOptions({
             compact ? 'p-3' : 'p-4'
           } ${
             item.designRequested
-              ? 'border-[#ED2C71] bg-[#FEF1F6] text-[#C91F5B]'
+              ? 'border-[#ED164F] bg-[#FEF1F5] text-[#C2103F]'
               : 'border-gray-200 bg-white text-gray-600 hover:border-orange-400'
           }`}
         >
           {item.designRequested ? (
             <>
-              <CheckCircle2 size={compact ? 18 : 24} className="mb-1 text-[#ED2C71]" />
+              <CheckCircle2 size={compact ? 18 : 24} className="mb-1 text-[#ED164F]" />
               <span className="text-center text-xs font-semibold">Diseño solicitado</span>
               <span
-                className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} text-[#ED2C71]`}
+                className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} text-[#ED164F]`}
               >
                 Lo coordinamos por WhatsApp
               </span>

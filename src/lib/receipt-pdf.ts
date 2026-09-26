@@ -1,10 +1,10 @@
-import { jsPDF } from 'jspdf'
+﻿import { jsPDF } from 'jspdf'
 
 import { ZAP_LOGO_B64 } from './logo-base64'
 
 // ─── Brand Colors ───
 type RGB = readonly [number, number, number]
-const BRAND_PRIMARY: RGB = [237, 44, 113]   // #ED2C71 (Pink)
+const BRAND_PRIMARY: RGB = [237, 22, 79]   // #ED164F (Pink)
 const BRAND_SECONDARY: RGB = [69, 118, 185] // #4576B9 (Blue)
 const DARK: RGB = [15, 23, 42]        // #0f172a
 const GRAY_700: RGB = [55, 65, 81]

@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Plus } from 'lucide-react'
@@ -108,7 +108,7 @@ export default async function SellerClientesPage({
             Gestioná tu cartera de clientes activos.
           </p>
         </div>
-        <div className="hidden items-center gap-2 text-sm font-semibold text-[#ED2C71] sm:flex">
+        <div className="hidden items-center gap-2 text-sm font-semibold text-[#ED164F] sm:flex">
           <Plus size={18} />
           Cargar prospectos y clientes
         </div>

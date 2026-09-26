@@ -1,4 +1,4 @@
-import QRCode from 'qrcode'
+﻿import QRCode from 'qrcode'
 import { jsPDF } from 'jspdf'
 import { Prisma } from '@prisma/client'
 import { buildCouponLandingUrl, getCouponPresenterName } from '@/lib/coupons'
@@ -45,7 +45,7 @@ type CouponCardData = {
 /* ── Design tokens ── */
 const CARD_WIDTH = 148
 const CARD_HEIGHT = 210
-const ZAP_PINK = '#ED2C71'
+const ZAP_PINK = '#ED164F'
 const ZAP_BLUE = '#4576B9'
 const ZAP_PURPLE = '#9951A1'
 const INK = '#111111'

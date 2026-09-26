@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -346,7 +346,7 @@ export default function ApparelMockupPreview({
                 <div
                   key={targetSide}
                   className={`rounded-2xl border bg-white/90 p-2.5 shadow-lg shadow-gray-950/10 backdrop-blur-md transition ${
-                    isActiveSide ? 'border-[#ED2C71] ring-2 ring-[#FEF1F6]' : 'border-white/70'
+                    isActiveSide ? 'border-[#ED164F] ring-2 ring-[#FEF1F5]' : 'border-white/70'
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between gap-2">
@@ -457,7 +457,7 @@ export default function ApparelMockupPreview({
                   onClick={() => setSelectedPresetId(design.id)}
                   className={`overflow-hidden rounded-2xl border-2 bg-white text-left transition ${
                     isSelected
-                      ? 'border-[#ED2C71] ring-4 ring-[#FEF1F6]'
+                      ? 'border-[#ED164F] ring-4 ring-[#FEF1F5]'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -492,7 +492,7 @@ export default function ApparelMockupPreview({
                 step="5"
                 value={activeDesignScale}
                 onChange={(event) => updateActiveDesignScale(Number(event.target.value))}
-                className="h-2 w-full cursor-pointer accent-[#ED2C71]"
+                className="h-2 w-full cursor-pointer accent-[#ED164F]"
               />
             </div>
 

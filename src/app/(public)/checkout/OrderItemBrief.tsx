@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useMemo, useState } from 'react'
 import { LinkIcon, Plus, Trash2 } from 'lucide-react'
@@ -87,9 +87,9 @@ export default function OrderItemBrief({
   }
 
   return (
-    <div className={`mt-3 rounded-2xl border border-[#F66B9A]/20 bg-[#FEF1F6]/40 ${compact ? 'p-3' : 'p-4'}`}>
+    <div className={`mt-3 rounded-2xl border border-[#F7638B]/20 bg-[#FEF1F5]/40 ${compact ? 'p-3' : 'p-4'}`}>
       <div className="mb-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
           {briefLabels[briefType]}
         </p>
         <p className="mt-1 text-xs leading-5 text-gray-600">

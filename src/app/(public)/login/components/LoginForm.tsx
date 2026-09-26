@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
@@ -70,7 +70,7 @@ export default function LoginForm() {
       />
 
       <div className="text-right -mt-2">
-        <Link href="/recuperar" className="text-xs font-semibold text-gray-500 hover:text-[#ED2C71] transition-colors">
+        <Link href="/recuperar" className="text-xs font-semibold text-gray-500 hover:text-[#ED164F] transition-colors">
           ¿Olvidaste tu contraseña?
         </Link>
       </div>
@@ -85,7 +85,7 @@ export default function LoginForm() {
 
       <p className="text-center text-sm text-gray-500">
         ¿No tenés cuenta?{' '}
-        <Link href="/registro" className="text-[#ED2C71] font-semibold hover:underline">
+        <Link href="/registro" className="text-[#ED164F] font-semibold hover:underline">
           Registrate
         </Link>
       </p>

@@ -1,4 +1,4 @@
-import { redirect, notFound } from 'next/navigation'
+﻿import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Clock, Download, FileText, MessageSquare, Package, Palette } from 'lucide-react'
 import { auth } from '@/auth'
@@ -76,7 +76,7 @@ export default async function MiOrdenPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Package size={24} className="text-[#ED2C71]" /> Pedido
+            <Package size={24} className="text-[#ED164F]" /> Pedido
           </h1>
           <p className="text-sm text-gray-400 font-mono mt-1">#{orderCode}</p>
         </div>
@@ -171,7 +171,7 @@ export default async function MiOrdenPage({
                     className="w-14 h-14 rounded-xl object-cover bg-gray-100"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-xl bg-[#FEF1F6] flex items-center justify-center text-2xl">
+                  <div className="w-14 h-14 rounded-xl bg-[#FEF1F5] flex items-center justify-center text-2xl">
                     P
                   </div>
                 )}
@@ -242,7 +242,7 @@ export default async function MiOrdenPage({
               </div>
             )}
             {order.couponCode && (
-              <div className="flex items-center gap-3 text-sm font-medium text-[#ED2C71]">
+              <div className="flex items-center gap-3 text-sm font-medium text-[#ED164F]">
                 <span>Cupon</span>
                 <span>{order.couponCode}</span>
               </div>
@@ -250,7 +250,7 @@ export default async function MiOrdenPage({
           </div>
           <div className="text-right">
             <span className="block text-sm text-gray-500">Total</span>
-            <span className="text-[#ED2C71]">${order.total.toLocaleString('es-AR')}</span>
+            <span className="text-[#ED164F]">${order.total.toLocaleString('es-AR')}</span>
           </div>
         </div>
       </div>
@@ -292,7 +292,7 @@ export default async function MiOrdenPage({
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-gray-500">Panel de crédito</span>
-              <Link href={`/perfil/créditos/${order.zapCreditPlan.id}`} className="font-medium text-[#ED2C71] hover:underline">
+              <Link href={`/perfil/créditos/${order.zapCreditPlan.id}`} className="font-medium text-[#ED164F] hover:underline">
                 Ver detalle
               </Link>
             </div>
@@ -307,7 +307,7 @@ export default async function MiOrdenPage({
         {order.receiptUrl && (
           <div className="flex justify-between">
             <span className="text-gray-500">Comprobante</span>
-            <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[#ED2C71] hover:underline font-medium">
+            <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[#ED164F] hover:underline font-medium">
               Ver comprobante
             </a>
           </div>
@@ -315,7 +315,7 @@ export default async function MiOrdenPage({
         {order.invoiceUrl && (
           <div className="flex justify-between">
             <span className="text-gray-500">Factura</span>
-            <a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#ED2C71] hover:underline font-medium">
+            <a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#ED164F] hover:underline font-medium">
               <FileText size={14} /> {order.invoiceFileName || 'Ver factura'}
             </a>
           </div>
@@ -326,7 +326,7 @@ export default async function MiOrdenPage({
       {order.receipts && order.receipts.length > 0 && (
         <div className="card p-5 space-y-3">
           <h3 className="font-bold text-gray-900 flex items-center gap-2">
-            <FileText size={18} className="text-[#ED2C71]" />
+            <FileText size={18} className="text-[#ED164F]" />
             Recibos
           </h3>
           <div className="space-y-2">
@@ -351,7 +351,7 @@ export default async function MiOrdenPage({
                   href={receipt.pdfUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#ED2C71] bg-[#FEF1F6] border border-[#F66B9A]/25 px-3 py-1.5 rounded-lg hover:bg-[#FEF1F6] transition-colors shrink-0"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#ED164F] bg-[#FEF1F5] border border-[#F7638B]/25 px-3 py-1.5 rounded-lg hover:bg-[#FEF1F5] transition-colors shrink-0"
                 >
                   <Download size={14} />
                   Descargar

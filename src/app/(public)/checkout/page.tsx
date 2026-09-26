@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Fragment, useEffect, useRef, useState, Suspense } from 'react'
 import Link from 'next/link'
@@ -500,7 +500,7 @@ function CheckoutContent() {
             <div className="space-y-6">
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C91F5B]">
+                  <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
                     Confirmación ZAP
                   </span>
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
@@ -548,7 +548,7 @@ function CheckoutContent() {
 
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="mb-6 border-b border-gray-100 pb-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
                     Paso 1
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
@@ -660,7 +660,7 @@ function CheckoutContent() {
 
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="mb-6 border-b border-gray-100 pb-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
                     Paso 2
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
@@ -683,8 +683,8 @@ function CheckoutContent() {
                           optionDisabled
                             ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
                             : paymentType === option.value
-                              ? 'cursor-pointer border-orange-400 bg-[#FEF1F6] shadow-sm shadow-[#ED2C71]/10'
-                              : 'cursor-pointer border-gray-200 bg-white hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6]/40'
+                              ? 'cursor-pointer border-orange-400 bg-[#FEF1F5] shadow-sm shadow-[#ED164F]/10'
+                              : 'cursor-pointer border-gray-200 bg-white hover:border-[#F7638B]/25 hover:bg-[#FEF1F5]/40'
                         }`}
                       >
                         <input
@@ -698,7 +698,7 @@ function CheckoutContent() {
                         <div
                           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
                             paymentType === option.value && !optionDisabled
-                              ? 'bg-[#ED2C71] text-white'
+                              ? 'bg-[#ED164F] text-white'
                               : 'bg-gray-100 text-gray-500'
                           }`}
                         >
@@ -721,7 +721,7 @@ function CheckoutContent() {
                 <div className="mt-4 rounded-[28px] border border-gray-200 bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_58%,#f8fafc_100%)] p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
                         Cupon opcional
                       </p>
                       <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
@@ -736,7 +736,7 @@ function CheckoutContent() {
                   <div className="mt-4 flex flex-col gap-3 lg:flex-row">
                     <div className="flex-1">
                       <label className="label">Codigo del cupon</label>
-                      <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-[#FEF1F6]">
+                      <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-[#FEF1F5]">
                         <input
                           value={couponDraft}
                           onChange={(event) => setCouponDraft(event.target.value)}
@@ -746,7 +746,7 @@ function CheckoutContent() {
                         <button
                           type="button"
                           onClick={() => setScannerOpen(true)}
-                          className="flex h-12 w-12 shrink-0 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors hover:bg-[#FEF1F6] hover:text-[#ED2C71]"
+                          className="flex h-12 w-12 shrink-0 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors hover:bg-[#FEF1F5] hover:text-[#ED164F]"
                           aria-label="Escanear cupon con la camara"
                           title="Escanear cupon"
                         >
@@ -818,7 +818,7 @@ function CheckoutContent() {
                 </div>
 
                 {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
-                  <div className="mt-4 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6]/60 p-4">
+                  <div className="mt-4 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5]/60 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
@@ -835,12 +835,12 @@ function CheckoutContent() {
                       </Link>
                     </div>
 
-                    <details className="mt-3 rounded-2xl border border-[#F66B9A]/15 bg-white/80">
+                    <details className="mt-3 rounded-2xl border border-[#F7638B]/15 bg-white/80">
                       <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
-                        <CircleHelp size={16} className="text-[#ED2C71]" />
+                        <CircleHelp size={16} className="text-[#ED164F]" />
                         Resumen rapido de Crédito ZAP
                       </summary>
-                      <div className="border-t border-[#F66B9A]/15 px-4 py-3 text-sm text-gray-600">
+                      <div className="border-t border-[#F7638B]/15 px-4 py-3 text-sm text-gray-600">
                         Disponible para clientes con cuenta. Simulas el plan, confirmas el pedido y
                         despues seguís cuotas, comprobantes y estados desde tu panel.
                       </div>
@@ -901,7 +901,7 @@ function CheckoutContent() {
             <aside className="xl:sticky xl:top-24">
               <div className="rounded-[32px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
                 <div className="border-b border-white/10 pb-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F66B9A]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F7638B]">
                     Resumen final
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
@@ -918,7 +918,7 @@ function CheckoutContent() {
                       Medio elegido
                     </p>
                     <div className="mt-2 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-[#F66B9A]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-[#F7638B]">
                         <SelectedPaymentIcon size={18} />
                       </div>
                       <div>
@@ -935,7 +935,7 @@ function CheckoutContent() {
                     {couponPreview?.normalizedCode ? (
                       <>
                         <div className="mt-2 flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-[#F66B9A]">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-[#F7638B]">
                             <Tag size={18} />
                           </div>
                           <div className="min-w-0">
@@ -1004,7 +1004,7 @@ function CheckoutContent() {
                             </p>
                           )}
                         </div>
-                        <span className="shrink-0 text-sm font-semibold text-[#F66B9A]">
+                        <span className="shrink-0 text-sm font-semibold text-[#F7638B]">
                           ${(item.price * item.quantity).toLocaleString('es-AR')}
                         </span>
                       </div>
@@ -1031,7 +1031,7 @@ function CheckoutContent() {
                   {couponPreview?.normalizedCode && (
                     <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-sm text-gray-300">
                       <span>Cupon cargado</span>
-                      <span className="max-w-[180px] truncate text-right text-[#F66B9A]">
+                      <span className="max-w-[180px] truncate text-right text-[#F7638B]">
                         {couponPreview.normalizedCode}
                       </span>
                     </div>
@@ -1056,7 +1056,7 @@ function CheckoutContent() {
                     (paymentType === 'ZAP_CREDIT' &&
                       (zapCreditDisabled || !zapCreditSelection || isLoadingCreditEligibility))
                       ? 'cursor-not-allowed bg-white/10 text-gray-400'
-                      : 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
+                      : 'bg-[#ED164F] text-white shadow-lg shadow-[#ED164F]/30 hover:-translate-y-0.5 hover:bg-[#F7638B]'
                   }`}
                 >
                   {submitLabel}

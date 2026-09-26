@@ -111,7 +111,7 @@ export default function ProductImageGallery({
                 relative aspect-square overflow-hidden rounded-2xl border-2 transition-all
                 ${
                   i === activeIndex
-                    ? 'border-[#ED2C71] shadow-md shadow-[#ED2C71]/10/70 ring-4 ring-[#FEF1F6]'
+                    ? 'border-[#ED164F] shadow-md shadow-[#ED164F]/10/70 ring-4 ring-[#FEF1F5]'
                     : 'border-transparent opacity-70 hover:opacity-100'
                 }
               `}

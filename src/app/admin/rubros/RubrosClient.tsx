@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { Briefcase, Pencil, Plus, Trash2, X } from 'lucide-react'
@@ -140,7 +140,7 @@ export default function RubrosClient({
                       onClick={() => toggleCategory(cat.id)}
                       className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-all ${
                         isSelected
-                          ? 'border-[#ED2C71] bg-[#FEF1F6] text-[#C91F5B]'
+                          ? 'border-[#ED164F] bg-[#FEF1F5] text-[#C2103F]'
                           : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                       }`}
                     >
@@ -228,7 +228,7 @@ export default function RubrosClient({
                   bt.categories.map((cat) => (
                     <span
                       key={cat.id}
-                      className="rounded-full bg-[#FEF1F6] px-2.5 py-0.5 text-[11px] font-semibold text-[#C91F5B]"
+                      className="rounded-full bg-[#FEF1F5] px-2.5 py-0.5 text-[11px] font-semibold text-[#C2103F]"
                     >
                       {cat.name}
                     </span>

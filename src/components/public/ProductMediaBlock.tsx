@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import {
@@ -254,7 +254,7 @@ export default function ProductMediaBlock({
         @keyframes bounce-bar-3 { 0%, 100% { height: 8px; } 50% { height: 14px; } }
         @keyframes bounce-bar-4 { 0%, 100% { height: 4px; } 50% { height: 18px; } }
         .eq-container { display: flex; align-items: flex-end; gap: 2.5px; height: 24px; width: 22px; }
-        .eq-bar { width: 3.5px; border-radius: 1px; background: linear-gradient(to top, #ED2C71, #F15A24); }
+        .eq-bar { width: 3.5px; border-radius: 1px; background: linear-gradient(to top, #ED164F, #F15A24); }
         .eq-bar-active-1 { animation: bounce-bar-1 1s ease-in-out infinite; }
         .eq-bar-active-2 { animation: bounce-bar-2 0.8s ease-in-out infinite; }
         .eq-bar-active-3 { animation: bounce-bar-3 1.2s ease-in-out infinite; }
@@ -299,7 +299,7 @@ export default function ProductMediaBlock({
 
           <div className="mb-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ED2C71]">
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ED164F]">
                 En reproducción
               </span>
               <p className="truncate text-base font-bold text-white mt-0.5">
@@ -324,11 +324,11 @@ export default function ProductMediaBlock({
               className="relative h-1.5 w-full cursor-pointer rounded-full bg-slate-800 transition-all hover:h-2"
             >
               <div
-                className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-[#ED2C71] to-[#F15A24]"
+                className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-[#ED164F] to-[#F15A24]"
                 style={{ width: `${progressPercent}%` }}
               />
               <div
-                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-white bg-[#ED2C71] shadow-md transition-transform hover:scale-125"
+                className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-white bg-[#ED164F] shadow-md transition-transform hover:scale-125"
                 style={{ left: `${progressPercent}%` }}
               />
             </div>
@@ -355,7 +355,7 @@ export default function ProductMediaBlock({
               <button
                 type="button"
                 onClick={togglePlay}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-[#ED2C71] to-[#F15A24] text-white shadow-lg shadow-[#ED2C71]/20 transition-all hover:scale-105 hover:shadow-[#ED2C71]/40"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-[#ED164F] to-[#F15A24] text-white shadow-lg shadow-[#ED164F]/20 transition-all hover:scale-105 hover:shadow-[#ED164F]/40"
               >
                 {isPlaying ? <Pause size={20} fill="white" /> : <Play size={20} className="ml-1" fill="white" />}
               </button>
@@ -378,7 +378,7 @@ export default function ProductMediaBlock({
                   onClick={() => setShowLyrics(!showLyrics)}
                   className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all ${
                     showLyrics
-                      ? 'bg-[#ED2C71] text-white shadow-md shadow-[#ED2C71]/30'
+                      ? 'bg-[#ED164F] text-white shadow-md shadow-[#ED164F]/30'
                       : 'text-gray-400 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700'
                   }`}
                   title="Mostrar letra"
@@ -428,7 +428,7 @@ export default function ProductMediaBlock({
                       onClick={() => handleLyricClick(lyric.time)}
                       className={`cursor-pointer transition-all duration-300 leading-relaxed ${
                         isActive
-                          ? 'text-[#ED2C71] text-[16px] md:text-[17px] font-black scale-105 filter drop-shadow-[0_2px_10px_rgba(237,44,113,0.4)]'
+                          ? 'text-[#ED164F] text-[16px] md:text-[17px] font-black scale-105 filter drop-shadow-[0_2px_10px_rgba(237, 22, 79,0.4)]'
                           : 'text-slate-400 text-[14px] md:text-[15px] font-bold opacity-35 hover:opacity-90'
                       }`}
                     >
@@ -480,7 +480,7 @@ export default function ProductMediaBlock({
                   onClick={() => setActiveTrackIndex(index)}
                   className={`flex w-full items-center justify-between gap-3 rounded-2xl border p-3.5 text-left transition-all ${
                     isActive
-                      ? 'border-[#ED2C71] bg-[#FEF1F6]/30 shadow-sm'
+                      ? 'border-[#ED164F] bg-[#FEF1F5]/30 shadow-sm'
                       : 'border-gray-200 bg-white hover:bg-gray-50/70'
                   }`}
                 >
@@ -488,18 +488,18 @@ export default function ProductMediaBlock({
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all ${
                         isActive
-                          ? 'border-[#ED2C71]/30 bg-white shadow-sm'
+                          ? 'border-[#ED164F]/30 bg-white shadow-sm'
                           : 'border-gray-200 bg-white'
                       }`}
                     >
                       {track.type === 'AUDIO' && (
-                        <Music size={16} className={isActive ? 'text-[#ED2C71]' : 'text-gray-500'} />
+                        <Music size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
                       {track.type === 'VIDEO' && (
-                        <Video size={16} className={isActive ? 'text-[#ED2C71]' : 'text-gray-500'} />
+                        <Video size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
                       {track.type === 'YOUTUBE' && (
-                        <LinkIcon size={16} className={isActive ? 'text-[#ED2C71]' : 'text-gray-500'} />
+                        <LinkIcon size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
                     </div>
                     <div className="min-w-0">

@@ -124,6 +124,8 @@ export default function ProductConfigurator({
   const isDynamicCombo = product.isCombo && product.comboPricingMode === 'DYNAMIC'
   const comboDiscountPercent = Math.max(0, Math.min(100, Number(product.comboDiscountPercent || 0)))
   const isServiceProduct = product.category.isService
+  const isContactOnly = product.conversionType === 'contact'
+  const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
   const quoterConfig = product.quoterConfig
@@ -657,7 +659,7 @@ export default function ProductConfigurator({
               onChange={(event) =>
                 setQuoteSelection((previous) => ({ ...previous, rawMaterialId: event.target.value }))
               }
-              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED164F]"
             >
               {quoterMaterials.map((material) => (
                 <option key={material.id} value={material.id}>
@@ -684,7 +686,7 @@ export default function ProductConfigurator({
                     sizeLabel: value === '__custom' ? '' : value,
                   }))
                 }}
-                className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+                className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED164F]"
               >
                 {quoterConfig.sizePresets.map((size: any) => (
                   <option key={size.id || size.label} value={size.label}>
@@ -709,7 +711,7 @@ export default function ProductConfigurator({
                   onChange={(event) =>
                     setQuoteSelection((previous) => ({ ...previous, width: event.target.value }))
                   }
-                  className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+                  className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED164F]"
                   placeholder="Ej: 120"
                 />
               </label>
@@ -724,7 +726,7 @@ export default function ProductConfigurator({
                   onChange={(event) =>
                     setQuoteSelection((previous) => ({ ...previous, height: event.target.value }))
                   }
-                  className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+                  className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED164F]"
                   placeholder="Ej: 80"
                 />
               </label>
@@ -738,7 +740,7 @@ export default function ProductConfigurator({
               onChange={(event) =>
                 setQuoteSelection((previous) => ({ ...previous, quantity: event.target.value }))
               }
-              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED2C71]"
+              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#ED164F]"
             >
               {quoterConfig.quantityPresets.map((preset: any) => (
                 <option key={preset.id || preset.quantity} value={preset.quantity}>
@@ -769,7 +771,7 @@ export default function ProductConfigurator({
                             : [...selectedFinishingIds, finishing.id]
                           setQuoteSelection((previous) => ({ ...previous, finishingIds: next.join(',') }))
                         }}
-                        className="rounded text-[#ED2C71]"
+                        className="rounded text-[#ED164F]"
                       />
                       {finishing.name}
                     </label>
@@ -792,15 +794,27 @@ export default function ProductConfigurator({
             <p className="mt-3 text-sm text-gray-300">Elegí una configuración válida.</p>
           )}
 
-          <button
-            type="button"
-            onClick={handleAddQuotedToCart}
-            disabled={!quoteResult}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED2C71] px-5 py-3 text-sm font-black text-white transition hover:bg-[#C91F5B] disabled:cursor-not-allowed disabled:bg-gray-700"
-          >
-            {added ? <Check size={18} /> : <ShoppingCart size={18} />}
-            {added ? 'Agregado' : 'Agregar al carrito'}
-          </button>
+          {isContactOnly ? (
+            <Link
+              href={contactHref}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white transition hover:bg-[#C2103F]"
+            >
+              <MessageCircleMore size={18} />
+              Hablar con ZAP
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAddQuotedToCart}
+              disabled={!quoteResult}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white transition hover:bg-[#C2103F] disabled:cursor-not-allowed disabled:bg-gray-700"
+            >
+              {added ? <Check size={18} /> : <ShoppingCart size={18} />}
+              {added ? 'Agregado' : 'Agregar al carrito'}
+            </button>
+          )}
         </div>
       </section>
     )
@@ -842,7 +856,7 @@ export default function ProductConfigurator({
                 </>
               ) : (
                 <>
-                  <p className="mt-3 text-3xl font-black text-[#F66B9A]">No disponible</p>
+                  <p className="mt-3 text-3xl font-black text-[#F7638B]">No disponible</p>
                   <p className="mt-2 text-sm text-gray-300">Sin pedido online por ahora.</p>
                 </>
               )}
@@ -865,41 +879,55 @@ export default function ProductConfigurator({
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!canAddConfiguredProduct || added}
-                className={`
-                  flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
-                  ${
-                    added
-                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                      : canAddConfiguredProduct
-                        ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
-                        : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
-                  }
-                `}
-              >
-                {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-                {added ? 'Agregado al carrito' : addToCartLabel}
-              </button>
-              {designUploadError && (
-                <p className="text-sm font-semibold text-red-300 sm:col-span-2">{designUploadError}</p>
-              )}
-
-              {inquiryUrl && (
+            {isContactOnly ? (
+              <div className="flex w-full">
                 <Link
-                  href={inquiryUrl}
+                  href={contactHref}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
+                  className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-8 py-4 font-bold text-white shadow-lg shadow-[#ED164F]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F7638B]"
                 >
                   <MessageCircleMore size={20} />
-                  Consultar
+                  Hablar con ZAP
                 </Link>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={!canAddConfiguredProduct || added}
+                  className={`
+                    flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
+                    ${
+                      added
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                        : canAddConfiguredProduct
+                          ? 'bg-[#ED164F] text-white shadow-lg shadow-[#ED164F]/30 hover:-translate-y-0.5 hover:bg-[#F7638B]'
+                          : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
+                    }
+                  `}
+                >
+                  {added ? <Check size={20} /> : <ShoppingCart size={20} />}
+                  {added ? 'Agregado al carrito' : addToCartLabel}
+                </button>
+                {designUploadError && (
+                  <p className="text-sm font-semibold text-red-300 sm:col-span-2">{designUploadError}</p>
+                )}
+
+                {inquiryUrl && (
+                  <Link
+                    href={inquiryUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
+                  >
+                    <MessageCircleMore size={20} />
+                    Consultar
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
         {comboParts.length > 0 && (
@@ -957,7 +985,7 @@ export default function ProductConfigurator({
                 </p>
               </div>
               {option.isRequired && (
-                <span className="rounded-full bg-[#FEF1F6] px-3 py-1 text-xs font-semibold text-[#C91F5B]">
+                <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-xs font-semibold text-[#C2103F]">
                   Requerido
                 </span>
               )}
@@ -989,9 +1017,9 @@ export default function ProductConfigurator({
                       ${isColorSwatch ? 'rounded-2xl p-2.5 text-center' : isSize ? 'rounded-xl px-3 py-3 text-center' : 'rounded-2xl p-3.5 text-left'}
                       ${
                         isSelected
-                          ? 'border-[#ED2C71] bg-[#FEF1F6] shadow-md shadow-[#ED2C71]/10 ring-2 ring-[#FEF1F6]'
+                          ? 'border-[#ED164F] bg-[#FEF1F5] shadow-md shadow-[#ED164F]/10 ring-2 ring-[#FEF1F5]'
                           : isAvailable
-                            ? 'border-gray-200 bg-white hover:border-[#F66B9A]/25 hover:bg-[#FEF1F6]/40'
+                            ? 'border-gray-200 bg-white hover:border-[#F7638B]/25 hover:bg-[#FEF1F5]/40'
                             : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300 opacity-55'
                       }
                     `}
@@ -1006,7 +1034,7 @@ export default function ProductConfigurator({
                     <span
                       className={`block font-semibold ${isSize ? 'text-base' : 'text-sm'} ${
                         isSelected
-                          ? 'text-[#C91F5B]'
+                          ? 'text-[#C2103F]'
                           : isAvailable
                             ? 'text-gray-700'
                             : 'text-gray-400'
@@ -1015,7 +1043,7 @@ export default function ProductConfigurator({
                       {value.value}
                     </span>
                     {isSelected && (
-                      <div className="absolute right-2.5 top-2.5 text-[#ED2C71]">
+                      <div className="absolute right-2.5 top-2.5 text-[#ED164F]">
                         <Check size={14} strokeWidth={3} />
                       </div>
                     )}
@@ -1047,7 +1075,7 @@ export default function ProductConfigurator({
                   <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                 </>
               ) : (
-                <span className="text-3xl font-black text-[#F66B9A]">Consultar</span>
+                <span className="text-3xl font-black text-[#F7638B]">Consultar</span>
               )}
             </div>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">{guidanceMessage}</p>
@@ -1071,41 +1099,55 @@ export default function ProductConfigurator({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!canAddConfiguredProduct || added}
-              className={`
-                flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
-                ${
-                  added
-                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
-                    : canAddConfiguredProduct
-                      ? 'bg-[#ED2C71] text-white shadow-lg shadow-[#ED2C71]/30 hover:-translate-y-0.5 hover:bg-[#F66B9A]'
-                      : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
-                }
-              `}
-            >
-              {added ? <Check size={20} /> : <ShoppingCart size={20} />}
-              {added ? 'Agregado al carrito' : addToCartLabel}
-            </button>
-            {designUploadError && (
-              <p className="text-sm font-semibold text-red-300 sm:col-span-2">{designUploadError}</p>
-            )}
-
-            {inquiryUrl && (
+          {isContactOnly ? (
+            <div className="flex w-full">
               <Link
-                href={inquiryUrl}
+                href={contactHref}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
+                className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-8 py-4 font-bold text-white shadow-lg shadow-[#ED164F]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F7638B]"
               >
                 <MessageCircleMore size={20} />
-                Consultar
+                Hablar con ZAP
               </Link>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!canAddConfiguredProduct || added}
+                className={`
+                  flex w-full items-center justify-center gap-2 rounded-[24px] px-8 py-4 font-bold transition-all
+                  ${
+                    added
+                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 ring-4 ring-green-100'
+                      : canAddConfiguredProduct
+                        ? 'bg-[#ED164F] text-white shadow-lg shadow-[#ED164F]/30 hover:-translate-y-0.5 hover:bg-[#F7638B]'
+                        : 'cursor-not-allowed border border-gray-700 bg-gray-800 text-gray-500'
+                  }
+                `}
+              >
+                {added ? <Check size={20} /> : <ShoppingCart size={20} />}
+                {added ? 'Agregado al carrito' : addToCartLabel}
+              </button>
+              {designUploadError && (
+                <p className="text-sm font-semibold text-red-300 sm:col-span-2">{designUploadError}</p>
+              )}
+
+              {inquiryUrl && (
+                <Link
+                  href={inquiryUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
+                >
+                  <MessageCircleMore size={20} />
+                  Consultar
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {comboParts.length > 0 && (
@@ -1173,7 +1215,7 @@ function ComboPartsConfigurator({
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
               Descuento combo
             </p>
-            <p className="mt-2 text-lg font-black text-[#ED2C71]">{discountPercent}%</p>
+            <p className="mt-2 text-lg font-black text-[#ED164F]">{discountPercent}%</p>
           </div>
           <div className="rounded-2xl border border-white bg-white p-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">

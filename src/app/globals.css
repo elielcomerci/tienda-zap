@@ -1,21 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-zap-magenta: var(--zap-magenta);
+  --color-zap-magenta-light: var(--zap-magenta-light);
+  --color-zap-magenta-dark: var(--zap-magenta-dark);
+  --color-zap-magenta-subtle: var(--zap-magenta-subtle);
+}
+
 :root {
-  /* ─── ZAP Brand ─── */
-  --zap-magenta: #ED2C71;
-  --zap-magenta-light: #F66B9A;
-  --zap-magenta-dark: #C91F5B;
-  --zap-magenta-subtle: #FEF1F6;
+  /* ─── ZAP Brand (fuente de verdad: zap-nextjs #ED164F) ─── */
+  --zap-magenta: #ED164F;
+  --zap-magenta-light: #F7638B;
+  --zap-magenta-dark: #C2103F;
+  --zap-magenta-subtle: #FEF1F5;
   --zap-blue: #4576B9;
   --zap-blue-light: #6B94D1;
   --zap-blue-dark: #345A94;
   --zap-blue-subtle: #F0F5FA;
   --zap-purple: #9951A1;
   --zap-orange: #FF6B35;
-  --zap-gradient: linear-gradient(90deg, #ED2C71 0%, #4576B9 100%);
-  --zap-gradient-diagonal: linear-gradient(135deg, #ED2C71 0%, #4576B9 100%);
+  --zap-gradient: linear-gradient(90deg, #ED164F 0%, #4576B9 100%);
+  --zap-gradient-diagonal: linear-gradient(135deg, #ED164F 0%, #4576B9 100%);
   --zap-gradient-footer: linear-gradient(135deg, #8338ec, #fb5607);
+
+  /* ─── Shared Layout & Component Tokens (aligned with zap-nextjs) ─── */
+  --container-max-width: 1280px;
+  --padding-lateral-mobile: 1.5rem;
+  --padding-lateral-desktop: 3rem;
+  --radius-card: 1.5rem;
+  --radius-button: 9999px;
+  --button-min-height: 3rem;
+  --spacing-h1-body: 1.5rem;
+  --spacing-card-gap: 1.5rem;
 
   /* ─── Mapped tokens ─── */
   --brand: var(--zap-magenta);
@@ -31,7 +49,7 @@
     box-sizing: border-box;
   }
   body {
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--foreground);
     background: var(--background);
     -webkit-font-smoothing: antialiased;
@@ -46,11 +64,11 @@
   .btn-primary {
     @apply inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
     background: var(--zap-gradient);
-    box-shadow: 0 4px 14px -3px rgba(237, 44, 113, 0.3);
+    box-shadow: 0 4px 14px -3px rgba(237, 22, 79, 0.3);
   }
   .btn-primary:hover {
     background: var(--zap-magenta-dark);
-    box-shadow: 0 8px 20px -4px rgba(237, 44, 113, 0.35);
+    box-shadow: 0 8px 20px -4px rgba(237, 22, 79, 0.35);
   }
   .btn-secondary {
     @apply inline-flex items-center gap-2 rounded-xl border bg-white px-5 py-2.5 text-sm font-semibold shadow-sm transition-all hover:bg-gray-50;
@@ -64,7 +82,7 @@
     @apply inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-red-600;
   }
   .card {
-    @apply rounded-2xl border border-gray-100 bg-white shadow-sm;
+    @apply rounded-3xl border border-gray-100 bg-white shadow-sm;
   }
   .input {
     @apply w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-gray-400;

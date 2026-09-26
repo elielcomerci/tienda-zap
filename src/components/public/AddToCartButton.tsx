@@ -34,7 +34,7 @@ export default function AddToCartButton({
     return (
       <Link
         href={`/productos/${slug}`}
-        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6] px-4 py-3 text-sm font-semibold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F6]"
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
       >
         Configurar <ArrowRight size={15} />
       </Link>
@@ -47,7 +47,7 @@ export default function AddToCartButton({
         href={consultUrl}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F66B9A]/25 bg-[#FEF1F6] px-4 py-3 text-sm font-semibold text-[#C91F5B] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F6]"
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
       >
         <MessageCircleMore size={16} />
         {consultLabel}
@@ -65,7 +65,7 @@ export default function AddToCartButton({
           ? 'bg-green-500 shadow-lg shadow-green-200'
           : disabled
             ? 'cursor-not-allowed bg-gray-300 shadow-sm shadow-gray-200'
-            : 'bg-gray-950 shadow-lg shadow-gray-200 hover:-translate-y-0.5 hover:bg-[#ED2C71] hover:shadow-[#ED2C71]/20'
+            : 'bg-gray-950 shadow-lg shadow-gray-200 hover:-translate-y-0.5 hover:bg-[#ED164F] hover:shadow-[#ED164F]/20'
       }`}
     >
       {added ? <Check size={16} /> : <ShoppingCart size={16} />}

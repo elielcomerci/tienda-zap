@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { LayoutGrid, PackageOpen } from 'lucide-react'
 import { Intention } from '@/lib/intentions'
 
@@ -31,7 +31,7 @@ export default function CatalogSidebar({
             scroll={false}
             className={`flex-1 flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
               currentMode === 'product'
-                ? 'bg-[#ED2C71] text-white shadow-sm'
+                ? 'bg-[#ED164F] text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
@@ -42,7 +42,7 @@ export default function CatalogSidebar({
             scroll={false}
             className={`flex-1 flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
               currentMode === 'combo'
-                ? 'bg-[#ED2C71] text-white shadow-sm'
+                ? 'bg-[#ED164F] text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
@@ -53,7 +53,7 @@ export default function CatalogSidebar({
             scroll={false}
             className={`flex-1 flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
               currentMode === 'objective'
-                ? 'bg-[#ED2C71] text-white shadow-sm'
+                ? 'bg-[#ED164F] text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
             }`}
           >
@@ -74,11 +74,11 @@ export default function CatalogSidebar({
               scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !cat
-                  ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                  ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
                   : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <LayoutGrid size={18} className={!cat ? 'text-[#ED2C71]' : 'text-gray-400'} />
+              <LayoutGrid size={18} className={!cat ? 'text-[#ED164F]' : 'text-gray-400'} />
               <span className="leading-tight">Todos los productos</span>
             </Link>
             {categories.map((category) => (
@@ -88,11 +88,11 @@ export default function CatalogSidebar({
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   cat === category.slug
-                    ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                    ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
                     : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                <PackageOpen size={18} className={cat === category.slug ? 'text-[#ED2C71]' : 'text-gray-400'} />
+                <PackageOpen size={18} className={cat === category.slug ? 'text-[#ED164F]' : 'text-gray-400'} />
                 <span className="leading-tight">{category.name}</span>
               </Link>
             ))}
@@ -113,11 +113,11 @@ export default function CatalogSidebar({
               scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !intent
-                  ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                  ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
                   : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <LayoutGrid size={18} className={!intent ? 'text-[#ED2C71]' : 'text-gray-400'} />
+              <LayoutGrid size={18} className={!intent ? 'text-[#ED164F]' : 'text-gray-400'} />
               <span className="leading-tight">Todos los objetivos</span>
             </Link>
             {intentions.map((intention) => (
@@ -127,7 +127,7 @@ export default function CatalogSidebar({
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   intent === intention.slug
-                    ? 'bg-[#FEF1F6] text-[#ED2C71] font-bold'
+                    ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
                     : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >

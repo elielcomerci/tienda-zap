@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import Image from 'next/image'
 import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { getAllProductsAdmin } from '@/lib/products'
@@ -249,7 +249,7 @@ export default async function AdminProductsPage({
                         </span>
                       )}
                       {product.isCombo && (
-                        <span className="badge ml-2 bg-[#FEF1F6] border border-[#F66B9A]/30 text-[#C91F5B]">
+                        <span className="badge ml-2 bg-[#FEF1F5] border border-[#F7638B]/30 text-[#C2103F]">
                           Combo ZAP
                         </span>
                       )}

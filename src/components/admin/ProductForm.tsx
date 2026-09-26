@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
@@ -1233,7 +1233,7 @@ export default function ProductForm({
                       value="FIXED"
                       checked={comboPricingMode === 'FIXED'}
                       onChange={() => setComboPricingMode('FIXED')}
-                      className="mt-1 h-4 w-4 text-[#ED2C71] focus:ring-[#ED2C71]"
+                      className="mt-1 h-4 w-4 text-[#ED164F] focus:ring-[#ED164F]"
                     />
                     <span>
                       <span className="block text-sm font-bold text-gray-900">Precio cerrado</span>
@@ -1250,7 +1250,7 @@ export default function ProductForm({
                       value="DYNAMIC"
                       checked={comboPricingMode === 'DYNAMIC'}
                       onChange={() => setComboPricingMode('DYNAMIC')}
-                      className="mt-1 h-4 w-4 text-[#ED2C71] focus:ring-[#ED2C71]"
+                      className="mt-1 h-4 w-4 text-[#ED164F] focus:ring-[#ED164F]"
                     />
                     <span>
                       <span className="block text-sm font-bold text-gray-900">
@@ -1364,7 +1364,7 @@ export default function ProductForm({
                     name="isCombo"
                     checked={isCombo}
                     onChange={e => setIsCombo(e.target.checked)}
-                    className="h-5 w-5 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                    className="h-5 w-5 rounded border-gray-300 text-[#ED164F] focus:ring-[#ED164F]"
                   />
                   <div>
                     <span className="block text-sm font-semibold text-gray-900">
@@ -1412,7 +1412,7 @@ export default function ProductForm({
                       name="targetBusinessTypeIds"
                       value={bt.id}
                       defaultChecked={initialTargetBusinessTypeIds?.includes(bt.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#ED164F] focus:ring-[#ED164F]"
                     />
                     <span className="text-sm font-semibold text-gray-700">{bt.name}</span>
                   </label>
@@ -1441,7 +1441,7 @@ export default function ProductForm({
                       name="intentionIds"
                       value={intention.id}
                       defaultChecked={initialIntentionIds?.includes(intention.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#ED164F] focus:ring-[#ED164F]"
                     />
                     <span className="text-sm font-semibold text-gray-700">{intention.name}</span>
                   </label>
@@ -1530,7 +1530,7 @@ export default function ProductForm({
                         enabled: event.target.checked,
                       }))
                     }
-                    className="h-5 w-5 rounded border-white/30 bg-white/10 text-[#ED2C71] focus:ring-[#ED2C71]"
+                    className="h-5 w-5 rounded border-white/30 bg-white/10 text-[#ED164F] focus:ring-[#ED164F]"
                   />
                 </label>
               </div>
@@ -1563,13 +1563,13 @@ export default function ProductForm({
                   }
                   className={`rounded-2xl border p-4 text-left transition ${
                     apparelMockup.allowCustomDesign !== false
-                      ? 'border-[#ED2C71]/30 bg-[#FEF1F6] shadow-sm'
+                      ? 'border-[#ED164F]/30 bg-[#FEF1F5] shadow-sm'
                       : 'border-gray-200 bg-gray-50 hover:bg-white'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#ED2C71] shadow-sm">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#ED164F] shadow-sm">
                         <UploadCloud size={19} />
                       </span>
                       <span>
@@ -1579,7 +1579,7 @@ export default function ProductForm({
                         </span>
                       </span>
                     </div>
-                    {apparelMockup.allowCustomDesign !== false && <CheckCircle2 size={20} className="text-[#ED2C71]" />}
+                    {apparelMockup.allowCustomDesign !== false && <CheckCircle2 size={20} className="text-[#ED164F]" />}
                   </div>
                 </button>
 
@@ -1987,7 +1987,7 @@ export default function ProductForm({
 
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-100">
                               {track.type === 'AUDIO' && <Music size={16} className="text-orange-500" />}
-                              {track.type === 'VIDEO' && <Video size={16} className="text-[#ED2C71]" />}
+                              {track.type === 'VIDEO' && <Video size={16} className="text-[#ED164F]" />}
                               {track.type === 'YOUTUBE' && <LinkIcon size={16} className="text-red-500" />}
                             </div>
 

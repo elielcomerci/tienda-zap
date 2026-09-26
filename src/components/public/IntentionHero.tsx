@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Intention } from '@/lib/intentions'
 import { Play } from 'lucide-react'
@@ -13,7 +13,7 @@ export default function IntentionHero({ intention }: { intention: Intention }) {
 
       <div className="relative z-10 grid gap-6 md:grid-cols-[1fr_auto] items-center">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF1F6] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#C91F5B] mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF1F5] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F] mb-3">
             {intention.icon} Solución Recomendada
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-tight">
@@ -28,8 +28,8 @@ export default function IntentionHero({ intention }: { intention: Intention }) {
           <div className="md:w-[320px] shrink-0">
             {intention.mediaType === 'AUDIO' && (
               <div className="bg-gray-900 rounded-2xl p-4 shadow-xl text-white">
-                <p className="text-xs font-bold uppercase tracking-widest text-[#ED2C71] mb-2 flex items-center gap-2">
-                  <Play size={12} className="fill-[#ED2C71]" /> Demo Inmediata
+                <p className="text-xs font-bold uppercase tracking-widest text-[#ED164F] mb-2 flex items-center gap-2">
+                  <Play size={12} className="fill-[#ED164F]" /> Demo Inmediata
                 </p>
                 <p className="text-sm font-medium mb-3">{intention.mediaTitle}</p>
                 <audio controls className="w-full h-10 custom-audio" src={intention.mediaUrl} preload="none">

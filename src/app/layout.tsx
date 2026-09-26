@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { getSiteSettings } from '@/lib/site-settings'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -38,8 +40,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const googleTagId = settings.googleAnalyticsId || settings.googleAdsId
 
   return (
-    <html lang="es">
-      <body>
+    <html lang="es" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="font-sans antialiased">
         {settings.googleTagManagerId && (
           <noscript>
             <iframe

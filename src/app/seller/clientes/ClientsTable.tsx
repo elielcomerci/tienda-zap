@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { Search, Phone, Mail, Check, Plus, X, UserPlus, ClipboardList, Edit3, History } from 'lucide-react'
@@ -316,7 +316,7 @@ function LeadTableRow({ lead, businessTypes }: { lead: LeadRow; businessTypes: B
             <button
               type="button"
               onClick={() => setEditOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-[#ED2C71]"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-[#ED164F]"
               title="Editar prospecto"
             >
               <Edit3 size={15} />

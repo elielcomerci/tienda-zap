@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -1449,8 +1449,8 @@ export default function ProductOptionsConfigurator({
                                 : 'rounded-2xl p-3 text-left'
                           } ${
                             isSelected
-                              ? 'border-[#ED2C71] bg-[#FEF1F6] text-[#C91F5B] shadow-sm'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-[#F66B9A]/30'
+                              ? 'border-[#ED164F] bg-[#FEF1F5] text-[#C2103F] shadow-sm'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-[#F7638B]/30'
                           }`}
                         >
                           {isColorSwatch && (

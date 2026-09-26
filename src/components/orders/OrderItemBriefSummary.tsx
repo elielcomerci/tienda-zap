@@ -1,4 +1,4 @@
-import { ExternalLink, FileText } from 'lucide-react'
+﻿import { ExternalLink, FileText } from 'lucide-react'
 
 type BriefType = 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
 
@@ -64,8 +64,8 @@ export default function OrderItemBriefSummary({
   if (responseEntries.length === 0 && links.length === 0 && files.length === 0) return null
 
   return (
-    <div className="mt-3 rounded-xl border border-[#F66B9A]/20 bg-[#FEF1F6]/45 p-3 text-sm">
-      <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#C91F5B]">
+    <div className="mt-3 rounded-xl border border-[#F7638B]/20 bg-[#FEF1F5]/45 p-3 text-sm">
+      <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#C2103F]">
         {briefLabels[normalizedBriefType] || 'Brief'}
       </p>
 

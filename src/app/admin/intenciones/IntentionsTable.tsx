@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -73,7 +73,7 @@ export default function IntentionsTable({ intentions }: { intentions: any[] }) {
                 <div className="flex items-center justify-end gap-2">
                   <Link
                     href={`/admin/intenciones/${intention.id}`}
-                    className="p-2 text-gray-400 hover:text-[#ED2C71] transition-colors"
+                    className="p-2 text-gray-400 hover:text-[#ED164F] transition-colors"
                   >
                     <Edit size={16} />
                   </Link>

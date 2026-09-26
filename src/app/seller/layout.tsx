@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, Users, ShoppingCart, Zap } from 'lucide-react'
@@ -19,7 +19,7 @@ export default async function SellerLayout({ children }: { children: React.React
     <div className="flex min-h-screen bg-gray-50">
       <aside className="hidden w-64 flex-col bg-gray-900 text-white md:flex">
         <div className="flex items-center gap-2.5 border-b border-gray-800 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ED2C71]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ED164F]">
             <Zap size={18} className="text-white" />
           </div>
           <div>
@@ -58,7 +58,7 @@ export default async function SellerLayout({ children }: { children: React.React
         <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <div className="mb-3 flex items-center justify-between">
             <Link href="/seller/dashboard" className="flex items-center gap-2 font-bold text-gray-900">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ED2C71] text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ED164F] text-white">
                 <Zap size={18} />
               </span>
               ZAP Asesores

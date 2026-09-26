@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { FileUp, Loader2 } from 'lucide-react'
@@ -81,13 +81,13 @@ export default function BriefReferenceUploader({
   }
 
   return (
-    <section className="rounded-[32px] border border-[#F66B9A]/25 bg-white p-6 shadow-[0_18px_50px_-42px_rgba(237,44,113,0.28)] sm:p-8">
+    <section className="rounded-[32px] border border-[#F7638B]/25 bg-white p-6 shadow-[0_18px_50px_-42px_rgba(237, 22, 79,0.28)] sm:p-8">
       <div className="flex items-start gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F6] text-[#ED2C71]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F5] text-[#ED164F]">
           <FileUp size={22} />
         </div>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED2C71]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
             Referencias del brief
           </p>
           <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">

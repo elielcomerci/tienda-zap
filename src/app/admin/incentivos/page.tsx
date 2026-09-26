@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+﻿import { prisma } from '@/lib/prisma'
 import { Target, Gift, Plus } from 'lucide-react'
 import { createIncentive, toggleIncentiveActive, deleteIncentive } from '@/lib/actions/incentives'
 
@@ -46,7 +46,7 @@ export default async function AdminIncentivesPage() {
                         <p className="text-sm text-gray-500">{inc.description}</p>
                         <div className="flex items-center gap-4 text-xs font-medium text-gray-400 mt-2">
                           <span className="flex items-center gap-1"><Target size={14}/> Meta: {inc.goalType === 'SALES_COUNT' ? `${inc.goalTarget} ventas` : `$${inc.goalTarget.toLocaleString('es-AR')}`}</span>
-                          <span className="flex items-center gap-1 text-[#ED2C71]"><Gift size={14}/> Premio: ${inc.rewardAmount.toLocaleString('es-AR')}</span>
+                          <span className="flex items-center gap-1 text-[#ED164F]"><Gift size={14}/> Premio: ${inc.rewardAmount.toLocaleString('es-AR')}</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2 text-sm">
@@ -93,17 +93,17 @@ export default async function AdminIncentivesPage() {
             })
           }} className="bg-white border rounded-2xl shadow-sm p-6 space-y-4 sticky top-6">
             <h2 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Plus size={18} className="text-[#ED2C71]" /> Nuevo Desafío
+              <Plus size={18} className="text-[#ED164F]" /> Nuevo Desafío
             </h2>
             
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase">Título</label>
-              <input name="title" required className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#ED2C71] outline-none" placeholder="Bono Fin de Semana" />
+              <input name="title" required className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#ED164F] outline-none" placeholder="Bono Fin de Semana" />
             </div>
 
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase">Descripción</label>
-              <textarea name="description" className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#ED2C71] outline-none" placeholder="Cerrá 5 ventas..." rows={2}></textarea>
+              <textarea name="description" className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#ED164F] outline-none" placeholder="Cerrá 5 ventas..." rows={2}></textarea>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { registerUser } from '@/lib/actions/auth'
 import { getPublicBusinessTypes } from '@/lib/business-types'
@@ -25,8 +25,8 @@ export default async function RegistroPage({
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div className="p-8 pb-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#C91F5B]/30 text-white text-center">
-          <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#ED2C71] shadow-lg shadow-[#ED2C71]/20 mb-4 transition-transform hover:scale-105">
+        <div className="p-8 pb-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#C2103F]/30 text-white text-center">
+          <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#ED164F] shadow-lg shadow-[#ED164F]/20 mb-4 transition-transform hover:scale-105">
             <Zap size={32} />
           </Link>
           <h1 className="text-2xl font-bold">Crear cuenta</h1>
@@ -105,7 +105,7 @@ export default async function RegistroPage({
 
           <p className="text-center text-sm text-gray-500">
             ¿Ya tenés cuenta?{' '}
-            <Link href="/login" className="text-[#ED2C71] font-semibold hover:underline">
+            <Link href="/login" className="text-[#ED164F] font-semibold hover:underline">
               Ingresá
             </Link>
           </p>

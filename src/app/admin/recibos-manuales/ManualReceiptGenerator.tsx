@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -337,7 +337,7 @@ export default function ManualReceiptGenerator() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED2C71] px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#F66B9A] disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#F7638B] disabled:opacity-50"
           >
             {loading ? 'Procesando...' : 'Generar Recibo y Orden'}
           </button>

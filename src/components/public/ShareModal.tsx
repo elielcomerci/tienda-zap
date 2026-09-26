@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { Share2, Copy, Check, MessageCircle, X } from 'lucide-react'
@@ -31,7 +31,7 @@ export default function ShareModal() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:text-[#ED2C71]"
+        className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:text-[#ED164F]"
       >
         <Share2 size={16} /> Compartir Catálogo
       </button>

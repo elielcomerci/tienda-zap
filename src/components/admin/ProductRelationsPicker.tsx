@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
@@ -61,7 +61,7 @@ export default function ProductRelationsPicker({
     <div className="card p-6">
       <div className="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
         {isCombo ? (
-          <Boxes size={18} className="text-[#ED2C71]" />
+          <Boxes size={18} className="text-[#ED164F]" />
         ) : (
           <Link2 size={18} className="text-orange-500" />
         )}
@@ -109,7 +109,7 @@ export default function ProductRelationsPicker({
                 onClick={() => toggleSelection(product.id)}
                 className={
                   isCombo
-                    ? 'rounded-full border border-[#F66B9A]/30 bg-[#FEF1F6] px-3 py-1.5 text-xs font-semibold text-[#C91F5B]'
+                    ? 'rounded-full border border-[#F7638B]/30 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]'
                     : 'rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700'
                 }
               >
@@ -135,10 +135,10 @@ export default function ProductRelationsPicker({
                 className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${
                   selected
                     ? isCombo
-                      ? 'border-[#F66B9A] bg-[#FEF1F6]'
+                      ? 'border-[#F7638B] bg-[#FEF1F5]'
                       : 'border-orange-300 bg-orange-50'
                     : isCombo
-                      ? 'border-gray-200 bg-white hover:border-[#F66B9A]/50'
+                      ? 'border-gray-200 bg-white hover:border-[#F7638B]/50'
                       : 'border-gray-200 bg-white hover:border-orange-200'
                 }`}
               >
@@ -148,7 +148,7 @@ export default function ProductRelationsPicker({
                   onChange={() => toggleSelection(product.id)}
                   className={
                     isCombo
-                      ? 'h-4 w-4 rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]'
+                      ? 'h-4 w-4 rounded border-gray-300 text-[#ED164F] focus:ring-[#ED164F]'
                       : 'h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500'
                   }
                 />

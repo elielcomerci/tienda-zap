@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 import { ArrowLeft, CalendarDays, DollarSign, Package, UserRound } from 'lucide-react'
@@ -88,7 +88,7 @@ export default async function SellerOrderDetailPage({
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-2">
           <div className="mb-4 flex items-center gap-2">
-            <Package size={18} className="text-[#ED2C71]" />
+            <Package size={18} className="text-[#ED164F]" />
             <h2 className="font-bold text-gray-900">Productos</h2>
           </div>
           <div className="divide-y divide-gray-100">

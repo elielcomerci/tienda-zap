@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { CheckCircle2, Circle, Clock, Loader2, Package, Palette, Send, Truck, XCircle } from 'lucide-react'
 
@@ -20,7 +20,7 @@ const STATUS_CONFIG: Record<string, {
   PROOF_SENT: { label: 'Prueba de diseño enviada', icon: Send, color: 'text-blue-500', bgColor: 'bg-blue-50' },
   IN_PRODUCTION: { label: 'En producción', icon: Palette, color: 'text-purple-500', bgColor: 'bg-purple-50' },
   PROCESSING: { label: 'En proceso', icon: Loader2, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-  READY: { label: 'Listo para retiro', icon: Package, color: 'text-[#ED2C71]', bgColor: 'bg-[#FEF1F6]' },
+  READY: { label: 'Listo para retiro', icon: Package, color: 'text-[#ED164F]', bgColor: 'bg-[#FEF1F5]' },
   DELIVERED: { label: 'Entregado', icon: Truck, color: 'text-green-600', bgColor: 'bg-green-50' },
   CANCELLED: { label: 'Cancelado', icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-50' },
 }

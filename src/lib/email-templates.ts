@@ -1,4 +1,4 @@
-// ──────────────────────────────────────────────────────────────────
+﻿// ──────────────────────────────────────────────────────────────────
 // ZAP Tienda — Email Templates (HTML inline, no framework needed)
 // ──────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ function wrapTemplate(title: string, body: string) {
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
 
 <!-- Header -->
-<tr><td style="background:linear-gradient(135deg,#ED2C71,#4576B9);padding:28px 32px;text-align:center;">
+<tr><td style="background:linear-gradient(135deg,#ED164F,#4576B9);padding:28px 32px;text-align:center;">
   <img src="${LOGO_URL}" alt="ZAP" width="48" height="48" style="display:block;margin:0 auto 8px;">
   <p style="color:#fff;font-size:13px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;margin:0;">Tienda ZAP</p>
 </td></tr>
@@ -43,7 +43,7 @@ function wrapTemplate(title: string, body: string) {
 }
 
 function btn(href: string, label: string) {
-  return `<a href="${href}" style="display:inline-block;background:linear-gradient(135deg,#ED2C71,#4576B9);color:#fff;font-weight:700;font-size:14px;padding:12px 28px;border-radius:999px;text-decoration:none;margin-top:16px;">${label}</a>`
+  return `<a href="${href}" style="display:inline-block;background:linear-gradient(135deg,#ED164F,#4576B9);color:#fff;font-weight:700;font-size:14px;padding:12px 28px;border-radius:999px;text-decoration:none;margin-top:16px;">${label}</a>`
 }
 
 function heading(text: string) {
@@ -80,7 +80,7 @@ export function orderConfirmationEmail(data: {
     ${divider()}
     <table width="100%" cellpadding="8" style="font-size:14px;">
       <tr><td style="color:#888;">Productos</td><td style="text-align:right;font-weight:700;color:#111;">${data.itemCount} item${data.itemCount > 1 ? 's' : ''}</td></tr>
-      <tr><td style="color:#888;">Total</td><td style="text-align:right;font-weight:700;color:#ED2C71;">$${data.total.toLocaleString('es-AR')}</td></tr>
+      <tr><td style="color:#888;">Total</td><td style="text-align:right;font-weight:700;color:#ED164F;">$${data.total.toLocaleString('es-AR')}</td></tr>
       <tr><td style="color:#888;">Medio de pago</td><td style="text-align:right;font-weight:700;color:#111;">${paymentLabels[data.paymentType] || data.paymentType}</td></tr>
     </table>
     ${divider()}

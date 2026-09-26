@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { CheckCircle2, FileImage, Loader2, MessageSquare, XCircle } from 'lucide-react'
@@ -52,9 +52,9 @@ export default function ProofReviewSection({
       <h3 className="font-bold text-gray-900 text-sm">Pruebas de diseño</h3>
 
       {pendingProofs.map((proof) => (
-        <div key={proof.id} className="rounded-xl border-2 border-[#ED2C71]/20 bg-[#FEF1F6]/50 p-4 space-y-3">
+        <div key={proof.id} className="rounded-xl border-2 border-[#ED164F]/20 bg-[#FEF1F5]/50 p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF1F6] text-[#ED2C71]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF1F5] text-[#ED164F]">
               <FileImage size={20} />
             </div>
             <div className="flex-1 min-w-0">
@@ -70,7 +70,7 @@ export default function ProofReviewSection({
 
           {proof.note && (
             <div className="flex items-start gap-2 rounded-lg bg-white p-3 text-sm text-gray-700">
-              <MessageSquare size={14} className="mt-0.5 shrink-0 text-[#ED2C71]" />
+              <MessageSquare size={14} className="mt-0.5 shrink-0 text-[#ED164F]" />
               <p><em>Nota del diseñador:</em> {proof.note}</p>
             </div>
           )}
@@ -87,7 +87,7 @@ export default function ProofReviewSection({
           )}
 
           {reviewingId === proof.id ? (
-            <div className="space-y-3 border-t border-[#ED2C71]/10 pt-3">
+            <div className="space-y-3 border-t border-[#ED164F]/10 pt-3">
               <label className="block text-xs font-medium text-gray-700">
                 ¿Qué cambios necesitás?
               </label>

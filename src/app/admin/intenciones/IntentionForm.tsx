@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -51,7 +51,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
             defaultValue={intention?.name}
             required
             placeholder="Ej. Que me vean en la calle"
-            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
           />
         </div>
         <div>
@@ -62,7 +62,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
             defaultValue={intention?.slug}
             required
             placeholder="Ej. que-me-vean"
-            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
           />
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
             name="icon"
             defaultValue={intention?.icon}
             placeholder="Ej. 📢"
-            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
           />
         </div>
         <div>
@@ -85,7 +85,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
             name="order"
             defaultValue={intention?.order ?? 0}
             required
-            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
           />
         </div>
         {intention && (
@@ -95,7 +95,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
                 type="checkbox"
                 name="active"
                 defaultChecked={intention.active}
-                className="rounded border-gray-300 text-[#ED2C71] focus:ring-[#ED2C71]"
+                className="rounded border-gray-300 text-[#ED164F] focus:ring-[#ED164F]"
               />
               <span className="text-sm font-semibold text-gray-700">Activo / Visible</span>
             </label>
@@ -109,7 +109,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
           name="description"
           defaultValue={intention?.description}
           rows={2}
-          className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+          className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
         />
       </div>
 
@@ -121,7 +121,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
             <select
               name="mediaType"
               defaultValue={intention?.mediaType || 'NONE'}
-              className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+              className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
             >
               <option value="NONE">Ninguno</option>
               <option value="YOUTUBE">Video YouTube</option>
@@ -135,7 +135,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
               name="mediaUrl"
               defaultValue={intention?.mediaUrl}
               placeholder="https://..."
-              className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+              className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
             />
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
             name="mediaTitle"
             defaultValue={intention?.mediaTitle}
             placeholder="Ej. Escuchá nuestro demo"
-            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED2C71] focus:ring-1 focus:ring-[#ED2C71]"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#ED164F] focus:ring-1 focus:ring-[#ED164F]"
           />
         </div>
       </div>

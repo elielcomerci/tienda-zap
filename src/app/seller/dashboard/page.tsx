@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+﻿import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { Clock, DollarSign, Gift, Phone, Target, Users } from 'lucide-react'
@@ -209,7 +209,7 @@ export default async function SellerDashboardPage() {
       {activeIncentives.length > 0 && (
         <div className="space-y-4">
           <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            <Target className="text-[#ED2C71]" /> Desafíos activos
+            <Target className="text-[#ED164F]" /> Desafíos activos
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {activeIncentives.map((incentive) => {
@@ -236,7 +236,7 @@ export default async function SellerDashboardPage() {
                       {incentive.description && <p className="mt-1 text-sm text-gray-500">{incentive.description}</p>}
                     </div>
                     {incentive.rewardType === 'FIXED_BONUS' && (
-                      <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#FEF1F6] px-3 py-1.5 text-sm font-bold text-[#ED2C71]">
+                      <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#FEF1F5] px-3 py-1.5 text-sm font-bold text-[#ED164F]">
                         <Gift size={16} /> +${incentive.rewardAmount.toLocaleString('es-AR')}
                       </div>
                     )}
@@ -249,12 +249,12 @@ export default async function SellerDashboardPage() {
                           ? `${progress} de ${incentive.goalTarget} ventas`
                           : `$${progress.toLocaleString('es-AR')} de $${incentive.goalTarget.toLocaleString('es-AR')}`}
                       </span>
-                      <span className={isCompleted ? 'text-green-700' : 'text-[#ED2C71]'}>{percentage}%</span>
+                      <span className={isCompleted ? 'text-green-700' : 'text-[#ED164F]'}>{percentage}%</span>
                     </div>
                     <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
                       <div
                         className={`h-full rounded-full transition-all duration-1000 ${
-                          isCompleted ? 'bg-green-500' : 'bg-[#ED2C71]'
+                          isCompleted ? 'bg-green-500' : 'bg-[#ED164F]'
                         }`}
                         style={{ width: `${percentage}%` }}
                       />
@@ -295,7 +295,7 @@ export default async function SellerDashboardPage() {
                 <span>{nextRankProgress}%</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                <div className="h-full rounded-full bg-[#ED2C71]" style={{ width: `${nextRankProgress}%` }} />
+                <div className="h-full rounded-full bg-[#ED164F]" style={{ width: `${nextRankProgress}%` }} />
               </div>
             </div>
           )}
