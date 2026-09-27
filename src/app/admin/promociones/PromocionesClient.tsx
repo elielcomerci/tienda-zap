@@ -822,7 +822,8 @@ export default function PromocionesClient({
           : typeof window !== 'undefined'
           ? window.location.origin
           : 'https://tienda.zap.com.ar'
-      const couponLink = coupon.qrPayload || `${defaultBaseUrl}/cupon/${encodeURIComponent(coupon.code)}`
+      const path = effectiveSurface === 'ZAP_WEB' ? '/promo' : '/cupon'
+      const couponLink = coupon.qrPayload || `${defaultBaseUrl}${path}/${encodeURIComponent(coupon.code)}`
       await navigator.clipboard.writeText(couponLink)
       setCopiedLinkCode(coupon.code)
       setTimeout(() => setCopiedLinkCode(null), 2000)
@@ -1283,8 +1284,9 @@ export default function PromocionesClient({
                           : typeof window !== 'undefined'
                           ? window.location.origin
                           : 'https://tienda.zap.com.ar'
+                      const path = effectiveSurface === 'ZAP_WEB' ? '/promo' : '/cupon'
                       const couponLink =
-                        coupon.qrPayload || `${defaultBaseUrl}/cupon/${encodeURIComponent(coupon.code)}`
+                        coupon.qrPayload || `${defaultBaseUrl}${path}/${encodeURIComponent(coupon.code)}`
 
                       return (
                         <div

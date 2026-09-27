@@ -626,7 +626,7 @@ export async function generatePromotionCoupons(input: {
       recipientEmail: recipient?.recipientEmail,
       recipientPhone: recipient?.recipientPhone,
       batchName,
-      qrPayload: buildCouponLandingUrl(code, qrBaseUrl),
+      qrPayload: buildCouponLandingUrl(code, qrBaseUrl, promotion?.landingSurface),
       metadata: Object.keys(metadata).length ? metadata : undefined,
       expiresAt,
       status: 'AVAILABLE',
@@ -708,7 +708,7 @@ export async function updatePromotionCoupon(input: {
     const effectiveSurface = input.landingSurfaceOverride ?? promotion?.landingSurface ?? 'TIENDA'
     const defaultBaseUrl = effectiveSurface === 'ZAP_WEB' ? 'https://zap.com.ar' : 'https://tienda.zap.com.ar'
     const baseUrl = promotion?.qrBaseUrl ?? defaultBaseUrl
-    qrPayload = buildCouponLandingUrl(code, baseUrl)
+    qrPayload = buildCouponLandingUrl(code, baseUrl, effectiveSurface)
   }
 
   const updatedCoupon = await prisma.promotionCoupon.update({

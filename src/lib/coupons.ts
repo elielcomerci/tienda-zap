@@ -362,9 +362,18 @@ export function normalizeCouponCode(rawValue?: string | null) {
   return rawValue ? extractCouponCode(rawValue) : ''
 }
 
-export function buildCouponLandingUrl(code: string, baseUrl?: string | null) {
+export function buildCouponLandingUrl(
+  code: string,
+  baseUrl?: string | null,
+  surface?: CouponLandingSurface | null
+) {
   const normalizedCode = normalizeCouponCode(code)
-  const path = `/cupon/${encodeURIComponent(normalizedCode)}`
+  const isZapWeb =
+    surface === CouponLandingSurface.ZAP_WEB ||
+    Boolean(baseUrl && baseUrl.includes('zap.com.ar') && !baseUrl.includes('tienda'))
+  const path = isZapWeb
+    ? `/promo/${encodeURIComponent(normalizedCode)}`
+    : `/cupon/${encodeURIComponent(normalizedCode)}`
   const trimmedBaseUrl = baseUrl?.trim()
 
   if (trimmedBaseUrl) {
