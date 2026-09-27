@@ -251,6 +251,12 @@ export default async function PromotionDetailPage({ params }: PromotionDetailPag
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h2 className="font-black text-gray-900">Reglas y alcance</h2>
           <div className="mt-4 space-y-3 text-sm text-gray-600">
+            <p>
+              Destino inicial:{' '}
+              <span className="font-semibold text-gray-800">
+                {promotion.landingSurface === 'ZAP_WEB' ? 'zap.com.ar (Web Agencia)' : 'tienda.zap.com.ar (Directo)'}
+              </span>
+            </p>
             <p>Minimo: {promotion.minOrderAmount ? formatMoney(promotion.minOrderAmount) : 'sin minimo'}</p>
             <p>{promotion.firstOrderOnly ? 'Solo primera compra' : 'Sin regla de primera compra'}</p>
             <p>Limite total: {promotion.maxUses ?? 'sin tope'}</p>
@@ -287,7 +293,25 @@ export default async function PromotionDetailPage({ params }: PromotionDetailPag
             {promotion.coupons.map((coupon) => (
               <div key={coupon.code} className="px-5 py-4 text-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-mono font-black text-gray-900">{coupon.code}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-black text-gray-900">{coupon.code}</p>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        (coupon.landingSurfaceOverride ?? promotion.landingSurface) === 'ZAP_WEB'
+                          ? 'border border-blue-200 bg-blue-50 text-blue-700'
+                          : 'border border-gray-200 bg-gray-50 text-gray-600'
+                      }`}
+                      title={
+                        coupon.landingSurfaceOverride
+                          ? `Sobrescrito individualmente: ${coupon.landingSurfaceOverride}`
+                          : `Heredado de la promoción: ${promotion.landingSurface}`
+                      }
+                    >
+                      {(coupon.landingSurfaceOverride ?? promotion.landingSurface) === 'ZAP_WEB'
+                        ? '→ zap.com.ar'
+                        : '→ Tienda'}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600">
                       {coupon.status}

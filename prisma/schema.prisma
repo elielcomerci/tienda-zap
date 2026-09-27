@@ -612,6 +612,7 @@ model Promotion {
   welcomeMessage    String?
   welcomeConditions String?
   welcomeLogoUrl    String?
+  landingSurface    CouponLandingSurface @default(TIENDA)
 
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
@@ -620,29 +621,30 @@ model Promotion {
 }
 
 model PromotionCoupon {
-  code              String             @id
-  promotionId       String
-  status            CouponStatus       @default(AVAILABLE)
-  usesLeft          Int                @default(1)
-  recipientName     String?
-  recipientBusiness String?
-  recipientEmail    String?
-  recipientPhone    String?
-  businessAccountId String?
-  businessContactId String?
-  batchName         String?
-  qrPayload         String?
-  scanCount         Int                @default(0)
-  lastScannedAt     DateTime?
-  metadata          Json?
-  expiresAt         DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  promotion         Promotion          @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-  businessAccount   BusinessAccount?   @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
-  businessContact   BusinessContact?   @relation(fields: [businessContactId], references: [id], onDelete: SetNull)
-  redemptions       CouponRedemption[]
-  scans             CouponScan[]
+  code                   String                @id
+  promotionId            String
+  status                 CouponStatus          @default(AVAILABLE)
+  usesLeft               Int                   @default(1)
+  recipientName          String?
+  recipientBusiness      String?
+  recipientEmail         String?
+  recipientPhone         String?
+  businessAccountId      String?
+  businessContactId      String?
+  batchName              String?
+  qrPayload              String?
+  landingSurfaceOverride CouponLandingSurface?
+  scanCount              Int                   @default(0)
+  lastScannedAt          DateTime?
+  metadata               Json?
+  expiresAt              DateTime?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  promotion              Promotion             @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  businessAccount        BusinessAccount?      @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
+  businessContact        BusinessContact?      @relation(fields: [businessContactId], references: [id], onDelete: SetNull)
+  redemptions            CouponRedemption[]
+  scans                  CouponScan[]
 
   @@index([promotionId, status])
   @@index([batchName])
@@ -828,6 +830,11 @@ enum CouponStatus {
   RESERVED
   USED
   EXPIRED
+}
+
+enum CouponLandingSurface {
+  TIENDA
+  ZAP_WEB
 }
 
 enum CouponRedemptionStatus {

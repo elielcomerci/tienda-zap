@@ -17,9 +17,12 @@ export async function GET(
 
   const response = NextResponse.redirect(productsUrl)
   
+  const isZapDomain = req.nextUrl.hostname.endsWith('zap.com.ar') || process.env.NODE_ENV === 'production'
+
   response.cookies.set('zap_welcome_promo', normalizedCode || code, {
     path: '/',
-    maxAge: 60 * 60 * 24, // 1 dia
+    domain: isZapDomain ? '.zap.com.ar' : undefined,
+    maxAge: 60 * 60 * 24 * 60, // 60 dias
     httpOnly: false,
     sameSite: 'lax',
   })

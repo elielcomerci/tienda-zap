@@ -1,4 +1,5 @@
 import {
+  CouponLandingSurface,
   CouponRedemptionStatus,
   CouponStatus,
   DiscountKind,
@@ -383,6 +384,20 @@ export function buildCouponLandingUrl(code: string, baseUrl?: string | null) {
   return normalizedBaseUrl ? `${normalizedBaseUrl}${path}` : path
 }
 
+export function resolveCouponLandingSurface(coupon: {
+  landingSurfaceOverride?: CouponLandingSurface | null
+  promotion?: { landingSurface?: CouponLandingSurface | null } | null
+}): CouponLandingSurface {
+  return coupon.landingSurfaceOverride ?? coupon.promotion?.landingSurface ?? CouponLandingSurface.TIENDA
+}
+
+export function getCouponLandingBaseUrl(surface: CouponLandingSurface): string {
+  if (surface === CouponLandingSurface.ZAP_WEB) {
+    return process.env.ZAP_WEB_BASE_URL || 'https://zap.com.ar'
+  }
+  return process.env.TIENDA_BASE_URL || 'https://tienda.zap.com.ar'
+}
+
 export function isCouponCodeFormatValid(rawValue?: string | null) {
   const normalizedCode = normalizeCouponCode(rawValue)
   return looksLikeCouponCode(normalizedCode)
@@ -655,4 +670,62 @@ export async function releaseCouponRedemptionForOrder(orderId: string) {
       },
     })
   })
+}
+
+export type WelcomePromoDetails = {
+  code: string
+  title: string | null
+  message: string | null
+  conditions: string | null
+  logoUrl: string | null
+  presenterName: string | null
+  recipientName: string | null
+  recipientBusiness: string | null
+  recipientLabel: string | null
+  discountKind: DiscountKind
+  discountValue: number
+}
+
+export async function getWelcomePromoDetails(couponCode: string): Promise<WelcomePromoDetails | null> {
+  const normalizedCode = normalizeCouponCode(couponCode)
+  if (!normalizedCode) return null
+
+  const coupon = await prisma.promotionCoupon.findUnique({
+    where: { code: normalizedCode },
+    include: { promotion: true },
+  })
+
+  if (!coupon || coupon.promotion.status !== 'ACTIVE') {
+    return null
+  }
+
+  const promo = coupon.promotion
+  const presenterName = getCouponPresenterName(coupon)
+
+  const recipientName = coupon.recipientName?.trim() || null
+  const recipientBusiness = coupon.recipientBusiness?.trim() || null
+  const recipientLabel = recipientName || recipientBusiness
+
+  if (!promo.welcomeTitle && !promo.welcomeMessage && !presenterName && !recipientLabel) {
+    return null
+  }
+
+  const now = new Date()
+  if (promo.activeFrom && promo.activeFrom > now) return null
+  if (promo.activeTo && promo.activeTo < now) return null
+  if (coupon.status !== 'AVAILABLE' || coupon.usesLeft <= 0) return null
+
+  return {
+    code: coupon.code,
+    title: promo.welcomeTitle,
+    message: promo.welcomeMessage,
+    conditions: promo.welcomeConditions,
+    logoUrl: promo.welcomeLogoUrl,
+    presenterName,
+    recipientName,
+    recipientBusiness,
+    recipientLabel,
+    discountKind: promo.discountKind,
+    discountValue: promo.discountValue,
+  }
 }

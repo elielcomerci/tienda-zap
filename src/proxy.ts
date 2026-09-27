@@ -23,9 +23,11 @@ export default auth((req) => {
 
   const promoCode = searchParams.get('c') || searchParams.get('coupon') || searchParams.get('promo')
   if (promoCode) {
+    const isZapDomain = req.nextUrl.hostname.endsWith('zap.com.ar') || process.env.NODE_ENV === 'production'
     res.cookies.set('zap_welcome_promo', promoCode, {
       path: '/',
-      maxAge: 60 * 60 * 24, // 1 dia, igual se oculta en el cliente por localStorage
+      domain: isZapDomain ? '.zap.com.ar' : undefined,
+      maxAge: 60 * 60 * 24 * 60, // 60 dias
       httpOnly: false, // false porque la necesita leer el cliente
       sameSite: 'lax',
     })

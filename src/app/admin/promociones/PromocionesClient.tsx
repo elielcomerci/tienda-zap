@@ -11,6 +11,7 @@ import {
   Copy,
   Download,
   ExternalLink,
+  Link2,
   PauseCircle,
   Pencil,
   Plus,
@@ -41,6 +42,7 @@ type PromotionCouponListItem = {
   recipientPhone: string | null
   batchName: string | null
   qrPayload: string | null
+  landingSurfaceOverride?: 'TIENDA' | 'ZAP_WEB' | null
   scanCount: number
   lastScannedAt: Date | string | null
   metadata: Record<string, unknown> | null
@@ -59,6 +61,7 @@ type PromotionWithCounts = {
   campaignKind: string | null
   audienceLabel: string | null
   qrBaseUrl: string | null
+  landingSurface: 'TIENDA' | 'ZAP_WEB'
   priority: number
   discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: number
@@ -102,6 +105,7 @@ type PromotionFormState = {
   campaignKind: string
   audienceLabel: string
   qrBaseUrl: string
+  landingSurface: 'TIENDA' | 'ZAP_WEB'
   priority: string
   discountKind: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: string
@@ -142,6 +146,7 @@ type CouponFormState = {
   recipientPhone: string
   batchName: string
   publicPresenterName: string
+  landingSurfaceOverride: 'INHERIT' | 'TIENDA' | 'ZAP_WEB'
   expiresAt: string
 }
 
@@ -165,6 +170,7 @@ const DEFAULT_PROMOTION_FORM: PromotionFormState = {
   campaignKind: '',
   audienceLabel: '',
   qrBaseUrl: '',
+  landingSurface: 'TIENDA',
   priority: '0',
   discountKind: 'PERCENTAGE',
   discountValue: '',
@@ -205,6 +211,7 @@ const DEFAULT_COUPON_FORM: CouponFormState = {
   recipientPhone: '',
   batchName: '',
   publicPresenterName: '',
+  landingSurfaceOverride: 'INHERIT',
   expiresAt: '',
 }
 
@@ -365,6 +372,7 @@ function mapPromotionToForm(promotion: PromotionWithCounts): PromotionFormState 
     welcomeMessage: promotion.welcomeMessage ?? '',
     welcomeConditions: promotion.welcomeConditions ?? '',
     welcomeLogoUrl: promotion.welcomeLogoUrl ?? '',
+    landingSurface: promotion.landingSurface || 'TIENDA',
   }
 }
 
@@ -378,6 +386,7 @@ function mapCouponToForm(coupon: PromotionWithCounts['coupons'][number]): Coupon
     recipientPhone: coupon.recipientPhone ?? '',
     batchName: coupon.batchName ?? '',
     publicPresenterName: getCouponMetadataString(coupon.metadata, 'publicPresenterName'),
+    landingSurfaceOverride: (coupon.landingSurfaceOverride as any) || 'INHERIT',
     expiresAt: formatDateInputValue(coupon.expiresAt),
   }
 }
@@ -687,6 +696,7 @@ export default function PromocionesClient({
         welcomeMessage: promotionForm.welcomeMessage || null,
         welcomeConditions: promotionForm.welcomeConditions || null,
         welcomeLogoUrl: promotionForm.welcomeLogoUrl || null,
+        landingSurface: promotionForm.landingSurface || 'TIENDA',
       }
 
       if (promotionForm.id) {
@@ -765,6 +775,10 @@ export default function PromocionesClient({
         recipientPhone: couponForm.recipientPhone || null,
         batchName: couponForm.batchName || null,
         publicPresenterName: couponForm.publicPresenterName || null,
+        landingSurfaceOverride:
+          couponForm.landingSurfaceOverride === 'INHERIT'
+            ? null
+            : couponForm.landingSurfaceOverride,
         expiresAt: couponForm.expiresAt || null,
       })
 
@@ -786,11 +800,34 @@ export default function PromocionesClient({
     }
   }
 
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [copiedLinkCode, setCopiedLinkCode] = useState<string | null>(null)
+
   const handleCopyCoupon = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code)
+      setCopiedCode(code)
+      setTimeout(() => setCopiedCode(null), 2000)
     } catch {
       setError('No pudimos copiar el codigo al portapapeles.')
+    }
+  }
+
+  const handleCopyCouponLink = async (coupon: PromotionCouponListItem, promotion: PromotionWithCounts) => {
+    try {
+      const effectiveSurface = coupon.landingSurfaceOverride ?? promotion.landingSurface ?? 'TIENDA'
+      const defaultBaseUrl =
+        effectiveSurface === 'ZAP_WEB'
+          ? 'https://zap.com.ar'
+          : typeof window !== 'undefined'
+          ? window.location.origin
+          : 'https://tienda.zap.com.ar'
+      const couponLink = coupon.qrPayload || `${defaultBaseUrl}/cupon/${encodeURIComponent(coupon.code)}`
+      await navigator.clipboard.writeText(couponLink)
+      setCopiedLinkCode(coupon.code)
+      setTimeout(() => setCopiedLinkCode(null), 2000)
+    } catch {
+      setError('No pudimos copiar el link al portapapeles.')
     }
   }
 
@@ -1237,79 +1274,119 @@ export default function PromocionesClient({
                   </div>
                 ) : (
                   <div className={couponPage.isLoading ? 'space-y-3 opacity-60' : 'space-y-3'}>
-                    {couponPage.coupons.map((coupon) => (
-                      <div
-                        key={coupon.code}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate font-mono text-sm font-bold text-gray-900">
-                            {coupon.code}
-                          </p>
-                          {(coupon.recipientName || coupon.recipientBusiness || coupon.batchName) && (
-                            <p className="mt-1 truncate text-xs font-semibold text-gray-700">
-                              {[coupon.recipientName, coupon.recipientBusiness, coupon.batchName]
-                                .filter(Boolean)
-                                .join(' · ')}
+                    {couponPage.coupons.map((coupon) => {
+                      const effectiveSurface =
+                        coupon.landingSurfaceOverride ?? promotion.landingSurface ?? 'TIENDA'
+                      const defaultBaseUrl =
+                        effectiveSurface === 'ZAP_WEB'
+                          ? 'https://zap.com.ar'
+                          : typeof window !== 'undefined'
+                          ? window.location.origin
+                          : 'https://tienda.zap.com.ar'
+                      const couponLink =
+                        coupon.qrPayload || `${defaultBaseUrl}/cupon/${encodeURIComponent(coupon.code)}`
+
+                      return (
+                        <div
+                          key={coupon.code}
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-mono text-sm font-bold text-gray-900">
+                                {coupon.code}
+                              </p>
+                              {effectiveSurface === 'ZAP_WEB' ? (
+                                <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                                  → Vía zap.com.ar
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center rounded-md border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-orange-700">
+                                  → Tienda directo
+                                </span>
+                              )}
+                            </div>
+                            {(coupon.recipientName || coupon.recipientBusiness || coupon.batchName) && (
+                              <p className="mt-1 truncate text-xs font-semibold text-gray-700">
+                                {[coupon.recipientName, coupon.recipientBusiness, coupon.batchName]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </p>
+                            )}
+                            <p suppressHydrationWarning className="mt-1 text-xs text-gray-500">
+                              {coupon.expiresAt
+                                ? `vence ${formatDisplayDate(coupon.expiresAt)}`
+                                : 'sin vencimiento'}{' '}
+                              · creado {formatDisplayDate(coupon.createdAt)}
                             </p>
-                          )}
-                          <p suppressHydrationWarning className="mt-1 text-xs text-gray-500">
-                            {coupon.expiresAt
-                              ? `vence ${formatDisplayDate(coupon.expiresAt)}`
-                              : 'sin vencimiento'}{' '}
-                            · creado {formatDisplayDate(coupon.createdAt)}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            Escaneos: {coupon.scanCount ?? coupon._count?.scans ?? 0}
-                          </p>
+                            <p className="mt-1 text-xs text-gray-500">
+                              Escaneos: {coupon.scanCount ?? coupon._count?.scans ?? 0}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <span
+                              className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${couponStatusTheme(
+                                coupon.status
+                              )}`}
+                            >
+                              {coupon.status}
+                            </span>
+                            <button
+                              onClick={() => handleOpenCouponModal(coupon)}
+                              className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                              title="Editar destinatario del cupon"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <a
+                              href={`/admin/auditoria?entity=PromotionCoupon&entityId=${encodeURIComponent(coupon.code)}`}
+                              className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                              title="Ver auditoria del cupon"
+                            >
+                              <ClipboardList size={16} />
+                            </a>
+                            <button
+                              onClick={() => handleCopyCoupon(coupon.code)}
+                              className={`rounded-xl p-2 transition-colors ${
+                                copiedCode === coupon.code
+                                  ? 'bg-emerald-50 text-emerald-600'
+                                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                              }`}
+                              title={copiedCode === coupon.code ? '¡Código copiado!' : 'Copiar código'}
+                            >
+                              {copiedCode === coupon.code ? <Check size={16} /> : <Copy size={16} />}
+                            </button>
+                            <button
+                              onClick={() => handleCopyCouponLink(coupon, promotion)}
+                              className={`rounded-xl p-2 transition-colors ${
+                                copiedLinkCode === coupon.code
+                                  ? 'bg-emerald-50 text-emerald-600'
+                                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                              }`}
+                              title={copiedLinkCode === coupon.code ? '¡Link copiado!' : 'Copiar link del cupón'}
+                            >
+                              {copiedLinkCode === coupon.code ? <Check size={16} /> : <Link2 size={16} />}
+                            </button>
+                            <a
+                              href={`/api/admin/coupons/${encodeURIComponent(coupon.code)}/qr`}
+                              className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                              title="Descargar tarjeta PDF"
+                            >
+                              <QrCode size={16} />
+                            </a>
+                            <a
+                              href={couponLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                              title="Probar link del cupon"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${couponStatusTheme(
-                              coupon.status
-                            )}`}
-                          >
-                            {coupon.status}
-                          </span>
-                          <button
-                            onClick={() => handleOpenCouponModal(coupon)}
-                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Editar destinatario del cupon"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <a
-                            href={`/admin/auditoria?entity=PromotionCoupon&entityId=${encodeURIComponent(coupon.code)}`}
-                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Ver auditoria del cupon"
-                          >
-                            <ClipboardList size={16} />
-                          </a>
-                          <button
-                            onClick={() => handleCopyCoupon(coupon.code)}
-                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Copiar codigo"
-                          >
-                            <Copy size={16} />
-                          </button>
-                          <a
-                            href={`/api/admin/coupons/${encodeURIComponent(coupon.code)}/qr`}
-                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Descargar tarjeta PDF"
-                          >
-                            <QrCode size={16} />
-                          </a>
-                          <a
-                            href={coupon.qrPayload || `/cupon/${encodeURIComponent(coupon.code)}`}
-                            target="_blank"
-                            className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                            title="Probar link del cupon"
-                          >
-                            <ExternalLink size={16} />
-                          </a>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                     <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm font-semibold text-gray-600">
                         Pagina {couponPage.page} de {couponPage.totalPages} - {couponPage.total}{' '}
@@ -1404,16 +1481,40 @@ export default function PromocionesClient({
                 </div>
               </div>
 
-              <div>
-                <label className="label">URL base para QR</label>
-                <input
-                  value={promotionForm.qrBaseUrl}
-                  onChange={(event) =>
-                    setPromotionForm((current) => ({ ...current, qrBaseUrl: event.target.value }))
-                  }
-                  className="input"
-                  placeholder="Ej: https://tutienda.com"
-                />
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="label">¿Por dónde entra este cupón? (Destino)</label>
+                  <select
+                    value={promotionForm.landingSurface}
+                    onChange={(event) =>
+                      setPromotionForm((current) => ({
+                        ...current,
+                        landingSurface: event.target.value as PromotionFormState['landingSurface'],
+                      }))
+                    }
+                    className="input"
+                  >
+                    <option value="TIENDA">Directo a la tienda (tienda.zap.com.ar)</option>
+                    <option value="ZAP_WEB">Primero por zap.com.ar (Web Agencia)</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Define la URL por defecto para los códigos QR y enlaces de los cupones.
+                  </p>
+                </div>
+                <div>
+                  <label className="label">URL base personalizada para QR (opcional)</label>
+                  <input
+                    value={promotionForm.qrBaseUrl}
+                    onChange={(event) =>
+                      setPromotionForm((current) => ({ ...current, qrBaseUrl: event.target.value }))
+                    }
+                    className="input"
+                    placeholder={promotionForm.landingSurface === 'ZAP_WEB' ? 'https://zap.com.ar' : 'https://tienda.zap.com.ar'}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Si se deja vacío, usa el dominio oficial según el destino seleccionado.
+                  </p>
+                </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -1887,6 +1988,27 @@ export default function PromocionesClient({
                     className="input"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="label">¿Por dónde entra este cupón? (Destino)</label>
+                <select
+                  value={couponForm.landingSurfaceOverride}
+                  onChange={(event) =>
+                    setCouponForm((current) => ({
+                      ...current,
+                      landingSurfaceOverride: event.target.value as CouponFormState['landingSurfaceOverride'],
+                    }))
+                  }
+                  className="input"
+                >
+                  <option value="INHERIT">Usar el de la promoción (Heredado)</option>
+                  <option value="TIENDA">Directo a la tienda (tienda.zap.com.ar)</option>
+                  <option value="ZAP_WEB">Primero por zap.com.ar (Web Agencia)</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Sobrescribe la URL de destino al escanear el código QR o abrir el enlace de este cupón.
+                </p>
               </div>
 
               <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">

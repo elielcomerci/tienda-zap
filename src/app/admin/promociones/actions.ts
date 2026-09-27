@@ -383,6 +383,7 @@ export type PromotionInput = {
   welcomeMessage?: string | null
   welcomeConditions?: string | null
   welcomeLogoUrl?: string | null
+  landingSurface?: 'TIENDA' | 'ZAP_WEB'
 }
 
 function assertPromotionInput(data: PromotionInput) {
@@ -431,6 +432,7 @@ function toPromotionData(data: PromotionInput) {
     welcomeMessage: normalizeOptionalText(data.welcomeMessage),
     welcomeConditions: normalizeOptionalText(data.welcomeConditions),
     welcomeLogoUrl: normalizeOptionalText(data.welcomeLogoUrl),
+    landingSurface: data.landingSurface || 'TIENDA',
   }
 }
 
@@ -599,9 +601,10 @@ export async function generatePromotionCoupons(input: {
   const publicPresenterName = normalizeOptionalText(input.publicPresenterName)
   const promotion = await prisma.promotion.findUnique({
     where: { id: input.promotionId },
-    select: { qrBaseUrl: true },
+    select: { qrBaseUrl: true, landingSurface: true },
   })
-  const qrBaseUrl = normalizeOptionalText(input.qrBaseUrl) ?? promotion?.qrBaseUrl ?? null
+  const defaultBaseUrl = promotion?.landingSurface === 'ZAP_WEB' ? 'https://zap.com.ar' : 'https://tienda.zap.com.ar'
+  const qrBaseUrl = normalizeOptionalText(input.qrBaseUrl) ?? promotion?.qrBaseUrl ?? defaultBaseUrl
   const codes = await generateUniqueCouponCodes(totalToGenerate, prefix)
 
   await prisma.promotionCoupon.createMany({
@@ -660,6 +663,7 @@ export async function updatePromotionCoupon(input: {
   recipientPhone?: string | null
   batchName?: string | null
   publicPresenterName?: string | null
+  landingSurfaceOverride?: 'TIENDA' | 'ZAP_WEB' | null
   expiresAt?: string | null
   status?: 'AVAILABLE' | 'EXPIRED'
 }) {
@@ -684,11 +688,27 @@ export async function updatePromotionCoupon(input: {
   const publicPresenterName = normalizeOptionalText(input.publicPresenterName)
   const metadata = {
     ...currentMetadata,
-    ...(publicPresenterName ? { publicPresenterName } : {}),
+    ...(publicPresenterName ? { publicPresenterName: couponPresenterName(publicPresenterName) } : {}),
+  }
+
+  function couponPresenterName(val: string) {
+    return val
   }
 
   if (!publicPresenterName) {
     delete metadata.publicPresenterName
+  }
+
+  let qrPayload = coupon.qrPayload
+  if (input.landingSurfaceOverride !== undefined) {
+    const promotion = await prisma.promotion.findUnique({
+      where: { id: coupon.promotionId },
+      select: { qrBaseUrl: true, landingSurface: true },
+    })
+    const effectiveSurface = input.landingSurfaceOverride ?? promotion?.landingSurface ?? 'TIENDA'
+    const defaultBaseUrl = effectiveSurface === 'ZAP_WEB' ? 'https://zap.com.ar' : 'https://tienda.zap.com.ar'
+    const baseUrl = promotion?.qrBaseUrl ?? defaultBaseUrl
+    qrPayload = buildCouponLandingUrl(code, baseUrl)
   }
 
   const updatedCoupon = await prisma.promotionCoupon.update({
@@ -700,6 +720,8 @@ export async function updatePromotionCoupon(input: {
       recipientEmail: normalizeOptionalText(input.recipientEmail),
       recipientPhone: normalizeOptionalText(input.recipientPhone),
       batchName: normalizeOptionalText(input.batchName),
+      landingSurfaceOverride: input.landingSurfaceOverride !== undefined ? input.landingSurfaceOverride : undefined,
+      qrPayload,
       expiresAt: normalizeOptionalDate(input.expiresAt),
       metadata: Object.keys(metadata).length ? metadata : Prisma.JsonNull,
     },
