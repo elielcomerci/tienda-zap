@@ -1,5 +1,6 @@
 import PublicHeader from '@/components/public/PublicHeader'
 import WelcomePromoModal from '@/components/WelcomePromoModal'
+import CouponSession from '@/components/public/CouponSession'
 import Footer from '@/components/Footer'
 import { auth } from '@/auth'
 import { cookies } from 'next/headers'
@@ -19,6 +20,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <CouponSession />
       <WelcomePromoModal />
       <PublicHeader 
         user={session?.user || null} 

@@ -17,7 +17,8 @@ export async function GET(
 
   const response = NextResponse.redirect(productsUrl)
   
-  const isZapDomain = req.nextUrl.hostname.endsWith('zap.com.ar') || process.env.NODE_ENV === 'production'
+  const isZapDomain =
+    req.nextUrl.hostname === 'zap.com.ar' || req.nextUrl.hostname.endsWith('.zap.com.ar')
 
   response.cookies.set('zap_welcome_promo', normalizedCode || code, {
     path: '/',

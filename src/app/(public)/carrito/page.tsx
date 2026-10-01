@@ -1,5 +1,6 @@
 ﻿'use client'
 
+import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -8,17 +9,115 @@ import {
   Plus,
   ShieldCheck,
   ShoppingBag,
+  Tag,
   Trash2,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
+import { extractCouponCode } from '@/components/public/CouponSession'
 import OrderItemOptions from '../checkout/OrderItemOptions'
 import OrderItemBrief from '../checkout/OrderItemBrief'
 
+type CouponPreviewState = {
+  status: 'recognized' | 'invalid'
+  normalizedCode?: string
+  title: string
+  detail: string
+  originalTotal: number
+  finalTotal: number
+  discountAmount: number
+}
+
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, updateNotes, total, clearCart } = useCartStore()
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    updateNotes,
+    total,
+    clearCart,
+    couponCode,
+    setCouponCode,
+    clearCouponCode,
+  } = useCartStore()
   const count = useCartStore((state) => state.itemCount())
   const hasUnavailableItems = items.some((item) => item.price <= 0)
   const totalAmount = total()
+  const [couponDraft, setCouponDraft] = useState(couponCode || '')
+  const [couponPreview, setCouponPreview] = useState<CouponPreviewState | null>(null)
+  const [couponFeedback, setCouponFeedback] = useState('')
+  const [couponLoading, setCouponLoading] = useState(false)
+  const discountAmount = couponPreview?.status === 'recognized' ? couponPreview.discountAmount : 0
+  const finalTotal = couponPreview?.status === 'recognized' ? couponPreview.finalTotal : totalAmount
+
+  const reviewCoupon = useCallback(async (rawCouponCode: string, saveToSession = true) => {
+    const parsedCouponCode = extractCouponCode(rawCouponCode)
+    if (!parsedCouponCode) {
+      setCouponPreview(null)
+      setCouponFeedback('Ingresá un código de cupón válido.')
+      return
+    }
+
+    setCouponLoading(true)
+    setCouponFeedback('')
+
+    try {
+      const response = await fetch('/api/checkout/coupon-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          couponCode: parsedCouponCode,
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            notes: item.notes,
+            briefType: item.briefType,
+            briefResponses: item.briefResponses,
+            briefReferenceLinks: item.briefReferenceLinks,
+            briefReferenceFiles: item.briefReferenceFiles,
+            fileUrl: item.fileUrl,
+            designRequested: item.designRequested,
+            selectedOptions: item.selectedOptions,
+          })),
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.detail || result.error || 'No pudimos revisar el cupón.')
+
+      const normalizedCode = result.normalizedCode || parsedCouponCode
+      setCouponPreview(result)
+      setCouponDraft(normalizedCode)
+      if (saveToSession) {
+        setCouponCode(normalizedCode)
+        localStorage.setItem('saved_coupon', normalizedCode)
+      }
+    } catch (error: any) {
+      setCouponPreview(null)
+      setCouponFeedback(error.message || 'No pudimos revisar el cupón.')
+    } finally {
+      setCouponLoading(false)
+    }
+  }, [items, setCouponCode])
+
+  useEffect(() => {
+    if (!couponCode || items.length === 0) {
+      setCouponPreview(null)
+      return
+    }
+    setCouponDraft(couponCode)
+    void reviewCoupon(couponCode, false)
+  }, [couponCode, items, reviewCoupon])
+
+  const clearCoupon = () => {
+    clearCouponCode()
+    setCouponDraft('')
+    setCouponPreview(null)
+    setCouponFeedback('')
+    localStorage.removeItem('saved_coupon')
+    document.cookie = 'zap_welcome_promo=; path=/; max-age=0; samesite=lax'
+    if (window.location.hostname === 'zap.com.ar' || window.location.hostname.endsWith('.zap.com.ar')) {
+      document.cookie = 'zap_welcome_promo=; path=/; domain=.zap.com.ar; max-age=0; samesite=lax'
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -79,9 +178,11 @@ export default function CartPage() {
                   Total visible
                 </p>
                 <p className="mt-2 text-2xl font-black text-gray-950">
-                  ${totalAmount.toLocaleString('es-AR')}
+                  ${finalTotal.toLocaleString('es-AR')}
                 </p>
-                <p className="mt-1 text-sm text-gray-600">sin pasos ocultos</p>
+                <p className="mt-1 text-sm text-gray-600">
+                  {discountAmount > 0 ? `incluye $${discountAmount.toLocaleString('es-AR')} de descuento` : 'sin pasos ocultos'}
+                </p>
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
@@ -283,13 +384,66 @@ export default function CartPage() {
                 </p>
               </div>
 
+              <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="flex items-start gap-3">
+                  <Tag size={18} className="mt-0.5 shrink-0 text-[#F7638B]" />
+                  <div>
+                    <p className="text-sm font-semibold text-white">¿Tenés un cupón?</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-400">
+                      Cargalo ahora: el descuento se refleja antes de pasar al checkout.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    value={couponDraft}
+                    onChange={(event) => setCouponDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        void reviewCoupon(couponDraft)
+                      }
+                    }}
+                    placeholder="Código de cupón"
+                    className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900 outline-none placeholder:text-gray-400 focus:border-[#F7638B]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void reviewCoupon(couponDraft)}
+                    disabled={couponLoading}
+                    className="rounded-xl bg-[#ED164F] px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#F7638B] disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {couponLoading ? '...' : 'Aplicar'}
+                  </button>
+                </div>
+                {couponPreview?.normalizedCode && (
+                  <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100">
+                    <span className="min-w-0 truncate">
+                      {couponPreview.normalizedCode}: {couponPreview.detail}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearCoupon}
+                      className="shrink-0 font-semibold text-white underline underline-offset-2"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                )}
+                {couponFeedback && (
+                  <p className="mt-3 rounded-xl border border-amber-300/30 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-100">
+                    {couponFeedback}
+                  </p>
+                )}
+              </div>
+
               <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                     Total visible
                   </p>
                   <p className="mt-2 text-3xl font-black text-white">
-                    ${totalAmount.toLocaleString('es-AR')}
+                    ${finalTotal.toLocaleString('es-AR')}
                   </p>
                   <p className="mt-1 text-xs text-gray-400">sin pasos ocultos</p>
                 </div>
@@ -342,9 +496,15 @@ export default function CartPage() {
                   <span>Subtotal</span>
                   <span>${totalAmount.toLocaleString('es-AR')}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-sm text-emerald-200">
+                    <span>Descuento {couponPreview?.normalizedCode ? `(${couponPreview.normalizedCode})` : ''}</span>
+                    <span>-${discountAmount.toLocaleString('es-AR')}</span>
+                  </div>
+                )}
                 <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xl font-black text-white">
                   <span>Total</span>
-                  <span>${totalAmount.toLocaleString('es-AR')}</span>
+                  <span>${finalTotal.toLocaleString('es-AR')}</span>
                 </div>
               </div>
 

@@ -28,6 +28,8 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[]
+  /** The code is persisted, but its amount is always recalculated by the API. */
+  couponCode: string | null
   addItem: (item: CartItem) => void
   removeItem: (cartItemId: string) => void
   updateQuantity: (cartItemId: string, quantity: number) => void
@@ -38,6 +40,8 @@ interface CartStore {
   ) => void
   updateItemOptions: (cartItemId: string, options: { fileUrl?: string; designRequested?: boolean }) => void
   clearCart: () => void
+  setCouponCode: (couponCode: string | null) => void
+  clearCouponCode: () => void
   total: () => number
   itemCount: () => number
 }
@@ -46,6 +50,7 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      couponCode: null,
 
       addItem: (item) => {
         set((state) => {
@@ -105,6 +110,11 @@ export const useCartStore = create<CartStore>()(
         })),
 
       clearCart: () => set({ items: [] }),
+
+      setCouponCode: (couponCode) =>
+        set({ couponCode: couponCode?.trim() || null }),
+
+      clearCouponCode: () => set({ couponCode: null }),
 
       total: () =>
         get().items.reduce((acc, i) => acc + i.price * i.quantity, 0),

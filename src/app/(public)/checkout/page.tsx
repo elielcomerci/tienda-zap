@@ -22,6 +22,7 @@ import OrderItemOptions from './OrderItemOptions'
 import OrderItemBrief from './OrderItemBrief'
 import CheckoutZapCreditConfigurator from '@/components/public/CheckoutZapCreditConfigurator'
 import CouponScannerModal from '@/components/public/CouponScannerModal'
+import { extractCouponCode } from '@/components/public/CouponSession'
 import {
   calculateWeightedDownPaymentPercent,
   clampCreditDownPaymentPercent,
@@ -160,7 +161,7 @@ export default function CheckoutPage() {
 }
 
 function CheckoutContent() {
-  const { items, total, clearCart } = useCartStore()
+  const { items, total, clearCart, couponCode, setCouponCode, clearCouponCode } = useCartStore()
   const router = useRouter()
   const searchParams = useSearchParams()
   const loadedQueryCouponRef = useRef('')
@@ -302,20 +303,24 @@ function CheckoutContent() {
   }, [items, setValue])
 
   useEffect(() => {
-    const queryCoupon = searchParams.get('coupon') || searchParams.get('code') || searchParams.get('c')
-    
-    if (queryCoupon && typeof window !== 'undefined') {
-      localStorage.setItem('saved_coupon', queryCoupon)
-    }
-
-    const couponToUse = queryCoupon || (typeof window !== 'undefined' ? localStorage.getItem('saved_coupon') : null)
+    const queryCoupon =
+      searchParams.get('coupon') ||
+      searchParams.get('couponCode') ||
+      searchParams.get('code') ||
+      searchParams.get('promo') ||
+      searchParams.get('voucher') ||
+      searchParams.get('c')
+    const couponToUse =
+      extractCouponCode(queryCoupon) ||
+      couponCode ||
+      (typeof window !== 'undefined' ? extractCouponCode(localStorage.getItem('saved_coupon')) : null)
 
     if (!couponToUse || items.length === 0 || loadedQueryCouponRef.current === couponToUse) return
 
     loadedQueryCouponRef.current = couponToUse
     setCouponDraft(couponToUse)
     void reviewCoupon(couponToUse)
-  }, [items.length, searchParams])
+  }, [items.length, couponCode, searchParams])
 
   if (items.length === 0) return null
 
@@ -359,11 +364,18 @@ function CheckoutContent() {
     setCouponPreview(null)
     setCouponFeedback('')
     setValue('couponCode', undefined, { shouldDirty: true, shouldValidate: true })
-    if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
+    clearCouponCode()
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('saved_coupon')
+      document.cookie = 'zap_welcome_promo=; path=/; max-age=0; samesite=lax'
+      if (window.location.hostname === 'zap.com.ar' || window.location.hostname.endsWith('.zap.com.ar')) {
+        document.cookie = 'zap_welcome_promo=; path=/; domain=.zap.com.ar; max-age=0; samesite=lax'
+      }
+    }
   }
 
   const reviewCoupon = async (rawCouponCode: string) => {
-    const trimmedCouponCode = rawCouponCode.trim()
+    const trimmedCouponCode = extractCouponCode(rawCouponCode)
 
     if (!trimmedCouponCode) {
       setCouponPreview(null)
@@ -404,6 +416,10 @@ function CheckoutContent() {
 
       setCouponPreview(result)
       setCouponDraft(result.normalizedCode || trimmedCouponCode)
+      setCouponCode(result.normalizedCode || trimmedCouponCode)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('saved_coupon', result.normalizedCode || trimmedCouponCode)
+      }
       setValue('couponCode', result.normalizedCode || trimmedCouponCode, {
         shouldDirty: true,
         shouldValidate: true,
@@ -469,6 +485,7 @@ function CheckoutContent() {
         if (!response.ok) throw new Error(result.error)
         setOrderCreated(true)
         clearCart()
+        clearCouponCode()
         if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
         router.push(result.initPoint)
       } else {
@@ -481,6 +498,7 @@ function CheckoutContent() {
         if (!response.ok) throw new Error(result.error)
         setOrderCreated(true)
         clearCart()
+        clearCouponCode()
         if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
         router.push(`/checkout/success?${result.successQuery || `orderId=${result.orderId}`}`)
       }

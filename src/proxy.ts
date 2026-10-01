@@ -21,9 +21,16 @@ export default auth((req) => {
     })
   }
 
-  const promoCode = searchParams.get('c') || searchParams.get('coupon') || searchParams.get('promo')
+  const promoCode =
+    searchParams.get('c') ||
+    searchParams.get('coupon') ||
+    searchParams.get('couponCode') ||
+    searchParams.get('code') ||
+    searchParams.get('promo') ||
+    searchParams.get('voucher')
   if (promoCode) {
-    const isZapDomain = req.nextUrl.hostname.endsWith('zap.com.ar') || process.env.NODE_ENV === 'production'
+    const isZapDomain =
+      req.nextUrl.hostname === 'zap.com.ar' || req.nextUrl.hostname.endsWith('.zap.com.ar')
     res.cookies.set('zap_welcome_promo', promoCode, {
       path: '/',
       domain: isZapDomain ? '.zap.com.ar' : undefined,
