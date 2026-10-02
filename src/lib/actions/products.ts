@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { slugify } from '@/lib/slug'
 import { getFirstValidationError, productSchema } from '@/lib/validations'
+import { Prisma } from '@prisma/client'
 
 async function requireAdmin() {
   const session = await auth()
@@ -35,6 +36,11 @@ function parseLineList(formData: FormData, key: string) {
       .map((item) => item.trim())
       .filter(Boolean)
   )]
+}
+
+function toNullableJson(value: unknown) {
+  if (value === null) return Prisma.JsonNull
+  return value as Prisma.InputJsonValue | undefined
 }
 
 async function ensureUniqueProductSlug(baseSlug: string, excludeProductId?: string) {
@@ -373,7 +379,7 @@ export async function createProduct(formData: FormData) {
       configurable: data.configurable,
       consultationNote: data.consultationNote || null,
       configuratorVersion: data.configuratorVersion || null,
-      configuratorDefinition: data.configuratorDefinition,
+      configuratorDefinition: toNullableJson(data.configuratorDefinition),
       isCombo: data.isCombo,
       comboPricingMode: data.isCombo ? data.comboPricingMode : 'FIXED',
       comboDiscountPercent: data.isCombo && data.comboPricingMode === 'DYNAMIC' ? data.comboDiscountPercent : 0,
@@ -461,7 +467,7 @@ export async function updateProduct(id: string, formData: FormData) {
         configurable: data.configurable,
         consultationNote: data.consultationNote || null,
         configuratorVersion: data.configuratorVersion || null,
-        configuratorDefinition: data.configuratorDefinition,
+        configuratorDefinition: toNullableJson(data.configuratorDefinition),
         targetBusinessTypes: {
           set: data.targetBusinessTypeIds.map((btId) => ({ id: btId })),
         },
