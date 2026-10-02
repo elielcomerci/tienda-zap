@@ -4,16 +4,18 @@ import ProductForm from '@/components/admin/ProductForm'
 import { getProductRelationOptions } from '@/lib/products'
 import { getIntentions } from '@/lib/intentions'
 import { getActiveBusinessTypes } from '@/lib/business-types'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Nuevo Producto | ZAP Admin' }
 
 export default async function NewProductPage() {
-  const [categories, availableProducts, availableIntentions, availableBusinessTypes] = await Promise.all([
+  const [categories, availableProducts, availableIntentions, availableBusinessTypes, availableNeeds] = await Promise.all([
     getCategories(),
     getProductRelationOptions(),
     getIntentions(),
     getActiveBusinessTypes(),
+    prisma.need.findMany({ where: { active: true }, select: { id: true, name: true }, orderBy: [{ order: 'asc' }, { name: 'asc' }] }),
   ])
 
   return (
@@ -23,6 +25,7 @@ export default async function NewProductPage() {
       availableProducts={availableProducts}
       availableIntentions={availableIntentions}
       availableBusinessTypes={availableBusinessTypes}
+      availableNeeds={availableNeeds}
     />
   )
 }

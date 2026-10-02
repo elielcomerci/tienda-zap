@@ -83,6 +83,16 @@ function inferMockupSide(fileName: string): 'frontImageUrl' | 'backImageUrl' {
   return /\b(espalda|back|dorso|atras)\b/.test(normalized) ? 'backImageUrl' : 'frontImageUrl'
 }
 
+function parseEditorialList(value: FormDataEntryValue | null) {
+  if (typeof value !== 'string') return []
+  return [...new Set(value.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean))]
+}
+
+function parseConfiguratorDefinition(value: FormDataEntryValue | null) {
+  if (typeof value !== 'string' || !value.trim()) return null
+  return JSON.parse(value)
+}
+
 function getYouTubeEmbedUrl(url: string) {
   try {
     const parsed = new URL(url)
@@ -113,6 +123,8 @@ export default function ProductForm({
   initialRelatedProductIds,
   availableIntentions,
   initialIntentionIds,
+  availableNeeds,
+  initialNeedIds,
   availableBusinessTypes,
   initialTargetBusinessTypeIds,
 }: {
@@ -137,6 +149,8 @@ export default function ProductForm({
   initialRelatedProductIds?: string[]
   availableIntentions?: Array<{ id: string; name: string }>
   initialIntentionIds?: string[]
+  availableNeeds?: Array<{ id: string; name: string }>
+  initialNeedIds?: string[]
   availableBusinessTypes?: Array<{ id: string; name: string; slug: string }>
   initialTargetBusinessTypeIds?: string[]
 }) {
@@ -1002,6 +1016,15 @@ export default function ProductForm({
       const { formData, nextImages, nextMediaList, nextOptions, nextVariants, nextQuoterConfig, nextRelatedProductIds } =
         buildProductFormData(form, overrides)
 
+      let configuratorDefinition: unknown
+      try {
+        configuratorDefinition = parseConfiguratorDefinition(formData.get('configuratorDefinition'))
+      } catch {
+        setError('La definición del configurador debe ser un JSON válido.')
+        setLoading(false)
+        return
+      }
+
       const raw = {
         name: formData.get('name') as string,
         slug: formData.get('slug') as string,
@@ -1026,6 +1049,16 @@ export default function ProductForm({
         quoterConfig: nextQuoterConfig,
         relatedProductIds: nextRelatedProductIds,
         intentionIds: formData.getAll('intentionIds'),
+        needIds: formData.getAll('needIds'),
+        taxonomy: (formData.get('taxonomy') as string) || null,
+        conversionType: (formData.get('conversionType') as string) || null,
+        whatIs: (formData.get('whatIs') as string) || '',
+        purpose: (formData.get('purpose') as string) || '',
+        includes: parseEditorialList(formData.get('includes')),
+        configurable: parseEditorialList(formData.get('configurable')),
+        consultationNote: (formData.get('consultationNote') as string) || '',
+        configuratorVersion: (formData.get('configuratorVersion') as string) || null,
+        configuratorDefinition,
       }
 
       const parsed = productSchema.safeParse(raw)
@@ -1144,6 +1177,82 @@ export default function ProductForm({
                 placeholder="Caracteristicas detalladas, gramaje, tiempos de produccion..."
               />
             </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label">Tipo comercial</label>
+                <select name="taxonomy" defaultValue={product?.taxonomy || ''} className="input">
+                  <option value="">Sin clasificar</option>
+                  <option value="cosas">Cosa</option>
+                  <option value="soluciones">Solución</option>
+                  <option value="desarrollos">Desarrollo</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Define cómo se presenta la oferta, no su categoría técnica.</p>
+              </div>
+              <div>
+                <label className="label">Recorrido de contratación</label>
+                <select name="conversionType" defaultValue={product?.conversionType || ''} className="input">
+                  <option value="">Automático según precio y configuración</option>
+                  <option value="buy">Compra directa</option>
+                  <option value="configure">Configurar antes de comprar</option>
+                  <option value="contact">Hablar con ZAP</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Usá consulta para casos que todavía no estén estandarizados.</p>
+              </div>
+            </div>
+            <div className="mt-5 rounded-2xl border border-[#4576B9]/15 bg-[#EEF4FC]/45 p-4">
+              <div className="mb-4">
+                <p className="text-sm font-bold text-gray-900">Ficha editorial</p>
+                <p className="mt-1 text-xs leading-5 text-gray-600">
+                  Estos campos explican la oferta sin convertir la ficha en una lista técnica. Separá los ítems de las listas por renglón o coma.
+                </p>
+              </div>
+              <div className="grid gap-4">
+                <label>
+                  <span className="label">Qué es</span>
+                  <textarea name="whatIs" defaultValue={product?.whatIs || ''} rows={2} className="input resize-none" placeholder="Una explicación breve y concreta de la oferta." />
+                </label>
+                <label>
+                  <span className="label">Para qué sirve</span>
+                  <textarea name="purpose" defaultValue={product?.purpose || ''} rows={2} className="input resize-none" placeholder="El resultado o situación que ayuda a resolver." />
+                </label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label>
+                    <span className="label">Qué incluye</span>
+                    <textarea name="includes" defaultValue={(product?.includes || []).join('\n')} rows={4} className="input resize-none" placeholder={'Ej: impresión\nterminación'} />
+                  </label>
+                  <label>
+                    <span className="label">Qué se puede configurar</span>
+                    <textarea name="configurable" defaultValue={(product?.configurable || []).join('\n')} rows={4} className="input resize-none" placeholder={'Ej: medida\ncantidad\nmaterial'} />
+                  </label>
+                </div>
+                <label>
+                  <span className="label">Cuándo conviene hablar con ZAP</span>
+                  <textarea name="consultationNote" defaultValue={product?.consultationNote || ''} rows={2} className="input resize-none" placeholder="Indicá qué casos requieren una consulta guiada." />
+                </label>
+              </div>
+            </div>
+            <details className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <summary className="cursor-pointer text-sm font-bold text-gray-900">Configurador declarativo (avanzado)</summary>
+              <p className="mt-2 text-xs leading-5 text-gray-600">
+                Declaralo cuando esta oferta use bloques y reglas distintos a las opciones estándar. La versión queda guardada con cada pedido para que Producción pueda interpretar su contexto histórico.
+              </p>
+              <div className="mt-4 grid gap-4">
+                <label>
+                  <span className="label">Versión</span>
+                  <input name="configuratorVersion" defaultValue={product?.configuratorVersion || ''} className="input" placeholder="stickers-v1" />
+                </label>
+                <label>
+                  <span className="label">Definición JSON</span>
+                  <textarea
+                    name="configuratorDefinition"
+                    defaultValue={product?.configuratorDefinition ? JSON.stringify(product.configuratorDefinition, null, 2) : ''}
+                    rows={10}
+                    className="input font-mono text-xs"
+                    placeholder={'{\n  "result": "CALCULATED",\n  "blocks": ["size", "quantity", "material"]\n}'}
+                  />
+                </label>
+              </div>
+            </details>
           </div>
 
           <div className="card p-6">
@@ -1431,7 +1540,7 @@ export default function ProductForm({
           {availableIntentions && availableIntentions.length > 0 && (
             <div className="card p-6">
               <h2 className="mb-4 border-b border-gray-100 pb-3 font-bold text-gray-900">
-                Objetivos (Intenciones)
+                Situaciones y objetivos
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 {availableIntentions.map((intention) => (
@@ -1448,8 +1557,23 @@ export default function ProductForm({
                 ))}
               </div>
               <p className="mt-3 text-xs text-gray-500">
-                Seleccioná a qué objetivos comerciales responde este producto para que aparezca en la navegación por "Objetivos".
+                Seleccioná en qué situaciones u objetivos puede tener sentido esta oferta para que aparezca en la navegación de descubrimiento.
               </p>
+            </div>
+          )}
+
+          {availableNeeds && availableNeeds.length > 0 && (
+            <div className="card p-6">
+              <h2 className="mb-1 border-b border-gray-100 pb-3 font-bold text-gray-900">Necesidades que resuelve</h2>
+              <p className="mb-4 text-xs text-gray-500">Esta relación alimenta el recorrido Situación → Necesidad → Oferta. Asociá sólo necesidades que esta oferta resuelva razonablemente.</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {availableNeeds.map((need) => (
+                  <label key={need.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
+                    <input type="checkbox" name="needIds" value={need.id} defaultChecked={initialNeedIds?.includes(need.id)} className="h-4 w-4 rounded border-gray-300 text-[#ED164F] focus:ring-[#ED164F]" />
+                    <span className="text-sm font-semibold text-gray-700">{need.name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           )}
 

@@ -41,6 +41,40 @@ function parseSizeLabel(value?: string) {
   }
 }
 
+function buildConfigurationSnapshot(input: {
+  product: any
+  selectedOptions: Array<{ name: string; value: string }>
+  unitPrice: number
+  quantity: number
+  priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo'
+}) {
+  const { product, selectedOptions, unitPrice, quantity, priceSource } = input
+  const inferredBlocks = product.quoterConfig
+    ? ['material', 'size', 'quantity', 'finishing']
+    : product.options.map((option: { name: string }) => option.name)
+
+  return {
+    version: product.configuratorVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
+    result: product.conversionType === 'contact'
+      ? 'GUIDED_REVIEW'
+      : product.quoterConfig
+        ? 'CALCULATED_PRICE'
+        : 'DIRECT_PRICE',
+    definition: product.configuratorDefinition || {
+      kind: product.quoterConfig ? 'product-quoter' : product.options.length ? 'product-options' : 'simple-product',
+      blocks: inferredBlocks,
+    },
+    selections: selectedOptions,
+    price: {
+      unitPrice,
+      quantity,
+      totalPrice: unitPrice * quantity,
+      source: priceSource,
+      currency: 'ARS',
+    },
+  }
+}
+
 export async function resolveCheckoutOrderItems(
   items: Array<{
     productId: string
@@ -145,8 +179,10 @@ export async function resolveCheckoutOrderItems(
     }
 
     let unitPrice = product.price
+    let priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo' = 'base'
     if (product.isCombo && product.comboPricingMode === 'DYNAMIC' && item.unitPrice && item.unitPrice > 0) {
       unitPrice = item.unitPrice
+      priceSource = 'dynamic-combo'
     }
 
     if (product.quoterConfig) {
@@ -179,6 +215,7 @@ export async function resolveCheckoutOrderItems(
       })
 
       unitPrice = quote.totalPrice
+      priceSource = 'quote'
     } else if (product.variants.length > 0) {
       const matchingVariant = product.variants.find((variant) =>
         matchesVariant(selectedOptions, variant)
@@ -189,6 +226,7 @@ export async function resolveCheckoutOrderItems(
       }
 
       unitPrice = matchingVariant.price
+      priceSource = 'variant'
     }
 
     if (unitPrice <= 0) {
@@ -216,6 +254,13 @@ export async function resolveCheckoutOrderItems(
         : hasArtworkFile
           ? ('R2' as const)
           : ('PENDING' as const),
+      configurationSnapshot: buildConfigurationSnapshot({
+        product,
+        selectedOptions,
+        unitPrice,
+        quantity: item.quantity,
+        priceSource,
+      }),
       selectedOptions: selectedOptions.length > 0
         ? {
             create: selectedOptions.map((option) => ({

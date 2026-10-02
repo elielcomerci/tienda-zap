@@ -10,6 +10,7 @@ import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import OrderTimeline from '@/components/public/OrderTimeline'
 import ProofReviewSection from '@/components/public/ProofReviewSection'
 import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
+import OrderItemConfigurationSummary from '@/components/orders/OrderItemConfigurationSummary'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -184,6 +185,7 @@ export default async function MiOrdenPage({
                     briefReferenceLinks={item.briefReferenceLinks}
                     briefReferenceFiles={item.briefReferenceFiles}
                   />
+                  <OrderItemConfigurationSummary snapshot={item.configurationSnapshot} />
 
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {hasUploadedFile && (

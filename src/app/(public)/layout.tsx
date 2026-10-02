@@ -6,7 +6,7 @@ import { auth } from '@/auth'
 import { cookies } from 'next/headers'
 import { getActiveSellerById } from '@/lib/sellers'
 import { getPublicCategories } from '@/lib/categories'
-import { getPublicIntentions } from '@/lib/intentions'
+import { getPublicSituations } from '@/lib/discovery'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -15,7 +15,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   const [categories, intentions] = await Promise.all([
     getPublicCategories(),
-    getPublicIntentions(),
+    getPublicSituations(),
   ])
 
   return (

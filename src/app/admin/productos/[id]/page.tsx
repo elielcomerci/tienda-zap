@@ -35,6 +35,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       intentions: {
         select: { id: true }
       },
+      needs: {
+        select: { id: true },
+      },
       targetBusinessTypes: {
         select: { id: true }
       },
@@ -50,11 +53,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   })
   if (!product) notFound()
 
-  const [categories, availableProducts, availableIntentions, availableBusinessTypes] = await Promise.all([
+  const [categories, availableProducts, availableIntentions, availableBusinessTypes, availableNeeds] = await Promise.all([
     getCategories(),
     getProductRelationOptions(id),
     getIntentions(),
-    getActiveBusinessTypes()
+    getActiveBusinessTypes(),
+    prisma.need.findMany({ where: { active: true }, select: { id: true, name: true }, orderBy: [{ order: 'asc' }, { name: 'asc' }] }),
   ])
   const updateAction = updateProduct.bind(null, id)
 
@@ -100,6 +104,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       initialRelatedProductIds={initialRelatedProductIds}
       availableIntentions={availableIntentions}
       initialIntentionIds={product.intentions.map(i => i.id)}
+      availableNeeds={availableNeeds}
+      initialNeedIds={product.needs.map((need) => need.id)}
       availableBusinessTypes={availableBusinessTypes}
       initialTargetBusinessTypeIds={product.targetBusinessTypes.map(bt => bt.id)}
     />

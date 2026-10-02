@@ -76,6 +76,8 @@ model BusinessType {
   name        String
   slug        String            @unique
   categories  Category[]
+  situations  Situation[]       @relation("SituationBusinessTypes")
+  needs       Need[]            @relation("NeedBusinessTypes")
   users       User[]
   sellerLeads SellerLead[]
   accounts    BusinessAccount[]
@@ -233,6 +235,44 @@ model Intention {
   products Product[] @relation("ProductIntentions")
 }
 
+// Intention remains available while the previous discovery URLs are in use.
+// New editorial discovery is intentionally modelled separately: a Situation
+// describes what is happening, while a Need names the concrete thing that
+// needs attention inside that context.
+model Situation {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  icon        String?
+  description String?
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  businessTypes BusinessType[] @relation("SituationBusinessTypes")
+  needs         Need[]         @relation("SituationNeeds")
+
+  @@index([active, order])
+}
+
+model Need {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  situations    Situation[]    @relation("SituationNeeds")
+  businessTypes BusinessType[] @relation("NeedBusinessTypes")
+  products      Product[]      @relation("ProductNeeds")
+
+  @@index([active, order])
+}
+
 model Product {
   id                       String               @id @default(cuid())
   name                     String
@@ -254,8 +294,15 @@ model Product {
   createdAt                DateTime             @default(now())
   updatedAt                DateTime             @updatedAt
   creditDownPaymentPercent Int                  @default(30)
-  conversionType           String?                              // buy | configure | contact — nullable; null = fallback a lógica actual de variantes/cotizador
-  taxonomy                 String?                              // cosas | soluciones | desarrollos — Fase E; null = sin clasificar
+  conversionType           String? // buy | configure | contact — nullable; null = fallback a lógica actual de variantes/cotizador
+  taxonomy                 String? // cosas | soluciones | desarrollos — Fase E; null = sin clasificar
+  whatIs                   String?
+  purpose                  String?
+  includes                 String[]
+  configurable             String[]
+  consultationNote         String?
+  configuratorVersion      String?
+  configuratorDefinition   Json?
   orderItems               OrderItem[]
   category                 Category             @relation(fields: [categoryId], references: [id])
   options                  ProductOption[]
@@ -263,6 +310,7 @@ model Product {
   incomingRelations        ProductRelation[]    @relation("ProductIncomingRelations")
   variants                 ProductVariant[]
   intentions               Intention[]          @relation("ProductIntentions")
+  needs                    Need[]               @relation("ProductNeeds")
   quoterConfig             ProductQuoterConfig?
   targetBusinessTypes      BusinessType[]       @relation("ComboBusinessTypes")
 }
@@ -334,6 +382,7 @@ model OrderItem {
   fileUploadedAt           DateTime?
   isService                Boolean                  @default(false)
   creditDownPaymentPercent Int                      @default(30)
+  configurationSnapshot    Json?
   order                    Order                    @relation(fields: [orderId], references: [id])
   product                  Product                  @relation(fields: [productId], references: [id])
   selectedOptions          OrderItemOption[]

@@ -25,6 +25,18 @@ function parseJsonField<T>(formData: FormData, key: string, fallback: T) {
   }
 }
 
+function parseLineList(formData: FormData, key: string) {
+  const value = formData.get(key)
+  if (typeof value !== 'string') return []
+
+  return [...new Set(
+    value
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+  )]
+}
+
 async function ensureUniqueProductSlug(baseSlug: string, excludeProductId?: string) {
   let candidate = baseSlug
   let suffix = 2
@@ -107,6 +119,16 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
     quoterConfig: parseJsonField(formData, 'quoterConfig', undefined),
     relatedProductIds: parseJsonField<string[]>(formData, 'relatedProductIds', []),
     intentionIds: formData.getAll('intentionIds') as string[],
+    needIds: formData.getAll('needIds') as string[],
+    taxonomy: (formData.get('taxonomy') as string) || null,
+    conversionType: (formData.get('conversionType') as string) || null,
+    whatIs: (formData.get('whatIs') as string) || '',
+    purpose: (formData.get('purpose') as string) || '',
+    includes: parseLineList(formData, 'includes'),
+    configurable: parseLineList(formData, 'configurable'),
+    consultationNote: (formData.get('consultationNote') as string) || '',
+    configuratorVersion: (formData.get('configuratorVersion') as string) || null,
+    configuratorDefinition: parseJsonField(formData, 'configuratorDefinition', null),
     isCombo: formData.get('isCombo') === 'on',
     comboPricingMode: ((formData.get('comboPricingMode') as string) || 'FIXED') as 'FIXED' | 'DYNAMIC',
     comboDiscountPercent: formData.get('comboDiscountPercent') || 0,
@@ -150,7 +172,7 @@ async function parseProductFormData(formData: FormData, excludeProductId?: strin
 
   await assertRelatedProductsExist(relatedProductIds, excludeProductId)
 
-  return { ...data, variants, relatedProductIds, categoryIsService: category.isService, intentionIds: data.intentionIds, targetBusinessTypeIds: data.targetBusinessTypeIds }
+  return { ...data, variants, relatedProductIds, categoryIsService: category.isService, intentionIds: data.intentionIds, needIds: data.needIds, targetBusinessTypeIds: data.targetBusinessTypeIds }
 }
 
 async function syncProductQuoterConfig(
@@ -340,6 +362,18 @@ export async function createProduct(formData: FormData) {
       intentions: {
         connect: data.intentionIds.map(id => ({ id }))
       },
+      needs: {
+        connect: data.needIds.map(id => ({ id })),
+      },
+      taxonomy: data.taxonomy,
+      conversionType: data.conversionType,
+      whatIs: data.whatIs || null,
+      purpose: data.purpose || null,
+      includes: data.includes,
+      configurable: data.configurable,
+      consultationNote: data.consultationNote || null,
+      configuratorVersion: data.configuratorVersion || null,
+      configuratorDefinition: data.configuratorDefinition,
       isCombo: data.isCombo,
       comboPricingMode: data.isCombo ? data.comboPricingMode : 'FIXED',
       comboDiscountPercent: data.isCombo && data.comboPricingMode === 'DYNAMIC' ? data.comboDiscountPercent : 0,
@@ -416,6 +450,18 @@ export async function updateProduct(id: string, formData: FormData) {
         intentions: {
           set: data.intentionIds.map((intentionId) => ({ id: intentionId })),
         },
+        needs: {
+          set: data.needIds.map((needId) => ({ id: needId })),
+        },
+        taxonomy: data.taxonomy,
+        conversionType: data.conversionType,
+        whatIs: data.whatIs || null,
+        purpose: data.purpose || null,
+        includes: data.includes,
+        configurable: data.configurable,
+        consultationNote: data.consultationNote || null,
+        configuratorVersion: data.configuratorVersion || null,
+        configuratorDefinition: data.configuratorDefinition,
         targetBusinessTypes: {
           set: data.targetBusinessTypeIds.map((btId) => ({ id: btId })),
         },
@@ -694,7 +740,33 @@ export async function duplicateProduct(id: string) {
 
   const original = await prisma.product.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      price: true,
+      creditDownPaymentPercent: true,
+      categoryId: true,
+      stock: true,
+      images: true,
+      briefType: true,
+      mediaType: true,
+      mediaUrl: true,
+      mediaTitle: true,
+      mediaList: true,
+      isCombo: true,
+      comboPricingMode: true,
+      comboDiscountPercent: true,
+      taxonomy: true,
+      conversionType: true,
+      whatIs: true,
+      purpose: true,
+      includes: true,
+      configurable: true,
+      consultationNote: true,
+      configuratorVersion: true,
+      configuratorDefinition: true,
       options: {
         include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
         orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
@@ -714,6 +786,9 @@ export async function duplicateProduct(id: string) {
         select: { relatedProductId: true },
       },
       intentions: {
+        select: { id: true },
+      },
+      needs: {
         select: { id: true },
       },
       targetBusinessTypes: {
@@ -770,6 +845,18 @@ export async function duplicateProduct(id: string) {
       intentions: {
         connect: original.intentions.map((intention) => ({ id: intention.id })),
       },
+      needs: {
+        connect: original.needs.map((need) => ({ id: need.id })),
+      },
+      taxonomy: original.taxonomy,
+      conversionType: original.conversionType,
+      whatIs: original.whatIs,
+      purpose: original.purpose,
+      includes: original.includes,
+      configurable: original.configurable,
+      consultationNote: original.consultationNote,
+      configuratorVersion: original.configuratorVersion,
+      configuratorDefinition: original.configuratorDefinition,
       targetBusinessTypes: {
         connect: original.targetBusinessTypes.map((businessType) => ({ id: businessType.id })),
       },

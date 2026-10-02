@@ -5,12 +5,14 @@ import {
 } from 'lucide-react'
 import { getPublicCategories } from '@/lib/categories'
 import { getProducts, getCombos } from '@/lib/products'
-import { getPublicIntentions } from '@/lib/intentions'
+import { getPublicSituations } from '@/lib/discovery'
+import { getPublicBusinessTypes } from '@/lib/business-types'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import ComboSection from '@/components/public/ComboSection'
 import ObjectivesSection from '@/components/public/ObjectivesSection'
 import CatalogEntrySection from '@/components/public/CatalogEntrySection'
+import BusinessTypesSection from '@/components/public/BusinessTypesSection'
 
 export const metadata = {
   title: 'Tienda ZAP — Soluciones concretas para tu marca',
@@ -36,11 +38,12 @@ export default async function HomePage() {
     }
   }
 
-  const [categories, allProducts, combos, intentions] = await Promise.all([
+  const [categories, allProducts, combos, situations, businessTypes] = await Promise.all([
     getPublicCategories(),
     getProducts(undefined, undefined, { take: 20 }),
     getCombos(businessTypeId),
-    getPublicIntentions(),
+    getPublicSituations(),
+    getPublicBusinessTypes(),
   ])
 
   const salesWhatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
@@ -66,22 +69,22 @@ export default async function HomePage() {
 
             {/* H1 */}
             <h1 className="text-5xl font-black tracking-tight text-gray-950 sm:text-6xl xl:text-7xl">
-              ¿Qué necesitás hacer?
+              Contanos qué está pasando.
             </h1>
 
             {/* Bajada */}
             <p className="max-w-xl text-base leading-8 text-gray-600 sm:text-lg">
-              Soluciones concretas para tu marca, tu local, tus ventas y cada
-              punto de contacto.
+              Entendemos la situación y te mostramos qué puede ayudarte a avanzar.
+              Si ya sabés qué necesitás, también podés comprarlo directo.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/productos"
+                href="/productos?mode=product"
                 className="btn-primary !px-7 !py-3.5 !text-base"
               >
-                Ver opciones <ArrowRight size={18} />
+                Ya sé qué necesito <ArrowRight size={18} />
               </Link>
               {salesWhatsappUrl && (
                 <Link
@@ -100,7 +103,9 @@ export default async function HomePage() {
       </section>
 
       {/* ── 2. OBJETIVOS ──────────────────────────────────────────── */}
-      <ObjectivesSection intentions={intentions} />
+      <ObjectivesSection situations={situations} />
+
+      <BusinessTypesSection businessTypes={businessTypes} />
 
       {/* ── 3. SOLUCIONES (Combos/Packs) ──────────────────────────── */}
       <ComboSection combos={combos} businessTypeName={businessTypeName} />
@@ -116,10 +121,10 @@ export default async function HomePage() {
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-400">
-                    También por rubro
+                    Catálogo técnico
                   </p>
                   <h2 className="mt-2 text-2xl font-black text-gray-950">
-                    Si preferís entrar por rubro, las categorías quedan a mano.
+                    ¿Ya sabés lo que necesitás? Las categorías técnicas quedan a mano.
                   </h2>
                 </div>
                 <Link

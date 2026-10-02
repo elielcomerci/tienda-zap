@@ -34,6 +34,18 @@ function isApparelProduct(product: any) {
   )
 }
 
+const taxonomyLabel: Record<string, string> = {
+  cosas: 'Cosa',
+  soluciones: 'Solución',
+  desarrollos: 'Desarrollo',
+}
+
+const purchaseModeLabel: Record<string, string> = {
+  buy: 'Compra directa',
+  configure: 'Configuración previa',
+  contact: 'Consulta guiada',
+}
+
 export default function ProductDetailExperience({
   product,
   inquiryUrl,
@@ -65,6 +77,11 @@ export default function ProductDetailExperience({
     ? apparelMockup
     : fallbackApparelMockup
   const showApparelMockup = hasApparelMockupImages(activeApparelMockup)
+  const editorialIncludes = Array.isArray(product.includes) ? product.includes : []
+  const editorialConfigurable = Array.isArray(product.configurable) ? product.configurable : []
+  const hasEditorialDetail = Boolean(
+    product.whatIs || product.purpose || editorialIncludes.length || editorialConfigurable.length
+  )
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)] 2xl:gap-12">
@@ -101,7 +118,7 @@ export default function ProductDetailExperience({
               {product.category.name}
             </span>
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              {product.category.isService ? 'Servicio' : 'Producto'}
+              {taxonomyLabel[product.taxonomy] || (product.category.isService ? 'Desarrollo' : 'Cosa')}
             </span>
           </div>
 
@@ -115,13 +132,50 @@ export default function ProductDetailExperience({
             </p>
           )}
 
+          {hasEditorialDetail && (
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {(product.whatIs || product.purpose) && (
+                <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4 sm:col-span-2">
+                  {product.whatIs && (
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Qué es</p>
+                      <p className="mt-1 text-sm leading-6 text-gray-800">{product.whatIs}</p>
+                    </div>
+                  )}
+                  {product.purpose && (
+                    <div className={product.whatIs ? 'mt-4 border-t border-gray-200 pt-4' : ''}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Para qué sirve</p>
+                      <p className="mt-1 text-sm leading-6 text-gray-800">{product.purpose}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {editorialIncludes.length > 0 && (
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Incluye</p>
+                  <ul className="mt-2 space-y-1.5 text-sm leading-6 text-gray-700">
+                    {editorialIncludes.map((item: string) => <li key={item}>• {item}</li>)}
+                  </ul>
+                </div>
+              )}
+              {editorialConfigurable.length > 0 && (
+                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Podés definir</p>
+                  <ul className="mt-2 space-y-1.5 text-sm leading-6 text-gray-700">
+                    {editorialConfigurable.map((item: string) => <li key={item}>• {item}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
           <dl className="mt-6 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
               <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                 Tipo
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {product.category.isService ? 'Servicio coordinado' : 'Pieza producida'}
+                {purchaseModeLabel[product.conversionType] || (product.category.isService ? 'Consulta guiada' : 'Pedido online')}
               </dd>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -129,7 +183,7 @@ export default function ProductDetailExperience({
                 Modalidad
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                Pedido online o consulta guiada
+                {product.conversionType === 'contact' ? 'Hablar con ZAP' : product.quoterConfig || product.options?.length ? 'Definir configuración' : 'Agregar al carrito'}
               </dd>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -137,7 +191,7 @@ export default function ProductDetailExperience({
                 Siguiente paso
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                Configurar y agregar
+                {product.conversionType === 'contact' ? 'Contanos tu caso' : 'Elegir y avanzar'}
               </dd>
             </div>
           </dl>
@@ -150,6 +204,11 @@ export default function ProductDetailExperience({
           onSelectionChange={setSelectedOptions}
           apparelDesignSelection={apparelDesignSelection}
         />
+        {product.consultationNote && (
+          <aside className="rounded-2xl border border-[#4576B9]/20 bg-[#EEF4FC]/60 p-4 text-sm leading-6 text-[#244D80]">
+            <span className="font-bold">¿Tu caso necesita algo distinto?</span> {product.consultationNote}
+          </aside>
+        )}
       </div>
     </div>
   )

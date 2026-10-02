@@ -3,10 +3,12 @@ import Link from 'next/link'
 import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts, getCombos } from '@/lib/products'
 import { getPublicCategories } from '@/lib/categories'
-import { getPublicIntentions } from '@/lib/intentions'
+import { getPublicSituations } from '@/lib/discovery'
+import { getPublicBusinessTypes } from '@/lib/business-types'
 import AddToCartButton from '@/components/public/AddToCartButton'
 import CatalogSidebar from '@/components/public/CatalogSidebar'
 import IntentionHero from '@/components/public/IntentionHero'
+import NeedsSection from '@/components/public/NeedsSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
@@ -18,17 +20,31 @@ export const dynamic = 'force-dynamic'
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string; q?: string; mode?: 'product' | 'objective' | 'combo'; intent?: string }>
+  searchParams: Promise<{
+    cat?: string
+    q?: string
+    mode?: 'product' | 'objective' | 'situation' | 'combo' | 'rubro'
+    intent?: string
+    situacion?: string
+    necesidad?: string
+    rubro?: string
+  }>
 }) {
-  const { cat, q, mode, intent } = await searchParams
+  const { cat, q, mode, intent, situacion, necesidad, rubro } = await searchParams
+  const isSituationMode = mode === 'objective' || mode === 'situation'
+  const situationSlug = situacion || intent
   
-  const intentions = await getPublicIntentions()
-  const selectedIntention = intent ? intentions.find(i => i.slug === intent) : undefined
+  const [situations, businessTypes] = await Promise.all([
+    getPublicSituations(rubro),
+    getPublicBusinessTypes(),
+  ])
+  const selectedSituation = situationSlug ? situations.find((situation) => situation.slug === situationSlug) : undefined
+  const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
   const session = await auth()
   let businessTypeId: string | null = null
   let businessTypeName: string | null = null
 
-  if (mode === 'combo' && session?.user?.id) {
+  if (mode === 'combo' && !selectedBusinessType && session?.user?.id) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
@@ -44,13 +60,24 @@ export default async function ProductsPage({
     }
   }
 
+  if (selectedBusinessType) {
+    businessTypeId = selectedBusinessType.id
+    businessTypeName = selectedBusinessType.name
+  }
+
   const [products, categories] = await Promise.all([
     mode === 'combo'
       ? getCombos(businessTypeId, q)
       : getProducts(
-          mode === 'objective' ? undefined : cat, 
+          isSituationMode || mode === 'rubro' ? undefined : cat,
           q, 
-          { intentSlug: mode === 'objective' ? intent : undefined }
+          {
+            // Legacy intention URLs keep working until the old editorial data is retired.
+            intentSlug: isSituationMode && !selectedSituation ? situationSlug : undefined,
+            situationSlug: selectedSituation?.slug,
+            needSlug: selectedSituation ? necesidad : undefined,
+            businessTypeSlug: mode === 'rubro' ? rubro : undefined,
+          }
         ), 
     getPublicCategories()
   ])
@@ -63,21 +90,27 @@ export default async function ProductsPage({
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                {mode === 'combo' ? 'Packs Comerciales' : 'Catálogo'}
+                {mode === 'combo' ? 'Soluciones' : isSituationMode ? 'Situaciones' : mode === 'rubro' ? 'Por rubro' : 'Catálogo técnico'}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
                 {mode === 'combo' 
                   ? 'Packs y Combos ZAP' 
-                  : mode === 'objective' 
-                    ? 'Soluciones por Objetivo' 
-                    : 'Productos y servicios ZAP'}
+                  : isSituationMode
+                    ? 'Opciones para esta situación'
+                    : mode === 'rubro'
+                      ? selectedBusinessType
+                        ? `Ofertas para ${selectedBusinessType.name}`
+                        : 'Elegí tu rubro'
+                      : 'Cosas y desarrollos ZAP'}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
                 {mode === 'combo'
                   ? 'Kits completos y combos todo-en-uno diseñados específicamente para resolver la gráfica, papelería y presencia digital de tu local o lanzamiento en un solo click.'
-                  : mode === 'objective'
-                    ? 'Encontrá las herramientas ideales agrupadas según el momento y meta de tu negocio.'
-                    : 'Gráfica, cartelería, exhibidores, merchandising, web y presencia digital.'}
+                  : isSituationMode
+                    ? 'Partimos de lo que está pasando o de lo que querés lograr. Elegí sólo lo que tenga sentido para avanzar.'
+                    : mode === 'rubro'
+                      ? 'Encontrá ofertas relacionadas con el contexto de tu negocio. Las categorías técnicas siguen disponibles cuando ya sabés qué buscar.'
+                      : 'Para cuando ya sabés qué necesitás: gráfica, cartelería, exhibidores, merchandising, web y presencia digital.'}
               </p>
             </div>
 
@@ -93,13 +126,15 @@ export default async function ProductsPage({
                   Filtro Activo
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
-                  {mode === 'objective' && selectedIntention 
-                    ? selectedIntention.name 
+                  {isSituationMode && selectedSituation
+                    ? selectedSituation.name
                     : mode === 'combo'
                       ? businessTypeName
                         ? `Combos para ${businessTypeName}`
                         : 'Todos los Combos'
-                      : selectedCategory?.name || 'Todos'}
+                      : mode === 'rubro'
+                        ? selectedBusinessType?.name || 'Todos los rubros'
+                        : selectedCategory?.name || 'Todos'}
                 </p>
               </div>
               {q?.trim() && (
@@ -119,10 +154,13 @@ export default async function ProductsPage({
         <div className="mt-8 grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]">
           <CatalogSidebar 
             categories={categories}
-            intentions={intentions}
+            intentions={situations}
+            businessTypes={businessTypes}
             cat={cat} 
             mode={mode} 
             intent={intent} 
+            situation={situacion}
+            businessType={rubro}
           />
 
           <div className="space-y-5 min-w-0">
@@ -139,7 +177,9 @@ export default async function ProductsPage({
                   />
                   {cat ? <input type="hidden" name="cat" value={cat} /> : null}
                   {mode ? <input type="hidden" name="mode" value={mode} /> : null}
-                  {intent ? <input type="hidden" name="intent" value={intent} /> : null}
+                  {situationSlug ? <input type="hidden" name="situacion" value={situationSlug} /> : null}
+                  {necesidad ? <input type="hidden" name="necesidad" value={necesidad} /> : null}
+                  {rubro ? <input type="hidden" name="rubro" value={rubro} /> : null}
                 </form>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -149,12 +189,22 @@ export default async function ProductsPage({
                       Packs y Combos
                     </span>
                   )}
-                  {selectedIntention && mode === 'objective' && (
+                  {selectedSituation && isSituationMode && (
                     <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
-                      Objetivo: {selectedIntention.name}
+                      Situación: {selectedSituation.name}
                     </span>
                   )}
-                  {selectedCategory && mode !== 'objective' && mode !== 'combo' && (
+                  {selectedSituation?.needs.find((need) => need.slug === necesidad) && (
+                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
+                      Necesidad: {selectedSituation.needs.find((need) => need.slug === necesidad)?.name}
+                    </span>
+                  )}
+                  {selectedBusinessType && mode === 'rubro' && (
+                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
+                      Rubro: {selectedBusinessType.name}
+                    </span>
+                  )}
+                  {selectedCategory && !isSituationMode && mode !== 'combo' && mode !== 'rubro' && (
                     <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
                       Categoría: {selectedCategory.name}
                     </span>
@@ -168,8 +218,11 @@ export default async function ProductsPage({
               </div>
             </div>
 
-            {selectedIntention && mode === 'objective' && (
-              <IntentionHero intention={selectedIntention} />
+            {selectedSituation && isSituationMode && (
+              <>
+                <IntentionHero intention={selectedSituation} />
+                <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} selectedNeedSlug={necesidad} />
+              </>
             )}
 
             {products.length === 0 ? (

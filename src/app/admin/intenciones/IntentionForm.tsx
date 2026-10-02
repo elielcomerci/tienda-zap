@@ -44,7 +44,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre del Objetivo</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre de la situación u objetivo</label>
           <input
             type="text"
             name="name"
@@ -104,7 +104,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción comercial</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción para orientar</label>
         <textarea
           name="description"
           defaultValue={intention?.description}
@@ -164,7 +164,7 @@ export default function IntentionForm({ intention }: { intention?: any }) {
           disabled={loading}
           className="btn-primary"
         >
-          {loading ? 'Guardando...' : intention ? 'Actualizar Objetivo' : 'Crear Objetivo'}
+          {loading ? 'Guardando...' : intention ? 'Actualizar' : 'Crear contexto'}
         </button>
       </div>
     </form>

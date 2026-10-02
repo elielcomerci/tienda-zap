@@ -48,6 +48,7 @@ const navSections = [
       { href: '/admin/productos', label: 'Productos', icon: Package },
       { href: '/admin/categorias', label: 'Categorías', icon: Tag },
       { href: '/admin/rubros', label: 'Rubros', icon: Briefcase },
+      { href: '/admin/descubrimiento', label: 'Descubrimiento', icon: Target },
       { href: '/admin/intenciones', label: 'Objetivos', icon: Target },
       { href: '/admin/promociones', label: 'Promociones', icon: Ticket },
     ],

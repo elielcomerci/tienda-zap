@@ -218,12 +218,12 @@ export default function PublicHeader({
               <li className="relative group h-full flex items-center">
                 <button 
                   className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
-                    searchParams.get('mode') === 'objective'
+                    searchParams.get('mode') === 'objective' || searchParams.get('mode') === 'situation'
                       ? 'text-[#ED164F]'
                       : 'text-[#4576B9] hover:text-[#9951A1]'
                   }`}
                 >
-                  <span>Por Objetivo</span>
+                  <span>Por situación</span>
                   <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180" />
                 </button>
                 
@@ -235,15 +235,15 @@ export default function PublicHeader({
                     </p>
                     <div className="space-y-1 max-h-[250px] overflow-y-auto pr-1">
                       <Link 
-                        href="/productos?mode=objective" 
+                        href="/productos?mode=situation"
                         className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
                       >
-                        Todos los objetivos
+                        Todas las situaciones
                       </Link>
                       {intentions.map((intent) => (
                         <Link 
                           key={intent.id} 
-                          href={`/productos?mode=objective&intent=${intent.slug}`} 
+                          href={`/productos?mode=situation&situacion=${intent.slug}`}
                           className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
                         >
                           {intent.icon && <span className="shrink-0 text-base">{intent.icon}</span>}
@@ -498,7 +498,7 @@ export default function PublicHeader({
                 onClick={() => setMobileObjOpen(!mobileObjOpen)}
                 className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
               >
-                <span>Por Objetivo</span>
+                <span>Por situación</span>
                 <ChevronDown size={20} className={`transition-transform duration-300 ${mobileObjOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -506,17 +506,17 @@ export default function PublicHeader({
                 <ul className="pl-4 border-l border-white/20 space-y-2.5">
                   <li>
                     <Link
-                      href="/productos?mode=objective"
+                      href="/productos?mode=situation"
                       onClick={() => setMenuOpen(false)}
                       className="block text-sm font-semibold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
                     >
-                      Todos los objetivos
+                      Todas las situaciones
                     </Link>
                   </li>
                   {intentions.map((intent) => (
                     <li key={intent.id}>
                       <Link
-                        href={`/productos?mode=objective&intent=${intent.slug}`}
+                        href={`/productos?mode=situation&situacion=${intent.slug}`}
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
                       >

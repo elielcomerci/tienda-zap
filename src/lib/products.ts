@@ -12,7 +12,7 @@ async function requireAdmin() {
 export async function getProducts(
   categorySlug?: string,
   search?: string,
-  options?: { take?: number; intentSlug?: string }
+  options?: { take?: number; intentSlug?: string; businessTypeSlug?: string; situationSlug?: string; needSlug?: string }
 ) {
   return prisma.product.findMany({
     where: {
@@ -20,11 +20,27 @@ export async function getProducts(
       isCombo: false,
       category: categorySlug ? { slug: categorySlug } : { slug: { not: 'sistema' } },
       ...(options?.intentSlug ? { intentions: { some: { slug: options.intentSlug } } } : {}),
+      ...(options?.situationSlug ? { needs: { some: { situations: { some: { slug: options.situationSlug } } } } } : {}),
+      ...(options?.needSlug ? { needs: { some: { slug: options.needSlug } } } : {}),
+      ...(options?.businessTypeSlug
+        ? {
+            OR: [
+              { category: { businessTypes: { some: { slug: options.businessTypeSlug } } } },
+              { needs: { some: { businessTypes: { some: { slug: options.businessTypeSlug } } } } },
+            ],
+          }
+        : {}),
       ...(search
         ? {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
               { description: { contains: search, mode: 'insensitive' } },
+              { category: { name: { contains: search, mode: 'insensitive' } } },
+              { needs: { some: { name: { contains: search, mode: 'insensitive' } } } },
+              { needs: { some: { description: { contains: search, mode: 'insensitive' } } } },
+              { needs: { some: { situations: { some: { name: { contains: search, mode: 'insensitive' } } } } } },
+              { needs: { some: { businessTypes: { some: { name: { contains: search, mode: 'insensitive' } } } } } },
+              { targetBusinessTypes: { some: { name: { contains: search, mode: 'insensitive' } } } },
             ],
           }
         : {}),

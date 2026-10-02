@@ -19,13 +19,13 @@ export default async function AdminIntentionsPage() {
     <div className="space-y-6 max-w-[1200px] mx-auto p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Objetivos (Intenciones)</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Situaciones y objetivos</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Administrá los objetivos comerciales que agrupan tus productos en el catálogo público.
+            Administrá los contextos de descubrimiento que relacionan una situación u objetivo con ofertas del catálogo público.
           </p>
         </div>
         <Link href="/admin/intenciones/nuevo" className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> Nuevo Objetivo
+          <Plus size={16} /> Nueva situación u objetivo
         </Link>
       </div>
 

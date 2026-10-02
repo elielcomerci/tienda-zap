@@ -23,6 +23,7 @@ import OrderInvoiceUploader from '@/components/admin/OrderInvoiceUploader'
 import ReceiptDownloader from '@/components/admin/ReceiptDownloader'
 import ProofUploader from '@/components/admin/ProofUploader'
 import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
+import OrderItemConfigurationSummary from '@/components/orders/OrderItemConfigurationSummary'
 
 export const metadata = { title: 'Detalle de Orden | ZAP Admin' }
 
@@ -364,6 +365,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                         briefReferenceLinks={item.briefReferenceLinks}
                         briefReferenceFiles={item.briefReferenceFiles}
                       />
+                      <OrderItemConfigurationSummary snapshot={item.configurationSnapshot} />
                     </div>
                   </div>
                 )
