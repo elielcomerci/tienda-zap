@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
 import { getProducts, getCombos } from '@/lib/products'
 import { getPublicCategories } from '@/lib/categories'
-import { getPublicSituations } from '@/lib/discovery'
+import { getPublicSituationBySlug, getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import AddToCartButton from '@/components/public/AddToCartButton'
 import CatalogSidebar from '@/components/public/CatalogSidebar'
@@ -34,11 +34,11 @@ export default async function ProductsPage({
   const isSituationMode = mode === 'objective' || mode === 'situation'
   const situationSlug = situacion || intent
   
-  const [situations, businessTypes] = await Promise.all([
+  const [situations, selectedSituation, businessTypes] = await Promise.all([
     getPublicSituations(rubro),
+    getPublicSituationBySlug(situationSlug),
     getPublicBusinessTypes(),
   ])
-  const selectedSituation = situationSlug ? situations.find((situation) => situation.slug === situationSlug) : undefined
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
   const session = await auth()
   let businessTypeId: string | null = null
