@@ -23,6 +23,30 @@ export type DiscoverySituation = {
   needs: DiscoveryNeed[]
 }
 
+export async function getPublicSituationBySlug(slug?: string) {
+  if (!slug) return undefined
+
+  return prisma.situation.findFirst({
+    where: {
+      slug,
+      active: true,
+    },
+    include: {
+      needs: {
+        where: { active: true },
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          description: true,
+          _count: { select: { products: { where: publicProduct } } },
+        },
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      },
+    },
+  })
+}
+
 export async function getPublicSituations(businessTypeSlug?: string) {
   return prisma.situation.findMany({
     where: {
