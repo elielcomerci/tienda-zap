@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
@@ -334,7 +334,9 @@ export default function ProductConfigurator({
 
   const configuredProductReady = isDynamicCombo
     ? comboPartsReady && dynamicComboPrice !== null && dynamicComboPrice > 0
-    : canAddToCart && comboPartsReady
+    : comboParts.length > 0
+      ? comboPartsReady
+      : canAddToCart
   const canAddConfiguredProduct = configuredProductReady && !addingToCart
 
   const contextualMinPrice = useMemo(() => {
@@ -358,9 +360,9 @@ export default function ProductConfigurator({
     : addingToCart
       ? 'Preparando archivo...'
     : !comboPartsReady
-      ? 'ConfigurÃ¡ el combo'
+      ? 'Configurá el combo'
     : isDynamicCombo && dynamicComboPrice === null
-      ? 'ElegÃ­ las piezas'
+      ? 'Elegí las piezas'
     : !hasOptions
       ? simpleProductAvailable
         ? 'Agregar al carrito'

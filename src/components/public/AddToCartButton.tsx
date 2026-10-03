@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
 import { useCartStore, CartItem } from '@/lib/cart-store'
-import { ShoppingCart, Check, ArrowRight, MessageCircleMore } from 'lucide-react'
+import { ShoppingCart, Check, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 
@@ -10,6 +10,7 @@ export default function AddToCartButton({
   hasVariants,
   slug,
   disabled = false,
+  isService = false,
   consultUrl,
   consultLabel = 'Consultar',
 }: {
@@ -17,6 +18,7 @@ export default function AddToCartButton({
   hasVariants?: boolean
   slug?: string
   disabled?: boolean
+  isService?: boolean
   consultUrl?: string | null
   consultLabel?: string
 }) {
@@ -30,6 +32,19 @@ export default function AddToCartButton({
     setTimeout(() => setAdded(false), 1500)
   }
 
+  // 1. Desarrollo -> "Ver desarrollo"
+  if ((isService || product.isService) && slug) {
+    return (
+      <Link
+        href={`/productos/${slug}`}
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#4576B9]/25 bg-[#EEF4FC] px-4 py-3 text-sm font-semibold text-[#2F5F9F] transition-all hover:-translate-y-0.5 hover:border-[#4576B9]/40 hover:bg-[#E2EDFA]"
+      >
+        Ver desarrollo <ArrowRight size={15} />
+      </Link>
+    )
+  }
+
+  // 2. Configurable -> "Configurar"
   if (hasVariants && slug) {
     return (
       <Link
@@ -41,20 +56,19 @@ export default function AddToCartButton({
     )
   }
 
-  if (disabled && consultUrl) {
+  // 3. Solo consulta (sin precio / carrito) -> "Consultar" a la ficha del producto
+  if (disabled && slug) {
     return (
       <Link
-        href={consultUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
+        href={`/productos/${slug}`}
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
       >
-        <MessageCircleMore size={16} />
-        {consultLabel}
+        Consultar <ArrowRight size={15} />
       </Link>
     )
   }
 
+  // 4. Compra directa -> "Agregar"
   return (
     <button
       type="button"
@@ -69,7 +83,7 @@ export default function AddToCartButton({
       }`}
     >
       {added ? <Check size={16} /> : <ShoppingCart size={16} />}
-      {added ? 'Agregado' : disabled ? 'No disponible' : 'Agregar'}
+      {added ? 'Agregado' : 'Agregar'}
     </button>
   )
 }

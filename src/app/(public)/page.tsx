@@ -3,7 +3,6 @@ import {
   ArrowRight,
   MessageCircleMore,
 } from 'lucide-react'
-import { getPublicCategories } from '@/lib/categories'
 import { getProducts, getCombos } from '@/lib/products'
 import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
@@ -12,7 +11,6 @@ import { prisma } from '@/lib/prisma'
 import ComboSection from '@/components/public/ComboSection'
 import ObjectivesSection from '@/components/public/ObjectivesSection'
 import CatalogEntrySection from '@/components/public/CatalogEntrySection'
-import BusinessTypesSection from '@/components/public/BusinessTypesSection'
 
 export const metadata = {
   title: 'Tienda ZAP — Soluciones concretas para tu marca',
@@ -38,8 +36,7 @@ export default async function HomePage() {
     }
   }
 
-  const [categories, allProducts, combos, situations, businessTypes] = await Promise.all([
-    getPublicCategories(),
+  const [allProducts, combos, situations, businessTypes] = await Promise.all([
     getProducts(undefined, undefined, { take: 20 }),
     getCombos(businessTypeId),
     getPublicSituations(),
@@ -52,7 +49,6 @@ export default async function HomePage() {
       )}`
     : null
 
-  const zapWebsiteUrl = 'https://zap.com.ar'
 
   return (
     <div className="bg-[linear-gradient(180deg,#fffbfd_0%,#FEF1F5_8%,#f8fafc_100%)]">
@@ -72,40 +68,36 @@ export default async function HomePage() {
               Contanos qué está pasando.
             </h1>
 
-            {/* Bajada */}
-            <p className="max-w-xl text-base leading-8 text-gray-600 sm:text-lg">
-              Entendemos la situación y te mostramos qué puede ayudarte a avanzar.
-              Si ya sabés qué necesitás, también podés comprarlo directo.
-            </p>
+            {/* Rubros chips */}
+            {businessTypes.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {businessTypes.map((bt) => (
+                  <Link
+                    key={bt.id}
+                    href={`/productos?mode=rubro&rubro=${bt.slug}`}
+                    className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-[#F7638B]/30 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
+                  >
+                    {bt.name}
+                  </Link>
+                ))}
+              </div>
+            )}
 
-            {/* CTAs */}
-            <div className="flex flex-wrap gap-3">
+            {/* CTA secundario */}
+            <div>
               <Link
                 href="/productos?mode=product"
-                className="btn-primary !px-7 !py-3.5 !text-base"
+                className="btn-secondary !px-7 !py-3.5 !text-base"
               >
                 Ya sé qué necesito <ArrowRight size={18} />
               </Link>
-              {salesWhatsappUrl && (
-                <Link
-                  href={salesWhatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-secondary !px-7 !py-3.5 !text-base"
-                >
-                  <MessageCircleMore size={18} />
-                  Hablar con ZAP
-                </Link>
-              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 2. OBJETIVOS ──────────────────────────────────────────── */}
+      {/* ── 2. SITUACIONES ────────────────────────────────────────── */}
       <ObjectivesSection situations={situations} />
-
-      <BusinessTypesSection businessTypes={businessTypes} />
 
       {/* ── 3. SOLUCIONES (Combos/Packs) ──────────────────────────── */}
       <ComboSection combos={combos} businessTypeName={businessTypeName} />
@@ -113,59 +105,14 @@ export default async function HomePage() {
       {/* ── 4. COSAS / DESARROLLOS ────────────────────────────────── */}
       <CatalogEntrySection products={allProducts} />
 
-      {/* ── 5. RUBROS / CATEGORÍAS ────────────────────────────────── */}
-      {categories.length > 0 && (
-        <section className="border-y border-gray-100 bg-white">
-          <div className="mx-auto max-w-[1380px] px-4 py-12 xl:px-8">
-            <div className="rounded-[30px] border border-gray-200 bg-white p-6 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.10)]">
-              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-400">
-                    Catálogo técnico
-                  </p>
-                  <h2 className="mt-2 text-2xl font-black text-gray-950">
-                    ¿Ya sabés lo que necesitás? Las categorías técnicas quedan a mano.
-                  </h2>
-                </div>
-                <Link
-                  href="/productos"
-                  className="shrink-0 text-sm font-semibold text-[#ED164F] hover:text-[#C2103F]"
-                >
-                  Abrir catálogo completo
-                </Link>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/productos?cat=${category.slug}`}
-                    className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#F7638B]/30 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── 6. CTA HACIA ZAP ──────────────────────────────────────── */}
+      {/* ── 5. CIERRE ─────────────────────────────────────────────── */}
       <section className="mx-auto max-w-[1380px] px-4 py-12 xl:px-8">
         <div className="rounded-[30px] border border-[#F7638B]/20 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff] p-8 text-center shadow-[0_18px_50px_-42px_rgba(237,22,79,0.12)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-            ¿Necesitás algo que no aparece acá?
-          </p>
-          <h2 className="mt-3 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-            Hablemos. Seguro lo resolvemos.
+          <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
+            ¿No encontrás lo que necesitás? Hablemos.
           </h2>
-          <p className="mt-3 max-w-lg mx-auto text-sm leading-7 text-gray-500">
-            Si lo que buscás no está en el catálogo, escribinos. Trabajamos
-            sobre lo que tu negocio necesita, no sobre lo que tenemos armado.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {salesWhatsappUrl && (
+          {salesWhatsappUrl && (
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href={salesWhatsappUrl}
                 target="_blank"
@@ -175,16 +122,8 @@ export default async function HomePage() {
                 <MessageCircleMore size={16} />
                 Hablar con ZAP
               </Link>
-            )}
-            <Link
-              href={zapWebsiteUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-secondary !px-7 !py-3"
-            >
-              Ver todo lo que hacemos <ArrowRight size={16} />
-            </Link>
-          </div>
+            </div>
+          )}
         </div>
       </section>
     </div>

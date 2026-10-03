@@ -1,6 +1,6 @@
-﻿import Image from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, MessageCircleMore, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowRight, Search } from 'lucide-react'
 import { getProducts, getCombos } from '@/lib/products'
 import { getPublicCategories } from '@/lib/categories'
 import { getPublicSituations } from '@/lib/discovery'
@@ -11,7 +11,6 @@ import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -245,20 +244,12 @@ export default async function ProductsPage({
             ) : (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => {
-                  const hasVariants = product.variants && product.variants.length > 0
+                  const isDevelopment = product.category.isService
+                  const hasVariants = Boolean(product.variants && product.variants.length > 0)
                   const requiresConfiguration = hasVariants || Boolean(product.quoterConfig)
                   const displayPrice = getProductDisplayPrice(product)
-                  const productIntent = displayPrice === null ? 'cotizar' : 'consultar'
-                  const inquiryUrl = buildWhatsappUrl(
-                    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-                    buildProductInquiryMessage({
-                      name: product.name,
-                      categoryName: product.category.name,
-                      price: displayPrice,
-                      slug: product.slug,
-                      intent: productIntent,
-                    })
-                  )
+                  const isPurchasable = displayPrice !== null && product.conversionType !== 'contact'
+                  const isConsultationOnly = !isDevelopment && !requiresConfiguration && !isPurchasable
 
                   return (
                     <article
@@ -317,7 +308,7 @@ export default async function ProductsPage({
                             </p>
                           </div>
 
-                          <div className="flex flex-wrap gap-2 sm:justify-end">
+                          <div className="flex sm:justify-end">
                             <AddToCartButton
                               product={{
                                 productId: product.id,
@@ -326,25 +317,13 @@ export default async function ProductsPage({
                                 creditDownPaymentPercent: product.creditDownPaymentPercent,
                                 image: product.images[0] || '',
                                 quantity: 1,
-                                isService: product.category.isService,
+                                isService: isDevelopment,
                               }}
                               hasVariants={requiresConfiguration}
+                              isService={isDevelopment}
                               slug={product.slug}
-                              disabled={!requiresConfiguration && displayPrice === null}
-                              consultUrl={inquiryUrl}
-                              consultLabel="Cotizar"
+                              disabled={isConsultationOnly}
                             />
-                            {inquiryUrl && displayPrice !== null && (
-                              <Link
-                                href={inquiryUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
-                              >
-                                <MessageCircleMore size={16} />
-                                Consultar
-                              </Link>
-                            )}
                           </div>
                         </div>
                       </div>

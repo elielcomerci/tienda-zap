@@ -2,6 +2,17 @@ import Link from 'next/link'
 import { ArrowRight, Package2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 
+/**
+ * Slugs de los packs que se muestran en la home (máx. 3, en ese orden).
+ * Si el slug no existe en la DB, se omite silenciosamente.
+ * Si la lista está vacía o no matchea nada, se usan los primeros 3 de la DB.
+ */
+const FEATURED_COMBO_SLUGS: string[] = [
+  'pack-gastronomia',
+  'pack-retail',
+  'pack-eventos',
+]
+
 export interface ComboItem {
   id: string
   name: string
@@ -27,12 +38,19 @@ export default function ComboSection({
   combos,
   businessTypeName,
 }: {
-  combos: any[] // We'll cast to ComboItem[] inside or use any to avoid Prisma mismatch errors at build time if inferred types fail
+  combos: any[]
   businessTypeName?: string | null
 }) {
   const typedCombos = combos as unknown as ComboItem[]
-  
+
   if (typedCombos.length === 0) return null
+
+  // Selección de packs: prioriza FEATURED_COMBO_SLUGS, si no hay matches usa los primeros 3
+  const featured = FEATURED_COMBO_SLUGS
+    .map((slug) => typedCombos.find((c) => c.slug === slug))
+    .filter((c): c is ComboItem => c !== undefined)
+
+  const displayed = (featured.length > 0 ? featured : typedCombos).slice(0, 3)
 
   return (
     <section className="border-y border-[#F7638B]/15 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff]">
@@ -47,30 +65,29 @@ export default function ComboSection({
                 ? `Todo lo que necesita tu ${businessTypeName.toLowerCase()} en un solo pedido.`
                 : 'Soluciones completas para situaciones concretas.'}
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-7 text-gray-500">
-              {businessTypeName
-                ? `Piezas pensadas para tu rubro, combinadas para que puedas avanzar.`
-                : 'Combinamos piezas que tienen sentido juntas y las dejamos listas para que puedas avanzar.'}
-            </p>
-            {!businessTypeName && (
-              <p className="mt-2 text-xs text-gray-400">
-                <Link href="/registro" className="underline hover:text-[#ED164F]">Registrá tu negocio</Link>{' '}
-                para ver las soluciones pensadas para tu rubro.
-              </p>
-            )}
           </div>
+          <Link
+            href="/productos?mode=combo"
+            className="shrink-0 text-sm font-semibold text-[#ED164F] hover:text-[#C2103F]"
+          >
+            Ver todos los packs <ArrowRight size={14} className="inline" />
+          </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {typedCombos.map((combo) => {
+          {displayed.map((combo) => {
             const displayPrice = getProductDisplayPrice(combo)
-            const includedItems = combo.outgoingRelations.slice(0, 4)
+            // Quita el prefijo "Pack " del nombre si ya está en el nombre del combo
+            // para evitar "Pack Pack Gastronomía"
+            const displayName = combo.name.toLowerCase().startsWith('pack pack ')
+              ? combo.name.replace(/^pack /i, '')
+              : combo.name
 
             return (
               <Link
                 key={combo.id}
                 href={`/productos/${combo.slug}`}
-                className="group relative overflow-hidden rounded-[30px] border border-[#F7638B]/20 bg-white shadow-[0_18px_50px_-42px_rgba(237, 22, 79,0.15)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/40 hover:shadow-[0_28px_70px_-44px_rgba(237, 22, 79,0.25)]"
+                className="group relative overflow-hidden rounded-[30px] border border-[#F7638B]/20 bg-white shadow-[0_18px_50px_-42px_rgba(237,22,79,0.15)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/40 hover:shadow-[0_28px_70px_-44px_rgba(237,22,79,0.25)]"
               >
                 {/* Badge */}
                 <div className="absolute right-4 top-4 z-10 rounded-full bg-[#ED164F] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg">
@@ -82,7 +99,7 @@ export default function ComboSection({
                   {combo.images[0] ? (
                     <img
                       src={combo.images[0]}
-                      alt={combo.name}
+                      alt={displayName}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     />
                   ) : (
@@ -94,24 +111,12 @@ export default function ComboSection({
 
                 <div className="p-5">
                   <h3 className="text-xl font-black tracking-tight text-gray-950 transition-colors group-hover:text-[#ED164F]">
-                    {combo.name}
+                    {displayName}
                   </h3>
-
-                  {/* Included items */}
-                  {includedItems.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                      {includedItems.map(({ relatedProduct }) => (
-                        <div key={relatedProduct.id} className="flex items-center gap-2 text-xs text-gray-500">
-                          <span className="text-[#ED164F]">✓</span>
-                          {relatedProduct.name}
-                        </div>
-                      ))}
-                      {combo.outgoingRelations.length > 4 && (
-                        <p className="text-xs text-gray-400">
-                          + {combo.outgoingRelations.length - 4} más incluidos
-                        </p>
-                      )}
-                    </div>
+                  {combo.description && (
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-500">
+                      {combo.description}
+                    </p>
                   )}
 
                   <div className="mt-4 flex items-end justify-between border-t border-gray-100 pt-4">

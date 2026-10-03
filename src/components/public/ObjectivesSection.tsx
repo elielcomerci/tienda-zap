@@ -2,6 +2,20 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { DiscoverySituation } from '@/lib/discovery'
 
+/**
+ * Situaciones destacadas en la home.
+ * Editá esta lista para cambiar cuáles se muestran (máx. 6).
+ * Usá los slugs exactos de la base de datos.
+ */
+const FEATURED_SITUATION_SLUGS: string[] = [
+  'estoy-por-abrir',
+  'quiero-vender-mas',
+  'quiero-que-vuelvan',
+  'quiero-que-me-encuentren',
+  'quiero-renovar-la-marca-o-el-espacio',
+  'tengo-un-evento',
+]
+
 export default function ObjectivesSection({
   situations,
 }: {
@@ -9,23 +23,39 @@ export default function ObjectivesSection({
 }) {
   if (situations.length === 0) return null
 
+  // Filtra y ordena según FEATURED_SITUATION_SLUGS; descarta los que no existen en DB
+  const featured = FEATURED_SITUATION_SLUGS
+    .map((slug) => situations.find((s) => s.slug === slug))
+    .filter((s): s is DiscoverySituation => s !== undefined)
+
+  // Si la constante no matchea nada, muestra las primeras 6 de la DB
+  const displayed = featured.length > 0 ? featured : situations.slice(0, 6)
+
   return (
     <section className="border-y border-gray-100 bg-white">
       <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-            Situaciones y objetivos
-          </p>
-          <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-            ¿Qué está pasando o qué querés lograr?
-          </h2>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-gray-500">
-            Contanos el contexto. Te mostramos opciones para avanzar, sin obligarte a comprar de más.
-          </p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
+              Situaciones y objetivos
+            </p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
+              ¿Qué está pasando o qué querés lograr?
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-gray-500">
+              Contanos el contexto. Te mostramos opciones para avanzar, sin obligarte a comprar de más.
+            </p>
+          </div>
+          <Link
+            href="/productos?mode=situation"
+            className="shrink-0 text-sm font-semibold text-[#ED164F] hover:text-[#C2103F]"
+          >
+            Ver todas las situaciones <ArrowRight size={14} className="inline" />
+          </Link>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {situations.map((situation) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {displayed.map((situation) => (
             <Link
               key={situation.id}
               href={`/productos?mode=situation&situacion=${situation.slug}`}
@@ -44,9 +74,6 @@ export default function ObjectivesSection({
                   </p>
                 )}
               </div>
-              <span className="flex items-center gap-1 text-xs font-semibold text-[#ED164F] transition-gap group-hover:gap-2">
-                Ver opciones <ArrowRight size={12} />
-              </span>
             </Link>
           ))}
         </div>

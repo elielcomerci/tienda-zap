@@ -9,6 +9,16 @@ import { createPublicSellerLead } from '@/lib/actions/leads'
 
 const NAV_HEIGHT = 70
 
+/** Mismos slugs que ObjectivesSection — editá en un solo lugar */
+const FEATURED_SITUATION_SLUGS = [
+  'estoy-por-abrir',
+  'quiero-vender-mas',
+  'quiero-que-vuelvan',
+  'quiero-que-me-encuentren',
+  'quiero-renovar-la-marca-o-el-espacio',
+  'tengo-un-evento',
+]
+
 export default function PublicHeader({
   user,
   referralSeller,
@@ -137,7 +147,7 @@ export default function PublicHeader({
           <nav className="hidden md:flex items-center space-x-6 h-full">
             <ul className="flex items-center space-x-6 h-full">
               
-              {/* Desktop link: Productos (Mega Dropdown) */}
+              {/* Desktop link: Productos (Dropdown — solo categorías) */}
               <li className="relative group h-full flex items-center">
                 <button 
                   className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
@@ -150,56 +160,33 @@ export default function PublicHeader({
                   <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180" />
                 </button>
                 
-                {/* Mega Dropdown Panel (Flat, Solid, Premium Design) */}
-                <div className="absolute top-[100%] left-0 pt-2 w-[480px] hidden group-hover:block z-50">
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-5 grid grid-cols-2 gap-5 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-1.5">
-                        Categorías Principales
-                      </p>
-                      <div className="space-y-1 max-h-[220px] overflow-y-auto pr-1">
+                <div className="absolute top-[100%] left-0 pt-2 w-[260px] hidden group-hover:block z-50">
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-1.5 mb-2">
+                      Categorías
+                    </p>
+                    <Link 
+                      href="/productos?mode=product" 
+                      className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
+                    >
+                      Ver todo el catálogo
+                    </Link>
+                    <div className="max-h-[220px] overflow-y-auto pr-1 space-y-0.5">
+                      {categories.map((cat) => (
                         <Link 
-                          href="/productos?mode=product" 
-                          className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
+                          key={cat.id} 
+                          href={`/productos?mode=product&cat=${cat.slug}`} 
+                          className="block text-sm font-medium text-gray-600 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
                         >
-                          Ver todo el catálogo
+                          {cat.name}
                         </Link>
-                        {categories.map((cat) => (
-                          <Link 
-                            key={cat.id} 
-                            href={`/productos?mode=product&cat=${cat.slug}`} 
-                            className="block text-sm font-medium text-gray-600 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
-                          >
-                            {cat.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-[#FEF1F5] via-white to-[#EEF4FC] p-4 rounded-xl flex flex-col justify-between border border-[#F7638B]/15 shadow-sm">
-                      <div>
-                        <span className="bg-[#ED164F] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-full shadow-sm shadow-[#ED164F]/10">
-                          Recomendado
-                        </span>
-                        <h4 className="font-black text-gray-900 text-sm mt-2 leading-snug">
-                          Packs Comerciales
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                          Equipá tu local o lanzamiento completo ahorrando hasta un 25% con combos todo-en-uno listos para producir.
-                        </p>
-                      </div>
-                      <Link 
-                        href="/productos?mode=combo" 
-                        className="mt-4 bg-white border border-[#4576B9]/20 hover:border-[#ED164F] text-[#ED164F] hover:bg-[#ED164F] hover:text-white text-xs font-bold py-2 px-3 rounded-full text-center transition-all shadow-sm"
-                      >
-                        Explorar Packs
-                      </Link>
+                      ))}
                     </div>
                   </div>
                 </div>
               </li>
 
-              {/* Desktop link: Packs y Combos (Direct Link to combos view) */}
+              {/* Desktop link: Packs */}
               <li className="h-full flex items-center">
                 <Link
                   href="/productos?mode=combo"
@@ -209,12 +196,12 @@ export default function PublicHeader({
                       : 'text-[#4576B9] font-semibold hover:text-[#9951A1]'
                   }`}
                 >
-                  Packs y Combos
+                  Packs
                   <span className="pointer-events-none absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#ED164F] to-[#4576B9] transition-all duration-300 group-hover:w-full" />
                 </Link>
               </li>
 
-              {/* Desktop link: Por Objetivo (Dropdown) */}
+              {/* Desktop link: Situaciones (Dropdown — 6 fijos + Ver todas) */}
               <li className="relative group h-full flex items-center">
                 <button 
                   className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
@@ -223,33 +210,33 @@ export default function PublicHeader({
                       : 'text-[#4576B9] hover:text-[#9951A1]'
                   }`}
                 >
-                  <span>Por situación</span>
+                  <span>Situaciones</span>
                   <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180" />
                 </button>
                 
-                {/* Objectives Dropdown Panel (Flat, Solid, Premium Design) */}
-                <div className="absolute top-[100%] left-0 pt-2 w-[280px] hidden group-hover:block z-50">
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-1.5">
-                      ¿Qué necesitás lograr?
-                    </p>
-                    <div className="space-y-1 max-h-[250px] overflow-y-auto pr-1">
-                      <Link 
-                        href="/productos?mode=situation"
-                        className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
-                      >
-                        Todas las situaciones
-                      </Link>
-                      {intentions.map((intent) => (
+                <div className="absolute top-[100%] left-0 pt-2 w-[260px] hidden group-hover:block z-50">
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {intentions
+                      .filter((i) => FEATURED_SITUATION_SLUGS.includes(i.slug))
+                      .sort((a, b) => FEATURED_SITUATION_SLUGS.indexOf(a.slug) - FEATURED_SITUATION_SLUGS.indexOf(b.slug))
+                      .map((intent) => (
                         <Link 
                           key={intent.id} 
                           href={`/productos?mode=situation&situacion=${intent.slug}`}
-                          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
                         >
                           {intent.icon && <span className="shrink-0 text-base">{intent.icon}</span>}
                           <span className="truncate">{intent.name}</span>
                         </Link>
-                      ))}
+                      ))
+                    }
+                    <div className="border-t border-gray-100 pt-1 mt-1">
+                      <Link 
+                        href="/productos?mode=situation"
+                        className="block text-sm font-bold text-[#ED164F] hover:text-[#C2103F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
+                      >
+                        Ver todas las situaciones →
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -481,50 +468,54 @@ export default function PublicHeader({
               </div>
             </li>
 
-            {/* Packs y Combos */}
+            {/* Packs */}
             <li>
               <Link
                 href="/productos?mode=combo"
                 onClick={() => setMenuOpen(false)}
                 className="block text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
               >
-                Packs y Combos
+                Packs
               </Link>
             </li>
 
-            {/* Collapsible: Por Objetivo */}
+            {/* Situaciones — móvil */}
             <li className="border-b border-white/10 pb-3">
               <button
                 onClick={() => setMobileObjOpen(!mobileObjOpen)}
                 className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
               >
-                <span>Por situación</span>
+                <span>Situaciones</span>
                 <ChevronDown size={20} className={`transition-transform duration-300 ${mobileObjOpen ? 'rotate-180' : ''}`} />
               </button>
 
               <div className={`overflow-hidden transition-all duration-300 ${mobileObjOpen ? 'max-h-[600px] mt-3 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                 <ul className="pl-4 border-l border-white/20 space-y-2.5">
+                  {intentions
+                    .filter((i) => FEATURED_SITUATION_SLUGS.includes(i.slug))
+                    .sort((a, b) => FEATURED_SITUATION_SLUGS.indexOf(a.slug) - FEATURED_SITUATION_SLUGS.indexOf(b.slug))
+                    .map((intent) => (
+                      <li key={intent.id}>
+                        <Link
+                          href={`/productos?mode=situation&situacion=${intent.slug}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
+                        >
+                          {intent.icon && <span className="text-base shrink-0">{intent.icon}</span>}
+                          <span>{intent.name}</span>
+                        </Link>
+                      </li>
+                    ))
+                  }
                   <li>
                     <Link
                       href="/productos?mode=situation"
                       onClick={() => setMenuOpen(false)}
-                      className="block text-sm font-semibold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
+                      className="block text-sm font-bold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
                     >
-                      Todas las situaciones
+                      Ver todas las situaciones →
                     </Link>
                   </li>
-                  {intentions.map((intent) => (
-                    <li key={intent.id}>
-                      <Link
-                        href={`/productos?mode=situation&situacion=${intent.slug}`}
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
-                      >
-                        {intent.icon && <span className="text-base shrink-0">{intent.icon}</span>}
-                        <span>{intent.name}</span>
-                      </Link>
-                    </li>
-                  ))}
                 </ul>
               </div>
             </li>
