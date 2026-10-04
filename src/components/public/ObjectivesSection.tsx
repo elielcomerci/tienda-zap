@@ -32,7 +32,7 @@ export default function ObjectivesSection({
   const displayed = featured.length > 0 ? featured : situations.slice(0, 6)
 
   return (
-    <section className="border-y border-gray-100 bg-white">
+    <section id="situaciones" className="border-y border-gray-100 bg-white scroll-mt-20">
       <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

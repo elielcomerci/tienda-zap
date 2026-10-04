@@ -128,37 +128,35 @@ export default function PublicHeader({
       <header
         className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-100'
-            : 'bg-white/70 backdrop-blur-md'
+            ? 'bg-white shadow-sm border-b border-gray-200'
+            : 'bg-white border-b border-gray-100'
         }`}
         style={{ height: `${NAV_HEIGHT}px` }}
       >
         <div className="mx-auto flex items-center justify-between h-full max-w-[1380px] px-4 xl:px-8">
-          {/* Logo — same as zap.com.ar */}
-          <Link href="/" className="flex items-center h-full py-3 shrink-0" aria-label="Ir al inicio">
-            <img
-              src="https://res.cloudinary.com/dip14vkem/image/upload/v1756568241/logo_t37blz.png"
-              alt="ZAP Logo"
-              className="h-full w-auto object-contain"
-            />
+          {/* Logo — exact text typography from prototype */}
+          <Link href="/" className="flex items-center gap-2 shrink-0 py-3" aria-label="Ir al inicio">
+            <span className="text-2xl font-black tracking-tight text-gray-950">ZAP</span>
+            <span className="text-2xl font-normal text-gray-800">Tienda</span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center space-x-6 h-full">
-            <ul className="flex items-center space-x-6 h-full">
+          <nav className="hidden md:flex items-center space-x-8 h-full">
+            <ul className="flex items-center space-x-8 h-full">
               
-              {/* Desktop link: Productos (Dropdown — solo categorías) */}
+              {/* Desktop link: Productos */}
               <li className="relative group h-full flex items-center">
-                <button 
-                  className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
-                    pathname === '/productos' && searchParams.get('mode') !== 'combo' && searchParams.get('mode') !== 'objective'
+                <Link 
+                  href="/productos?mode=product"
+                  className={`flex items-center gap-1 text-sm font-semibold transition-colors py-2 ${
+                    pathname === '/productos' && searchParams.get('mode') !== 'combo' && searchParams.get('mode') !== 'situation'
                       ? 'text-[#ED164F]'
-                      : 'text-[#4576B9] hover:text-[#9951A1]'
+                      : 'text-gray-900 hover:text-[#ED164F]'
                   }`}
                 >
                   <span>Productos</span>
-                  <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180" />
-                </button>
+                  <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180 text-gray-500" />
+                </Link>
                 
                 <div className="absolute top-[100%] left-0 pt-2 w-[260px] hidden group-hover:block z-50">
                   <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -167,11 +165,11 @@ export default function PublicHeader({
                     </p>
                     <Link 
                       href="/productos?mode=product" 
-                      className="block text-sm font-bold text-gray-800 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
+                      className="block text-sm font-bold text-gray-900 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
                     >
                       Ver todo el catálogo
                     </Link>
-                    <div className="max-h-[220px] overflow-y-auto pr-1 space-y-0.5">
+                    <div className="max-h-[240px] overflow-y-auto pr-1 space-y-0.5">
                       {categories.map((cat) => (
                         <Link 
                           key={cat.id} 
@@ -190,29 +188,29 @@ export default function PublicHeader({
               <li className="h-full flex items-center">
                 <Link
                   href="/productos?mode=combo"
-                  className={`relative text-lg transition-colors group ${
+                  className={`text-sm font-semibold transition-colors ${
                     isLinkActive('/productos?mode=combo')
-                      ? 'text-[#ED164F] font-bold'
-                      : 'text-[#4576B9] font-semibold hover:text-[#9951A1]'
+                      ? 'text-[#ED164F]'
+                      : 'text-gray-900 hover:text-[#ED164F]'
                   }`}
                 >
                   Packs
-                  <span className="pointer-events-none absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#ED164F] to-[#4576B9] transition-all duration-300 group-hover:w-full" />
                 </Link>
               </li>
 
-              {/* Desktop link: Situaciones (Dropdown — 6 fijos + Ver todas) */}
+              {/* Desktop link: Situaciones */}
               <li className="relative group h-full flex items-center">
-                <button 
-                  className={`flex items-center gap-1 text-lg font-semibold transition-colors py-2 ${
-                    searchParams.get('mode') === 'objective' || searchParams.get('mode') === 'situation'
+                <Link 
+                  href="/productos?mode=situation"
+                  className={`flex items-center gap-1 text-sm font-semibold transition-colors py-2 ${
+                    searchParams.get('mode') === 'situation'
                       ? 'text-[#ED164F]'
-                      : 'text-[#4576B9] hover:text-[#9951A1]'
+                      : 'text-gray-900 hover:text-[#ED164F]'
                   }`}
                 >
                   <span>Situaciones</span>
-                  <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180" />
-                </button>
+                  <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180 text-gray-500" />
+                </Link>
                 
                 <div className="absolute top-[100%] left-0 pt-2 w-[260px] hidden group-hover:block z-50">
                   <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -247,69 +245,40 @@ export default function PublicHeader({
                 {canOpenAdminPanel && (
                   <Link
                     href="/admin"
-                    className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] text-[#C2103F] transition-colors hover:bg-[#F7638B]/20"
+                    className="mr-3 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:text-[#ED164F] transition-colors"
                     title="Ir al admin"
                   >
-                    <LayoutDashboard size={17} />
-                  </Link>
-                )}
-
-                {canOpenSellerPanel && (
-                  <Link
-                    href="/seller"
-                    className="mr-2 flex h-10 w-10 items-center justify-center rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] text-[#2F5F9F] transition-colors hover:bg-[#4576B9]/15"
-                    title="Ir al panel de asesores"
-                  >
-                    <Handshake size={17} />
+                    <LayoutDashboard size={15} />
                   </Link>
                 )}
 
                 {user ? (
                   <Link
                     href="/perfil"
-                    className="flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full border border-gray-200 bg-white hover:border-[#F7638B]/30 transition-all"
+                    className="text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ED164F] to-[#4576B9] text-white flex items-center justify-center text-sm font-bold shadow-sm">
-                      {user.name?.charAt(0) || 'U'}
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <span className="text-[10px] font-medium text-gray-400 leading-none mb-0.5">Hola,</span>
-                      <span className="text-sm font-bold text-gray-900 leading-none">{user.name?.split(' ')[0] || 'Mi cuenta'}</span>
-                    </div>
+                    {user.name?.split(' ')[0] || 'Mi cuenta'}
                   </Link>
                 ) : (
                   <Link
                     href="/login"
-                    className="group relative overflow-hidden bg-gradient-to-r from-[#ED164F] to-[#4576B9] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-lg hover:shadow-[#ED164F]/30 transition-all duration-300 hover:scale-105"
+                    className="text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors"
                   >
-                    <span className="relative z-10">Ingresar</span>
+                    Ingresar
                   </Link>
                 )}
-              </li>
-
-              {/* Link back to zap.com.ar */}
-              <li className="h-full flex items-center">
-                <a
-                  href="https://zap.com.ar"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-gray-500 hover:text-[#ED164F] border border-gray-200 rounded-full px-3 py-1.5 transition-colors hover:border-[#F7638B]/40"
-                  title="Volver al sitio principal de ZAP"
-                >
-                  ← zap.com.ar
-                </a>
               </li>
 
               {/* Cart */}
               <li className="h-full flex items-center">
                 <Link
                   href="/carrito"
-                  className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-[#F7638B]/30 hover:bg-[#FEF1F5] hover:text-[#ED164F]"
+                  className="relative flex items-center text-gray-900 hover:text-[#ED164F] transition-colors"
                   aria-label="Ir al carrito"
                 >
                   <ShoppingCart size={20} />
                   {itemCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#ED164F] text-[11px] font-bold text-white">
+                    <span className="absolute -right-2.5 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#ED164F] text-[10px] font-bold text-white">
                       {itemCount > 9 ? '9+' : itemCount}
                     </span>
                   )}

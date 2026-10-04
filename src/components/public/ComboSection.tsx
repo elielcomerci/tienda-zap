@@ -53,32 +53,24 @@ export default function ComboSection({
   const displayed = (featured.length > 0 ? featured : typedCombos).slice(0, 3)
 
   return (
-    <section className="border-y border-[#F7638B]/15 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff]">
-      <div className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-              {businessTypeName ? `Soluciones para ${businessTypeName}` : 'Soluciones'}
-            </p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-              {businessTypeName
-                ? `Todo lo que necesita tu ${businessTypeName.toLowerCase()} en un solo pedido.`
-                : 'Soluciones completas para situaciones concretas.'}
-            </h2>
-          </div>
+    <section className="border-t border-gray-200 bg-white">
+      <div className="mx-auto max-w-[1380px] px-4 py-16 xl:px-8">
+        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-gray-950 flex items-baseline">
+            <span className="text-gray-400 font-bold mr-3 text-lg sm:text-xl lg:text-2xl">01</span>
+            Algunas cosas ya tienen sentido juntas.
+          </h2>
           <Link
             href="/productos?mode=combo"
-            className="shrink-0 text-sm font-semibold text-[#ED164F] hover:text-[#C2103F]"
+            className="text-sm font-semibold text-gray-600 hover:text-[#ED164F] transition-colors"
           >
-            Ver todos los packs <ArrowRight size={14} className="inline" />
+            Ver todos los packs →
           </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {displayed.map((combo) => {
             const displayPrice = getProductDisplayPrice(combo)
-            // Quita el prefijo "Pack " del nombre si ya está en el nombre del combo
-            // para evitar "Pack Pack Gastronomía"
             const displayName = combo.name.toLowerCase().startsWith('pack pack ')
               ? combo.name.replace(/^pack /i, '')
               : combo.name
@@ -87,50 +79,43 @@ export default function ComboSection({
               <Link
                 key={combo.id}
                 href={`/productos/${combo.slug}`}
-                className="group relative overflow-hidden rounded-[30px] border border-[#F7638B]/20 bg-white shadow-[0_18px_50px_-42px_rgba(237,22,79,0.15)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/40 hover:shadow-[0_28px_70px_-44px_rgba(237,22,79,0.25)]"
+                className="group flex flex-col transition-all"
               >
-                {/* Badge */}
-                <div className="absolute right-4 top-4 z-10 rounded-full bg-[#ED164F] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg">
-                  Pack
-                </div>
-
-                {/* Image */}
-                <div className="relative aspect-[1.4/1] overflow-hidden bg-gradient-to-br from-[#FEF1F5] to-[#F0F5FF]">
+                {/* Image container */}
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#EBECEF] mb-4">
                   {combo.images[0] ? (
                     <img
                       src={combo.images[0]}
                       alt={displayName}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Package2 size={48} className="text-[#F7638B]/40" />
+                    <div className="flex h-full w-full items-center justify-center text-gray-400 text-sm font-medium">
+                      [foto del pack]
                     </div>
                   )}
                 </div>
 
-                <div className="p-5">
-                  <h3 className="text-xl font-black tracking-tight text-gray-950 transition-colors group-hover:text-[#ED164F]">
-                    {displayName}
-                  </h3>
-                  {combo.description && (
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-500">
-                      {combo.description}
-                    </p>
-                  )}
+                {/* Content */}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-950 group-hover:text-[#ED164F] transition-colors">
+                      {displayName}
+                    </h3>
+                    {combo.description && (
+                      <p className="mt-1 text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                        {combo.description}
+                      </p>
+                    )}
+                  </div>
 
-                  <div className="mt-4 flex items-end justify-between border-t border-gray-100 pt-4">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                        Precio del pack
-                      </p>
-                      <p className="mt-1 text-2xl font-black text-gray-950">
-                        {displayPrice !== null
-                          ? `$${displayPrice.toLocaleString('es-AR')}`
-                          : 'Consultar'}
-                      </p>
-                    </div>
-                    <span className="flex items-center gap-1 text-sm font-semibold text-[#ED164F]">
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-lg font-black text-gray-950">
+                      {displayPrice !== null
+                        ? `$${displayPrice.toLocaleString('es-AR')}`
+                        : 'Consultar'}
+                    </span>
+                    <span className="text-sm font-bold text-gray-900 group-hover:text-[#ED164F] inline-flex items-center gap-1 transition-colors">
                       Ver solución <ArrowRight size={14} />
                     </span>
                   </div>

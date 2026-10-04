@@ -24,67 +24,44 @@ export default function CatalogEntrySection({
   if (!hasCosas && !hasDesarrollos) return null
 
   return (
-    <section className="mx-auto max-w-[1380px] px-4 py-14 xl:px-8">
-      <div className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-          Catálogo
-        </p>
-        <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-          {hasCosas && hasDesarrollos
-            ? 'Cosas que se producen. Desarrollos que se construyen.'
-            : hasCosas
-            ? 'Cosas que se producen.'
-            : 'Desarrollos que se construyen.'}
-        </h2>
-        <p className="mt-2 max-w-xl text-sm leading-7 text-gray-500">
-          Elegí por lo que necesitás resolver, no por categoría.
-        </p>
-      </div>
+    <section className="border-t border-gray-200 bg-white">
+      <div className="mx-auto max-w-[1380px] px-4 py-16 xl:px-8">
+        <div className="mb-8">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-gray-950 flex items-baseline">
+            <span className="text-gray-400 font-bold mr-3 text-lg sm:text-xl lg:text-2xl">02</span>
+            ¿Ya sabés qué buscás?
+          </h2>
+        </div>
 
-      <div className={`grid gap-6 ${hasCosas && hasDesarrollos ? 'sm:grid-cols-2' : ''}`}>
-        {hasCosas && (
-          <Link
-            href="/productos?mode=product"
-            className="group flex flex-col gap-5 rounded-[30px] border border-gray-200 bg-white p-8 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.12)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/30 hover:shadow-[0_28px_70px_-44px_rgba(237,22,79,0.14)]"
-          >
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FEF1F5] text-[#ED164F]">
-              <Box size={28} />
-            </span>
-            <div className="flex-1">
-              <h3 className="text-2xl font-black tracking-tight text-gray-950 transition-colors group-hover:text-[#ED164F]">
+        <div className="border-t border-gray-900">
+          {hasCosas && (
+            <Link
+              href="/productos?mode=product"
+              className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
+            >
+              <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
                 Cosas
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Lo que producimos: gráfica, cartelería, merchandising, indumentaria y todo lo que tiene una forma física o un archivo listo para imprimir.
-              </p>
-            </div>
-            <span className="flex items-center gap-2 text-sm font-bold text-[#ED164F] transition-gap group-hover:gap-3">
-              Explorar cosas <ArrowRight size={16} />
-            </span>
-          </Link>
-        )}
+              </span>
+              <span className="text-base sm:text-lg font-medium text-gray-600 group-hover:text-[#ED164F] flex items-center gap-2 transition-colors">
+                Lo que producimos <ArrowRight size={18} />
+              </span>
+            </Link>
+          )}
 
-        {hasDesarrollos && (
-          <Link
-            href="/productos?mode=product"
-            className="group flex flex-col gap-5 rounded-[30px] border border-gray-200 bg-white p-8 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.12)] transition-all hover:-translate-y-1 hover:border-[#4576B9]/30 hover:shadow-[0_28px_70px_-44px_rgba(69,118,185,0.14)]"
-          >
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF4FC] text-[#4576B9]">
-              <Code2 size={28} />
-            </span>
-            <div className="flex-1">
-              <h3 className="text-2xl font-black tracking-tight text-gray-950 transition-colors group-hover:text-[#4576B9]">
+          {hasDesarrollos && (
+            <Link
+              href="/productos?mode=product"
+              className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
+            >
+              <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
                 Desarrollos
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Lo que construimos: web, presencia digital, identidad de marca, sistemas de comunicación y todo lo que se instala, configura y sostiene en el tiempo.
-              </p>
-            </div>
-            <span className="flex items-center gap-2 text-sm font-bold text-[#4576B9] transition-gap group-hover:gap-3">
-              Explorar desarrollos <ArrowRight size={16} />
-            </span>
-          </Link>
-        )}
+              </span>
+              <span className="text-base sm:text-lg font-medium text-gray-600 group-hover:text-[#ED164F] flex items-center gap-2 transition-colors">
+                Lo que construimos <ArrowRight size={18} />
+              </span>
+            </Link>
+          )}
+        </div>
       </div>
     </section>
   )

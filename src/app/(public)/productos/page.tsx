@@ -11,6 +11,7 @@ import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import SituationResultExperience from '@/components/public/SituationResultExperience'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -81,6 +82,18 @@ export default async function ProductsPage({
     getPublicCategories()
   ])
   const selectedCategory = categories.find((category) => category.slug === cat)
+
+  // Render the exact consultative prototype experience when exploring a situation
+  if (selectedSituation && isSituationMode) {
+    return (
+      <SituationResultExperience
+        situation={selectedSituation}
+        businessType={selectedBusinessType}
+        products={products}
+        whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}
+      />
+    )
+  }
 
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_20%,#f8fafc_100%)]">

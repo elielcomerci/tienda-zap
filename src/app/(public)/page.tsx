@@ -1,15 +1,12 @@
 import Link from 'next/link'
-import {
-  ArrowRight,
-  MessageCircleMore,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { getProducts, getCombos } from '@/lib/products'
 import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import HomeHero from '@/components/public/HomeHero'
 import ComboSection from '@/components/public/ComboSection'
-import ObjectivesSection from '@/components/public/ObjectivesSection'
 import CatalogEntrySection from '@/components/public/CatalogEntrySection'
 
 export const metadata = {
@@ -49,81 +46,47 @@ export default async function HomePage() {
       )}`
     : null
 
-
   return (
-    <div className="bg-[linear-gradient(180deg,#fffbfd_0%,#FEF1F5_8%,#f8fafc_100%)]">
-      {/* ── 1. HERO ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-[#F7638B]/20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(237,22,79,0.09),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(69,118,185,0.07),transparent_32%)]" />
+    <div className="bg-white">
+      {/* ── HERO ────────────────────────────────────────────────────── */}
+      <HomeHero businessTypes={businessTypes} situations={situations} />
 
-        <div className="relative mx-auto max-w-[1380px] px-4 pb-16 pt-10 xl:px-8 xl:pb-20">
-          <div className="max-w-3xl space-y-6">
-            {/* Label */}
-            <span className="inline-block rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
-              Tienda ZAP
-            </span>
-
-            {/* H1 */}
-            <h1 className="text-5xl font-black tracking-tight text-gray-950 sm:text-6xl xl:text-7xl">
-              Contanos qué está pasando.
-            </h1>
-
-            {/* Rubros chips */}
-            {businessTypes.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {businessTypes.map((bt) => (
-                  <Link
-                    key={bt.id}
-                    href={`/productos?mode=rubro&rubro=${bt.slug}`}
-                    className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-[#F7638B]/30 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
-                  >
-                    {bt.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* CTA secundario */}
-            <div>
-              <Link
-                href="/productos?mode=product"
-                className="btn-secondary !px-7 !py-3.5 !text-base"
-              >
-                Ya sé qué necesito <ArrowRight size={18} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 2. SITUACIONES ────────────────────────────────────────── */}
-      <ObjectivesSection situations={situations} />
-
-      {/* ── 3. SOLUCIONES (Combos/Packs) ──────────────────────────── */}
+      {/* ── 01. PACKS ──────────────────────────────────────────────── */}
       <ComboSection combos={combos} businessTypeName={businessTypeName} />
 
-      {/* ── 4. COSAS / DESARROLLOS ────────────────────────────────── */}
+      {/* ── 02. COSAS / DESARROLLOS ────────────────────────────────── */}
       <CatalogEntrySection products={allProducts} />
 
       {/* ── 5. CIERRE ─────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-[1380px] px-4 py-12 xl:px-8">
-        <div className="rounded-[30px] border border-[#F7638B]/20 bg-gradient-to-br from-[#fff8fb] via-white to-[#f0f5ff] p-8 text-center shadow-[0_18px_50px_-42px_rgba(237,22,79,0.12)]">
-          <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-            ¿No encontrás lo que necesitás? Hablemos.
-          </h2>
-          {salesWhatsappUrl && (
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
+      <section className="bg-black text-white">
+        <div className="mx-auto max-w-[1380px] px-4 py-16 sm:py-20 xl:px-8">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-xl">
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                ¿No sabés por dónde empezar?
+              </h2>
+              <p className="mt-2 text-base sm:text-lg text-gray-400">
+                Contanos qué está pasando en tu negocio.
+              </p>
+            </div>
+            {salesWhatsappUrl ? (
               <Link
                 href={salesWhatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="btn-primary !px-7 !py-3"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ED164F] px-8 py-4 text-base font-bold text-white transition-all hover:bg-[#C2103F] active:scale-[0.98]"
               >
-                <MessageCircleMore size={16} />
-                Hablar con ZAP
+                Hablemos <ArrowRight size={18} />
               </Link>
-            </div>
-          )}
+            ) : (
+              <Link
+                href="/productos?mode=product"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ED164F] px-8 py-4 text-base font-bold text-white transition-all hover:bg-[#C2103F] active:scale-[0.98]"
+              >
+                Hablemos <ArrowRight size={18} />
+              </Link>
+            )}
+          </div>
         </div>
       </section>
     </div>
