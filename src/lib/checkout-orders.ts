@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
+import { isServiceProduct } from '@/lib/catalog-domain'
 
 function sortSelectedOptions(options: Array<{ name: string; value: string }> = []) {
   return [...options].sort((a, b) => a.name.localeCompare(b.name))
@@ -54,13 +55,13 @@ function buildConfigurationSnapshot(input: {
     : product.options.map((option: { name: string }) => option.name)
 
   return {
-    version: product.configuratorVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
-    result: product.conversionType === 'contact'
+    version: product.configuratorVersions?.[0]?.schemaVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
+    result: product.modality === 'CONSULTAR'
       ? 'GUIDED_REVIEW'
       : product.quoterConfig
         ? 'CALCULATED_PRICE'
         : 'DIRECT_PRICE',
-    definition: product.configuratorDefinition || {
+    definition: product.configuratorVersions?.[0]?.schema || {
       kind: product.quoterConfig ? 'product-quoter' : product.options.length ? 'product-options' : 'simple-product',
       blocks: inferredBlocks,
     },
@@ -103,12 +104,6 @@ export async function resolveCheckoutOrderItems(
       active: true,
     },
     include: {
-      category: {
-        select: {
-          id: true,
-          isService: true,
-        },
-      },
       options: {
         include: {
           values: true,
@@ -150,6 +145,11 @@ export async function resolveCheckoutOrderItems(
           sizePresets: { orderBy: { sortOrder: 'asc' } },
         },
       },
+      configuratorVersions: {
+        where: { status: 'ACTIVE' },
+        orderBy: { schemaVersion: 'desc' },
+        select: { schemaVersion: true, schema: true },
+      },
     },
   })
 
@@ -180,11 +180,6 @@ export async function resolveCheckoutOrderItems(
 
     let unitPrice = product.price
     let priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo' = 'base'
-    if (product.isCombo && product.comboPricingMode === 'DYNAMIC' && item.unitPrice && item.unitPrice > 0) {
-      unitPrice = item.unitPrice
-      priceSource = 'dynamic-combo'
-    }
-
     if (product.quoterConfig) {
       const materialName = selectedMap.get('Material')
       const sizeLabel = selectedMap.get('Medida')
@@ -237,7 +232,6 @@ export async function resolveCheckoutOrderItems(
 
     return {
       productId: product.id,
-      categoryId: product.category.id,
       quantity: item.quantity,
       unitPrice,
       creditDownPaymentPercent: product.creditDownPaymentPercent,
@@ -246,10 +240,10 @@ export async function resolveCheckoutOrderItems(
       briefResponses: item.briefResponses || undefined,
       briefReferenceLinks: item.briefReferenceLinks || [],
       briefReferenceFiles: item.briefReferenceFiles || undefined,
-      isService: product.category.isService,
-      fileUrl: product.category.isService ? undefined : item.fileUrl,
-      designRequested: product.category.isService || hasArtworkFile ? false : Boolean(item.designRequested),
-      artworkSubmissionChannel: product.category.isService
+      isService: isServiceProduct(product),
+      fileUrl: isServiceProduct(product) ? undefined : item.fileUrl,
+      designRequested: isServiceProduct(product) || hasArtworkFile ? false : Boolean(item.designRequested),
+      artworkSubmissionChannel: isServiceProduct(product)
         ? ('PENDING' as const)
         : hasArtworkFile
           ? ('R2' as const)

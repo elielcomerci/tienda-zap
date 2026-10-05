@@ -1,28 +1,15 @@
-import { prisma } from '@/lib/prisma'
+import { catalogFamilies } from '@/lib/catalog-domain'
 
-export async function getCategories() {
-  return prisma.category.findMany({ 
-    where: { slug: { not: 'sistema' } },
-    orderBy: { name: 'asc' } 
-  })
-}
-
+/**
+ * Compatibilidad de ruta: el catálogo ahora se organiza por familia comercial
+ * derivada del motor, no por el modelo Prisma Category retirado.
+ */
 export async function getPublicCategories() {
-  return prisma.category.findMany({
-    where: {
-      slug: { not: 'sistema' },
-      products: {
-        some: {
-          active: true,
-          isCombo: false,
-        },
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-    },
-    orderBy: { name: 'asc' },
-  })
+  return catalogFamilies.map((family) => ({
+    id: family.slug,
+    name: family.label,
+    slug: family.slug,
+  }))
 }
+
+export const getCategories = getPublicCategories

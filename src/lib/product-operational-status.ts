@@ -2,10 +2,8 @@ type ProductForOperationalStatus = {
   active: boolean
   price: number
   stock: number
-  isCombo?: boolean
-  category: {
-    isService: boolean
-  }
+  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   variants?: Array<{ price: number; costing?: unknown | null }>
   quoterConfig?: {
     pricingMode?: string
@@ -26,7 +24,7 @@ export type ProductOperationalStatus = {
   label: string
   summary: string
   issues: string[]
-  pricingMode: 'Servicio' | 'Combo' | 'Cotizador' | 'Variantes' | 'Precio fijo' | 'Sin precio'
+  pricingMode: 'Servicio' | 'Cotizador' | 'Variantes' | 'Precio fijo' | 'Sin precio'
 }
 
 function hasPositivePrice(value: unknown) {
@@ -45,11 +43,11 @@ export function getProductOperationalStatus(product: ProductForOperationalStatus
       label: 'Inactivo',
       summary: 'No visible en tienda.',
       issues: ['Producto archivado o pausado.'],
-      pricingMode: product.category.isService ? 'Servicio' : product.isCombo ? 'Combo' : 'Sin precio',
+      pricingMode: product.modality === 'CONSULTAR' || product.engine === 'DIGITAL' || product.engine === 'CAMPANAS' ? 'Servicio' : 'Sin precio',
     }
   }
 
-  if (product.category.isService) {
+  if (product.modality === 'CONSULTAR' || product.engine === 'DIGITAL' || product.engine === 'CAMPANAS') {
     const ready = hasPositivePrice(product.price) || pricedVariantCount > 0
     return ready
       ? {
@@ -65,24 +63,6 @@ export function getProductOperationalStatus(product: ProductForOperationalStatus
           summary: 'Servicio activo sin precio vendible.',
           issues: ['Cargar precio fijo o variantes con precio.'],
           pricingMode: 'Servicio',
-        }
-  }
-
-  if (product.isCombo) {
-    return hasPositivePrice(product.price)
-      ? {
-          severity: 'READY',
-          label: 'Operativo',
-          summary: 'Combo vendible.',
-          issues: [],
-          pricingMode: 'Combo',
-        }
-      : {
-          severity: 'BLOCKED',
-          label: 'Bloqueado',
-          summary: 'Combo activo sin precio.',
-          issues: ['Cargar precio de combo o revisar modo de pricing.'],
-          pricingMode: 'Combo',
         }
   }
 

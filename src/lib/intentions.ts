@@ -1,37 +1,8 @@
-import { prisma } from '@/lib/prisma'
+import { getPublicSituations, type DiscoverySituation } from '@/lib/discovery'
 
-export type MediaType = 'YOUTUBE' | 'AUDIO' | 'IMAGE' | 'NONE'
+/** @deprecated Las intenciones fueron reemplazadas por Situation. */
+export type Intention = DiscoverySituation
 
-export interface Intention {
-  id: string
-  slug: string
-  name: string
-  icon: string | null
-  description: string | null
-  mediaType: string | null
-  mediaUrl: string | null
-  mediaTitle: string | null
-}
-
-export async function getIntentions() {
-  return prisma.intention.findMany({
-    where: { active: true },
-    orderBy: { order: 'asc' },
-  })
-}
-
-export async function getPublicIntentions() {
-  return prisma.intention.findMany({
-    where: {
-      active: true,
-      products: {
-        some: {
-          active: true,
-          isCombo: false,
-          category: { slug: { not: 'sistema' } },
-        },
-      },
-    },
-    orderBy: { order: 'asc' },
-  })
-}
+/** @deprecated Conserva imports de rutas antiguas sin consultar el modelo retirado. */
+export const getIntentions = getPublicSituations
+export const getPublicIntentions = getPublicSituations

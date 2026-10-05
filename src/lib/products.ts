@@ -1,79 +1,60 @@
 import { cache } from 'react'
+import { Prisma } from '@prisma/client'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { engineForCatalogFamily } from '@/lib/catalog-domain'
 
 async function requireAdmin() {
   const session = await auth()
-  if (!session || session.user?.role !== 'ADMIN') {
-    throw new Error('No autorizado')
-  }
+  if (!session || session.user?.role !== 'ADMIN') throw new Error('No autorizado')
+}
+
+const quoterConfigInclude = {
+  rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } },
+  allowedMaterials: { include: { rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } } },
+  finishings: { include: { finishing: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } } },
+  quantityPresets: { orderBy: { sortOrder: 'asc' as const } },
+  sizePresets: { orderBy: { sortOrder: 'asc' as const } },
 }
 
 export async function getProducts(
-  categorySlug?: string,
+  familySlug?: string,
   search?: string,
-  options?: { take?: number; intentSlug?: string; businessTypeSlug?: string; situationSlug?: string; needSlug?: string }
+  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string }
 ) {
+  const engine = engineForCatalogFamily(familySlug)
+  const offerFilter: Prisma.OfferMatrixEntryWhereInput = {
+    ...(options?.situationSlug ? { situation: { slug: options.situationSlug } } : {}),
+    ...(options?.needSlug ? { need: { slug: options.needSlug } } : {}),
+    ...(options?.businessTypeSlug ? { businessType: { slug: options.businessTypeSlug } } : {}),
+  }
+  const hasOfferFilter = Boolean(options?.situationSlug || options?.needSlug || options?.businessTypeSlug)
+
+  const where: Prisma.ProductWhereInput = {
+    active: true,
+    ...(engine ? { engine } : {}),
+    ...(hasOfferFilter ? { offerEntries: { some: offerFilter } } : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+            { whatIs: { contains: search, mode: 'insensitive' } },
+            { purpose: { contains: search, mode: 'insensitive' } },
+            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } } },
+            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } } },
+            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } } },
+          ],
+        }
+      : {}),
+  }
+
   return prisma.product.findMany({
-    where: {
-      active: true,
-      isCombo: false,
-      category: categorySlug ? { slug: categorySlug } : { slug: { not: 'sistema' } },
-      ...(options?.intentSlug ? { intentions: { some: { slug: options.intentSlug } } } : {}),
-      ...(options?.situationSlug ? { needs: { some: { situations: { some: { slug: options.situationSlug } } } } } : {}),
-      ...(options?.needSlug ? { needs: { some: { slug: options.needSlug } } } : {}),
-      ...(options?.businessTypeSlug
-        ? {
-            OR: [
-              { category: { businessTypes: { some: { slug: options.businessTypeSlug } } } },
-              { needs: { some: { businessTypes: { some: { slug: options.businessTypeSlug } } } } },
-            ],
-          }
-        : {}),
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { description: { contains: search, mode: 'insensitive' } },
-              { category: { name: { contains: search, mode: 'insensitive' } } },
-              { needs: { some: { name: { contains: search, mode: 'insensitive' } } } },
-              { needs: { some: { description: { contains: search, mode: 'insensitive' } } } },
-              { needs: { some: { situations: { some: { name: { contains: search, mode: 'insensitive' } } } } } },
-              { needs: { some: { businessTypes: { some: { name: { contains: search, mode: 'insensitive' } } } } } },
-              { targetBusinessTypes: { some: { name: { contains: search, mode: 'insensitive' } } } },
-            ],
-          }
-        : {}),
-    },
+    where,
     include: {
-      category: true,
-      variants: {
-        select: { price: true },
-        orderBy: { price: 'asc' },
-      },
-      quoterConfig: {
-        include: {
-          rawMaterial: {
-            include: { tiers: { orderBy: { minQty: 'asc' } } },
-          },
-          allowedMaterials: {
-            include: {
-              rawMaterial: {
-                include: { tiers: { orderBy: { minQty: 'asc' } } },
-              },
-            },
-          },
-          finishings: {
-            include: {
-              finishing: {
-                include: { tiers: { orderBy: { minQty: 'asc' } } },
-              },
-            },
-          },
-          quantityPresets: { orderBy: { sortOrder: 'asc' } },
-          sizePresets: { orderBy: { sortOrder: 'asc' } },
-        },
-      },
+      variants: { select: { price: true }, orderBy: { price: 'asc' } },
+      quoterConfig: { include: quoterConfigInclude },
+      configuratorVersions: { where: { status: 'ACTIVE' }, select: { id: true, schemaVersion: true, status: true } },
     },
     orderBy: { createdAt: 'desc' },
     take: options?.take,
@@ -84,88 +65,25 @@ export const getProduct = cache(async function getProduct(slug: string) {
   return prisma.product.findUnique({
     where: { slug },
     include: {
-      category: true,
       options: {
         include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
         orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
       variants: {
-        include: {
-          options: {
-            include: {
-              optionValue: {
-                include: { option: true },
-              },
-            },
-          },
-        },
+        include: { options: { include: { optionValue: { include: { option: true } } } } },
       },
-      quoterConfig: {
-        include: {
-          rawMaterial: {
-            include: { tiers: { orderBy: { minQty: 'asc' } } },
-          },
-          allowedMaterials: {
-            include: {
-              rawMaterial: {
-                include: { tiers: { orderBy: { minQty: 'asc' } } },
-              },
-            },
-          },
-          finishings: {
-            include: {
-              finishing: {
-                include: { tiers: { orderBy: { minQty: 'asc' } } },
-              },
-            },
-          },
-          quantityPresets: { orderBy: { sortOrder: 'asc' } },
-          sizePresets: { orderBy: { sortOrder: 'asc' } },
-        },
+      quoterConfig: { include: quoterConfigInclude },
+      configuratorVersions: {
+        where: { status: 'ACTIVE' },
+        orderBy: { schemaVersion: 'desc' },
       },
       outgoingRelations: {
         include: {
           relatedProduct: {
             include: {
-              category: true,
-              options: {
-                include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
-                orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
-              },
-              variants: {
-                include: {
-                  options: {
-                    include: {
-                      optionValue: {
-                        include: { option: true },
-                      },
-                    },
-                  },
-                },
-              },
-              quoterConfig: {
-                include: {
-                  rawMaterial: {
-                    include: { tiers: { orderBy: { minQty: 'asc' } } },
-                  },
-                  allowedMaterials: {
-                    include: {
-                      rawMaterial: {
-                        include: { tiers: { orderBy: { minQty: 'asc' } } },
-                      },
-                    },
-                  },
-                  finishings: {
-                    include: {
-                      finishing: {
-                        include: { tiers: { orderBy: { minQty: 'asc' } } },
-                      },
-                    },
-                  },
-                  quantityPresets: { orderBy: { sortOrder: 'asc' } },
-                  sizePresets: { orderBy: { sortOrder: 'asc' } },
-                },
-              },
+              options: { include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } } },
+              variants: { include: { options: { include: { optionValue: { include: { option: true } } } } } },
+              quoterConfig: { include: quoterConfigInclude },
             },
           },
         },
@@ -176,43 +94,18 @@ export const getProduct = cache(async function getProduct(slug: string) {
 })
 
 export async function getActiveProductSlugs() {
-  return prisma.product.findMany({
-    where: { 
-      active: true,
-      category: { slug: { not: 'sistema' } }
-    },
-    select: { slug: true },
-  })
+  return prisma.product.findMany({ where: { active: true }, select: { slug: true } })
 }
 
 export async function getAllProductsAdmin() {
   await requireAdmin()
-
   return prisma.product.findMany({
     include: {
-      category: true,
-      options: {
-        include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
-        orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
-      },
-      variants: {
-        include: {
-          costing: true,
-          options: { include: { optionValue: true } },
-        },
-      },
-      quoterConfig: {
-        include: {
-          allowedMaterials: true,
-          finishings: true,
-          quantityPresets: { orderBy: { sortOrder: 'asc' } },
-          sizePresets: { orderBy: { sortOrder: 'asc' } },
-        },
-      },
-      targetBusinessTypes: { select: { id: true, name: true, slug: true } },
-      outgoingRelations: {
-        select: { relatedProductId: true },
-      },
+      options: { include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } } },
+      variants: { include: { costing: true, options: { include: { optionValue: true } } } },
+      quoterConfig: { include: { allowedMaterials: true, finishings: true, quantityPresets: true, sizePresets: true } },
+      configuratorVersions: { select: { schemaVersion: true, status: true } },
+      outgoingRelations: { select: { relatedProductId: true } },
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -220,72 +113,14 @@ export async function getAllProductsAdmin() {
 
 export async function getProductRelationOptions(excludeProductId?: string) {
   await requireAdmin()
-
   return prisma.product.findMany({
-    where: {
-      isCombo: false,
-      ...(excludeProductId ? { id: { not: excludeProductId } } : {}),
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      active: true,
-      images: true,
-      category: {
-        select: {
-          name: true,
-        },
-      },
-    },
+    where: { ...(excludeProductId ? { id: { not: excludeProductId } } : {}) },
+    select: { id: true, name: true, slug: true, active: true, images: true, modality: true, engine: true },
     orderBy: { name: 'asc' },
   })
 }
 
-/**
- * Returns combos visible to the user:
- * - If the user has a businessType, returns combos targeting that rubro + combos with no restrictions.
- * - If no user/rubro, returns all active combos.
- */
-export async function getCombos(businessTypeId?: string | null, search?: string) {
-  const result = await prisma.product.findMany({
-    where: {
-      active: true,
-      isCombo: true,
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { description: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-      ...(businessTypeId
-        ? {
-            OR: [
-              { targetBusinessTypes: { some: { id: businessTypeId } } },
-              { targetBusinessTypes: { none: {} } },
-            ],
-          }
-        : {}),
-    },
-    include: {
-      category: true,
-      variants: { select: { price: true }, orderBy: { price: 'asc' } },
-      targetBusinessTypes: { select: { id: true, name: true, slug: true } },
-      outgoingRelations: {
-        include: {
-          relatedProduct: {
-            include: {
-              category: true,
-              variants: { select: { price: true }, orderBy: { price: 'asc' } },
-            },
-          },
-        },
-        orderBy: { createdAt: 'asc' },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-  return result
+/** Packs now live in Pack/PackItem. v1 intentionally has no active packs. */
+export async function getCombos() {
+  return []
 }

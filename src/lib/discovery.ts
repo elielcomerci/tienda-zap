@@ -1,17 +1,11 @@
 import { prisma } from '@/lib/prisma'
 
-const publicProduct = {
-  active: true,
-  isCombo: false,
-  category: { slug: { not: 'sistema' } },
-}
-
 export type DiscoveryNeed = {
   id: string
   slug: string
   name: string
   description: string | null
-  _count: { products: number }
+  _count: { offerEntries: number }
 }
 
 export type DiscoverySituation = {
@@ -23,57 +17,83 @@ export type DiscoverySituation = {
   needs: DiscoveryNeed[]
 }
 
+const activeOffer = { product: { active: true } }
+
+function mapSituation(situation: {
+  id: string
+  slug: string
+  name: string
+  icon: string | null
+  description: string | null
+  offerEntries: Array<{
+    needId: string
+    need: { id: string; slug: string; name: string; description: string | null; active: boolean; order: number }
+  }>
+}): DiscoverySituation {
+  const needs = Array.from(
+    new Map(situation.offerEntries.map((entry) => [entry.need.id, entry.need])).values()
+  )
+    .filter((need) => need.active)
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+    .map((need) => ({
+      id: need.id,
+      slug: need.slug,
+      name: need.name,
+      description: need.description,
+      _count: {
+        offerEntries: situation.offerEntries.filter((entry) => entry.needId === need.id).length,
+      },
+    }))
+
+  return {
+    id: situation.id,
+    slug: situation.slug,
+    name: situation.name,
+    icon: situation.icon,
+    description: situation.description,
+    needs,
+  }
+}
+
 export async function getPublicSituationBySlug(slug?: string) {
   if (!slug) return undefined
 
-  return prisma.situation.findFirst({
-    where: {
-      slug,
-      active: true,
-    },
+  const situation = await prisma.situation.findFirst({
+    where: { slug, active: true },
     include: {
-      needs: {
-        where: { active: true },
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          description: true,
-          _count: { select: { products: { where: publicProduct } } },
-        },
-        orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      offerEntries: {
+        where: activeOffer,
+        include: { need: true },
+        orderBy: { order: 'asc' },
       },
     },
   })
+  return situation ? mapSituation(situation) : null
 }
 
 export async function getPublicSituations(businessTypeSlug?: string) {
-  return prisma.situation.findMany({
+  const situations = await prisma.situation.findMany({
     where: {
       active: true,
-      ...(businessTypeSlug
-        ? { businessTypes: { some: { slug: businessTypeSlug } } }
-        : {}),
-      needs: { some: { active: true } },
+      offerEntries: {
+        some: {
+          ...activeOffer,
+          ...(businessTypeSlug ? { businessType: { slug: businessTypeSlug } } : {}),
+        },
+      },
     },
     include: {
-      needs: {
+      offerEntries: {
         where: {
-          active: true,
-          ...(businessTypeSlug
-            ? { businessTypes: { some: { slug: businessTypeSlug } } }
-            : {}),
+          ...activeOffer,
+          ...(businessTypeSlug ? { businessType: { slug: businessTypeSlug } } : {}),
         },
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          description: true,
-          _count: { select: { products: { where: publicProduct } } },
-        },
-        orderBy: [{ order: 'asc' }, { name: 'asc' }],
+        include: { need: true },
+        orderBy: { order: 'asc' },
       },
     },
     orderBy: [{ order: 'asc' }, { name: 'asc' }],
   })
+
+  return situations.map(mapSituation)
 }

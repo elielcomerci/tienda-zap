@@ -1,7 +1,8 @@
 ﻿import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Link2, Boxes } from 'lucide-react'
+import { ArrowRight, Link2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import { getProductFamilyLabel } from '@/lib/catalog-domain'
 
 type RelatedProduct = {
   id: string
@@ -11,9 +12,8 @@ type RelatedProduct = {
   price: number
   images: string[]
   active: boolean
-  category: {
-    name: string
-  }
+  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   variants: Array<{
     price: number
   }>
@@ -22,10 +22,8 @@ type RelatedProduct = {
 
 export default function RelatedProductsSection({
   products,
-  isCombo = false,
 }: {
   products: RelatedProduct[]
-  isCombo?: boolean
 }) {
   if (products.length === 0) {
     return null
@@ -35,16 +33,14 @@ export default function RelatedProductsSection({
     <section className="mt-14">
       <div className="mb-6 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FEF1F5] text-[#ED164F]">
-          {isCombo ? <Boxes size={18} /> : <Link2 size={18} />}
+          <Link2 size={18} />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            {isCombo ? 'Productos incluidos en este Pack / Combo' : 'Piezas que pueden acompañar'}
+            Piezas que pueden acompañar
           </h2>
           <p className="text-sm text-gray-500">
-            {isCombo
-              ? 'Este kit comercial de ZAP incluye las siguientes piezas de forma integrada:'
-              : 'Seleccionadas para completar mejor este trabajo.'}
+            Seleccionadas para completar mejor este trabajo.
           </p>
         </div>
       </div>
@@ -78,7 +74,7 @@ export default function RelatedProductsSection({
 
               <div className="space-y-3 p-4">
                 <div>
-                  <p className="mb-1 text-xs font-semibold text-[#ED164F]">{product.category.name}</p>
+                  <p className="mb-1 text-xs font-semibold text-[#ED164F]">{getProductFamilyLabel(product)}</p>
                   <h3 className="line-clamp-2 text-base font-bold text-gray-900">{product.name}</h3>
                 </div>
 
@@ -99,7 +95,7 @@ export default function RelatedProductsSection({
                   </div>
 
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#ED164F]">
-                    {isCombo ? 'Ver pieza incluida' : 'Ver pieza'}
+                    Ver pieza
                     <ArrowRight size={16} />
                   </span>
                 </div>

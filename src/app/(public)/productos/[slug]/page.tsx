@@ -6,6 +6,7 @@ import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductDetailExperience from '@/components/public/ProductDetailExperience'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import { getProductFamilyLabel } from '@/lib/catalog-domain'
 
 export const revalidate = 300
 
@@ -36,7 +37,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     buildProductInquiryMessage({
       name: product.name,
-      categoryName: product.category.name,
+      categoryName: getProductFamilyLabel(product),
       price: displayPrice,
       slug: product.slug,
       intent: displayPrice === null ? 'cotizar' : 'consultar',
@@ -60,7 +61,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <ProductDetailExperience product={product} inquiryUrl={inquiryUrl} />
 
-        <RelatedProductsSection products={relatedProducts} isCombo={product.isCombo} />
+        <RelatedProductsSection products={relatedProducts} />
       </div>
     </div>
   )

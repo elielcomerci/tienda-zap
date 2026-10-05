@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Search } from 'lucide-react'
-import { getProducts, getCombos } from '@/lib/products'
+import { getProducts } from '@/lib/products'
 import { getPublicCategories } from '@/lib/categories'
 import { getPublicSituationBySlug, getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
@@ -14,6 +14,7 @@ import { getProductDisplayPrice } from '@/lib/product-pricing'
 import SituationResultExperience from '@/components/public/SituationResultExperience'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,13 +68,11 @@ export default async function ProductsPage({
 
   const [products, categories] = await Promise.all([
     mode === 'combo'
-      ? getCombos(businessTypeId, q)
+      ? Promise.resolve([])
       : getProducts(
           isSituationMode || mode === 'rubro' ? undefined : cat,
           q, 
           {
-            // Legacy intention URLs keep working until the old editorial data is retired.
-            intentSlug: isSituationMode && !selectedSituation ? situationSlug : undefined,
             situationSlug: selectedSituation?.slug,
             needSlug: selectedSituation ? necesidad : undefined,
             businessTypeSlug: mode === 'rubro' ? rubro : undefined,
@@ -257,12 +256,12 @@ export default async function ProductsPage({
             ) : (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => {
-                  const isDevelopment = product.category.isService
+                  const isDevelopment = isServiceProduct(product)
                   const hasVariants = Boolean(product.variants && product.variants.length > 0)
-                  const requiresConfiguration = hasVariants || Boolean(product.quoterConfig)
+                  const requiresConfiguration = product.modality === 'CONFIGURABLE' || hasVariants || Boolean(product.quoterConfig)
                   const displayPrice = getProductDisplayPrice(product)
-                  const isPurchasable = displayPrice !== null && product.conversionType !== 'contact'
-                  const isConsultationOnly = !isDevelopment && !requiresConfiguration && !isPurchasable
+                  const isPurchasable = displayPrice !== null && product.modality === 'DIRECTO'
+                  const isConsultationOnly = product.modality === 'CONSULTAR' || (!requiresConfiguration && !isPurchasable)
 
                   return (
                     <article
@@ -273,7 +272,7 @@ export default async function ProductsPage({
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
                           <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
                             <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
-                              {product.category.name}
+                              {getProductFamilyLabel(product)}
                             </span>
                           </div>
 

@@ -12,6 +12,7 @@ import {
   getApparelMockupConfig,
   hasApparelMockupImages,
 } from '@/lib/apparel-mockup'
+import { getProductFamilyLabel, getProductModalityLabel } from '@/lib/catalog-domain'
 
 function normalize(value?: string | null) {
   return (value || '')
@@ -23,27 +24,14 @@ function normalize(value?: string | null) {
 }
 
 function isApparelProduct(product: any) {
-  const categoryName = normalize(product.category?.name)
-  const categorySlug = normalize(product.category?.slug)
+  const engine = normalize(product.engine)
   const productName = normalize(product.name)
   const productSlug = normalize(product.slug)
-  const haystack = `${categoryName} ${categorySlug} ${productName} ${productSlug}`
+  const haystack = `${engine} ${productName} ${productSlug}`
 
   return ['indumentaria', 'remera', 'camiseta', 'buzo', 'hoodie', 'textil'].some((term) =>
     haystack.includes(term)
   )
-}
-
-const taxonomyLabel: Record<string, string> = {
-  cosas: 'Cosa',
-  soluciones: 'Solución',
-  desarrollos: 'Desarrollo',
-}
-
-const purchaseModeLabel: Record<string, string> = {
-  buy: 'Compra directa',
-  configure: 'Configuración previa',
-  contact: 'Consulta guiada',
 }
 
 export default function ProductDetailExperience({
@@ -115,10 +103,10 @@ export default function ProductDetailExperience({
         <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
-              {product.category.name}
+              {getProductFamilyLabel(product)}
             </span>
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              {taxonomyLabel[product.taxonomy] || (product.category.isService ? 'Desarrollo' : 'Cosa')}
+              {getProductModalityLabel(product.modality)}
             </span>
           </div>
 
@@ -175,7 +163,7 @@ export default function ProductDetailExperience({
                 Tipo
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {purchaseModeLabel[product.conversionType] || (product.category.isService ? 'Consulta guiada' : 'Pedido online')}
+                {getProductModalityLabel(product.modality)}
               </dd>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -183,7 +171,7 @@ export default function ProductDetailExperience({
                 Modalidad
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {product.conversionType === 'contact' ? 'Hablar con ZAP' : product.quoterConfig || product.options?.length ? 'Definir configuración' : 'Agregar al carrito'}
+                {product.modality === 'CONSULTAR' ? 'Hablar con ZAP' : product.modality === 'CONFIGURABLE' ? 'Definir configuración' : 'Agregar al carrito'}
               </dd>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -191,7 +179,7 @@ export default function ProductDetailExperience({
                 Siguiente paso
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {product.conversionType === 'contact' ? 'Contanos tu caso' : 'Elegir y avanzar'}
+                {product.modality === 'CONSULTAR' ? 'Contanos tu caso' : 'Elegir y avanzar'}
               </dd>
             </div>
           </dl>

@@ -10,7 +10,6 @@ async function requireAdmin() {
 export async function getBusinessTypes() {
   return prisma.businessType.findMany({
     include: {
-      categories: { select: { id: true, name: true, slug: true } },
       _count: { select: { users: true } },
     },
     orderBy: { name: 'asc' },
@@ -27,48 +26,26 @@ export async function getActiveBusinessTypes() {
 export async function getPublicBusinessTypes() {
   return prisma.businessType.findMany({
     where: {
-      OR: [
-        {
-          categories: {
-            some: {
-              products: {
-                some: {
-                  active: true,
-                  isCombo: false,
-                },
-              },
-            },
-          },
-        },
-        {
-          combos: {
-            some: {
-              active: true,
-              isCombo: true,
-            },
-          },
-        },
-      ],
+      offerEntries: { some: { product: { active: true } } },
     },
     select: { id: true, name: true, slug: true },
     orderBy: { name: 'asc' },
   })
 }
 
-export async function createBusinessType(data: { name: string; slug: string; categoryIds: string[] }) {
+export async function createBusinessType(data: { name: string; slug: string }) {
   await requireAdmin()
   return prisma.businessType.create({
     data: {
       name: data.name,
       slug: data.slug,
-      categories: { connect: data.categoryIds.map((id) => ({ id })) },
     },
   })
 }
 
 export async function updateBusinessType(
   id: string,
-  data: { name: string; slug: string; categoryIds: string[] }
+  data: { name: string; slug: string }
 ) {
   await requireAdmin()
   return prisma.businessType.update({
@@ -76,7 +53,6 @@ export async function updateBusinessType(
     data: {
       name: data.name,
       slug: data.slug,
-      categories: { set: data.categoryIds.map((cid) => ({ id: cid })) },
     },
   })
 }

@@ -1,12 +1,11 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { getProducts, getCombos } from '@/lib/products'
+import { getProducts } from '@/lib/products'
 import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import HomeHero from '@/components/public/HomeHero'
-import ComboSection from '@/components/public/ComboSection'
 import CatalogEntrySection from '@/components/public/CatalogEntrySection'
 
 export const metadata = {
@@ -33,9 +32,8 @@ export default async function HomePage() {
     }
   }
 
-  const [allProducts, combos, situations, businessTypes] = await Promise.all([
+  const [allProducts, situations, businessTypes] = await Promise.all([
     getProducts(undefined, undefined, { take: 20 }),
-    getCombos(businessTypeId),
     getPublicSituations(),
     getPublicBusinessTypes(),
   ])
@@ -52,8 +50,6 @@ export default async function HomePage() {
       <HomeHero businessTypes={businessTypes} situations={situations} />
 
       {/* ── 01. PACKS ──────────────────────────────────────────────── */}
-      <ComboSection combos={combos} businessTypeName={businessTypeName} />
-
       {/* ── 02. COSAS / DESARROLLOS ────────────────────────────────── */}
       <CatalogEntrySection products={allProducts} />
 

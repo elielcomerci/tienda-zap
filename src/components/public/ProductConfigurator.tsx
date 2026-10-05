@@ -7,6 +7,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
+import { getProductFamilyLabel, isServiceProduct as isServiceDomainProduct } from '@/lib/catalog-domain'
 
 type ProductWithOptions = {
   id: string
@@ -17,11 +18,8 @@ type ProductWithOptions = {
   briefType?: string | null
   stock?: number
   images: string[]
-  category: {
-    name: string
-    slug?: string
-    isService: boolean
-  }
+  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   options: {
     id: string
     name: string
@@ -123,8 +121,8 @@ export default function ProductConfigurator({
     : []
   const isDynamicCombo = product.isCombo && product.comboPricingMode === 'DYNAMIC'
   const comboDiscountPercent = Math.max(0, Math.min(100, Number(product.comboDiscountPercent || 0)))
-  const isServiceProduct = product.category.isService
-  const isContactOnly = product.conversionType === 'contact'
+  const isServiceProduct = isServiceDomainProduct(product)
+  const isContactOnly = product.modality === 'CONSULTAR'
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
@@ -1236,7 +1234,7 @@ function ComboPartsConfigurator({
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-base font-black text-gray-950">{part.name}</p>
-                <p className="text-xs font-semibold text-gray-500">{part.category.name}</p>
+                <p className="text-xs font-semibold text-gray-500">{getProductFamilyLabel(part)}</p>
               </div>
               {(!part.options || part.options.length === 0) && (
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">

@@ -1,31 +1,9 @@
-import { getCategories } from '@/lib/categories'
 import { createProduct } from '@/lib/actions/products'
-import ProductForm from '@/components/admin/ProductForm'
-import { getProductRelationOptions } from '@/lib/products'
-import { getIntentions } from '@/lib/intentions'
-import { getActiveBusinessTypes } from '@/lib/business-types'
-import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Nuevo Producto | ZAP Admin' }
+export default function NewProductPage() {
+  return <ProductBaseForm title="Nuevo Product Base" action={createProduct} />
+}
 
-export default async function NewProductPage() {
-  const [categories, availableProducts, availableIntentions, availableBusinessTypes, availableNeeds] = await Promise.all([
-    getCategories(),
-    getProductRelationOptions(),
-    getIntentions(),
-    getActiveBusinessTypes(),
-    prisma.need.findMany({ where: { active: true }, select: { id: true, name: true }, orderBy: [{ order: 'asc' }, { name: 'asc' }] }),
-  ])
-
-  return (
-    <ProductForm
-      categories={categories}
-      action={createProduct}
-      availableProducts={availableProducts}
-      availableIntentions={availableIntentions}
-      availableBusinessTypes={availableBusinessTypes}
-      availableNeeds={availableNeeds}
-    />
-  )
+export function ProductBaseForm({ title, action, product }: { title: string; action: (formData: FormData) => Promise<void>; product?: any }) {
+  return <div className="mx-auto max-w-3xl space-y-6"><header><h1 className="text-2xl font-bold text-gray-950">{title}</h1><p className="mt-1 text-sm text-gray-600">Definí el Product Base. Las opciones y precios de un configurable se cargan mediante su ConfiguratorVersion.</p></header><form action={action} className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6"><label className="block text-sm font-medium">Nombre<input name="name" required defaultValue={product?.name} className="input mt-1 w-full" /></label><label className="block text-sm font-medium">Slug<input name="slug" defaultValue={product?.slug} className="input mt-1 w-full" /></label><label className="block text-sm font-medium">Descripción<textarea name="description" defaultValue={product?.description || ''} className="input mt-1 min-h-24 w-full" /></label><div className="grid gap-4 sm:grid-cols-2"><label className="block text-sm font-medium">Modalidad<select name="modality" defaultValue={product?.modality || 'CONSULTAR'} className="input mt-1 w-full"><option value="CONFIGURABLE">Configurable</option><option value="DIRECTO">Directo</option><option value="CONSULTAR">Consultar</option></select></label><label className="block text-sm font-medium">Motor<select name="engine" defaultValue={product?.engine || ''} className="input mt-1 w-full"><option value="">Sin motor</option><option value="IMPRESOS_PACKAGING">Impresos & Packaging</option><option value="PRESENCIA_FISICA">Presencia física</option><option value="TEXTIL">Textil</option><option value="DIGITAL">Digital</option><option value="CAMPANAS">Campañas</option></select></label></div><label className="block text-sm font-medium">Qué es<textarea name="whatIs" defaultValue={product?.whatIs || ''} className="input mt-1 min-h-20 w-full" /></label><label className="block text-sm font-medium">Para qué sirve<textarea name="purpose" defaultValue={product?.purpose || ''} className="input mt-1 min-h-20 w-full" /></label><label className="block text-sm font-medium">Nota de consulta<textarea name="consultationNote" defaultValue={product?.consultationNote || ''} className="input mt-1 min-h-20 w-full" /></label><button className="btn-primary">Guardar</button></form></div>
 }

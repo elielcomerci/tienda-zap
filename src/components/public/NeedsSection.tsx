@@ -31,7 +31,7 @@ export default function NeedsSection({
           const href = new URLSearchParams(query)
           href.set('necesidad', need.slug)
           const active = selectedNeedSlug === need.slug
-          const hasOffers = need._count.products > 0
+          const hasOffers = need._count.offerEntries > 0
           return (
             <Link
               key={need.id}
@@ -48,7 +48,7 @@ export default function NeedsSection({
                 {hasOffers ? <ArrowRight size={16} className="mt-0.5 shrink-0 text-[#ED164F]" /> : <MessageCircleMore size={16} className="mt-0.5 shrink-0 text-[#ED164F]" />}
               </div>
               <p className="mt-3 text-xs font-semibold text-[#C2103F]">
-                {hasOffers ? `${need._count.products} ${need._count.products === 1 ? 'oferta relacionada' : 'ofertas relacionadas'}` : 'Hablar con ZAP'}
+                {hasOffers ? `${need._count.offerEntries} ${need._count.offerEntries === 1 ? 'oferta relacionada' : 'ofertas relacionadas'}` : 'Hablar con ZAP'}
               </p>
             </Link>
           )

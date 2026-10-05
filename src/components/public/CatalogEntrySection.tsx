@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Box, Code2 } from 'lucide-react'
+import { isServiceProduct } from '@/lib/catalog-domain'
 
 interface ProductSnippet {
   id: string
@@ -8,7 +9,8 @@ interface ProductSnippet {
   description: string | null
   images: string[]
   price: number
-  category: { name: string; isService: boolean }
+  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   variants: { price: number }[]
   quoterConfig: unknown | null
 }
@@ -18,8 +20,8 @@ export default function CatalogEntrySection({
 }: {
   products: ProductSnippet[]
 }) {
-  const hasCosas = products.some((p) => !p.category.isService)
-  const hasDesarrollos = products.some((p) => p.category.isService)
+  const hasCosas = products.some((p) => !isServiceProduct(p))
+  const hasDesarrollos = products.some((p) => isServiceProduct(p))
 
   if (!hasCosas && !hasDesarrollos) return null
 
