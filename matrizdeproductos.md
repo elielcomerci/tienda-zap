@@ -4,11 +4,23 @@
 
 La matriz conecta:
 
-**Rubro → Situación → Necesidad → Oferta**
+**Rubro → Situación → Necesidad → Product Base**
 
-Las ofertas son las que ya existen en el inventario. No se crean ofertas nuevas solamente para completar una casilla.
+Las ofertas de esta matriz son exclusivamente **Product Bases** del catálogo.
 
-Una misma oferta puede aparecer en muchas necesidades.
+Una misma Product Base puede aparecer en muchas necesidades y rubros.
+
+La matriz no intenta mostrar todo lo que ZAP sabe hacer. Muestra únicamente las ofertas que tienen sentido frente a una necesidad concreta.
+
+> **¿Por qué alguien que tiene esta necesidad consideraría razonablemente esta oferta?**
+
+Si la respuesta es solamente:
+
+> “Porque también hacemos eso.”
+
+La relación no se agrega.
+
+Cuando una necesidad no tiene una Product Base que la resuelva razonablemente, la matriz no inventa una relación: deriva a **Hablar con ZAP** o, cuando corresponde, a **Operaciones & Consultoría**.
 
 ---
 
@@ -18,32 +30,30 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito que el local se vea terminado y reconocible
 
-* Diseño de logo
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
-* Diseño de pieza suelta
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
 
 ### Necesito preparar el packaging
 
-* Cajas
-* Bolsas
-* Sellos para packaging
-* Stickers
+* Cajas Personalizadas
+* Bolsas & Contenedores
+* Adhesivos & Stickers
+* Fajas & Envoltorios
+* Tags & Etiquetas
 
 ### Necesito empezar a comunicar la apertura
 
-* Flyers
-* Posters
-* Reel
-* Posteo para redes
-* Campaña para redes
-* Video publicitario
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito tener presencia digital
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ---
 
@@ -51,25 +61,21 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito comunicar mejor lo que vendo
 
-* Diseño de pieza suelta
-* Flyers
-* Posters
-* Reel
-* Video publicitario
-* Campaña para redes
+* Flyers & Desplegables
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito facilitar el contacto
 
-* Chatbot conversacional
-* Sitio web / tienda online
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ### Necesito hacer visible una promoción
 
-* Flyers
-* Posters
-* Reel
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -77,20 +83,22 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito que una propuesta se vea
 
-* Cartelería por m²
-* Posters
-* Flyers
-* Diseño de pieza suelta
-* Ploteo de vidriera
+* Menús & Cartas
+* Individuales & Posavasos
+* Cartelería & Ploteo
+* Señalética & Placas
+* Flyers & Desplegables
+* Adhesivos & Stickers
+* Producción Audiovisual
 
 ### Necesito reforzar la identidad
 
-* Diseño de logo
-* Ploteo de vidriera
-* Cajas
-* Bolsas
-* Stickers
-* Sellos para packaging
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Bolsas & Contenedores
+* Cajas Personalizadas
+* Adhesivos & Stickers
 
 ---
 
@@ -98,16 +106,15 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito mantener presente la marca
 
-* Stickers
-* Flyers
-* Diseño de pieza suelta
-* Campaña para redes
-* Posteo para redes
-* Reel
+* Tarjetas & Vouchers
+* Flyers & Desplegables
+* Adhesivos & Stickers
+* Anuncios & Campañas
 
 ### Necesito entender qué está funcionando
 
-* Análisis de datos
+* Anuncios & Campañas
+* Operaciones & Consultoría
 
 ---
 
@@ -117,33 +124,31 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito presentar la marca
 
-* Diseño de logo
-* Diseño de pieza suelta
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito preparar materiales de venta
 
-* Bolsas
-* Stickers
-* Tarjetas personales
-* Flyers
-* Remeras estampadas DTF
+* Tarjetas & Vouchers
+* Tags & Etiquetas
+* Bolsas & Contenedores
+* Adhesivos & Stickers
+* Flyers & Desplegables
 
 ### Necesito comunicar la apertura
 
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
-* Flyers
-* Posters
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito presencia digital
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ---
 
@@ -151,18 +156,17 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito mejorar cómo se presenta el espacio
 
-* Ploteo de vidriera
-* Cartelería por m²
-* Posters
-* Diseño de pieza suelta
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito comunicar productos o promociones
 
-* Flyers
-* Posters
-* Reel
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -170,21 +174,17 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito una presencia comercial
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ### Necesito contenido para mostrar lo que vendo
 
-* Reel
-* Video publicitario
-* Edición de video
-* Posteo para redes
-* Diseño de pieza suelta
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito llevar tráfico
 
-* Campaña para redes
-* Análisis de datos
+* Anuncios & Campañas
 
 ---
 
@@ -192,18 +192,17 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito actualizar la identidad
 
-* Diseño de logo
-* Diseño de pieza suelta
-* Ploteo de vidriera
-* Cartelería por m²
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
 
 ### Necesito comunicar el cambio
 
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
-* Flyers
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -213,23 +212,22 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito construir una identidad
 
-* Diseño de logo
-* Diseño de pieza suelta
-* Cartelería por m²
-* Cartel inmobiliario
-* Ploteo de vidriera
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
 
 ### Necesito materiales comerciales
 
-* Tarjetas personales
-* Flyers
-* Posters
-* Stickers
+* Tarjetas & Vouchers
+* Flyers & Desplegables
+* Adhesivos & Stickers
+* Carpetas & Folders
 
 ### Necesito presencia digital
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ---
 
@@ -237,19 +235,16 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito hacer visible la inmobiliaria
 
-* Cartelería por m²
-* Cartel inmobiliario
-* Ploteo de vidriera
-* Flyers
-* Posters
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Flyers & Desplegables
 
 ### Necesito comunicar una propuesta
 
-* Diseño de pieza suelta
-* Reel
-* Posteo para redes
-* Campaña para redes
-* Video publicitario
+* Flyers & Desplegables
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -257,20 +252,19 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito mostrar mejor las propiedades
 
-* Reel
-* Video publicitario
-* Edición de video
-* Posteo para redes
-* Diseño de pieza suelta
+* Producción Audiovisual
+* Anuncios & Campañas
+* Activos Web & Sitios
 
 ### Necesito facilitar el contacto
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ### Necesito hacer seguimiento de qué funciona
 
-* Análisis de datos
+* Anuncios & Campañas
+* Operaciones & Consultoría
 
 ---
 
@@ -278,18 +272,17 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito una presencia coherente
 
-* Diseño de logo
-* Cartelería por m²
-* Ploteo de vidriera
-* Tarjetas personales
-* Diseño de pieza suelta
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Tarjetas & Vouchers
 
 ### Necesito comunicar profesionalmente
 
-* Video publicitario
-* Reel
-* Posteo para redes
-* Campaña para redes
+* Producción Audiovisual
+* Anuncios & Campañas
+* Activos Web & Sitios
 
 ---
 
@@ -299,31 +292,30 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito que el espacio se vea profesional
 
-* Diseño de logo
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
-* Diseño de pieza suelta
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito materiales para atender
 
-* Tarjetas personales
-* Flyers
-* Stickers
-* Remeras estampadas DTF
+* Tarjetas & Vouchers
+* Flyers & Desplegables
+* Adhesivos & Stickers
+* Indumentaria & Textil
 
 ### Necesito comunicar la apertura
 
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
-* Flyers
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito facilitar las consultas
 
-* Chatbot conversacional
-* Sitio web / tienda online
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ---
 
@@ -331,21 +323,20 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito comunicar servicios
 
-* Flyers
-* Posters
-* Reel
-* Posteo para redes
-* Campaña para redes
-* Video publicitario
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito facilitar el contacto
 
-* Chatbot conversacional
-* Sitio web / tienda online
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ### Necesito entender qué genera consultas
 
-* Análisis de datos
+* Anuncios & Campañas
+* Operaciones & Consultoría
 
 ---
 
@@ -353,18 +344,17 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito comunicar disponibilidad o promociones
 
-* Diseño de pieza suelta
-* Flyers
-* Posters
-* Reel
-* Posteo para redes
-* Campaña para redes
+* Tarjetas & Vouchers
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito convertir mejor las consultas
 
-* Chatbot conversacional
-* Sitio web / tienda online
-* Análisis de datos
+* Activos Web & Sitios
+* Asistentes & Bots
+* Anuncios & Campañas
 
 ---
 
@@ -372,45 +362,43 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito mantener la marca presente
 
-* Stickers
-* Flyers
-* Tarjetas personales
-* Posteo para redes
-* Campaña para redes
+* Tarjetas & Vouchers
+* Adhesivos & Stickers
+* Flyers & Desplegables
+* Anuncios & Campañas
 
 ### Necesito comunicar novedades
 
-* Reel
-* Video publicitario
-* Diseño de pieza suelta
+* Flyers & Desplegables
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
-# 05. Retail & Comercios
+# 05. Comercios & Retail
 
 ## Situación: Estoy por abrir
 
 ### Necesito hacer visible el local
 
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
-* Flyers
-* Diseño de pieza suelta
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Flyers & Desplegables
 
 ### Necesito construir reconocimiento
 
-* Diseño de logo
-* Stickers
-* Bolsas
-* Tarjetas personales
+* Sistema de Identidad
+* Adhesivos & Stickers
+* Bolsas & Contenedores
+* Tarjetas & Vouchers
 
 ### Necesito comunicar la apertura
 
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -418,18 +406,17 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito llamar la atención desde la calle
 
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
-* Diseño de pieza suelta
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito comunicar promociones
 
-* Flyers
-* Posters
-* Reel
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -437,28 +424,28 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito comunicar mejor lo que vendo
 
-* Diseño de pieza suelta
-* Flyers
-* Posters
-* Reel
-* Video publicitario
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito mejorar la presencia comercial
 
-* Cartelería por m²
-* Ploteo de vidriera
-* Bolsas
-* Stickers
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Bolsas & Contenedores
+* Adhesivos & Stickers
 
 ### Necesito vender online
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ### Necesito saber qué funciona
 
-* Análisis de datos
+* Anuncios & Campañas
+* Operaciones & Consultoría
 
 ---
 
@@ -466,53 +453,48 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito cambiar su presencia
 
-* Ploteo de vidriera
-* Cartelería por m²
-* Posters
-* Diseño de pieza suelta
-* Diseño de logo
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito comunicar el cambio
 
-* Flyers
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
-# 06. Eventos & BTL
+# 06. Eventos & Experiencias
 
 ## Situación: Tengo un evento
 
 ### Necesito producir materiales
 
-* Cartelería por m²
-* Posters
-* Flyers
-* Stickers
-* Remeras estampadas DTF
-* Bolsas
-* Cajas
+* Cartelería & Ploteo
+* Señalética & Placas
+* Flyers & Desplegables
+* Adhesivos & Stickers
+* Indumentaria & Textil
+* Bolsas & Contenedores
+* Cajas Personalizadas
 
 ### Necesito construir presencia de marca
 
-* Diseño de pieza suelta
-* Cartelería por m²
-* Fondo de prensa
-* Posters
-* Remeras estampadas DTF
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Expositores & Stands
+* Indumentaria & Textil
 
 ### Necesito comunicar el evento
 
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
-* Jingle publicitario
-* Música original
-* Locución
+* Flyers & Desplegables
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ---
 
@@ -520,20 +502,20 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito generar atención
 
-* Cartelería por m²
-* Posters
-* Diseño de pieza suelta
-* Video publicitario
-* Reel
-* Campaña para redes
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Expositores & Stands
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito una experiencia de marca reconocible
 
-* Fondo de prensa
-* Remeras estampadas DTF
-* Stickers
-* Bolsas
-* Cajas
+* Sistema de Identidad
+* Expositores & Stands
+* Cartelería & Ploteo
+* Indumentaria & Textil
+* Adhesivos & Stickers
+* Bolsas & Contenedores
 
 ---
 
@@ -541,55 +523,54 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito facilitar que se lleven la marca
 
-* Tarjetas personales
-* Flyers
-* Stickers
+* Tarjetas & Vouchers
+* Flyers & Desplegables
+* Adhesivos & Stickers
+* Bolsas & Contenedores
 
 ### Necesito comunicar una propuesta
 
-* Diseño de pieza suelta
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito analizar los resultados
 
-* Análisis de datos
+* Anuncios & Campañas
+* Operaciones & Consultoría
 
 ---
 
-# 07. Gym & Yoga
+# 07. Wellness
 
 ## Situación: Estoy por abrir
 
 ### Necesito presentar la marca
 
-* Diseño de logo
-* Diseño de pieza suelta
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito preparar el espacio
 
-* Cartelería por m²
-* Ploteo de vidriera
-* Posters
-* Stickers
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
 
 ### Necesito comunicar la apertura
 
-* Flyers
-* Reel
-* Video publicitario
-* Posteo para redes
-* Campaña para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito empezar a recibir consultas
 
-* Sitio web / tienda online
-* Chatbot conversacional
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ---
 
@@ -597,22 +578,19 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito comunicar la propuesta
 
-* Diseño de pieza suelta
-* Flyers
-* Posters
-* Reel
-* Video publicitario
-* Posteo para redes
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito generar campañas
 
-* Campaña para redes
-* Análisis de datos
+* Anuncios & Campañas
 
 ### Necesito facilitar las consultas
 
-* Chatbot conversacional
-* Sitio web / tienda online
+* Activos Web & Sitios
+* Asistentes & Bots
 
 ---
 
@@ -620,20 +598,20 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito comunicar horarios y disponibilidad
 
-* Diseño de pieza suelta
-* Flyers
-* Posters
-* Posteo para redes
-* Reel
+* Flyers & Desplegables
+* Cartelería & Ploteo
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito generar demanda
 
-* Campaña para redes
-* Video publicitario
+* Producción Audiovisual
+* Anuncios & Campañas
 
 ### Necesito entender dónde están las oportunidades
 
-* Análisis de datos
+* Anuncios & Campañas
+* Operaciones & Consultoría
 
 ---
 
@@ -641,90 +619,84 @@ Una misma oferta puede aparecer en muchas necesidades.
 
 ### Necesito reforzar la identidad del espacio
 
-* Ploteo de vidriera
-* Cartelería por m²
-* Posters
-* Stickers
-* Remeras estampadas DTF
+* Sistema de Identidad
+* Cartelería & Ploteo
+* Corpóreos & Marquesinas
+* Señalética & Placas
+* Adhesivos & Stickers
+* Indumentaria & Textil
 
 ### Necesito mantener contacto con alumnos
 
-* Chatbot conversacional
-* Sitio web / tienda online
-* Posteo para redes
-* Campaña para redes
+* Activos Web & Sitios
+* Asistentes & Bots
+* Anuncios & Campañas
 
 ---
 
 # 08. Ofertas transversales
 
-Hay ofertas que no deberían quedar encerradas en un solo rubro.
+La matriz no necesita repetir una sección de ofertas transversales como relaciones adicionales.
 
-## Diseño de pieza suelta
+La transversalidad se resuelve mediante la propia matriz:
 
-Puede relacionarse prácticamente con cualquier situación donde haya que comunicar algo concreto.
+* Una Product Base puede relacionarse con múltiples rubros.
+* Una Product Base puede relacionarse con múltiples situaciones.
+* Una Product Base puede relacionarse con múltiples necesidades.
+* Una Product Base no necesita pertenecer a un único contexto.
 
-## Diseño de logo
+Las capacidades que antes aparecían como ofertas independientes quedan absorbidas por los Product Bases correspondientes.
 
-Especialmente:
+### Identidad
 
-* apertura;
-* renovación;
-* reposicionamiento;
-* construcción de marca.
+**Sistema de Identidad**
 
-## Sitio web / tienda online
+Incluye los trabajos necesarios para construir o actualizar la identidad de una marca.
 
-Especialmente:
+### Presencia física
 
-* apertura;
-* venta online;
-* generación de consultas;
-* presentación profesional;
-* centralización de información.
+**Cartelería & Ploteo**
+**Corpóreos & Marquesinas**
+**Señalética & Placas**
+**Expositores & Stands**
 
-## Chatbot conversacional
+### Impresos y packaging
 
-Especialmente:
+**Tarjetas & Vouchers**
+**Flyers & Desplegables**
+**Tags & Etiquetas**
+**Adhesivos & Stickers**
+**Fajas & Envoltorios**
+**Bolsas & Contenedores**
+**Cajas Personalizadas**
+**Carpetas & Folders**
+**Menús & Cartas**
+**Individuales & Posavasos**
 
-* generación de consultas;
-* atención;
-* orientación;
-* captación;
-* contacto comercial.
+### Textil
 
-## Reel / Video publicitario
+**Indumentaria & Textil**
 
-Especialmente:
+### Digital
 
-* lanzamiento;
-* promoción;
-* presentación;
-* captación;
-* comunicación de novedades.
+**Activos Web & Sitios**
+**Asistentes & Bots**
 
-## Campaña para redes
+### Publicidad
 
-Especialmente:
+**Anuncios & Campañas**
 
-* lanzamiento;
-* captación;
-* promoción;
-* generación de demanda;
-* comunicación comercial.
+### Audiovisual
 
-## Análisis de datos
+**Producción Audiovisual**
 
-Especialmente:
+### Objetos
 
-* optimización de campañas;
-* comprensión de comportamiento;
-* evaluación de resultados;
-* decisiones comerciales.
+**Objetos & Regalería**
 
-## Música original / Jingle / Locución / Edición
+### Intervenciones complejas
 
-Funcionan principalmente como componentes audiovisuales o publicitarios y no necesariamente como puertas de entrada independientes.
+**Operaciones & Consultoría**
 
 ---
 
@@ -732,7 +704,7 @@ Funcionan principalmente como componentes audiovisuales o publicitarios y no nec
 
 No toda relación posible debe convertirse en una relación editorial.
 
-Para agregar una oferta a una necesidad tiene que poder responderse:
+Para agregar una Product Base a una necesidad tiene que poder responderse:
 
 > **¿Por qué alguien que tiene esta necesidad consideraría razonablemente esta oferta?**
 
@@ -750,18 +722,113 @@ Debe mostrar **lo que tiene sentido para esa situación**.
 
 # 10. Regla de derivación
 
-Cuando ninguna oferta existente resuelve razonablemente la necesidad:
+Cuando ninguna Product Base existente resuelve razonablemente la necesidad:
 
 **No inventamos una relación.**
 
-La Tienda deriva:
+La Tienda deriva a:
 
 > **Hablar con ZAP**
 
-Y si la necesidad parece corresponder al funcionamiento interno del negocio:
+Cuando la necesidad corresponde a una intervención sobre el funcionamiento interno del negocio:
 
 > **Puede ser una cuestión de ZAP Operaciones.**
 
-Así la matriz no obliga a que todo termine en un producto.
+Cuando una necesidad requiere una combinación de varias Product Bases, no se crea una nueva Product Base.
 
-**La matriz organiza el conocimiento comercial de ZAP; no fuerza una venta.**
+Se puede resolver mediante:
+
+* varias ofertas relacionadas en la matriz; o
+* un **Pack** compuesto por Product Bases existentes.
+
+Los Packs no reemplazan las relaciones de la matriz.
+
+---
+
+# 11. Regla para configuradores
+
+La matriz determina **qué Product Base tiene sentido**.
+
+No determina cómo se configura.
+
+Una vez seleccionada una Product Base:
+
+**Product Base → ConfiguratorVersion → configuración → precio / consulta**
+
+Por lo tanto:
+
+* la matriz no contiene materiales;
+* la matriz no contiene medidas;
+* la matriz no contiene precios;
+* la matriz no contiene compatibilidades;
+* la matriz no contiene fórmulas de cotización.
+
+Todo eso pertenece al configurador correspondiente.
+
+---
+
+# 12. Regla para Product Bases CONSULTAR
+
+Una Product Base puede aparecer perfectamente en la matriz aunque no tenga compra directa.
+
+En esos casos:
+
+**Necesidad → Product Base → Consultar con ZAP**
+
+Esto aplica especialmente a:
+
+* Producción Audiovisual
+* Sistema de Identidad
+* Operaciones & Consultoría
+
+y a aquellos casos de:
+
+* Asistentes & Bots
+* Expositores & Stands
+* otras Product Bases configurables
+
+que por su alcance concreto deban derivarse a consulta.
+
+---
+
+# 13. Regla para análisis y datos
+
+**Análisis de Datos no es una Product Base.**
+
+Cuando analizar información forma parte de una intervención comercial:
+
+→ **Anuncios & Campañas**
+
+Cuando el análisis apunta a comprender o modificar cómo funciona el negocio:
+
+→ **Operaciones & Consultoría**
+
+Cuando forma parte de un activo digital específico:
+
+→ **Activos Web & Sitios** o **Asistentes & Bots**
+
+No se crea una oferta independiente llamada “Análisis de datos”.
+
+---
+
+# 14. Regla final
+
+La matriz organiza el conocimiento comercial de ZAP.
+
+No fuerza una venta.
+
+No reproduce el inventario.
+
+No reproduce las capacidades internas.
+
+No reemplaza los configuradores.
+
+No reemplaza los Packs.
+
+Su única función es responder:
+
+> **Dado este rubro, esta situación y esta necesidad, ¿qué Product Bases de ZAP tiene sentido mostrar?**
+
+Si la respuesta es ninguna:
+
+> **Hablar con ZAP.**

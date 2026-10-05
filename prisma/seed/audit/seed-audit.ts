@@ -1,0 +1,197 @@
+import { PrismaClient } from '@prisma/client';
+import { businessTypesData } from '../data/02-business-types';
+import { productsData } from '../data/05-products';
+import { situationsData } from '../data/03-situations';
+import { needsData } from '../data/04-needs';
+import { offerMatrixData } from '../data/07-offer-matrix';
+
+export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
+  console.log('\n========================================');
+  console.log('AUDITORÍA AUTOMÁTICA SEED v1.0 (FASE D)');
+  console.log('========================================\n');
+
+  const errors: string[] = [];
+
+  // 1. Audit Rubros (BusinessTypes)
+  const dbRubros = await prisma.businessType.findMany({ select: { slug: true } });
+  const expectedRubroSlugs = new Set(businessTypesData.map((b) => b.slug));
+  const actualRubroSlugs = new Set(dbRubros.map((b) => b.slug));
+
+  if (dbRubros.length !== 7) {
+    errors.push(`[RUBROS COUNT] Esperados 7, encontrados en DB: ${dbRubros.length}`);
+  }
+  for (const slug of expectedRubroSlugs) {
+    if (!actualRubroSlugs.has(slug)) {
+      errors.push(`[RUBROS MISSING] Rubro faltante en DB: ${slug}`);
+    }
+  }
+  for (const slug of actualRubroSlugs) {
+    if (!expectedRubroSlugs.has(slug)) {
+      errors.push(`[RUBROS EXTRA] Rubro no esperado en DB: ${slug}`);
+    }
+  }
+
+  // 2. Audit Situations
+  const dbSituations = await prisma.situation.findMany({ select: { slug: true } });
+  const expectedSituationSlugs = new Set(situationsData.map((s) => s.slug));
+  const actualSituationSlugs = new Set(dbSituations.map((s) => s.slug));
+
+  for (const slug of expectedSituationSlugs) {
+    if (!actualSituationSlugs.has(slug)) {
+      errors.push(`[SITUATIONS MISSING] Situación faltante: ${slug}`);
+    }
+  }
+  for (const slug of actualSituationSlugs) {
+    if (!expectedSituationSlugs.has(slug)) {
+      errors.push(`[SITUATIONS EXTRA] Situación inesperada: ${slug}`);
+    }
+  }
+
+  // 3. Audit Needs
+  const dbNeeds = await prisma.need.findMany({ select: { slug: true } });
+  const expectedNeedSlugs = new Set(needsData.map((n) => n.slug));
+  const actualNeedSlugs = new Set(dbNeeds.map((n) => n.slug));
+
+  for (const slug of expectedNeedSlugs) {
+    if (!actualNeedSlugs.has(slug)) {
+      errors.push(`[NEEDS MISSING] Necesidad faltante: ${slug}`);
+    }
+  }
+  for (const slug of actualNeedSlugs) {
+    if (!expectedNeedSlugs.has(slug)) {
+      errors.push(`[NEEDS EXTRA] Necesidad inesperada: ${slug}`);
+    }
+  }
+
+  // 4. Audit Product Bases
+  const dbProducts = await prisma.product.findMany({
+    select: { id: true, slug: true, modality: true, engine: true },
+  });
+  const expectedProductSlugs = new Set(productsData.map((p) => p.slug));
+  const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
+
+  if (dbProducts.length !== 22) {
+    errors.push(`[PRODUCTS COUNT] Esperados 22, encontrados en DB: ${dbProducts.length}`);
+  }
+  for (const slug of expectedProductSlugs) {
+    if (!actualProductSlugs.has(slug)) {
+      errors.push(`[PRODUCTS MISSING] Product Base faltante en DB: ${slug}`);
+    }
+  }
+  for (const slug of actualProductSlugs) {
+    if (!expectedProductSlugs.has(slug)) {
+      errors.push(`[PRODUCTS EXTRA] Product Base no esperado en DB: ${slug}`);
+    }
+  }
+
+  // 5. Audit Modality and Engine
+  const productExpectedMap = new Map(productsData.map((p) => [p.slug, p]));
+  for (const p of dbProducts) {
+    const exp = productExpectedMap.get(p.slug);
+    if (!exp) continue;
+
+    if (p.modality !== exp.modality) {
+      errors.push(`[MODALITY MISMATCH] Producto '${p.slug}': esperado ${exp.modality}, encontrado ${p.modality}`);
+    }
+    if (p.engine !== exp.engine) {
+      errors.push(`[ENGINE MISMATCH] Producto '${p.slug}': esperado ${exp.engine}, encontrado ${p.engine}`);
+    }
+
+    if (p.modality === 'CONFIGURABLE' && !p.engine) {
+      errors.push(`[RULE VIOLATION] Producto CONFIGURABLE '${p.slug}' no tiene engine.`);
+    }
+    if ((p.modality === 'DIRECTO' || p.modality === 'CONSULTAR') && p.engine !== null) {
+      errors.push(`[RULE VIOLATION] Producto ${p.modality} '${p.slug}' tiene engine asignado (${p.engine}).`);
+    }
+  }
+
+  // 6. Audit ConfiguratorVersion
+  const dbConfigurators = await prisma.configuratorVersion.findMany({
+    include: { product: { select: { slug: true, modality: true, engine: true } } },
+  });
+
+  for (const cv of dbConfigurators) {
+    if (cv.product.modality !== 'CONFIGURABLE') {
+      errors.push(`[CONFIGURATOR ERROR] ConfiguratorVersion creado para producto ${cv.product.modality} '${cv.product.slug}'`);
+    }
+    if (cv.schemaVersion !== '1.0') {
+      errors.push(`[CONFIGURATOR ERROR] schemaVersion incorrecto '${cv.schemaVersion}' en '${cv.product.slug}'`);
+    }
+  }
+
+  const configurableSlugs = new Set(
+    productsData.filter((p) => p.modality === 'CONFIGURABLE').map((p) => p.slug)
+  );
+  const actualConfigSlugs = new Set(dbConfigurators.map((cv) => cv.product.slug));
+  for (const cSlug of configurableSlugs) {
+    if (!actualConfigSlugs.has(cSlug)) {
+      errors.push(`[CONFIGURATOR MISSING] Falta versión 1.0 para producto configurable '${cSlug}'`);
+    }
+  }
+
+  // 7. Audit OfferMatrixEntry (Matriz editorial <-> DB exacta)
+  const dbEntries = await prisma.offerMatrixEntry.findMany({
+    include: {
+      businessType: { select: { slug: true } },
+      situation: { select: { slug: true } },
+      need: { select: { slug: true } },
+      product: { select: { slug: true } },
+    },
+  });
+
+  const expectedTupleKeys = new Set(
+    offerMatrixData.map(
+      (t) => `${t.businessTypeSlug}|${t.situationSlug}|${t.needSlug}|${t.productSlug}`
+    )
+  );
+
+  const actualTupleKeys = new Set(
+    dbEntries.map(
+      (e) => `${e.businessType.slug}|${e.situation.slug}|${e.need.slug}|${e.product.slug}`
+    )
+  );
+
+  if (dbEntries.length !== offerMatrixData.length) {
+    errors.push(`[OFFER MATRIX COUNT] Esperadas ${offerMatrixData.length} tuplas, encontradas ${dbEntries.length}`);
+  }
+
+  for (const key of expectedTupleKeys) {
+    if (!actualTupleKeys.has(key)) {
+      errors.push(`[OFFER MATRIX MISSING] Tupla faltante: ${key}`);
+    }
+  }
+
+  for (const key of actualTupleKeys) {
+    if (!expectedTupleKeys.has(key)) {
+      errors.push(`[OFFER MATRIX EXTRA] Tupla inesperada: ${key}`);
+    }
+  }
+
+  // 8. Audit Packs
+  const packCount = await prisma.pack.count();
+  const packItemCount = await prisma.packItem.count();
+  if (packCount !== 0 || packItemCount !== 0) {
+    errors.push(`[PACKS ERROR] En v1.0 los packs deben ser 0. Encontrados: ${packCount} packs, ${packItemCount} items.`);
+  }
+
+  // Final validation check
+  if (errors.length > 0) {
+    console.error('\n❌ AUDITORÍA FALLIDA CON LOS SIGUIENTES ERRORES:');
+    for (const err of errors) {
+      console.error(' - ' + err);
+    }
+    throw new Error(`[SEED AUDIT FAILED] Se detectaron ${errors.length} inconsistencias en la base de datos.`);
+  }
+
+  console.log('Rubros:              7 / 7');
+  console.log(`Situaciones:         ${dbSituations.length} OK`);
+  console.log(`Necesidades:         ${dbNeeds.length} OK`);
+  const activeCount = dbConfigurators.filter((c) => c.status === 'ACTIVE').length;
+  const draftCount = dbConfigurators.filter((c) => c.status === 'DRAFT').length;
+  console.log(`Configuradores:      ${dbConfigurators.length} OK (${activeCount} ACTIVE, ${draftCount} DRAFT)`);
+  console.log(`Offer Matrix:        EXACT MATCH (${dbEntries.length} tuplas verificadas 1:1)`);
+  console.log('Packs:               0 (preparado sin packs ficticios)');
+  console.log('Orphans:             0');
+  console.log('Unexpected records:  0\n');
+  console.log('🎉 Seed audit passed. FASE D SEED v1.0: OK\n');
+}

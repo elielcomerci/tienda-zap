@@ -72,16 +72,15 @@ model SellerProfile {
 }
 
 model BusinessType {
-  id          String            @id @default(cuid())
-  name        String
-  slug        String            @unique
-  categories  Category[]
-  situations  Situation[]       @relation("SituationBusinessTypes")
-  needs       Need[]            @relation("NeedBusinessTypes")
-  users       User[]
-  sellerLeads SellerLead[]
-  accounts    BusinessAccount[]
-  combos      Product[]         @relation("ComboBusinessTypes")
+  id              String             @id @default(cuid())
+  name            String
+  slug            String             @unique
+  offerEntries    OfferMatrixEntry[]
+  packs           Pack[]
+  consultRequests ConsultRequest[]
+  users           User[]
+  sellerLeads     SellerLead[]
+  accounts        BusinessAccount[]
 }
 
 model BusinessAccount {
@@ -208,37 +207,6 @@ model AdminAuditLog {
   @@index([action, createdAt])
 }
 
-model Category {
-  id            String         @id @default(cuid())
-  name          String
-  slug          String         @unique
-  isService     Boolean        @default(false)
-  products      Product[]
-  businessTypes BusinessType[]
-  rawMaterials  RawMaterial[]  @relation("RawMaterialCategories")
-}
-
-model Intention {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  icon        String?
-  description String?
-  mediaType   String?  @default("NONE") // "YOUTUBE", "AUDIO", "NONE"
-  mediaUrl    String?
-  mediaTitle  String?
-  active      Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  products Product[] @relation("ProductIntentions")
-}
-
-// Intention remains available while the previous discovery URLs are in use.
-// New editorial discovery is intentionally modelled separately: a Situation
-// describes what is happening, while a Need names the concrete thing that
-// needs attention inside that context.
 model Situation {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -250,8 +218,7 @@ model Situation {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  businessTypes BusinessType[] @relation("SituationBusinessTypes")
-  needs         Need[]         @relation("SituationNeeds")
+  offerEntries OfferMatrixEntry[]
 
   @@index([active, order])
 }
@@ -266,53 +233,144 @@ model Need {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  situations    Situation[]    @relation("SituationNeeds")
-  businessTypes BusinessType[] @relation("NeedBusinessTypes")
-  products      Product[]      @relation("ProductNeeds")
+  offerEntries OfferMatrixEntry[]
 
   @@index([active, order])
 }
 
 model Product {
-  id                       String               @id @default(cuid())
+  id                       String              @id @default(cuid())
   name                     String
-  slug                     String               @unique
+  slug                     String              @unique
   description              String?
-  price                    Float
-  images                   String[]
-  categoryId               String
-  active                   Boolean              @default(true)
-  stock                    Int                  @default(0)
-  isCombo                  Boolean              @default(false)
-  comboPricingMode         String               @default("FIXED")
-  comboDiscountPercent     Float                @default(0)
-  briefType                String?              @default("NONE")
-  mediaType                String?              @default("NONE")
+  price                    Float               @default(0)
+  priceFrom                Float?
+  modality                 ProductModality
+  engine                   ConfiguratorEngine?
+  images                   String[]            @default([])
+  active                   Boolean             @default(true)
+  stock                    Int                 @default(0)
+  briefType                String?             @default("NONE")
+  mediaType                String?             @default("NONE")
   mediaUrl                 String?
   mediaTitle               String?
   mediaList                Json?
-  createdAt                DateTime             @default(now())
-  updatedAt                DateTime             @updatedAt
-  creditDownPaymentPercent Int                  @default(30)
-  conversionType           String? // buy | configure | contact — nullable; null = fallback a lógica actual de variantes/cotizador
-  taxonomy                 String? // cosas | soluciones | desarrollos — Fase E; null = sin clasificar
   whatIs                   String?
   purpose                  String?
-  includes                 String[]
-  configurable             String[]
+  includes                 String[]            @default([])
+  configurable             String[]            @default([])
   consultationNote         String?
-  configuratorVersion      String?
-  configuratorDefinition   Json?
-  orderItems               OrderItem[]
-  category                 Category             @relation(fields: [categoryId], references: [id])
-  options                  ProductOption[]
-  outgoingRelations        ProductRelation[]    @relation("ProductOutgoingRelations")
-  incomingRelations        ProductRelation[]    @relation("ProductIncomingRelations")
-  variants                 ProductVariant[]
-  intentions               Intention[]          @relation("ProductIntentions")
-  needs                    Need[]               @relation("ProductNeeds")
-  quoterConfig             ProductQuoterConfig?
-  targetBusinessTypes      BusinessType[]       @relation("ComboBusinessTypes")
+  creditDownPaymentPercent Int                 @default(30)
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+
+  orderItems           OrderItem[]
+  options              ProductOption[]
+  outgoingRelations    ProductRelation[]     @relation("ProductOutgoingRelations")
+  incomingRelations    ProductRelation[]     @relation("ProductIncomingRelations")
+  variants             ProductVariant[]
+  quoterConfig         ProductQuoterConfig?
+  offerEntries         OfferMatrixEntry[]
+  configuratorVersions ConfiguratorVersion[]
+  packItems            PackItem[]
+  consultRequests      ConsultRequest[]
+
+  @@index([modality, active])
+  @@index([engine])
+}
+
+model OfferMatrixEntry {
+  id             String   @id @default(cuid())
+  businessTypeId String
+  situationId    String
+  needId         String
+  productId      String
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  businessType BusinessType @relation(fields: [businessTypeId], references: [id], onDelete: Cascade)
+  situation    Situation    @relation(fields: [situationId], references: [id], onDelete: Cascade)
+  need         Need         @relation(fields: [needId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([businessTypeId, situationId, needId, productId], map: "OfferMatrixEntry_tuple_key")
+  @@index([businessTypeId, situationId, needId])
+  @@index([productId])
+}
+
+model ConfiguratorVersion {
+  id            String             @id @default(cuid())
+  productId     String
+  schemaVersion String             @default("1.0")
+  status        ConfiguratorStatus @default(ACTIVE)
+  schema        Json
+  compatibility Json?
+  pricing       Json?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, schemaVersion])
+  @@index([productId, status])
+}
+
+model Pack {
+  id              String          @id @default(cuid())
+  name            String
+  slug            String          @unique
+  description     String?
+  images          String[]        @default([])
+  order           Int             @default(0)
+  businessTypeId  String?
+  pricingMode     PackPricingMode @default(SUM_WITH_DISCOUNT)
+  fixedPrice      Float?
+  discountPercent Float?          @default(0)
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  businessType BusinessType? @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+  items        PackItem[]
+
+  @@index([businessTypeId, active])
+}
+
+model PackItem {
+  id        String @id @default(cuid())
+  packId    String
+  productId String
+  quantity  Int    @default(1)
+  order     Int    @default(0)
+  presets   Json?
+
+  pack    Pack    @relation(fields: [packId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([packId])
+  @@index([productId])
+}
+
+model ConsultRequest {
+  id             String               @id @default(cuid())
+  productId      String?
+  businessTypeId String?
+  snapshot       Json?
+  customerName   String
+  customerEmail  String
+  customerPhone  String?
+  message        String               @db.Text
+  status         ConsultRequestStatus @default(PENDING)
+  notes          String?              @db.Text
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  businessType BusinessType? @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([productId])
+  @@index([businessTypeId])
 }
 
 model Order {
@@ -383,6 +441,11 @@ model OrderItem {
   isService                Boolean                  @default(false)
   creditDownPaymentPercent Int                      @default(30)
   configurationSnapshot    Json?
+  productName              String                   @default("")
+  productSlug              String                   @default("")
+  productEngine            ConfiguratorEngine?
+  schemaVersion            String?
+  packInstanceId           String?
   order                    Order                    @relation(fields: [orderId], references: [id])
   product                  Product                  @relation(fields: [productId], references: [id])
   selectedOptions          OrderItemOption[]
@@ -728,6 +791,38 @@ model CouponRedemption {
 
   @@index([promotionId, status])
   @@index([couponCode, status])
+}
+
+enum ProductModality {
+  DIRECTO
+  CONFIGURABLE
+  CONSULTAR
+}
+
+enum ConfiguratorEngine {
+  IMPRESOS_PACKAGING
+  PRESENCIA_FISICA
+  TEXTIL
+  DIGITAL
+  CAMPANAS
+}
+
+enum ConfiguratorStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum PackPricingMode {
+  FIXED
+  SUM_WITH_DISCOUNT
+}
+
+enum ConsultRequestStatus {
+  PENDING
+  CONTACTED
+  QUOTED
+  DISCARDED
 }
 
 enum Role {
@@ -1106,7 +1201,6 @@ model RawMaterial {
   configs               ProductQuoterConfig[]
   quoterConfigMaterials ProductQuoterConfigMaterial[]
   variantCosts          ProductVariantCost[]
-  applicableCategories  Category[]                    @relation("RawMaterialCategories")
 
   @@map("raw_materials")
 }
