@@ -17,7 +17,7 @@ for (const file of ['.env.local', '.env']) {
 }
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool as any) });
 
 async function main() {
   console.log('[SYNC] Actualizando productos (cajas-personalizadas -> CONSULTAR)...');
