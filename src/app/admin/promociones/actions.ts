@@ -426,8 +426,6 @@ function toPromotionData(data: PromotionInput) {
     firstOrderOnly: Boolean(data.firstOrderOnly),
     allowedProductIds: normalizeIdList(data.allowedProductIds),
     excludedProductIds: normalizeIdList(data.excludedProductIds),
-    allowedCategoryIds: normalizeIdList(data.allowedCategoryIds),
-    excludedCategoryIds: normalizeIdList(data.excludedCategoryIds),
     welcomeTitle: normalizeOptionalText(data.welcomeTitle),
     welcomeMessage: normalizeOptionalText(data.welcomeMessage),
     welcomeConditions: normalizeOptionalText(data.welcomeConditions),
