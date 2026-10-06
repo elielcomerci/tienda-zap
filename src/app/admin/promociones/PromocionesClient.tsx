@@ -74,8 +74,6 @@ type PromotionWithCounts = {
   firstOrderOnly: boolean
   allowedProductIds: string[]
   excludedProductIds: string[]
-  allowedCategoryIds: string[]
-  excludedCategoryIds: string[]
   welcomeTitle: string | null
   welcomeMessage: string | null
   welcomeConditions: string | null
@@ -366,8 +364,6 @@ function mapPromotionToForm(promotion: PromotionWithCounts): PromotionFormState 
     firstOrderOnly: promotion.firstOrderOnly,
     allowedProductIds: promotion.allowedProductIds ?? [],
     excludedProductIds: promotion.excludedProductIds ?? [],
-    allowedCategoryIds: promotion.allowedCategoryIds ?? [],
-    excludedCategoryIds: promotion.excludedCategoryIds ?? [],
     welcomeTitle: promotion.welcomeTitle ?? '',
     welcomeMessage: promotion.welcomeMessage ?? '',
     welcomeConditions: promotion.welcomeConditions ?? '',
@@ -424,10 +420,8 @@ function getPromotionRiskWarnings(form: PromotionFormState) {
   const hasUsageLimit = Boolean(form.maxUses)
   const hasDateLimit = Boolean(form.activeTo)
   const hasScopedReach =
-    form.allowedCategoryIds.length > 0 ||
-    form.allowedProductIds.length > 0 ||
-    form.excludedCategoryIds.length > 0 ||
-    form.excludedProductIds.length > 0
+      form.allowedProductIds.length > 0 ||
+      form.excludedProductIds.length > 0
 
   if (form.discountKind === 'PERCENTAGE' && discountValue >= 40) {
     warnings.push('Descuento porcentual alto: revisar margen antes de activar.')
@@ -690,8 +684,6 @@ export default function PromocionesClient({
         firstOrderOnly: promotionForm.firstOrderOnly,
         allowedProductIds: promotionForm.allowedProductIds,
         excludedProductIds: promotionForm.excludedProductIds,
-        allowedCategoryIds: promotionForm.allowedCategoryIds,
-        excludedCategoryIds: promotionForm.excludedCategoryIds,
         welcomeTitle: promotionForm.welcomeTitle || null,
         welcomeMessage: promotionForm.welcomeMessage || null,
         welcomeConditions: promotionForm.welcomeConditions || null,
@@ -1698,7 +1690,7 @@ export default function PromocionesClient({
                 <div className="mb-4">
                   <p className="text-sm font-black text-gray-900">Alcance del descuento</p>
                   <p className="mt-1 text-xs leading-5 text-gray-500">
-                    Si elegis productos o categorias permitidas, el descuento se calcula solo sobre esos items.
+                    Si elegis productos permitidos, el descuento se calcula solo sobre esos items.
                     Las exclusiones siempre tienen prioridad.
                   </p>
                 </div>
