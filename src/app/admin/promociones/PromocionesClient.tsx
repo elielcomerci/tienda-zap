@@ -116,8 +116,6 @@ type PromotionFormState = {
   firstOrderOnly: boolean
   allowedProductIds: string[]
   excludedProductIds: string[]
-  allowedCategoryIds: string[]
-  excludedCategoryIds: string[]
   welcomeTitle: string
   welcomeMessage: string
   welcomeConditions: string
@@ -181,8 +179,6 @@ const DEFAULT_PROMOTION_FORM: PromotionFormState = {
   firstOrderOnly: false,
   allowedProductIds: [],
   excludedProductIds: [],
-  allowedCategoryIds: [],
-  excludedCategoryIds: [],
   welcomeTitle: '',
   welcomeMessage: '',
   welcomeConditions: '',
@@ -455,11 +451,9 @@ function getPromotionRiskWarnings(form: PromotionFormState) {
 export default function PromocionesClient({
   initialPromotions,
   products,
-  categories,
 }: {
   initialPromotions: PromotionWithCounts[]
-  products: Array<{ id: string; name: string; categoryId: string }>
-  categories: Array<{ id: string; name: string }>
+  products: Array<{ id: string; name: string }>
 }) {
   const [promotions, setPromotions] = useState(initialPromotions)
   const [couponPages, setCouponPages] = useState<Record<string, CouponPageState>>(() =>
@@ -1695,22 +1689,6 @@ export default function PromocionesClient({
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <ScopeMultiSelect
-                    label="Categorias permitidas"
-                    options={categories}
-                    selectedIds={promotionForm.allowedCategoryIds}
-                    onChange={(values) =>
-                      setPromotionForm((current) => ({ ...current, allowedCategoryIds: values }))
-                    }
-                  />
-                  <ScopeMultiSelect
-                    label="Categorias excluidas"
-                    options={categories}
-                    selectedIds={promotionForm.excludedCategoryIds}
-                    onChange={(values) =>
-                      setPromotionForm((current) => ({ ...current, excludedCategoryIds: values }))
-                    }
-                  />
                   <ScopeMultiSelect
                     label="Productos permitidos"
                     options={products}
