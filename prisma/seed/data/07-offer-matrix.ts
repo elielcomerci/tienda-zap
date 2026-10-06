@@ -58,37 +58,37 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-empezar-a-comunicar-la-apertura",
+    "needSlug": "necesito-comunicar-la-apertura",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-empezar-a-comunicar-la-apertura",
+    "needSlug": "necesito-comunicar-la-apertura",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-empezar-a-comunicar-la-apertura",
+    "needSlug": "necesito-comunicar-la-apertura",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-empezar-a-comunicar-la-apertura",
+    "needSlug": "necesito-comunicar-la-apertura",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-tener-presencia-digital",
+    "needSlug": "necesito-presencia-digital",
     "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-tener-presencia-digital",
+    "needSlug": "necesito-presencia-digital",
     "productSlug": "asistentes-bots"
   },
   {
@@ -225,37 +225,37 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-vuelvan",
-    "needSlug": "necesito-mantener-presente-la-marca",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "tarjetas-vouchers"
   },
   {
     "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-vuelvan",
-    "needSlug": "necesito-mantener-presente-la-marca",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-vuelvan",
-    "needSlug": "necesito-mantener-presente-la-marca",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-vuelvan",
-    "needSlug": "necesito-mantener-presente-la-marca",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-vuelvan",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-vuelvan",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "operaciones-consultoria"
   },
@@ -357,49 +357,49 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-mejorar-como-se-presenta-el-espacio",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-mejorar-como-se-presenta-el-espacio",
     "productSlug": "corporeos-marquesinas"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-mejorar-como-se-presenta-el-espacio",
     "productSlug": "senaletica-placas"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-mejorar-como-se-presenta-el-espacio",
     "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-comunicar-productos-o-promociones",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-comunicar-productos-o-promociones",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-comunicar-productos-o-promociones",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-que-el-local-venda-mejor",
+    "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-comunicar-productos-o-promociones",
     "productSlug": "anuncios-campanas"
   },
@@ -616,61 +616,61 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-conseguir-mas-consultas",
-    "needSlug": "necesito-hacer-seguimiento-de-que-funciona",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-conseguir-mas-consultas",
-    "needSlug": "necesito-hacer-seguimiento-de-que-funciona",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "operaciones-consultoria"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-una-presencia-coherente",
+    "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
     "productSlug": "sistema-identidad"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-una-presencia-coherente",
+    "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-una-presencia-coherente",
+    "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
     "productSlug": "corporeos-marquesinas"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-una-presencia-coherente",
+    "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
     "productSlug": "senaletica-placas"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-una-presencia-coherente",
+    "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
     "productSlug": "tarjetas-vouchers"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-comunicar-profesionalmente",
+    "needSlug": "necesito-presentarme-con-profesionalismo",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-comunicar-profesionalmente",
+    "needSlug": "necesito-presentarme-con-profesionalismo",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-comunicar-profesionalmente",
+    "needSlug": "necesito-presentarme-con-profesionalismo",
     "productSlug": "activos-web-sitios"
   },
   {
@@ -765,97 +765,97 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-servicios",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-servicios",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-servicios",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-servicios",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-facilitar-el-contacto",
     "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-facilitar-el-contacto",
     "productSlug": "asistentes-bots"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-entender-que-genera-consultas",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-conseguir-mas-turnos",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-entender-que-genera-consultas",
     "productSlug": "operaciones-consultoria"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "tarjetas-vouchers"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-convertir-mejor-las-consultas",
     "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-convertir-mejor-las-consultas",
     "productSlug": "asistentes-bots"
   },
   {
     "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-mejor-la-agenda",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-convertir-mejor-las-consultas",
     "productSlug": "anuncios-campanas"
   },
@@ -1090,13 +1090,13 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "comercios-retail",
     "situationSlug": "quiero-vender-mas",
-    "needSlug": "necesito-saber-que-funciona",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "comercios-retail",
     "situationSlug": "quiero-vender-mas",
-    "needSlug": "necesito-saber-que-funciona",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "operaciones-consultoria"
   },
   {
@@ -1312,25 +1312,25 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-facilitar-que-se-lleven-la-marca",
+    "needSlug": "necesito-dejar-un-punto-de-contacto",
     "productSlug": "tarjetas-vouchers"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-facilitar-que-se-lleven-la-marca",
+    "needSlug": "necesito-dejar-un-punto-de-contacto",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-facilitar-que-se-lleven-la-marca",
+    "needSlug": "necesito-dejar-un-punto-de-contacto",
     "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-facilitar-que-se-lleven-la-marca",
+    "needSlug": "necesito-dejar-un-punto-de-contacto",
     "productSlug": "bolsas-contenedores"
   },
   {
@@ -1354,13 +1354,13 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-analizar-los-resultados",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-analizar-los-resultados",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "operaciones-consultoria"
   },
   {
@@ -1456,25 +1456,25 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-la-propuesta",
+    "needSlug": "necesito-comunicar-una-propuesta",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-la-propuesta",
+    "needSlug": "necesito-comunicar-una-propuesta",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-la-propuesta",
+    "needSlug": "necesito-comunicar-una-propuesta",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-la-propuesta",
+    "needSlug": "necesito-comunicar-una-propuesta",
     "productSlug": "anuncios-campanas"
   },
   {
@@ -1497,103 +1497,103 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-horarios-y-disponibilidad",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-horarios-y-disponibilidad",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-horarios-y-disponibilidad",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-horarios-y-disponibilidad",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-generar-demanda",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
+    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-generar-demanda",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
-    "needSlug": "necesito-entender-donde-estan-las-oportunidades",
+    "situationSlug": "quiero-llenar-la-agenda",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-horarios",
-    "needSlug": "necesito-entender-donde-estan-las-oportunidades",
+    "situationSlug": "quiero-llenar-la-agenda",
+    "needSlug": "necesito-entender-que-esta-funcionando",
     "productSlug": "operaciones-consultoria"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "sistema-identidad"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "corporeos-marquesinas"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "senaletica-placas"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "indumentaria-textil"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
     "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
     "productSlug": "asistentes-bots"
   },
   {
     "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-la-experiencia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
     "productSlug": "anuncios-campanas"
   }
