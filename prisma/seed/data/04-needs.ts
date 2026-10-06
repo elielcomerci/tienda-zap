@@ -18,7 +18,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-presencia-digital" ,
-    "name": "Necesito presencia digital" ,
+    "name": "Necesito estar presente online" ,
     "order": 40
   },
   {
@@ -38,7 +38,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-que-una-propuesta-se-vea" ,
-    "name": "Necesito que una propuesta se vea" ,
+    "name": "Necesito que la propuesta se entienda y se vea" ,
     "order": 80
   },
   {
@@ -63,7 +63,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-preparar-materiales-de-venta" ,
-    "name": "Necesito preparar materiales de venta" ,
+    "name": "Necesito tener listos mis materiales de venta" ,
     "order": 130
   },
   {
@@ -78,7 +78,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-una-presencia-comercial" ,
-    "name": "Necesito una presencia comercial" ,
+    "name": "Necesito presentar mejor lo que vendo online" ,
     "order": 180
   },
   {
@@ -88,7 +88,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-llevar-trafico" ,
-    "name": "Necesito llevar tráfico" ,
+    "name": "Necesito llevar gente a la tienda online" ,
     "order": 200
   },
   {
@@ -113,7 +113,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-hacer-visible-la-inmobiliaria" ,
-    "name": "Necesito hacer visible la inmobiliaria" ,
+    "name": "Necesito que la inmobiliaria se vea" ,
     "order": 250
   },
   {
@@ -143,7 +143,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-materiales-para-atender" ,
-    "name": "Necesito materiales para atender" ,
+    "name": "Necesito tener listo lo que uso para atender" ,
     "order": 320
   },
   {
@@ -153,7 +153,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-comunicar-servicios" ,
-    "name": "Necesito comunicar servicios" ,
+    "name": "Necesito mostrar claramente mis servicios" ,
     "order": 340
   },
   {
@@ -208,17 +208,17 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-cambiar-su-presencia" ,
-    "name": "Necesito cambiar su presencia" ,
+    "name": "Necesito cambiar cómo se ve el local" ,
     "order": 470
   },
   {
     "slug": "necesito-producir-materiales" ,
-    "name": "Necesito producir materiales" ,
+    "name": "Necesito tener listos los materiales del evento" ,
     "order": 480
   },
   {
     "slug": "necesito-construir-presencia-de-marca" ,
-    "name": "Necesito construir presencia de marca" ,
+    "name": "Necesito que la marca se vea en todo el evento" ,
     "order": 490
   },
   {
@@ -228,7 +228,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-generar-atencion" ,
-    "name": "Necesito generar atención" ,
+    "name": "Necesito llamar la atención" ,
     "order": 510
   },
   {
@@ -253,17 +253,17 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-generar-campanas" ,
-    "name": "Necesito generar campañas" ,
+    "name": "Necesito hacer campañas para conseguir alumnos" ,
     "order": 580
   },
   {
     "slug": "necesito-comunicar-horarios-y-disponibilidad" ,
-    "name": "Necesito comunicar horarios y disponibilidad" ,
+    "name": "Necesito que sepan cuándo hay lugar" ,
     "order": 590
   },
   {
     "slug": "necesito-generar-demanda" ,
-    "name": "Necesito generar demanda" ,
+    "name": "Necesito generar más consultas" ,
     "order": 600
   },
   {
