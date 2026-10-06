@@ -376,8 +376,6 @@ export type PromotionInput = {
   firstOrderOnly?: boolean
   allowedProductIds?: string[]
   excludedProductIds?: string[]
-  allowedCategoryIds?: string[]
-  excludedCategoryIds?: string[]
 
   welcomeTitle?: string | null
   welcomeMessage?: string | null
