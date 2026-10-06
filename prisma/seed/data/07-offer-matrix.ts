@@ -212,18 +212,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "productSlug": "anuncios-campanas"
   },
   {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-mis-clientes-vuelvan",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-mis-clientes-vuelvan",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "operaciones-consultoria"
-  },
-  {
     "businessTypeSlug": "moda-showrooms",
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-presentar-la-marca",
@@ -567,18 +555,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "inmobiliarias",
-    "situationSlug": "quiero-conseguir-mas-consultas",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "inmobiliarias",
-    "situationSlug": "quiero-conseguir-mas-consultas",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "operaciones-consultoria"
-  },
-  {
-    "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
     "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
     "productSlug": "sistema-identidad"
@@ -1017,18 +993,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "comercios-retail",
-    "situationSlug": "quiero-vender-mas",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "comercios-retail",
-    "situationSlug": "quiero-vender-mas",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "operaciones-consultoria"
-  },
-  {
-    "businessTypeSlug": "comercios-retail",
     "situationSlug": "quiero-renovar-el-local",
     "needSlug": "necesito-cambiar-su-presencia",
     "productSlug": "sistema-identidad"
@@ -1230,18 +1194,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-generar-contactos",
     "needSlug": "necesito-comunicar-una-propuesta",
     "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "operaciones-consultoria"
   },
   {
     "businessTypeSlug": "wellness",
@@ -1404,18 +1356,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-generar-demanda",
     "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-la-agenda",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-llenar-la-agenda",
-    "needSlug": "necesito-entender-que-esta-funcionando",
-    "productSlug": "operaciones-consultoria"
   },
   {
     "businessTypeSlug": "wellness",
