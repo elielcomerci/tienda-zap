@@ -142,6 +142,16 @@ export const needsData: NeedSeedData[] = [
     "order": 270
   },
   {
+    "slug": "necesito-que-la-gente-vea-mis-propiedades",
+    "name": "Necesito que más gente vea mis propiedades",
+    "order": 275
+  },
+  {
+    "slug": "necesito-que-sea-facil-consultarme",
+    "name": "Necesito que sea fácil consultarme",
+    "order": 280
+  },
+  {
     "slug": "necesito-que-todo-se-vea-parte-de-lo-mismo" ,
     "name": "Necesito que todo tenga la misma identidad" ,
     "order": 290
