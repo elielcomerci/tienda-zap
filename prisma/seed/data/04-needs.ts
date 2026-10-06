@@ -13,42 +13,42 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-comunicar-la-apertura" ,
-    "name": "Necesito comunicar la apertura" ,
+    "name": "Necesito avisar que abrimos" ,
     "order": 30
   },
   {
     "slug": "necesito-presencia-digital" ,
-    "name": "Necesito estar presente online" ,
+    "name": "Necesito estar online" ,
     "order": 40
   },
   {
     "slug": "necesito-comunicar-mejor-lo-que-vendo" ,
-    "name": "Necesito comunicar mejor lo que vendo" ,
+    "name": "Necesito explicar mejor lo que vendo" ,
     "order": 50
   },
   {
     "slug": "necesito-facilitar-el-contacto" ,
-    "name": "Necesito facilitar el contacto" ,
+    "name": "Necesito que sea fácil contactarme" ,
     "order": 60
   },
   {
     "slug": "necesito-hacer-visible-una-promocion" ,
-    "name": "Necesito hacer visible una promoción" ,
+    "name": "Necesito que la promoción se vea" ,
     "order": 70
   },
   {
     "slug": "necesito-que-una-propuesta-se-vea" ,
-    "name": "Necesito que la propuesta se entienda y se vea" ,
+    "name": "Necesito que se entienda lo que ofrezco" ,
     "order": 80
   },
   {
     "slug": "necesito-reforzar-la-identidad" ,
-    "name": "Necesito reforzar la identidad" ,
+    "name": "Necesito que mi marca se note" ,
     "order": 90
   },
   {
     "slug": "necesito-mantener-la-marca-presente" ,
-    "name": "Necesito mantener la marca presente" ,
+    "name": "Necesito que se acuerden de mí" ,
     "order": 100
   },
   {
@@ -58,67 +58,67 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-presentar-la-marca" ,
-    "name": "Necesito presentar la marca" ,
+    "name": "Necesito presentar mi marca" ,
     "order": 120
   },
   {
     "slug": "necesito-preparar-materiales-de-venta" ,
-    "name": "Necesito tener listos mis materiales de venta" ,
+    "name": "Necesito tener con qué vender" ,
     "order": 130
   },
   {
     "slug": "necesito-mejorar-como-se-presenta-el-espacio" ,
-    "name": "Necesito mejorar cómo se presenta el espacio" ,
+    "name": "Necesito que el espacio se vea mejor" ,
     "order": 160
   },
   {
     "slug": "necesito-comunicar-productos-o-promociones" ,
-    "name": "Necesito comunicar productos o promociones" ,
+    "name": "Necesito mostrar mis productos o promociones" ,
     "order": 170
   },
   {
     "slug": "necesito-una-presencia-comercial" ,
-    "name": "Necesito presentar mejor lo que vendo online" ,
+    "name": "Necesito mostrar mejor lo que vendo online" ,
     "order": 180
   },
   {
     "slug": "necesito-contenido-para-mostrar-lo-que-vendo" ,
-    "name": "Necesito contenido para mostrar lo que vendo" ,
+    "name": "Necesito mostrar mejor lo que vendo" ,
     "order": 190
   },
   {
     "slug": "necesito-llevar-trafico" ,
-    "name": "Necesito llevar gente a la tienda online" ,
+    "name": "Necesito llevar gente a mi tienda online" ,
     "order": 200
   },
   {
     "slug": "necesito-actualizar-la-identidad" ,
-    "name": "Necesito actualizar la identidad" ,
+    "name": "Necesito actualizar la imagen de mi marca" ,
     "order": 210
   },
   {
     "slug": "necesito-comunicar-el-cambio" ,
-    "name": "Necesito comunicar el cambio" ,
+    "name": "Necesito contar que cambiamos" ,
     "order": 220
   },
   {
     "slug": "necesito-construir-una-identidad" ,
-    "name": "Necesito construir una identidad" ,
+    "name": "Necesito que mi negocio tenga una identidad propia" ,
     "order": 230
   },
   {
     "slug": "necesito-materiales-comerciales" ,
-    "name": "Necesito materiales comerciales" ,
+    "name": "Necesito tener materiales para vender" ,
     "order": 240
   },
   {
     "slug": "necesito-hacer-visible-la-inmobiliaria" ,
-    "name": "Necesito que la inmobiliaria se vea" ,
+    "name": "Necesito que la inmobiliaria se haga notar" ,
     "order": 250
   },
   {
     "slug": "necesito-comunicar-una-propuesta" ,
-    "name": "Necesito comunicar una propuesta" ,
+    "name": "Necesito explicar mejor lo que ofrezco" ,
     "order": 260
   },
   {
@@ -128,12 +128,12 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-que-todo-se-vea-parte-de-lo-mismo" ,
-    "name": "Necesito que todo se vea parte de lo mismo" ,
+    "name": "Necesito que todo tenga la misma identidad" ,
     "order": 290
   },
   {
     "slug": "necesito-presentarme-con-profesionalismo" ,
-    "name": "Necesito presentarme con profesionalismo" ,
+    "name": "Necesito que mi negocio se vea profesional" ,
     "order": 300
   },
   {
@@ -148,42 +148,42 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-facilitar-las-consultas" ,
-    "name": "Necesito facilitar las consultas" ,
+    "name": "Necesito que sea fácil consultarme" ,
     "order": 330
   },
   {
     "slug": "necesito-comunicar-servicios" ,
-    "name": "Necesito mostrar claramente mis servicios" ,
+    "name": "Necesito explicar bien mis servicios" ,
     "order": 340
   },
   {
     "slug": "necesito-entender-que-genera-consultas" ,
-    "name": "Necesito entender qué genera consultas" ,
+    "name": "Necesito saber qué me trae consultas" ,
     "order": 350
   },
   {
     "slug": "necesito-comunicar-disponibilidad-o-promociones" ,
-    "name": "Necesito comunicar disponibilidad o promociones" ,
+    "name": "Necesito avisar cuando tengo lugares o promociones" ,
     "order": 360
   },
   {
     "slug": "necesito-convertir-mejor-las-consultas" ,
-    "name": "Necesito convertir mejor las consultas" ,
+    "name": "Necesito que más consultas terminen en clientes" ,
     "order": 370
   },
   {
     "slug": "necesito-comunicar-novedades" ,
-    "name": "Necesito comunicar novedades" ,
+    "name": "Necesito contarles las novedades a mis clientes" ,
     "order": 390
   },
   {
     "slug": "necesito-hacer-visible-el-local" ,
-    "name": "Necesito hacer visible el local" ,
+    "name": "Necesito que mi local se vea" ,
     "order": 400
   },
   {
     "slug": "necesito-construir-reconocimiento" ,
-    "name": "Necesito construir reconocimiento" ,
+    "name": "Necesito que empiecen a reconocer mi marca" ,
     "order": 410
   },
   {
@@ -198,7 +198,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-mejorar-la-presencia-comercial" ,
-    "name": "Necesito mejorar la presencia comercial" ,
+    "name": "Necesito que mi local ayude a vender" ,
     "order": 440
   },
   {
@@ -218,12 +218,12 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-construir-presencia-de-marca" ,
-    "name": "Necesito que la marca se vea en todo el evento" ,
+    "name": "Necesito que mi marca esté presente en todo el evento" ,
     "order": 490
   },
   {
     "slug": "necesito-comunicar-el-evento" ,
-    "name": "Necesito comunicar el evento" ,
+    "name": "Necesito hacer que la gente se entere del evento" ,
     "order": 500
   },
   {
@@ -233,12 +233,12 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-una-experiencia-de-marca-reconocible" ,
-    "name": "Necesito una experiencia de marca reconocible" ,
+    "name": "Necesito que la gente se acuerde de mi marca" ,
     "order": 520
   },
   {
     "slug": "necesito-dejar-un-punto-de-contacto" ,
-    "name": "Necesito dejar un punto de contacto" ,
+    "name": "Necesito que puedan volver a encontrarme" ,
     "order": 530
   },
   {
@@ -253,27 +253,27 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-generar-campanas" ,
-    "name": "Necesito hacer campañas para conseguir alumnos" ,
+    "name": "Necesito hacer publicidad para conseguir alumnos" ,
     "order": 580
   },
   {
     "slug": "necesito-comunicar-horarios-y-disponibilidad" ,
-    "name": "Necesito que sepan cuándo hay lugar" ,
+    "name": "Necesito que sepan cuándo tengo lugar" ,
     "order": 590
   },
   {
     "slug": "necesito-generar-demanda" ,
-    "name": "Necesito generar más consultas" ,
+    "name": "Necesito recibir más consultas" ,
     "order": 600
   },
   {
     "slug": "necesito-reforzar-la-identidad-del-espacio" ,
-    "name": "Necesito reforzar la identidad del espacio" ,
+    "name": "Necesito que el espacio se sienta mío" ,
     "order": 620
   },
   {
     "slug": "necesito-mantener-contacto-con-alumnos" ,
-    "name": "Necesito mantener contacto con alumnos" ,
+    "name": "Necesito seguir en contacto con mis alumnos" ,
     "order": 630
   }
 ];
