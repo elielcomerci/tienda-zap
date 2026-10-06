@@ -16,7 +16,9 @@ export const situationsData: SituationSeedData[] = [
     "name": "Quiero vender más en el local" ,
     "order": 30
   },
-  {\n    "slug": "quiero-que-mis-clientes-vuelvan" ,\n    "name": "Quiero que mis clientes vuelvan" ,
+  {
+    "slug": "quiero-que-mis-clientes-vuelvan" ,
+    "name": "Quiero que mis clientes vuelvan" ,
     "order": 40
   },
   {
