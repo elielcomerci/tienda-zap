@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Check, MessageCircleMore, PackageCheck, ShoppingCart } from 'lucide-react'
+import { Check, MessageCircleMore, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
@@ -13,7 +13,6 @@ type ProductWithOptions = {
   id: string
   name: string
   price: number
-  isCombo?: boolean
   creditDownPaymentPercent: number
   briefType?: string | null
   stock?: number
@@ -43,9 +42,6 @@ type ProductWithOptions = {
       }
     }[]
   }[]
-  outgoingRelations?: {
-    relatedProduct: ProductWithOptions
-  }[]
   quoterConfig?: any
   [key: string]: any
 }
@@ -60,24 +56,6 @@ function getVariantCombos(variant: ProductWithOptions['variants'][number]) {
     combos[option.optionValue.option.name] = option.optionValue.value
   })
   return combos
-}
-
-function findMatchingPartVariant(
-  part: ProductWithOptions,
-  selections: Record<string, string>
-) {
-  if (!part.variants || part.variants.length === 0) return null
-
-  const selectedEntries = Object.entries(selections).filter(([, value]) => value)
-  if (selectedEntries.length === 0) return null
-
-  return (
-    part.variants.find((variant) => {
-      const combos = getVariantCombos(variant)
-      const comboEntries = Object.entries(combos)
-      return comboEntries.every(([optionName, value]) => selections[optionName] === value)
-    }) || null
-  )
 }
 
 function variantMatchesSelectedOptions(
@@ -109,18 +87,12 @@ export default function ProductConfigurator({
   apparelDesignSelection?: ApparelDesignSelection | null
 }) {
   const [selected, setSelected] = useState<Record<string, string>>({})
-  const [comboSelections, setComboSelections] = useState<Record<string, Record<string, string>>>({})
   const [added, setAdded] = useState(false)
   const [addingToCart, setAddingToCart] = useState(false)
   const [designUploadError, setDesignUploadError] = useState('')
   const addItem = useCartStore((state) => state.addItem)
 
   const hasOptions = product.options && product.options.length > 0
-  const comboParts = product.isCombo
-    ? (product.outgoingRelations || []).map((relation) => relation.relatedProduct)
-    : []
-  const isDynamicCombo = product.isCombo && product.comboPricingMode === 'DYNAMIC'
-  const comboDiscountPercent = Math.max(0, Math.min(100, Number(product.comboDiscountPercent || 0)))
   const isServiceProduct = isServiceDomainProduct(product)
   const isContactOnly = product.modality === 'CONSULTAR'
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
@@ -223,65 +195,7 @@ export default function ProductConfigurator({
       .every((option) => Boolean(selected[option.name]))
   }, [hasOptions, product.options, selected])
 
-  const comboPartVariants = useMemo(() => {
-    const entries = comboParts.map((part) => {
-      const selections = comboSelections[part.id] || {}
-      return [part.id, findMatchingPartVariant(part, selections)] as const
-    })
-    return new Map(entries)
-  }, [comboParts, comboSelections])
-
-  const comboPartsReady = useMemo(
-    () =>
-      comboParts.every((part) => {
-        const partSelections = comboSelections[part.id] || {}
-        const requiredOptionsReady = (part.options || [])
-          .filter((option) => option.isRequired)
-          .every((option) => Boolean(partSelections[option.name]))
-
-        if (!requiredOptionsReady) return false
-        if (!part.variants || part.variants.length === 0) return true
-
-        const matchingVariant = comboPartVariants.get(part.id)
-        return Boolean(matchingVariant && isPurchasablePrice(matchingVariant.price))
-      }),
-    [comboPartVariants, comboParts, comboSelections]
-  )
-
-  const comboPartsBaseTotal = useMemo(() => {
-    if (!isDynamicCombo) return null
-
-    let total = 0
-    for (const part of comboParts) {
-      if (!part.options || part.options.length === 0) {
-        if (!isPurchasablePrice(part.price)) return null
-        total += part.price
-        continue
-      }
-
-      const partSelections = comboSelections[part.id] || {}
-      const requiredOptions = part.options.filter((option) => option.isRequired)
-      const hasRequiredOptions = requiredOptions.every((option) => Boolean(partSelections[option.name]))
-      if (!hasRequiredOptions) return null
-
-      const matchingVariant = findMatchingPartVariant(part, partSelections)
-
-      if (!matchingVariant || !isPurchasablePrice(matchingVariant.price)) return null
-      total += matchingVariant.price
-    }
-
-    return total
-  }, [comboParts, comboSelections, isDynamicCombo])
-
-  const dynamicComboPrice =
-    comboPartsBaseTotal === null
-      ? null
-      : Math.max(0, comboPartsBaseTotal * (1 - comboDiscountPercent / 100))
-  const currentPrice = isDynamicCombo
-    ? dynamicComboPrice ?? 0
-    : activeVariant
-      ? activeVariant.price
-      : product.price
+  const currentPrice = activeVariant ? activeVariant.price : product.price
 
   const previewImageUrl = useMemo(() => {
     if (!hasOptions || variantCombinations.length === 0) return null
@@ -330,12 +244,7 @@ export default function ProductConfigurator({
     ? Boolean(activeVariant) && allRequiredSelected && selectedVariantAvailable
     : simpleProductAvailable
 
-  const configuredProductReady = isDynamicCombo
-    ? comboPartsReady && dynamicComboPrice !== null && dynamicComboPrice > 0
-    : comboParts.length > 0
-      ? comboPartsReady
-      : canAddToCart
-  const canAddConfiguredProduct = configuredProductReady && !addingToCart
+  const canAddConfiguredProduct = canAddToCart && !addingToCart
 
   const contextualMinPrice = useMemo(() => {
     if (!hasOptions) return minPrice
@@ -344,9 +253,6 @@ export default function ProductConfigurator({
   }, [hasOptions, matchingAvailableVariants, minPrice])
 
   const displayPrice =
-    isDynamicCombo
-      ? dynamicComboPrice
-      :
     !activeVariant && hasOptions
       ? contextualMinPrice
       : isPurchasablePrice(currentPrice)
@@ -357,21 +263,17 @@ export default function ProductConfigurator({
     ? 'Agregado'
     : addingToCart
       ? 'Preparando archivo...'
-    : !comboPartsReady
-      ? 'Configurá el combo'
-    : isDynamicCombo && dynamicComboPrice === null
-      ? 'Elegí las piezas'
-    : !hasOptions
-      ? simpleProductAvailable
-        ? 'Agregar al carrito'
-        : 'No disponible'
-      : !allRequiredSelected
-        ? 'Elegí las opciones'
-        : !activeVariant
-          ? 'Completá la variante'
-          : selectedVariantAvailable
-            ? 'Agregar al carrito'
-            : 'Variante no disponible'
+      : !hasOptions
+        ? simpleProductAvailable
+          ? 'Agregar al carrito'
+          : 'No disponible'
+        : !allRequiredSelected
+          ? 'Elegí las opciones'
+          : !activeVariant
+            ? 'Completá la variante'
+            : selectedVariantAvailable
+              ? 'Agregar al carrito'
+              : 'Variante no disponible'
 
   const selectedCount = Object.values(selected).filter(Boolean).length
   const requiredCount = hasOptions
@@ -423,55 +325,10 @@ export default function ProductConfigurator({
     }))
   }
 
-  const handleComboPartSelect = (productId: string, optionName: string, value: string) => {
-    setComboSelections((previous) => ({
-      ...previous,
-      [productId]: {
-        ...(previous[productId] || {}),
-        [optionName]: previous[productId]?.[optionName] === value ? '' : value,
-      },
-    }))
-  }
-
-  const isComboPartOptionValueAvailable = (
-    part: ProductWithOptions,
-    optionName: string,
-    value: string
-  ) => {
-    if (!part.variants || part.variants.length === 0) return true
-
-    const partSelected = comboSelections[part.id] || {}
-    return part.variants.some((variant) => {
-      const combos: Record<string, string> = {}
-      variant.options.forEach((option) => {
-        combos[option.optionValue.option.name] = option.optionValue.value
-      })
-
-      if (!isPurchasablePrice(variant.price)) return false
-      if (combos[optionName] && combos[optionName] !== value) return false
-
-      return Object.entries(partSelected).every(([selectedOptionName, selectedValue]) => {
-        if (!selectedValue || selectedOptionName === optionName) return true
-        return !combos[selectedOptionName] || combos[selectedOptionName] === selectedValue
-      })
-    })
-  }
-
   const buildSelectedOptions = () => {
     const productOptions = Object.entries(selected)
       .filter(([, value]) => value !== '')
       .map(([name, value]) => ({ name, value }))
-
-    const comboOptions = comboParts.flatMap((part) =>
-      [
-        ...Object.entries(comboSelections[part.id] || {})
-          .filter(([, value]) => value !== '')
-          .map(([name, value]) => ({ name: `${part.name} / ${name}`, value })),
-        ...(comboPartVariants.get(part.id)?.sku
-          ? [{ name: `${part.name} / SKU`, value: comboPartVariants.get(part.id)!.sku! }]
-          : []),
-      ]
-    )
 
     const uploadedSides = apparelDesignSelection?.designFiles
       ? Object.entries(apparelDesignSelection.designFiles)
@@ -523,7 +380,7 @@ export default function ProductConfigurator({
         ]
       : []
 
-    return [...productOptions, ...comboOptions, ...apparelOptions]
+    return [...productOptions, ...apparelOptions]
   }
 
   const handleAddToCart = () => {
@@ -930,18 +787,6 @@ export default function ProductConfigurator({
             )}
           </div>
         </div>
-        {comboParts.length > 0 && (
-          <ComboPartsConfigurator
-            parts={comboParts}
-            selections={comboSelections}
-            onSelect={handleComboPartSelect}
-            isOptionValueAvailable={isComboPartOptionValueAvailable}
-            isDynamicCombo={isDynamicCombo}
-            baseTotal={comboPartsBaseTotal}
-            discountPercent={comboDiscountPercent}
-            finalPrice={dynamicComboPrice}
-          />
-        )}
       </section>
     )
   }
@@ -1150,158 +995,6 @@ export default function ProductConfigurator({
           )}
         </div>
       </div>
-      {comboParts.length > 0 && (
-        <ComboPartsConfigurator
-          parts={comboParts}
-          selections={comboSelections}
-          onSelect={handleComboPartSelect}
-          isOptionValueAvailable={isComboPartOptionValueAvailable}
-          isDynamicCombo={isDynamicCombo}
-          baseTotal={comboPartsBaseTotal}
-          discountPercent={comboDiscountPercent}
-          finalPrice={dynamicComboPrice}
-        />
-      )}
     </section>
-  )
-}
-
-function ComboPartsConfigurator({
-  parts,
-  selections,
-  onSelect,
-  isOptionValueAvailable,
-  isDynamicCombo,
-  baseTotal,
-  discountPercent,
-  finalPrice,
-}: {
-  parts: ProductWithOptions[]
-  selections: Record<string, Record<string, string>>
-  onSelect: (productId: string, optionName: string, value: string) => void
-  isOptionValueAvailable: (part: ProductWithOptions, optionName: string, value: string) => boolean
-  isDynamicCombo: boolean
-  baseTotal: number | null
-  discountPercent: number
-  finalPrice: number | null
-}) {
-  return (
-    <div className="mt-6 rounded-[28px] border border-[#4576B9]/15 bg-[#EEF4FC]/45 p-5">
-      <div className="mb-5 flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-[#2F5F9F]">
-          <PackageCheck size={19} />
-        </div>
-        <div>
-          <h3 className="text-lg font-black text-gray-950">Configuración de piezas incluidas</h3>
-          <p className="mt-1 text-sm leading-6 text-gray-600">
-            {isDynamicCombo
-              ? 'Elegí las variantes de cada producto. El precio del combo se calcula con descuento sobre la suma de las piezas.'
-              : 'El precio del pack es cerrado. Elegí las variantes necesarias para que cada pieza salga lista en el pedido.'}
-          </p>
-        </div>
-      </div>
-
-      {isDynamicCombo && (
-        <div className="mb-5 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white bg-white p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-              Suma piezas
-            </p>
-            <p className="mt-2 text-lg font-black text-gray-950">
-              {baseTotal !== null ? `$${baseTotal.toLocaleString('es-AR')}` : 'Pendiente'}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white bg-white p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-              Descuento combo
-            </p>
-            <p className="mt-2 text-lg font-black text-[#ED164F]">{discountPercent}%</p>
-          </div>
-          <div className="rounded-2xl border border-white bg-white p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-              Total pack
-            </p>
-            <p className="mt-2 text-lg font-black text-gray-950">
-              {finalPrice !== null ? `$${finalPrice.toLocaleString('es-AR')}` : 'Configurá'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {parts.map((part) => (
-          <div key={part.id} className="rounded-[24px] border border-gray-200 bg-white p-4">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-base font-black text-gray-950">{part.name}</p>
-                <p className="text-xs font-semibold text-gray-500">{getProductFamilyLabel(part)}</p>
-              </div>
-              {(!part.options || part.options.length === 0) && (
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-                  Sin variantes
-                </span>
-              )}
-            </div>
-
-            {part.options && part.options.length > 0 && (
-              <div className="mt-4 space-y-4">
-                {part.options.map((option) => (
-                  <div key={option.id}>
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <p className="text-sm font-bold text-gray-900">{option.name}</p>
-                      <span className="text-xs font-semibold text-gray-500">
-                        {option.isRequired ? 'Requerida' : 'Opcional'}
-                      </span>
-                    </div>
-                    <div
-                      className={`grid gap-2 ${
-                        option.displayType === 'COLOR_SWATCH'
-                          ? 'grid-cols-3 sm:grid-cols-4'
-                          : option.displayType === 'SIZE'
-                            ? 'grid-cols-4 sm:grid-cols-6'
-                            : 'grid-cols-2 sm:grid-cols-3'
-                      }`}
-                    >
-                      {option.values.map((value) => {
-                        const isSelected = selections[part.id]?.[option.name] === value.value
-                        const isAvailable = isOptionValueAvailable(part, option.name, value.value)
-                        const isColorSwatch = option.displayType === 'COLOR_SWATCH'
-
-                        return (
-                          <button
-                            key={value.id}
-                            type="button"
-                            onClick={() => onSelect(part.id, option.name, value.value)}
-                            disabled={!isAvailable && !isSelected}
-                            className={`border-2 text-sm font-semibold transition-all ${
-                              isColorSwatch ? 'rounded-2xl p-2.5 text-center' : 'rounded-2xl p-3 text-left'
-                            } ${
-                              isSelected
-                                ? 'border-[#4576B9] bg-[#EEF4FC] text-[#2F5F9F]'
-                                : isAvailable
-                                  ? 'border-gray-200 bg-white text-gray-700 hover:border-[#4576B9]/30'
-                                : 'cursor-not-allowed border-gray-100 bg-gray-100 text-gray-300'
-                            }`}
-                          >
-                            {isColorSwatch && (
-                              <span
-                                className="mx-auto mb-2 block h-7 w-7 rounded-full border border-black/10 shadow-inner ring-2 ring-white"
-                                style={{ backgroundColor: value.colorHex || value.value }}
-                                aria-hidden="true"
-                              />
-                            )}
-                            {value.value}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }
