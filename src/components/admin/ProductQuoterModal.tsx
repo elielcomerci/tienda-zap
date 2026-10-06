@@ -63,7 +63,7 @@ interface SavedConfig {
   selectedFinishingIds: string[]
   combineFinishings: boolean
   includeNoFinishing: boolean
-  productCategoryId?: string | null
+  productId?: string | null
   // material selections: base name → sides chosen
   materialSelections: Record<string, SideSelection>
 }
@@ -109,13 +109,13 @@ export default function ProductQuoterModal({
   onClose,
   onApplyVariants,
   onApplyQuoterConfig,
-  productCategoryId,
+  productId,
 }: {
   isOpen: boolean
   onClose: () => void
   onApplyVariants: (variants: { options: Record<string, string>; price: number }[]) => void
   onApplyQuoterConfig?: (config: ProductQuoterConfigPayload) => void
-  productCategoryId?: string | null
+  productId?: string | null
 }) {
   const [data, setData] = useState<QuoterData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -157,30 +157,30 @@ export default function ProductQuoterModal({
     if (saved.selectedFinishingIds) setSelectedFinishingIds(saved.selectedFinishingIds)
     if (saved.combineFinishings !== undefined) setCombineFinishings(saved.combineFinishings)
     if (saved.includeNoFinishing !== undefined) setIncludeNoFinishing(saved.includeNoFinishing)
-    if (saved.materialSelections && saved.productCategoryId === productCategoryId) {
+    if (saved.materialSelections && saved.productId === productId) {
       setMaterialSelections(saved.materialSelections)
     } else {
       setMaterialSelections({})
     }
 
     if (!data) {
-      getQuoterData(productCategoryId).then(d => {
+      getQuoterData().then(d => {
         setData(d)
         setLoading(false)
       })
     }
-  }, [isOpen, productCategoryId])
+  }, [isOpen, productId])
 
   const persistConfig = useCallback(() => {
     saveConfig({
       itemWidth, itemHeight, margin, bleed,
       maxMarginPercent, minMarginPercent, quantities,
       selectedFinishingIds, combineFinishings, includeNoFinishing,
-      productCategoryId,
+      productId,
       materialSelections,
     })
   }, [itemWidth, itemHeight, margin, bleed, maxMarginPercent, minMarginPercent,
-      quantities, selectedFinishingIds, combineFinishings, includeNoFinishing, productCategoryId, materialSelections])
+      quantities, selectedFinishingIds, combineFinishings, includeNoFinishing, productId, materialSelections])
 
   useEffect(() => {
     setMaterialPage(1)
@@ -221,18 +221,7 @@ export default function ProductQuoterModal({
     [group.single, group.double, group.noSide].filter(Boolean) as RawMaterial[]
   const getGroupScore = (group: MaterialGroup) => {
     const materials = getGroupMaterials(group)
-    if (
-      productCategoryId &&
-      materials.some((material) =>
-        material.applicableCategories?.some((category) => category.id === productCategoryId)
-      )
-    ) {
-      return 2
-    }
-    if (materials.every((material) => (material.applicableCategories || []).length === 0)) {
-      return 1
-    }
-    return 0
+    return materials.length > 0 ? 1 : 0
   }
   const sortedGroups = [...groups].sort((left, right) => getGroupScore(right) - getGroupScore(left))
   const filteredGroups = sortedGroups.filter((group) => {
@@ -247,7 +236,6 @@ export default function ProductQuoterModal({
           material.name,
           material.unit,
           `${material.width}x${material.height}`,
-          ...(material.applicableCategories || []).map((category) => category.name),
         ]
           .join(' ')
           .toLowerCase()
@@ -453,7 +441,7 @@ export default function ProductQuoterModal({
                     value={materialSearch}
                     onChange={(event) => setMaterialSearch(event.target.value)}
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm outline-none focus:border-orange-400"
-                    placeholder="Buscar sustrato, medida o categoria"
+                    placeholder="Buscar sustrato o medida"
                   />
                 </label>
                 <select
@@ -464,7 +452,7 @@ export default function ProductQuoterModal({
                   <option value="ALL">Todos</option>
                   <option value="MATCHING">Compatibles</option>
                   <option value="UNCATEGORIZED">Sin categoria</option>
-                  <option value="OTHER">Otra categoria</option>
+                  <option value="OTHER">Disponible</option>
                 </select>
               </div>
               <div className="space-y-1">
@@ -483,7 +471,7 @@ export default function ProductQuoterModal({
                               ? 'bg-amber-50 text-amber-700'
                               : 'bg-gray-100 text-gray-500'
                         }`}>
-                          {score === 2 ? 'Compatible con categoria' : score === 1 ? 'Sin categoria definida' : 'Otra categoria'}
+                          {score === 2 ? 'Disponible' : score === 1 ? 'Disponible' : 'Otra categoria'}
                         </span>
                       </div>
                       {hasSides ? (
