@@ -13,12 +13,12 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-comunicar-la-apertura" ,
-    "name": "Necesito empezar a comunicar la apertura" ,
+    "name": "Necesito comunicar la apertura" ,
     "order": 30
   },
   {
     "slug": "necesito-presencia-digital" ,
-    "name": "Necesito tener presencia digital" ,
+    "name": "Necesito presencia digital" ,
     "order": 40
   },
   {
@@ -48,7 +48,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-mantener-la-marca-presente" ,
-    "name": "Necesito mantener presente la marca" ,
+    "name": "Necesito mantener la marca presente" ,
     "order": 100
   },
   {
