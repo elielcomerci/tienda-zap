@@ -52,12 +52,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-preparar-el-packaging",
-    "productSlug": "tags-etiquetas"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-comunicar-la-apertura",
     "productSlug": "flyers-desplegables"
   },
@@ -167,24 +161,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "gastronomia",
     "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "senaletica-placas"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-vender-mas-en-el-local",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "flyers-desplegables"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-vender-mas-en-el-local",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-vender-mas-en-el-local",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "produccion-audiovisual"
   },
   {
@@ -209,19 +185,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "gastronomia",
     "situationSlug": "quiero-vender-mas-en-el-local",
     "needSlug": "necesito-reforzar-la-identidad",
-    "productSlug": "bolsas-contenedores"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-vender-mas-en-el-local",
-    "needSlug": "necesito-reforzar-la-identidad",
     "productSlug": "cajas-personalizadas"
-  },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-vender-mas-en-el-local",
-    "needSlug": "necesito-reforzar-la-identidad",
-    "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "gastronomia",
@@ -286,12 +250,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "moda-showrooms",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-presentar-la-marca",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-preparar-materiales-de-venta",
     "productSlug": "tarjetas-vouchers"
   },
@@ -312,12 +270,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-preparar-materiales-de-venta",
     "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-preparar-materiales-de-venta",
-    "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "moda-showrooms",
@@ -652,12 +604,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-que-todo-se-vea-parte-de-lo-mismo",
-    "productSlug": "tarjetas-vouchers"
-  },
-  {
-    "businessTypeSlug": "inmobiliarias",
-    "situationSlug": "quiero-transmitir-mas-confianza",
     "needSlug": "necesito-presentarme-con-profesionalismo",
     "productSlug": "produccion-audiovisual"
   },
@@ -696,12 +642,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-que-el-espacio-se-vea-profesional",
     "productSlug": "senaletica-placas"
-  },
-  {
-    "businessTypeSlug": "belleza-salud",
-    "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
-    "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "belleza-salud",
@@ -815,12 +755,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
-    "productSlug": "tarjetas-vouchers"
-  },
-  {
-    "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-la-agenda",
-    "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "flyers-desplegables"
   },
   {
@@ -1072,12 +1006,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "comercios-retail",
     "situationSlug": "quiero-vender-mas",
-    "needSlug": "necesito-mejorar-la-presencia-comercial",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "comercios-retail",
-    "situationSlug": "quiero-vender-mas",
     "needSlug": "necesito-vender-online",
     "productSlug": "activos-web-sitios"
   },
@@ -1126,12 +1054,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "comercios-retail",
     "situationSlug": "quiero-renovar-el-local",
-    "needSlug": "necesito-cambiar-su-presencia",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "comercios-retail",
-    "situationSlug": "quiero-renovar-el-local",
     "needSlug": "necesito-comunicar-el-cambio",
     "productSlug": "flyers-desplegables"
   },
@@ -1169,18 +1091,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "tengo-un-evento",
     "needSlug": "necesito-producir-materiales",
-    "productSlug": "flyers-desplegables"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "tengo-un-evento",
-    "needSlug": "necesito-producir-materiales",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "tengo-un-evento",
-    "needSlug": "necesito-producir-materiales",
     "productSlug": "indumentaria-textil"
   },
   {
@@ -1188,12 +1098,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "tengo-un-evento",
     "needSlug": "necesito-producir-materiales",
     "productSlug": "bolsas-contenedores"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "tengo-un-evento",
-    "needSlug": "necesito-producir-materiales",
-    "productSlug": "cajas-personalizadas"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
@@ -1218,12 +1122,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "tengo-un-evento",
     "needSlug": "necesito-construir-presencia-de-marca",
     "productSlug": "expositores-stands"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "tengo-un-evento",
-    "needSlug": "necesito-construir-presencia-de-marca",
-    "productSlug": "indumentaria-textil"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
@@ -1270,12 +1168,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-atraer-gente-al-evento-o-stand",
-    "needSlug": "necesito-generar-atencion",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-atraer-gente-al-evento-o-stand",
     "needSlug": "necesito-una-experiencia-de-marca-reconocible",
     "productSlug": "sistema-identidad"
   },
@@ -1296,18 +1188,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-atraer-gente-al-evento-o-stand",
     "needSlug": "necesito-una-experiencia-de-marca-reconocible",
     "productSlug": "indumentaria-textil"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-atraer-gente-al-evento-o-stand",
-    "needSlug": "necesito-una-experiencia-de-marca-reconocible",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-atraer-gente-al-evento-o-stand",
-    "needSlug": "necesito-una-experiencia-de-marca-reconocible",
-    "productSlug": "bolsas-contenedores"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
@@ -1386,12 +1266,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-presentar-la-marca",
     "productSlug": "senaletica-placas"
-  },
-  {
-    "businessTypeSlug": "wellness",
-    "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-presentar-la-marca",
-    "productSlug": "adhesivos-stickers"
   },
   {
     "businessTypeSlug": "wellness",
@@ -1566,18 +1440,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-mejorar-mi-espacio",
     "needSlug": "necesito-reforzar-la-identidad-del-espacio",
     "productSlug": "senaletica-placas"
-  },
-  {
-    "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-mi-espacio",
-    "needSlug": "necesito-reforzar-la-identidad-del-espacio",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "wellness",
-    "situationSlug": "quiero-mejorar-mi-espacio",
-    "needSlug": "necesito-reforzar-la-identidad-del-espacio",
-    "productSlug": "indumentaria-textil"
   },
   {
     "businessTypeSlug": "wellness",
