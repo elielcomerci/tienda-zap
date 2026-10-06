@@ -19,7 +19,6 @@ export default async function PromocionesAdminPage() {
     <PromocionesClient
       initialPromotions={promotions as any}
       products={products}
-      categories={[]}
     />
   )
 }
