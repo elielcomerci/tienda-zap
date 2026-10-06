@@ -18,7 +18,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-presencia-digital" ,
-    "name": "Necesito estar online" ,
+    "name": "Necesito que me encuentren online" ,
     "order": 40
   },
   {
@@ -65,6 +65,26 @@ export const needsData: NeedSeedData[] = [
     "slug": "necesito-preparar-materiales-de-venta" ,
     "name": "Necesito tener con qué vender" ,
     "order": 130
+  },
+  {
+    "slug": "necesito-que-mi-comida-se-vea-mejor",
+    "name": "Necesito que mi comida se vea mejor",
+    "order": 140
+  },
+  {
+    "slug": "necesito-que-mi-marca-se-vea-mejor",
+    "name": "Necesito que mi marca se vea mejor",
+    "order": 145
+  },
+  {
+    "slug": "necesito-que-se-entienda-lo-que-vendo",
+    "name": "Necesito que se entienda lo que vendo",
+    "order": 155
+  },
+  {
+    "slug": "necesito-ordenar-como-estamos-trabajando",
+    "name": "Necesito ordenar cómo estamos trabajando",
+    "order": 115
   },
   {
     "slug": "necesito-mejorar-como-se-presenta-el-espacio" ,
@@ -243,7 +263,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-generar-campanas" ,
-    "name": "Necesito hacer publicidad para conseguir alumnos" ,
+    "name": "Necesito llegar a más gente" ,
     "order": 580
   },
   {
@@ -253,7 +273,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-generar-demanda" ,
-    "name": "Necesito recibir más consultas" ,
+    "name": "Necesito que me consulten más" ,
     "order": 600
   },
   {
