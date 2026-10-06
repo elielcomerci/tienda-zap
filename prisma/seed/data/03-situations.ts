@@ -20,6 +20,26 @@ export const situationsData: SituationSeedData[] = [
     "order": 40
   },
   {
+    "slug": "quiero-que-mi-comida-se-vea-mejor",
+    "name": "Quiero que mi comida se vea mejor",
+    "order": 55
+  },
+  {
+    "slug": "quiero-que-mi-marca-se-vea-mejor",
+    "name": "Quiero que mi marca se vea mejor",
+    "order": 65
+  },
+  {
+    "slug": "quiero-vender-o-alquilar-mas",
+    "name": "Quiero vender o alquilar más",
+    "order": 115
+  },
+  {
+    "slug": "quiero-ordenar-mi-negocio",
+    "name": "Quiero ordenar mi negocio",
+    "order": 220
+  },
+  {
     "slug": "quiero-vender-online" ,
     "name": "Quiero vender online" ,
     "order": 60
