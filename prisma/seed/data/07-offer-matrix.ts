@@ -508,19 +508,19 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-captar-propiedades",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-captar-propiedades",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-captar-propiedades",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "anuncios-campanas"
   },
   {
@@ -670,13 +670,13 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-facilitar-las-consultas",
+    "needSlug": "necesito-facilitar-el-contacto",
     "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "estoy-por-abrir",
-    "needSlug": "necesito-facilitar-las-consultas",
+    "needSlug": "necesito-facilitar-el-contacto",
     "productSlug": "asistentes-bots"
   },
   {
@@ -1168,19 +1168,19 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "anuncios-campanas"
   },
   {
@@ -1270,25 +1270,25 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "flyers-desplegables"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "carteleria-ploteo"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "produccion-audiovisual"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-comunicar-una-propuesta",
+    "needSlug": "necesito-que-una-propuesta-se-vea",
     "productSlug": "anuncios-campanas"
   },
   {
@@ -1300,13 +1300,13 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-facilitar-las-consultas",
+    "needSlug": "necesito-facilitar-el-contacto",
     "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
-    "needSlug": "necesito-facilitar-las-consultas",
+    "needSlug": "necesito-facilitar-el-contacto",
     "productSlug": "asistentes-bots"
   },
   {
