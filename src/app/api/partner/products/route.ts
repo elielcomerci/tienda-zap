@@ -2,12 +2,13 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authenticatePartnerRequest } from '@/lib/partner-auth'
+import { getProductFamilyLabel } from '@/lib/catalog-domain'
 
 /**
  * GET /api/partner/products
  *
  * Devuelve el catálogo de servicios de tienda.zap disponibles para partners.
- * Solo productos de categorías marcadas como isService = true.
+ * Solo productos tratados como servicios por el dominio comercial actual.
  * No requiere autenticación (catálogo público para partners).
  */
 export async function GET(req: Request) {
@@ -18,10 +19,12 @@ export async function GET(req: Request) {
   const products = await prisma.product.findMany({
     where: {
       active: true,
-      category: { isService: true },
+      OR: [
+        { modality: 'CONSULTAR' },
+        { engine: { in: ['DIGITAL', 'CAMPANAS'] } },
+      ],
     },
     include: {
-      category: { select: { id: true, name: true, slug: true } },
       variants: {
         select: { id: true, price: true, options: { include: { optionValue: { include: { option: true } } } } },
         orderBy: { price: 'asc' },
@@ -41,7 +44,11 @@ export async function GET(req: Request) {
     description: p.description,
     price: p.price,
     images: p.images,
-    category: p.category,
+    category: {
+      id: p.engine || p.modality,
+      name: getProductFamilyLabel(p),
+      slug: (p.engine || p.modality).toLowerCase().replace(/_/g, '-'),
+    },
     creditDownPaymentPercent: p.creditDownPaymentPercent,
     creditEligible: true, // todos los servicios son elegibles para ZAP Credit
     options: p.options,
