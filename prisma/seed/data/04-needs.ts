@@ -83,7 +83,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-contenido-para-mostrar-lo-que-vendo" ,
-    "name": "Necesito mostrar mejor lo que vendo" ,
+    "name": "Necesito que mis productos se vean mejor" ,
     "order": 190
   },
   {
@@ -117,11 +117,6 @@ export const needsData: NeedSeedData[] = [
     "order": 250
   },
   {
-    "slug": "necesito-comunicar-una-propuesta" ,
-    "name": "Necesito explicar mejor lo que ofrezco" ,
-    "order": 260
-  },
-  {
     "slug": "necesito-mostrar-mejor-las-propiedades" ,
     "name": "Necesito mostrar mejor las propiedades" ,
     "order": 270
@@ -145,11 +140,6 @@ export const needsData: NeedSeedData[] = [
     "slug": "necesito-materiales-para-atender" ,
     "name": "Necesito tener listo lo que uso para atender" ,
     "order": 320
-  },
-  {
-    "slug": "necesito-facilitar-las-consultas" ,
-    "name": "Necesito que sea fácil consultarme" ,
-    "order": 330
   },
   {
     "slug": "necesito-comunicar-servicios" ,
