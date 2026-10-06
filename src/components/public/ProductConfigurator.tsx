@@ -708,7 +708,7 @@ export default function ProductConfigurator({
                     <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                   </div>
                   <p className="mt-2 text-sm text-gray-300">
-                    {isDynamicCombo ? 'Total del combo según configuración.' : 'Precio unitario final.'}
+                    'Precio unitario final.'
                   </p>
                 </>
               ) : (
