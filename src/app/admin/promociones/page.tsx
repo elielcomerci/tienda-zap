@@ -6,14 +6,10 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Promociones y Cupones | ZAP Admin' }
 
 export default async function PromocionesAdminPage() {
-  const [promotions, products, categories] = await Promise.all([
+  const [promotions, products] = await Promise.all([
     getPromotions(),
     prisma.product.findMany({
       where: { active: true },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, categoryId: true },
-    }),
-    prisma.category.findMany({
       orderBy: { name: 'asc' },
       select: { id: true, name: true },
     }),
@@ -23,7 +19,7 @@ export default async function PromocionesAdminPage() {
     <PromocionesClient
       initialPromotions={promotions as any}
       products={products}
-      categories={categories}
+      categories={[]}
     />
   )
 }
