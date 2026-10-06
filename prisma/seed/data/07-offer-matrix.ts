@@ -1386,5 +1386,203 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
     "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mi-comida-se-vea-mejor",
+    "needSlug": "necesito-que-mi-comida-se-vea-mejor",
+    "productSlug": "produccion-audiovisual"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
+    "needSlug": "necesito-que-mi-marca-se-vea-mejor",
+    "productSlug": "sistema-identidad"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
+    "needSlug": "necesito-que-mi-marca-se-vea-mejor",
+    "productSlug": "produccion-audiovisual"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-vender-mas",
+    "needSlug": "necesito-que-se-entienda-lo-que-vendo",
+    "productSlug": "flyers-desplegables"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-vender-mas",
+    "needSlug": "necesito-que-se-entienda-lo-que-vendo",
+    "productSlug": "carteleria-ploteo"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-vender-mas",
+    "needSlug": "necesito-que-se-entienda-lo-que-vendo",
+    "productSlug": "expositores-stands"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-vender-o-alquilar-mas",
+    "needSlug": "necesito-mostrar-mejor-las-propiedades",
+    "productSlug": "produccion-audiovisual"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-vender-o-alquilar-mas",
+    "needSlug": "necesito-mostrar-mejor-las-propiedades",
+    "productSlug": "activos-web-sitios"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-vender-o-alquilar-mas",
+    "needSlug": "necesito-mostrar-mejor-las-propiedades",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-vender-o-alquilar-mas",
+    "needSlug": "necesito-que-la-gente-vea-mis-propiedades",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-vender-o-alquilar-mas",
+    "needSlug": "necesito-que-sea-facil-consultarme",
+    "productSlug": "activos-web-sitios"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-vender-o-alquilar-mas",
+    "needSlug": "necesito-que-sea-facil-consultarme",
+    "productSlug": "asistentes-bots"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "eventos-experiencias",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "eventos-experiencias",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "eventos-experiencias",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-esta-funcionando",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-entender-que-genera-consultas",
+    "productSlug": "operaciones-consultoria"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-ordenar-mi-negocio",
+    "needSlug": "necesito-ordenar-como-estamos-trabajando",
+    "productSlug": "operaciones-consultoria"
   }
 ];
