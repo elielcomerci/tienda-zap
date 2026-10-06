@@ -1585,4 +1585,53 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "needSlug": "necesito-ordenar-como-estamos-trabajando",
     "productSlug": "operaciones-consultoria"
   }
+,
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
+    "needSlug": "necesito-que-mi-marca-se-vea-mejor",
+    "productSlug": "sistema-identidad"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
+    "needSlug": "necesito-que-mi-marca-se-vea-mejor",
+    "productSlug": "produccion-audiovisual"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
+    "needSlug": "necesito-que-mi-marca-se-vea-mejor",
+    "productSlug": "sistema-identidad"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
+    "needSlug": "necesito-que-mi-marca-se-vea-mejor",
+    "productSlug": "produccion-audiovisual"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-renovar-la-marca-o-el-espacio",
+    "needSlug": "necesito-actualizar-la-identidad",
+    "productSlug": "sistema-identidad"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-renovar-la-marca-o-el-espacio",
+    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
+    "productSlug": "carteleria-ploteo"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-renovar-la-marca-o-el-espacio",
+    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
+    "productSlug": "corporeos-marquesinas"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-renovar-la-marca-o-el-espacio",
+    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
+    "productSlug": "senaletica-placas"
+  }
 ];
