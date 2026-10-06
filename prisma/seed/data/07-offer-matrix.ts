@@ -718,18 +718,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "quiero-llenar-la-agenda",
-    "needSlug": "necesito-entender-que-genera-consultas",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-la-agenda",
-    "needSlug": "necesito-entender-que-genera-consultas",
-    "productSlug": "operaciones-consultoria"
-  },
-  {
-    "businessTypeSlug": "belleza-salud",
-    "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
     "productSlug": "flyers-desplegables"
   },
