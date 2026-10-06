@@ -144,7 +144,7 @@ export default async function CostingGapsPage() {
                     <div className="min-w-0">
                       <p className="font-black text-gray-950">{product.name}</p>
                       <p className="mt-1 truncate text-xs font-semibold text-gray-500">
-                        /{product.slug} - {product.category.name}
+                        /{product.slug} · {product.modality} · {product.engine}
                       </p>
                     </div>
                     <div>
