@@ -717,8 +717,6 @@ model Promotion {
   firstOrderOnly      Boolean         @default(false)
   allowedProductIds   String[]        @default([])
   excludedProductIds  String[]        @default([])
-  allowedCategoryIds  String[]        @default([])
-  excludedCategoryIds String[]        @default([])
 
   welcomeTitle      String?
   welcomeMessage    String?
