@@ -140,26 +140,21 @@ function calculateEligibleSubtotal(
   promotion: {
     allowedProductIds: string[]
     excludedProductIds: string[]
-    allowedCategoryIds: string[]
-    excludedCategoryIds: string[]
   }
 ) {
   const allowedProductIds = new Set(promotion.allowedProductIds)
   const excludedProductIds = new Set(promotion.excludedProductIds)
-  const allowedCategoryIds = new Set(promotion.allowedCategoryIds)
-  const excludedCategoryIds = new Set(promotion.excludedCategoryIds)
-  const hasAllowedScope = allowedProductIds.size > 0 || allowedCategoryIds.size > 0
+  const hasAllowedScope = allowedProductIds.size > 0
 
   return roundCurrency(
     items.reduce((sum, item) => {
-      if (excludedProductIds.has(item.productId) || excludedCategoryIds.has(item.categoryId)) {
+      if (excludedProductIds.has(item.productId)) {
         return sum
       }
 
       const isAllowed =
         !hasAllowedScope ||
-        allowedProductIds.has(item.productId) ||
-        allowedCategoryIds.has(item.categoryId)
+        allowedProductIds.has(item.productId)
 
       return isAllowed ? sum + item.unitPrice * item.quantity : sum
     }, 0)
