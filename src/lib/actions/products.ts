@@ -1,6 +1,6 @@
 'use server'
 
-import { ConfiguratorEngine, ProductModality } from '@prisma/client'
+import { CatalogType, ConfiguratorEngine, ProductModality } from '@prisma/client'
 import { auth } from '@/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -31,6 +31,10 @@ async function uniqueSlug(requested: string, excludeId?: string) {
 }
 
 function productData(formData: FormData) {
+  const catalogTypeValue = String(formData.get('catalogType') || 'COSA')
+  const catalogType = Object.values(CatalogType).includes(catalogTypeValue as CatalogType)
+    ? (catalogTypeValue as CatalogType)
+    : 'COSA'
   const modalityValue = String(formData.get('modality') || 'CONSULTAR')
   const modality = Object.values(ProductModality).includes(modalityValue as ProductModality)
     ? (modalityValue as ProductModality)
@@ -46,6 +50,7 @@ function productData(formData: FormData) {
   return {
     name: String(formData.get('name') || '').trim(),
     description: String(formData.get('description') || '').trim() || null,
+    catalogType,
     modality,
     engine,
     price: Number(formData.get('price') || 0),
@@ -112,6 +117,7 @@ export async function duplicateProduct(id: string) {
       description: original.description,
       price: original.price,
       priceFrom: original.priceFrom,
+      catalogType: original.catalogType,
       modality: original.modality,
       engine: original.engine,
       images: original.images,
