@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { ChevronDown, Handshake, LayoutDashboard, ShoppingCart, X } from 'lucide-react'
+import { ChevronDown, Handshake, LayoutDashboard, LogOut, ShoppingCart, X } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState, useEffect, useTransition } from 'react'
 import { createPublicSellerLead } from '@/lib/actions/leads'
+import { signOut } from 'next-auth/react'
 
 const NAV_HEIGHT = 70
 
@@ -296,6 +297,18 @@ export default function PublicHeader({
                               Panel Asesores
                             </Link>
                           )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAccountOpen(false)
+                              void signOut({ callbackUrl: '/' })
+                            }}
+                            className="mt-1 flex w-full items-center gap-2 rounded-xl border-t border-gray-100 px-3 py-2.5 pt-3 text-left text-sm font-semibold text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          >
+                            <LogOut size={15} />
+                            Cerrar sesión
+                          </button>
                         </div>
                       </div>
                     )}
@@ -572,6 +585,18 @@ export default function PublicHeader({
                       Panel Asesores
                     </Link>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      void signOut({ callbackUrl: '/' })
+                    }}
+                    className="flex items-center justify-center gap-2 bg-white/10 text-white text-base py-2.5 px-6 rounded-full font-bold hover:bg-white/20 active:scale-[0.98] transition-all"
+                  >
+                    <LogOut size={16} />
+                    Cerrar sesión
+                  </button>
                 </div>
               ) : (
                 <Link
