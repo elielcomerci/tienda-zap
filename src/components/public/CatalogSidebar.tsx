@@ -95,7 +95,7 @@ export default function CatalogSidebar({
           ) : (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
-              href="/productos?mode=product"
+              href="/productos?mode=product&tipo=cosa"
               scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !cat
@@ -109,7 +109,7 @@ export default function CatalogSidebar({
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/productos?mode=product&cat=${category.slug}`}
+                href={`/productos?mode=product&tipo=cosa&cat=${category.slug}`}
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   cat === category.slug
