@@ -620,6 +620,16 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
 // Base: Carpetas corporativas con solapa pegada en Papel Ilustración 300g (lista-low.txt p. 14).
 // Modelo de pricing: TIERED_UNIT_TABLE (escalas de cantidad x opciones comerciales fijadas celda por celda).
 // Solapa blanca incluida en base; solapa impresa agrega recargo unitario por escala.
+const carpetasDigital300gTiers = [
+  { minQty: 1, maxQty: 1, prices: { '4_0': { sin_laminar: 2602, laca_uv: 2739, opp_brillo: 2766, opp_mate: 2792 }, '4_4': { sin_laminar: 3493, laca_uv: 3630, opp_brillo: 3657, opp_mate: 3683 } }, flapSurcharge: 647 },
+  { minQty: 2, maxQty: 25, prices: { '4_0': { sin_laminar: 1825, laca_uv: 1943, opp_brillo: 1966, opp_mate: 1989 }, '4_4': { sin_laminar: 2433, laca_uv: 2550, opp_brillo: 2574, opp_mate: 2596 } }, flapSurcharge: 417 },
+  { minQty: 26, maxQty: 50, prices: { '4_0': { sin_laminar: 1647, laca_uv: 1753, opp_brillo: 1774, opp_mate: 1794 }, '4_4': { sin_laminar: 2190, laca_uv: 2296, opp_brillo: 2317, opp_mate: 2337 } }, flapSurcharge: 367 },
+  { minQty: 51, maxQty: 100, prices: { '4_0': { sin_laminar: 1478, laca_uv: 1571, opp_brillo: 1590, opp_mate: 1608 }, '4_4': { sin_laminar: 1960, laca_uv: 2054, opp_brillo: 2073, opp_mate: 2091 } }, flapSurcharge: 322 },
+  { minQty: 101, maxQty: 300, prices: { '4_0': { sin_laminar: 1338, laca_uv: 1420, opp_brillo: 1437, opp_mate: 1453 }, '4_4': { sin_laminar: 1770, laca_uv: 1852, opp_brillo: 1869, opp_mate: 1885 } }, flapSurcharge: 285 },
+  { minQty: 301, maxQty: 500, prices: { '4_0': { sin_laminar: 1186, laca_uv: 1257, opp_brillo: 1271, opp_mate: 1284 }, '4_4': { sin_laminar: 1564, laca_uv: 1635, opp_brillo: 1649, opp_mate: 1662 } }, flapSurcharge: 247 },
+  { minQty: 501, maxQty: 1000, prices: { '4_0': { sin_laminar: 1118, laca_uv: 1157, opp_brillo: 1165, opp_mate: 1172 }, '4_4': { sin_laminar: 1469, laca_uv: 1508, opp_brillo: 1516, opp_mate: 1523 } }, flapSurcharge: 199 },
+] as const;
+
 export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'carpetas-folders',
   schemaVersion: '1.0',
@@ -628,137 +638,48 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
     engine: 'IMPRESOS_PACKAGING',
     productSlug: 'carpetas-folders',
     fields: {
-      format: {
-        label: 'Formato',
-        type: 'select',
-        required: true,
-        default: 'a4',
-        options: [
-          { id: 'a4', label: 'A4 (21×29,7 cm cerrado)' },
-        ],
-      },
-      material: {
-        label: 'Material',
-        type: 'select',
-        required: true,
-        default: 'ilustracion_300g',
-        options: [
-          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
-        ],
-      },
-      printing: {
-        label: 'Impresión',
-        type: 'select',
-        required: true,
-        default: '4_0',
-        options: [
-          { id: '4_0', label: 'Frente solo color (4/0 - Exterior)' },
-          { id: '4_4', label: 'Frente y dorso color (4/4 - Exterior e interior)' },
-        ],
-      },
-      lamination: {
-        label: 'Terminación / Laminado',
-        type: 'select',
-        required: true,
-        default: 'sin_laminar',
-        options: [
-          { id: 'sin_laminar', label: 'Sin laminar' },
-          { id: 'laca_uv', label: 'Laca UV' },
-          { id: 'opp_brillo', label: 'Laminado OPP Brillo' },
-          { id: 'opp_mate', label: 'Laminado OPP Mate' },
-        ],
-      },
-      flap: {
-        label: 'Solapa',
-        type: 'select',
-        required: true,
-        default: 'blanca',
-        options: [
-          { id: 'blanca', label: 'Solapa blanca pegada (incluida)' },
-          { id: 'impresa', label: 'Solapa impresa a color (+ adicional)' },
-        ],
-      },
-      quantity: {
-        label: 'Cantidad',
-        type: 'quantity_input',
-        required: true,
-        default: 50,
-        min: 1,
-        max: 1000,
-      },
+      format: { label: 'Formato', type: 'select', required: true, default: 'a4', options: [{ id: 'a4', label: 'A4 (21×29,7 cm cerrado)' }] },
+      material: { label: 'Material', type: 'select', required: true, default: 'ilustracion_300g', options: [
+        { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
+        { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
+      ] },
+      printing: { label: 'Impresión', type: 'select', required: true, default: '4_0', options: [
+        { id: '4_0', label: 'Frente solo color (4/0)' },
+        { id: '4_1', label: 'Frente color + dorso negro (4/1)' },
+        { id: '4_4', label: 'Frente y dorso color (4/4)' },
+      ] },
+      lamination: { label: 'Terminación / Laminado', type: 'select', required: true, default: 'sin_laminar', options: [
+        { id: 'sin_laminar', label: 'Sin laminar' }, { id: 'laca_uv', label: 'Laca UV' }, { id: 'opp_brillo', label: 'Laminado OPP Brillo' }, { id: 'opp_mate', label: 'Laminado OPP Mate' },
+      ] },
+      flap: { label: 'Solapa', type: 'select', required: true, default: 'blanca', options: [
+        { id: 'blanca', label: 'Solapa blanca pegada (incluida)' }, { id: 'impresa', label: 'Solapa impresa a color' },
+      ] },
+      quantity: { label: 'Cantidad', type: 'quantity_input', required: true, default: 50, min: 1, max: 1000 },
     },
   },
-  compatibility: {
-    uiRules: [],
-  },
+  compatibility: { uiRules: [] },
   pricing: {
     engine: 'TIERED_UNIT_TABLE',
-    tieredUnitTable: {
-      tiers: [
-        {
-          minQty: 1,
-          maxQty: 1,
-          prices: {
-            '4_0': { sin_laminar: 1762, laca_uv: 1875, opp_brillo: 1897, opp_mate: 1919 },
-            '4_4': { sin_laminar: 2391, laca_uv: 2503, opp_brillo: 2526, opp_mate: 2547 },
-          },
-          flapSurcharge: 255,
+    tieredUnitTable: { tiers: carpetasDigital300gTiers },
+    providerFinishedCostMatrix: {
+      currency: 'ARS', taxIncluded: false, paymentCondition: 'PAGO_ANTICIPADO',
+      digital_300g: { material: 'ilustracion_300g', format: 'a4', tiers: carpetasDigital300gTiers },
+      offset_350g: {
+        material: 'ilustracion_350g', format: 'a4_oficio', delivery: '14_DIAS',
+        clasicas_opp_brillo: {
+          '4_0': { '500': 793912, '1000': 1162731 },
+          '4_1': { '500': 847732, '1000': 1239617 },
+          '4_4': { '500': 900356, '1000': 1314794 },
         },
-        {
-          minQty: 2,
-          maxQty: 25,
-          prices: {
-            '4_0': { sin_laminar: 1423, laca_uv: 1519, opp_brillo: 1539, opp_mate: 1557 },
-            '4_4': { sin_laminar: 1920, laca_uv: 2017, opp_brillo: 2036, opp_mate: 2054 },
-          },
-          flapSurcharge: 216,
+        premium_opp_mate: {
+          '4_0': { '500': 754652, '1000': 1100271 },
+          '4_4': { '500': 1006202, '1000': 1467028 },
         },
-        {
-          minQty: 26,
-          maxQty: 50,
-          prices: {
-            '4_0': { sin_laminar: 1306, laca_uv: 1393, opp_brillo: 1410, opp_mate: 1427 },
-            '4_4': { sin_laminar: 1760, laca_uv: 1846, opp_brillo: 1864, opp_mate: 1880 },
-          },
-          flapSurcharge: 201,
+        deluxe_opp_mate_sectorizado_uv: {
+          '4_0': { '500': 1325534, '1000': 1694667 },
+          '4_4': { '500': 1485200, '1000': 1894000 },
         },
-        {
-          minQty: 51,
-          maxQty: 100,
-          prices: {
-            '4_0': { sin_laminar: 1194, laca_uv: 1271, opp_brillo: 1287, opp_mate: 1302 },
-            '4_4': { sin_laminar: 1606, laca_uv: 1683, opp_brillo: 1698, opp_mate: 1713 },
-          },
-          flapSurcharge: 188,
-        },
-        {
-          minQty: 101,
-          maxQty: 300,
-          prices: {
-            '4_0': { sin_laminar: 1213, laca_uv: 1280, opp_brillo: 1294, opp_mate: 1307 },
-            '4_4': { sin_laminar: 1627, laca_uv: 1694, opp_brillo: 1708, opp_mate: 1721 },
-          },
-          flapSurcharge: 174,
-        },
-        {
-          minQty: 301,
-          maxQty: 500,
-          prices: {
-            '4_0': { sin_laminar: 1103, laca_uv: 1161, opp_brillo: 1173, opp_mate: 1184 },
-            '4_4': { sin_laminar: 1476, laca_uv: 1534, opp_brillo: 1546, opp_mate: 1557 },
-          },
-          flapSurcharge: 161,
-        },
-        {
-          minQty: 501,
-          maxQty: 1000,
-          prices: {
-            '4_0': { sin_laminar: 998, laca_uv: 1031, opp_brillo: 1037, opp_mate: 1043 },
-            '4_4': { sin_laminar: 1333, laca_uv: 1365, opp_brillo: 1371, opp_mate: 1377 },
-          },
-          flapSurcharge: 147,
-        },
-      ],
+      },
     },
   },
 };
