@@ -4,6 +4,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 1,
     slug: 'tarjetas-vouchers',
+    catalogType: 'COSA',
     name: 'Tarjetas & Vouchers',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -17,6 +18,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 2,
     slug: 'flyers-desplegables',
+    catalogType: 'COSA',
     name: 'Flyers & Desplegables',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -30,6 +32,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 3,
     slug: 'tags-etiquetas',
+    catalogType: 'COSA',
     name: 'Tags & Etiquetas',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -43,6 +46,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 4,
     slug: 'adhesivos-stickers',
+    catalogType: 'COSA',
     name: 'Adhesivos & Stickers',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -56,6 +60,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 5,
     slug: 'fajas-envoltorios',
+    catalogType: 'COSA',
     name: 'Fajas & Envoltorios',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -69,6 +74,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 6,
     slug: 'bolsas-contenedores',
+    catalogType: 'COSA',
     name: 'Bolsas & Contenedores',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -82,6 +88,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 7,
     slug: 'cajas-personalizadas',
+    catalogType: 'COSA',
     name: 'Cajas Personalizadas',
     modality: 'CONSULTAR',
     engine: null,
@@ -95,6 +102,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 8,
     slug: 'carpetas-folders',
+    catalogType: 'COSA',
     name: 'Carpetas & Folders',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -108,6 +116,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 9,
     slug: 'menus-cartas',
+    catalogType: 'COSA',
     name: 'Menús & Cartas',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -121,6 +130,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 10,
     slug: 'individuales-posavasos',
+    catalogType: 'COSA',
     name: 'Individuales & Posavasos',
     modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
@@ -134,6 +144,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 11,
     slug: 'carteleria-ploteo',
+    catalogType: 'COSA',
     name: 'Cartelería & Ploteo',
     modality: 'CONFIGURABLE',
     engine: 'PRESENCIA_FISICA',
@@ -147,6 +158,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 12,
     slug: 'corporeos-marquesinas',
+    catalogType: 'COSA',
     name: 'Corpóreos & Marquesinas',
     modality: 'CONFIGURABLE',
     engine: 'PRESENCIA_FISICA',
@@ -160,6 +172,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 13,
     slug: 'senaletica-placas',
+    catalogType: 'COSA',
     name: 'Señalética & Placas',
     modality: 'CONFIGURABLE',
     engine: 'PRESENCIA_FISICA',
@@ -173,6 +186,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 14,
     slug: 'expositores-stands',
+    catalogType: 'COSA',
     name: 'Expositores & Stands',
     modality: 'CONFIGURABLE',
     engine: 'PRESENCIA_FISICA',
@@ -186,6 +200,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 15,
     slug: 'indumentaria-textil',
+    catalogType: 'COSA',
     name: 'Indumentaria & Textil',
     modality: 'CONFIGURABLE',
     engine: 'TEXTIL',
@@ -199,6 +214,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 16,
     slug: 'objetos-regaleria',
+    catalogType: 'COSA',
     name: 'Objetos & Regalería',
     modality: 'DIRECTO',
     engine: null,
@@ -212,6 +228,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 17,
     slug: 'activos-web-sitios',
+    catalogType: 'DESARROLLO',
     name: 'Activos Web & Sitios',
     modality: 'CONFIGURABLE',
     engine: 'DIGITAL',
@@ -225,6 +242,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 18,
     slug: 'asistentes-bots',
+    catalogType: 'DESARROLLO',
     name: 'Asistentes & Bots',
     modality: 'CONFIGURABLE',
     engine: 'DIGITAL',
@@ -238,6 +256,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 19,
     slug: 'anuncios-campanas',
+    catalogType: 'DESARROLLO',
     name: 'Anuncios & Campañas',
     modality: 'CONFIGURABLE',
     engine: 'CAMPANAS',
@@ -251,6 +270,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 20,
     slug: 'produccion-audiovisual',
+    catalogType: 'DESARROLLO',
     name: 'Producción Audiovisual',
     modality: 'CONSULTAR',
     engine: null,
@@ -263,6 +283,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 21,
     slug: 'sistema-identidad',
+    catalogType: 'DESARROLLO',
     name: 'Sistema de Identidad',
     modality: 'CONSULTAR',
     engine: null,
@@ -275,6 +296,7 @@ export const productsData: ProductSeedData[] = [
   {
     order: 22,
     slug: 'operaciones-consultoria',
+    catalogType: 'DESARROLLO',
     name: 'Operaciones & Consultoría',
     modality: 'CONSULTAR',
     engine: null,
