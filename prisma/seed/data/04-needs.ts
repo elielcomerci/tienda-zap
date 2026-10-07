@@ -257,6 +257,11 @@ export const needsData: NeedSeedData[] = [
     "order": 520
   },
   {
+    "slug": "necesito-convertir-las-interacciones-en-contactos",
+    "name": "Necesito convertir las interacciones en contactos",
+    "order": 535
+  },
+  {
     "slug": "necesito-dejar-un-punto-de-contacto" ,
     "name": "Necesito que puedan volver a encontrarme" ,
     "order": 530
