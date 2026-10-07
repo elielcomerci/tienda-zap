@@ -27,7 +27,7 @@ export default function CatalogSidebar({
   const isSituationMode = currentMode === 'objective' || currentMode === 'situation'
   const currentSituation = situation || intent
   const isCatalogTypeMode = currentMode === 'product' && Boolean(catalogType)
-  const isCosas = currentMode === 'product' && (catalogType === 'cosa' || !catalogType)
+  const isCosas = currentMode === 'product' && catalogType === 'cosa'
   const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
   const isSoluciones = currentMode === 'rubro' || isSituationMode
 
@@ -53,7 +53,7 @@ export default function CatalogSidebar({
 
       <div>
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
-          {currentMode === 'product' ? (catalogType === 'desarrollo' ? 'Desarrollos' : 'Cosas') : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
+          {currentMode === 'product' ? (catalogType === 'desarrollo' ? 'Desarrollos' : catalogType === 'cosa' ? 'Cosas' : 'Todo') : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
         </p>
 
         {currentMode === 'product' ? (
@@ -104,7 +104,7 @@ export default function CatalogSidebar({
               }`}
             >
               <LayoutGrid size={18} className={!cat ? 'text-[#ED164F]' : 'text-gray-400'} />
-              <span className="leading-tight">Todas las cosas</span>
+              <span className="leading-tight">Todo</span>
             </Link>
             {categories.map((category) => (
               <Link
