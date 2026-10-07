@@ -40,6 +40,7 @@ export default function PublicHeader({
   const [isLeadPending, startLeadTransition] = useTransition()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
 
   // Mobile submenu accordions state
   const [mobileProdOpen, setMobileProdOpen] = useState(false)
@@ -80,10 +81,13 @@ export default function PublicHeader({
     }
   }, [menuOpen])
 
-  // Close on Escape
+  // Close open menus on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false)
+      if (e.key === 'Escape') {
+        setMenuOpen(false)
+        setAccountOpen(false)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -241,24 +245,61 @@ export default function PublicHeader({
               </li>
 
               {/* User area */}
-              <li className="h-full flex items-center">
-                {canOpenAdminPanel && (
-                  <Link
-                    href="/admin"
-                    className="mr-3 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:text-[#ED164F] transition-colors"
-                    title="Ir al admin"
-                  >
-                    <LayoutDashboard size={15} />
-                  </Link>
-                )}
-
+              <li className="relative h-full flex items-center">
                 {user ? (
-                  <Link
-                    href="/perfil"
-                    className="text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors"
-                  >
-                    {user.name?.split(' ')[0] || 'Mi cuenta'}
-                  </Link>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setAccountOpen((open) => !open)}
+                      className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors"
+                      aria-expanded={accountOpen}
+                      aria-haspopup="menu"
+                    >
+                      <span>{user.name?.split(' ')[0] || 'Mi cuenta'}</span>
+                      <ChevronDown size={13} className={`transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {accountOpen && (
+                      <div className="absolute right-0 top-[calc(100%-4px)] pt-3 w-56 z-50">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
+                          <div className="px-3 py-2 border-b border-gray-100 mb-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Mi cuenta</p>
+                            <p className="mt-0.5 truncate text-sm font-semibold text-gray-900">{user.name || 'Usuario'}</p>
+                          </div>
+
+                          <Link
+                            href="/perfil"
+                            onClick={() => setAccountOpen(false)}
+                            className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#FEF1F5] hover:text-[#ED164F] transition-colors"
+                          >
+                            Mi perfil
+                          </Link>
+
+                          {canOpenAdminPanel && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setAccountOpen(false)}
+                              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#FEF1F5] hover:text-[#ED164F] transition-colors"
+                            >
+                              <LayoutDashboard size={15} />
+                              Panel Admin
+                            </Link>
+                          )}
+
+                          {canOpenSellerPanel && (
+                            <Link
+                              href="/seller"
+                              onClick={() => setAccountOpen(false)}
+                              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#EEF4FC] hover:text-[#2F5F9F] transition-colors"
+                            >
+                              <Handshake size={15} />
+                              Panel Asesores
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <Link
                     href="/login"
