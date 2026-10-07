@@ -181,7 +181,7 @@ export default function ProductContextForm({
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <input value={name} onChange={(event) => setName(event.target.value)} required placeholder="Nombre" className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#ED164F]" />
             <input value={phone} onChange={(event) => setPhone(event.target.value)} required placeholder="WhatsApp" className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#ED164F]" />
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required placeholder="Email" className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#ED164F] sm:col-span-2" />
+            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Email (opcional)" className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-[#ED164F] sm:col-span-2" />
           </div>
           <p className="mt-3 text-xs leading-5 text-gray-500">Usamos estos datos para responderte sobre esta consulta.</p>
         </div>
@@ -190,7 +190,7 @@ export default function ProductContextForm({
 
         <button
           type="submit"
-          disabled={!requiredComplete || !name.trim() || !phone.trim() || !email.trim() || submitting}
+          disabled={!requiredComplete || !name.trim() || !phone.trim() || submitting}
           className="flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-8 py-4 font-bold text-white shadow-lg shadow-[#ED164F]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F7638B] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-gray-500 disabled:shadow-none"
         >
           {submitting ? <LoaderCircle size={19} className="animate-spin" /> : <ArrowRight size={19} />}
