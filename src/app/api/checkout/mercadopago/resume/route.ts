@@ -61,6 +61,17 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Esta orden no soporta pago online directo' }, { status: 400 })
     }
 
+    if (
+      order.items.some(
+        (item) => item.product.catalogType !== 'COSA' || item.product.modality === 'CONSULTAR'
+      )
+    ) {
+      return Response.json(
+        { error: 'Esta orden contiene artículos que ya no pueden cobrarse online.' },
+        { status: 400 }
+      )
+    }
+
     if (order.status !== 'PENDING') {
       return Response.json(
         { error: 'El pago ya fue procesado para esta orden' },
