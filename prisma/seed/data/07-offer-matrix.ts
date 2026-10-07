@@ -101,6 +101,12 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "gastronomia",
     "situationSlug": "quiero-conseguir-mas-pedidos",
     "needSlug": "necesito-comunicar-mejor-lo-que-vendo",
+    "productSlug": "menus-cartas"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-conseguir-mas-pedidos",
+    "needSlug": "necesito-comunicar-mejor-lo-que-vendo",
     "productSlug": "anuncios-campanas"
   },
   {
