@@ -847,6 +847,8 @@ export const papeleriaDigitalOndemandMembretesSobresProviderCostMatrix = {
   source: 'LISTA_PRINT_PAG_20',
   currency: 'ARS',
   taxIncluded: false,
+  sourceType: 'DIGITAL_ON_DEMAND',
+  printer: 'RICOH_PRO_C9200',
   membretes: {
     material: 'obra_80g',
     format: 'a4',
@@ -974,3 +976,42 @@ export const impresosPackagingConfigurators: ConfiguratorVersionSeedData[] = [
 ];
 
 
+
+
+// Costos Digital On-Demand: DTF, cuadernos e imanes.
+// Fuente: Lista Print / abril 2026. Costos de proveedor terminado, sin IVA.
+
+export const digitalOndemandDtfProviderCostMatrix = {
+  source: 'LISTA_PRINT_ABRIL_2026',
+  currency: 'ARS',
+  taxIncluded: false,
+  printer: 'RICOH_PRO_C9200',
+  dtfUv: { printableArea: '29x45', printerWidthCm: 30, sourcePrice: 8800, priceUnit: 'FUENTE_NO_ESPECIFICA', date: '2026-04' },
+  dtfTextil: {
+    widthCm: 58,
+    minimumLinearMeters: 0.5,
+    upToOneLinearMeter: 22000,
+    overOneLinearMeter: { pricingMode: 'PROPORCIONAL_AL_METRO', sourceText: '275 275000', resolved: false },
+    date: '2026-04',
+  },
+} as const;
+
+export const digitalOndemandCuadernosProviderCostMatrix = {
+  source: 'LISTA_PRINT',
+  currency: 'ARS',
+  taxIncluded: false,
+  printer: 'RICOH_PRO_C9200',
+  minimumQuantity: 2,
+  escolar: { binding: 'ABROCHADO', cover: 'FULLCOLOR_CMYK_300G', formats: { a5: { '24_pag': 1140, '48_pag': 1620 }, a4: { '24_pag': 2160, '48_pag': 3180 } } },
+  universitario: { binding: ['RING_WIRE', 'BINDER_TIPO_LIBRO'], cover: 'FULLCOLOR_CMYK_300G', formats: { a5: { '100_pag': 2760, '160_pag': 3480 }, a4: { '100_pag': 4080, '160_pag': 4880 } } },
+  agendas2026: { minimumQuantity: 2, format: 'A5', priceProvided: false },
+} as const;
+
+export const digitalOndemandImanesTroqueladoProviderCostMatrix = {
+  source: 'LISTA_PRINT',
+  currency: 'ARS',
+  taxIncluded: false,
+  printer: 'RICOH_PRO_C9200',
+  planchaImanSinMontar: { sheet: '31x46cm', thicknessMm: 0.3, printableArea: '30x46cm', printing: '4_0', cut: 'LINEAL_UNICAMENTE', sheetPrice: 1500, quantityTiers: { '1': 3642, '2_25': 3011, '26_50': 2853, '51_100': 2695, '101_300': 2537, '301_500': 2379 } },
+  papelAutoadhesivo: { sourceFormat: 'A3_PLUS_32x47', printableArea: '30x46cm', printing: '4_0', cut: 'TROQUELADO_DIGITAL', quantityTiers: { '1': 3129, '2_25': 2560, '26_50': 2418, '51_100': 2276, '101_300': 2133, '301_500': 1991 }, note: 'La diferencia de area corresponde a las pinzas de la impresora.' },
+} as const;
