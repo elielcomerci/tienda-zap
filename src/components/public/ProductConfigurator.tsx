@@ -93,8 +93,8 @@ export default function ProductConfigurator({
   const addItem = useCartStore((state) => state.addItem)
 
   const hasOptions = product.options && product.options.length > 0
-  const isDevelopment = isDevelopment(product)
-  const isContactOnly = product.modality === 'CONSULTAR' || isDevelopment
+  const development = isDevelopment(product)
+  const isContactOnly = product.modality === 'CONSULTAR' || development
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
@@ -298,7 +298,7 @@ export default function ProductConfigurator({
         ? 'Revisá la combinación'
         : 'Falta una opción'
 
-  const availabilityLabel = isDevelopment
+  const availabilityLabel = development
     ? 'Servicio coordinado con ZAP'
     : product.stock && product.stock > 0
       ? `${product.stock} disponibles`
@@ -453,7 +453,7 @@ export default function ProductConfigurator({
         creditDownPaymentPercent,
         image: previewImageUrl || product.images[0] || '',
         quantity: 1,
-        isService: isDevelopment,
+        isService: development,
         briefType: normalizeBriefType(product.briefType),
         fileUrl: designFileUrl,
         briefReferenceFiles: designReferenceFiles,
@@ -483,7 +483,7 @@ export default function ProductConfigurator({
       creditDownPaymentPercent,
       image: product.images[0] || '',
       quantity: 1,
-      isService: isDevelopment,
+      isService: development,
       briefType: normalizeBriefType(product.briefType),
       selectedOptions: quoteResult.selectedOptions,
     })
