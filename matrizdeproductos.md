@@ -521,12 +521,9 @@ Cuando una necesidad no tiene una Product Base que la resuelva razonablemente, l
 
 ## Situación: Quiero generar contactos
 
-### Necesito facilitar que se lleven la marca
+### Necesito convertir las interacciones en contactos
 
-* Tarjetas & Vouchers
-* Flyers & Desplegables
-* Adhesivos & Stickers
-* Bolsas & Contenedores
+* Sistema de Captación para Eventos
 
 ### Necesito comunicar una propuesta
 
