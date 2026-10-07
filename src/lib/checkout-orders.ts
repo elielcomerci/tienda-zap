@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
-import { isDevelopment } from '@/lib/catalog-domain'
+import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 
 function sortSelectedOptions(options: Array<{ name: string; value: string }> = []) {
   return [...options].sort((a, b) => a.name.localeCompare(b.name))
@@ -228,7 +228,7 @@ export async function resolveCheckoutOrderItems(
       throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
     }
 
-    if (isDevelopment(product)) {
+    if (isDevelopment(product) || isConsultationOnly(product)) {
       throw new Error(`${product.name} se coordina con ZAP y no se compra online.`)
     }
 
