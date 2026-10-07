@@ -37,7 +37,7 @@ export default async function ProductsPage({
   
   const [situations, selectedSituation, businessTypes] = await Promise.all([
     getPublicSituations(rubro),
-    getPublicSituationBySlug(situationSlug),
+    getPublicSituationBySlug(situationSlug, rubro),
     getPublicBusinessTypes(),
   ])
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
