@@ -15,6 +15,13 @@ type OfferProduct = {
   catalogType: 'COSA' | 'DESARROLLO'
 }
 
+function getOfferPriority(product: OfferProduct) {
+  if (isDevelopment(product)) return 0
+  if (product.modality === 'CONFIGURABLE') return 1
+  if (product.modality === 'DIRECTO') return 2
+  return 3
+}
+
 export default function DiscoveryOfferSection({
   products,
   needName,
@@ -22,7 +29,11 @@ export default function DiscoveryOfferSection({
   products: OfferProduct[]
   needName: string
 }) {
-  const offers = products.slice(0, 4)
+  const offers = products
+    .map((product, index) => ({ product, index }))
+    .sort((a, b) => getOfferPriority(a.product) - getOfferPriority(b.product) || a.index - b.index)
+    .slice(0, 4)
+    .map(({ product }) => product)
   const engines = new Set(offers.map((product) => product.engine).filter(Boolean))
   const includesDevelopment = offers.some((product) => isDevelopment(product))
   const needsZAPReview = offers.length >= 3 && includesDevelopment && engines.size > 1
