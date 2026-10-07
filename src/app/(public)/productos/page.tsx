@@ -107,6 +107,7 @@ export default async function ProductsPage({
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_20%,#f8fafc_100%)]">
       <div className="mx-auto max-w-[1380px] px-4 pb-16 pt-8 sm:pt-10 xl:px-8">
+        {!isSituationMode && (
         <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
@@ -167,6 +168,8 @@ export default async function ProductsPage({
             </div>
           </div>
         </section>
+
+        )}
 
         <div className={`mt-8 ${isSituationMode ? 'mx-auto max-w-5xl' : 'grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
           {!isSituationMode && (
