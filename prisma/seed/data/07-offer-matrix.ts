@@ -1144,44 +1144,8 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "eventos-experiencias",
     "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-dejar-un-punto-de-contacto",
-    "productSlug": "tarjetas-vouchers"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-dejar-un-punto-de-contacto",
-    "productSlug": "flyers-desplegables"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-dejar-un-punto-de-contacto",
-    "productSlug": "adhesivos-stickers"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-dejar-un-punto-de-contacto",
-    "productSlug": "bolsas-contenedores"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "flyers-desplegables"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "produccion-audiovisual"
-  },
-  {
-    "businessTypeSlug": "eventos-experiencias",
-    "situationSlug": "quiero-generar-contactos",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "anuncios-campanas"
+    "needSlug": "necesito-convertir-las-interacciones-en-contactos",
+    "productSlug": "sistema-captacion-eventos"
   },
   {
     "businessTypeSlug": "wellness",
