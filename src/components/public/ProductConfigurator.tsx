@@ -7,7 +7,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
-import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
 
 type ProductWithOptions = {
   id: string
@@ -94,7 +94,8 @@ export default function ProductConfigurator({
 
   const hasOptions = product.options && product.options.length > 0
   const development = isDevelopment(product)
-  const isContactOnly = product.modality === 'CONSULTAR' || development
+  const consultationOnly = isConsultationOnly(product)
+  const isContactOnly = requiresConversation(product)
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
@@ -280,26 +281,34 @@ export default function ProductConfigurator({
     ? product.options.filter((option) => option.isRequired).length
     : 0
 
-  const guidanceMessage = !allRequiredSelected
-    ? 'Elegí las opciones requeridas.'
-    : allRequiredSelected && !activeVariant
-      ? 'Falta una combinación válida.'
-      : activeVariant && !selectedVariantAvailable
-        ? 'Esta combinación no está disponible.'
-        : minPrice === null && !activeVariant
-          ? 'Sin variantes disponibles online.'
-          : 'Disponible para compra online o consulta guiada.'
+  const guidanceMessage = development
+    ? 'Definimos el alcance con vos antes de avanzar.'
+    : consultationOnly
+      ? 'Esta pieza se define con ZAP antes de avanzar.'
+      : !allRequiredSelected
+        ? 'Elegí las opciones requeridas.'
+        : allRequiredSelected && !activeVariant
+          ? 'Falta una combinación válida.'
+          : activeVariant && !selectedVariantAvailable
+            ? 'Esta combinación no está disponible.'
+            : minPrice === null && !activeVariant
+              ? 'Sin variantes disponibles online.'
+              : 'Disponible para compra online.'
 
-  const summaryStateLabel = !allRequiredSelected
-    ? 'Faltan requeridas'
-    : activeVariant && selectedVariantAvailable
-      ? 'Listo para sumar'
-      : activeVariant
-        ? 'Revisá la combinación'
-        : 'Falta una opción'
+  const summaryStateLabel = isContactOnly
+    ? 'Listo para conversar'
+    : !allRequiredSelected
+      ? 'Faltan requeridas'
+      : activeVariant && selectedVariantAvailable
+        ? 'Listo para sumar'
+        : activeVariant
+          ? 'Revisá la combinación'
+          : 'Falta una opción'
 
   const availabilityLabel = development
-    ? 'Servicio coordinado con ZAP'
+    ? 'Desarrollo coordinado con ZAP'
+    : consultationOnly
+      ? 'Consulta con ZAP'
     : product.stock && product.stock > 0
       ? `${product.stock} disponibles`
       : 'Sin stock online'
