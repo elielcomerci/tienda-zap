@@ -28,7 +28,9 @@ export function engineForCatalogFamily(slug?: string) {
 
 export function getProductFamilyLabel(product: ProductDomainIdentity) {
   if (product.engine) return engineLabels[product.engine]
-  return product.modality === 'CONSULTAR' ? 'Proyecto a medida' : 'Producto directo'
+  if (isDevelopment(product)) return 'Desarrollo ZAP'
+  if (isConsultationOnly(product)) return 'Cosa a medida'
+  return 'Producto directo'
 }
 
 export function getProductModalityLabel(modality: ProductModality) {
