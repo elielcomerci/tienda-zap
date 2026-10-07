@@ -27,6 +27,9 @@ export default function CatalogSidebar({
   const isSituationMode = currentMode === 'objective' || currentMode === 'situation'
   const currentSituation = situation || intent
   const isCatalogTypeMode = currentMode === 'product' && Boolean(catalogType)
+  const isCosas = currentMode === 'product' && (catalogType === 'cosa' || !catalogType)
+  const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
+  const isSoluciones = currentMode === 'rubro' || isSituationMode
 
   return (
     <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start min-w-0">
@@ -35,47 +38,22 @@ export default function CatalogSidebar({
           Navegación
         </p>
         
-        {/* Toggle Mode */}
         <div className="grid grid-cols-3 gap-1 bg-gray-200/60 p-1 rounded-xl">
-          <Link
-            href="/productos?mode=product"
-            scroll={false}
-            className={`flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
-              currentMode === 'product'
-                ? 'bg-[#ED164F] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
-            }`}
-          >
-            Productos
+          <Link href="/productos?mode=product&tipo=cosa" scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isCosas ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+            Cosas
           </Link>
-          <Link
-            href={businessType ? `/productos?mode=situation&rubro=${businessType}` : "/productos?mode=situation"}
-            scroll={false}
-            className={`flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
-              isSituationMode
-                ? 'bg-[#ED164F] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
-            }`}
-          >
-            Situaciones
+          <Link href={businessType ? `/productos?mode=rubro&rubro=${businessType}` : "/productos?mode=rubro"} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isSoluciones ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+            Soluciones
           </Link>
-          <Link
-            href="/productos?mode=rubro"
-            scroll={false}
-            className={`flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
-              currentMode === 'rubro'
-                ? 'bg-[#ED164F] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
-            }`}
-          >
-            Rubros
+          <Link href="/productos?mode=product&tipo=desarrollo" scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isDesarrollos ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+            Desarrollos
           </Link>
         </div>
       </div>
 
       <div>
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
-          {currentMode === 'product' ? 'Catálogo' : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
+          {currentMode === 'product' ? (catalogType === 'desarrollo' ? 'Desarrollos' : 'Cosas') : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
         </p>
 
         {currentMode === 'product' ? (
@@ -126,7 +104,7 @@ export default function CatalogSidebar({
               }`}
             >
               <LayoutGrid size={18} className={!cat ? 'text-[#ED164F]' : 'text-gray-400'} />
-              <span className="leading-tight">Todos los productos</span>
+              <span className="leading-tight">Todas las cosas</span>
             </Link>
             {categories.map((category) => (
               <Link
