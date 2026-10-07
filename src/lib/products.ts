@@ -20,7 +20,7 @@ const quoterConfigInclude = {
 export async function getProducts(
   familySlug?: string,
   search?: string,
-  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'cosa' | 'desarrollo' }
+  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO' }
 ) {
   const engine = engineForCatalogFamily(familySlug)
   const offerFilter: Prisma.OfferMatrixEntryWhereInput = {
@@ -30,11 +30,9 @@ export async function getProducts(
   }
   const hasOfferFilter = Boolean(options?.situationSlug || options?.needSlug || options?.businessTypeSlug)
 
-  const catalogTypeFilter: Prisma.ProductWhereInput = options?.catalogType === 'desarrollo'
-    ? { OR: [{ modality: 'CONSULTAR' }, { engine: { in: ['DIGITAL', 'CAMPANAS'] } }] }
-    : options?.catalogType === 'cosa'
-      ? { modality: { not: 'CONSULTAR' }, OR: [{ engine: null }, { engine: { notIn: ['DIGITAL', 'CAMPANAS'] } }] }
-      : {}
+  const catalogTypeFilter: Prisma.ProductWhereInput = options?.catalogType
+    ? { catalogType: options.catalogType }
+    : {}
 
   const where: Prisma.ProductWhereInput = {
     active: true,
