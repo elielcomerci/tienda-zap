@@ -1,14 +1,10 @@
 import { getBusinessTypes } from '@/lib/business-types'
-import { getCategories } from '@/lib/categories'
 import RubrosClient from './RubrosClient'
 
 export const metadata = { title: 'Rubros — Admin' }
 
 export default async function RubrosPage() {
-  const [businessTypes, categories] = await Promise.all([
-    getBusinessTypes(),
-    getCategories(),
-  ])
+  const businessTypes = await getBusinessTypes()
 
   return (
     <div>
@@ -20,7 +16,7 @@ export default async function RubrosPage() {
         </p>
       </div>
 
-      <RubrosClient businessTypes={businessTypes} categories={categories} />
+      <RubrosClient businessTypes={businessTypes} />
     </div>
   )
 }
