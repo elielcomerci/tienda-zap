@@ -835,15 +835,15 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   },
 };
 
-// ─── Papelería corporativa: membretes y sobres ────────────────────────────────
-// Lista Print, pág. 20. Costos de proveedor, sin IVA.
-// Estas matrices quedan como fuente de costo hasta que exista un configurador
-// comercial específico para cada producto.
+// ─── Papelería digital on-demand: membretes y sobres ──────────────────────────
+// Lista Print, pág. 20. Impresión digital on-demand, sin IVA.
+// Esta fuente se conserva como costo de proveedor terminado; no modifica ni
+// reemplaza ninguna matriz anterior.
 //
 // Membretes: A4, Papel Obra 80g.
 // Sobres: Papel Obra 63g, blanco, impresión 4/0.
 // La impresión de sobres no cubre el 100% de la cara.
-export const papeleriaMembretesSobresProviderCostMatrix = {
+export const papeleriaDigitalOndemandMembretesSobresProviderCostMatrix = {
   source: 'LISTA_PRINT_PAG_20',
   currency: 'ARS',
   taxIncluded: false,
