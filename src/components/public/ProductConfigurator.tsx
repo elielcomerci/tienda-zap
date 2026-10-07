@@ -18,6 +18,7 @@ type ProductWithOptions = {
   stock?: number
   images: string[]
   modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  catalogType: 'COSA' | 'DESARROLLO'
   engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   options: {
     id: string
