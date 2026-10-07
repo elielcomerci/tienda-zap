@@ -104,6 +104,64 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'ProductQuoterConfig',
+    // Costo real de proveedor: tarjetas terminadas, listas para entregar.
+    // No representa precio de venta ZAP ni una materia prima.
+    providerFinishedCostMatrix: {
+      source: 'PROMO_DIRECTA_OFFSET',
+      currency: 'ARS',
+      taxIncluded: false,
+      paymentCondition: 'PAGO_ANTICIPADO',
+      validity: 'JUNIO_JULIO_2026',
+      product: {
+        format: '9x5',
+        material: 'ilustracion_350g',
+        printing: '4_4',
+      },
+      tiers: {
+        clasicas: {
+          delivery: '7_DIAS',
+          finishing: 'SIN_LAMINAR',
+          quantities: {
+            '500': 24000,
+            '1000': 36000,
+            '3000': 35000,
+            '5000': 34000,
+          },
+        },
+        premium: {
+          delivery: '12_DIAS',
+          finishing: 'OPP_MATE',
+          quantities: {
+            '500': 31000,
+            '1000': 39000,
+            '3000': 38000,
+            '5000': 37000,
+          },
+        },
+        deluxe: {
+          delivery: '15_DIAS',
+          finishing: 'OPP_MATE_LACA_UV_SECTORIZADA',
+          sectorizedSides: {
+            frente: {
+              quantities: {
+                '500': 31000,
+                '1000': 39000,
+                '3000': 38000,
+                '5000': 37000,
+              },
+            },
+            frente_y_dorso: {
+              quantities: {
+                '500': 35000,
+                '1000': 44000,
+                '3000': 43000,
+                '5000': 42000,
+              },
+            },
+          },
+        },
+      },
+    },
     adapter: {
       formatMapping: {
         '9x5': { sizeLabel: '9x5 cm', width: 9, height: 5 },
