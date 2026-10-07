@@ -13,7 +13,7 @@ import NeedsSection from '@/components/public/NeedsSection'
 import DiscoveryAdjacentSection from '@/components/public/DiscoveryAdjacentSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
@@ -89,7 +89,7 @@ export default async function ProductsPage({
             situationSlug: selectedSituation?.slug,
             needSlug: selectedSituation ? necesidad : undefined,
             businessTypeSlug: mode === 'rubro' ? rubro : undefined,
-            catalogType: mode === 'product' ? tipo : undefined,
+            catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
           }
         ), 
     getProducts(undefined, undefined, rubro ? { businessTypeSlug: rubro, take: 10 } : undefined),
@@ -314,7 +314,7 @@ export default async function ProductsPage({
             ) : (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => {
-                  const isDevelopment = isServiceProduct(product)
+                  const development = isDevelopment(product)
                   const hasVariants = Boolean(product.variants && product.variants.length > 0)
                   const requiresConfiguration = product.modality === 'CONFIGURABLE' || hasVariants || Boolean(product.quoterConfig)
                   const displayPrice = getProductDisplayPrice(product)
@@ -387,10 +387,10 @@ export default async function ProductsPage({
                                 creditDownPaymentPercent: product.creditDownPaymentPercent,
                                 image: product.images[0] || '',
                                 quantity: 1,
-                                isService: isDevelopment,
+                                isService: development,
                               }}
                               hasVariants={requiresConfiguration}
-                              isService={isDevelopment}
+                              isService={development}
                               slug={product.slug}
                               disabled={isConsultationOnly}
                             />
