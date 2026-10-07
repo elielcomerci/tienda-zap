@@ -113,6 +113,88 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       currency: 'ARS',
       taxIncluded: false,
       paymentCondition: 'PAGO_ANTICIPADO',
+      // Impresión digital para producción on-demand.
+      // Estos costos son de proveedor terminado, sin IVA, y no son precios de venta ZAP.
+      // La lista de 350g ya trae aplicado el recargo del 10%; no debe volver a calcularse.
+      digitalOndemand: {
+        source: 'DIGITAL_ONDEMAND',
+        taxIncluded: false,
+        paperSurcharges: {
+          ilustracion_350g: 10,
+        },
+        cards: {
+          ilustracion_350g: {
+            note: 'Tarjetas — Papel Ilustración 350g. Recargo del 10% ya incluido en los importes de la lista.',
+            quantities: {
+              '100': {
+                '4_0': { sin_laminar: 5210, laca_uv: 7009, laminado_brillo: 7009, laminado_mate: 7009 },
+                '4_4': { sin_laminar: 8213, laca_uv: 9034, laminado_brillo: 9034, laminado_mate: 9856 },
+              },
+              '200': {
+                '4_0': { sin_laminar: 8143, laca_uv: 10216, laminado_brillo: 10247, laminado_mate: 10435 },
+                '4_4': { sin_laminar: 12361, laca_uv: 13487, laminado_brillo: 13487, laminado_mate: 14989 },
+              },
+              '300': {
+                '4_0': { sin_laminar: 11596, laca_uv: 13735, laminado_brillo: 13968, laminado_mate: 14123 },
+                '4_4': { sin_laminar: 17029, laca_uv: 18423, laminado_brillo: 18423, laminado_mate: 20126 },
+              },
+              '500': {
+                '4_0': { sin_laminar: 19219, laca_uv: 31530, laminado_brillo: 32037, laminado_mate: 32797 },
+                '4_4': { sin_laminar: 39930, laca_uv: 42465, laminado_brillo: 42972, laminado_mate: 47534 },
+              },
+              '1000': {
+                '4_0': { sin_laminar: 36475, laca_uv: 39350, laminado_brillo: 39925, laminado_mate: 41404 },
+                '4_4': { sin_laminar: 49863, laca_uv: 52738, laminado_brillo: 53313, laminado_mate: 59719 },
+              },
+            },
+          },
+          ilustracion_300g: {
+            note: 'Tarjetas personales / postales — Papel Ilustración 300g. La fuente no especifica una medida única; se conserva como matriz de costo digital sin inventar formato.',
+            quantities: {
+              '100': {
+                '4_0': { sin_laminar: 13031, laca_uv: 14374, laminado_brillo: 14703, laminado_mate: 14703 },
+                '4_4': { sin_laminar: 17591, laca_uv: 17591, laminado_brillo: 17591, laminado_mate: 21534 },
+              },
+              '200': {
+                '4_0': { sin_laminar: 23485, laca_uv: 26634, laminado_brillo: 26724, laminado_mate: 27263 },
+                '4_4': { sin_laminar: 32800, laca_uv: 32800, laminado_brillo: 32800, laminado_mate: 40357 },
+              },
+              '300': {
+                '4_0': { sin_laminar: 32792, laca_uv: 36383, laminado_brillo: 37101, laminado_mate: 37580 },
+                '4_4': { sin_laminar: 45797, laca_uv: 45797, laminado_brillo: 45797, laminado_mate: 55372 },
+              },
+              '500': {
+                '4_0': { sin_laminar: 50663, laca_uv: 55920, laminado_brillo: 56971, laminado_mate: 58548 },
+                '4_4': { sin_laminar: 70823, laca_uv: 70823, laminado_brillo: 70823, laminado_mate: 86594 },
+              },
+              '1000': {
+                '4_0': { sin_laminar: 94443, laca_uv: 103643, laminado_brillo: 105483, laminado_mate: 110214 },
+                '4_4': { sin_laminar: 132243, laca_uv: 132243, laminado_brillo: 132243, laminado_mate: 163784 },
+              },
+            },
+          },
+        },
+        finishing: {
+          agujereado_3mm: {
+            '100': 1350,
+            '200': 1800,
+            '300': 2700,
+            '500': 3225,
+            '1000': 4500,
+            additionalPerThousand: 1778,
+          },
+          puntas_redondeadas: {
+            '100': 1350,
+            '200': 1800,
+            '300': 2700,
+            '500': 3225,
+            '1000': 4500,
+            additionalPerThousand: 1778,
+          },
+          express_48h: { surchargePercent: 30 },
+          express_24h: { surchargePercent: 50 },
+        },
+      },
       tiers: {
         clasicas: {
           delivery: '7_8_DIAS',
