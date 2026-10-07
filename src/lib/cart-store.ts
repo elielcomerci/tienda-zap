@@ -8,7 +8,6 @@ export interface CartItem {
   creditDownPaymentPercent?: number
   image: string
   quantity: number
-  isService?: boolean
   notes?: string
   briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
   briefResponses?: Record<string, string>
