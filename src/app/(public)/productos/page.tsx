@@ -16,6 +16,17 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
 
+const BUSINESS_CONTEXT: Record<string, string> = {
+  gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
+  'moda-y-showrooms': 'Sabemos que una marca de moda necesita que producto, espacio, comunicación y experiencia se sientan parte de lo mismo.',
+  inmobiliarias: 'Sabemos que una inmobiliaria puede necesitar captar propiedades, generar consultas, transmitir confianza y hacer que sus propiedades se vean mejor.',
+  'belleza-y-salud': 'Sabemos que un negocio de belleza o salud necesita que marca, espacio, agenda y comunicación acompañen la experiencia que quiere construir.',
+  retail: 'Sabemos que un comercio puede necesitar atraer gente, vender mejor en el local, ordenar su presencia y hacer que su marca se reconozca.',
+  'eventos-y-experiencias': 'Sabemos que un evento necesita atraer personas, generar contactos y convertir cada punto de contacto en parte de la experiencia.',
+  wellness: 'Sabemos que un espacio de wellness puede necesitar conseguir alumnos, llenar la agenda, hacerse reconocer y ordenar cómo se presenta.',
+}
+
+
 export const dynamic = 'force-dynamic'
 
 export default async function ProductsPage({
@@ -94,7 +105,7 @@ export default async function ProductsPage({
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                {mode === 'combo' ? 'Soluciones' : isSituationMode ? 'Situaciones' : mode === 'rubro' ? 'Por rubro' : 'Catálogo técnico'}
+                {mode === 'combo' ? 'Soluciones' : isSituationMode ? 'Situaciones' : mode === 'rubro' ? 'Tu rubro' : 'Catálogo técnico'}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
                 {mode === 'combo' 
@@ -102,9 +113,7 @@ export default async function ProductsPage({
                   : isSituationMode
                     ? 'Opciones para esta situación'
                     : mode === 'rubro'
-                      ? selectedBusinessType
-                        ? `Ofertas para ${selectedBusinessType.name}`
-                        : 'Elegí tu rubro'
+                      ? selectedBusinessType?.name || 'Elegí tu rubro'
                       : 'Cosas y desarrollos ZAP'}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
@@ -113,7 +122,9 @@ export default async function ProductsPage({
                   : isSituationMode
                     ? 'Partimos de lo que está pasando o de lo que querés lograr. Elegí sólo lo que tenga sentido para avanzar.'
                     : mode === 'rubro'
-                      ? 'Encontrá ofertas relacionadas con el contexto de tu negocio. Las categorías técnicas siguen disponibles cuando ya sabés qué buscar.'
+                      ? selectedBusinessType
+                        ? BUSINESS_CONTEXT[selectedBusinessType.slug] || 'Conocemos el contexto de este rubro. Primero mirá qué está pasando en tu negocio y después decidimos dónde tiene sentido intervenir.'
+                        : 'Elegí tu rubro para empezar desde el contexto de tu negocio.'
                       : 'Para cuando ya sabés qué necesitás: gráfica, cartelería, exhibidores, merchandising, web y presencia digital.'}
               </p>
             </div>
