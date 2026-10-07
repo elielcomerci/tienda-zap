@@ -48,14 +48,14 @@ export default function DiscoveryOfferSection({
 
   if (offers.length === 0) {
     return (
-      <section className="rounded-[28px] border border-dashed border-gray-300 bg-white p-6 sm:p-8">
+      <section className="rounded-[30px] bg-white px-5 py-8 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.24)] sm:px-8 sm:py-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">ZAP</p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950">No todo tiene una respuesta prefabricada.</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+        <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
           Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, no queremos inventarte una oferta.
           Podemos mirar qué está pasando y decidir con vos dónde tiene sentido intervenir.
         </p>
-        <Link href={whatsappUrl || "/"} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-5 py-3 text-sm font-bold text-white">
+        <Link href={whatsappUrl || "/"} className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
           Hablar con ZAP <ArrowRight size={16} />
         </Link>
       </section>
@@ -64,13 +64,13 @@ export default function DiscoveryOfferSection({
 
   if (needsZAPReview) {
     return (
-      <section id="recomendacion" className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-6 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.18)] sm:p-8">
+      <section id="recomendacion" className="rounded-[30px] bg-[linear-gradient(135deg,#fff9fb_0%,#ffffff_75%)] px-5 py-8 sm:px-8 sm:py-10">
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto conviene mirarlo como un conjunto</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
           Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, hay varias formas de intervenir y probablemente tengan que trabajar juntas.
           Antes de hacerte elegir una cosa, podemos mirar el contexto y decirte por dónde tiene más sentido empezar.
         </p>
-        <Link href="/contacto" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-5 py-3 text-sm font-bold text-white">
+        <Link href="/contacto" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
           Hablar con ZAP <ArrowRight size={16} />
         </Link>
       </section>
@@ -78,16 +78,16 @@ export default function DiscoveryOfferSection({
   }
 
   return (
-    <section id="recomendacion" className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] sm:p-7">
-      <div className="mb-6">
+    <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-7 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.28)] sm:px-8 sm:py-9">
+      <div className="mb-7 max-w-2xl">
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto puede servirte</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+        <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
           Partimos de <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>.
-          No es todo lo que hacemos: son algunas formas concretas en las que podemos intervenir sobre eso.
+          Estas son algunas formas concretas de intervenir.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
         {offers.map((product) => {
           const offerReason = needSlug
             ? getDiscoveryOfferReason({
@@ -110,13 +110,13 @@ export default function DiscoveryOfferSection({
               : 'Ver producto'
 
           return (
-            <article key={product.id} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-5">
-              <h3 className="text-lg font-black text-gray-950">{product.name}</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-700">{explanation}</p>
+            <article key={product.id} className="flex min-h-[178px] flex-col rounded-[22px] bg-gray-50/80 p-5 sm:p-6">
+              <h3 className="text-lg font-black tracking-tight text-gray-950 sm:text-xl">{product.name}</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
 
               <Link
                 href={product.modality === 'CONSULTAR' ? (whatsappUrl || '/') : `/productos/${product.slug}`}
-                className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+                className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
               >
                 {actionLabel} <ArrowRight size={15} />
               </Link>
@@ -125,7 +125,7 @@ export default function DiscoveryOfferSection({
         })}
       </div>
 
-      <div className="mt-6 flex justify-end border-t border-gray-200 pt-5">
+      <div className="mt-7 flex justify-start border-t border-gray-100 pt-5 sm:justify-end">
         <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
           ¿No sabés cuál elegir? Hablemos <ArrowRight size={15} />
         </Link>

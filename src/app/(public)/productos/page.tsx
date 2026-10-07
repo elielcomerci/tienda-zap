@@ -171,7 +171,7 @@ export default async function ProductsPage({
 
         )}
 
-        <div className={`mt-8 ${isSituationMode ? 'mx-auto max-w-5xl' : 'grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
+        <div className={`mt-8 ${isSituationMode ? 'mx-auto max-w-6xl' : 'grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
           {!isSituationMode && (
             <CatalogSidebar 
               categories={categories}
@@ -186,9 +186,9 @@ export default async function ProductsPage({
             />
           )}
 
-          <div className="space-y-5 min-w-0">
+          <div className="space-y-8 min-w-0">
             {selectedBusinessType && mode === 'rubro' && !selectedSituation && (
-              <section className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-5 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.16)] sm:p-6">
+              <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
                 <div className="mb-5">
                   <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">¿Qué está pasando en tu negocio?</h2>
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">Elegí la situación que más se parece a la tuya. A partir de ahí afinamos qué necesitás resolver.</p>
@@ -224,7 +224,7 @@ export default async function ProductsPage({
 
             {selectedSituation && isSituationMode && (
               <>
-                <div className="flex items-center justify-between gap-4 px-1">
+                <div className="flex items-center justify-between gap-4 px-0.5 sm:px-1">
                   <Link
                     href={rubro ? `/productos?mode=rubro&rubro=${encodeURIComponent(rubro)}` : '/productos'}
                     className="text-sm font-semibold text-gray-500 hover:text-[#C2103F]"
