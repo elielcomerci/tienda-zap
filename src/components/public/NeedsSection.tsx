@@ -48,7 +48,7 @@ export default function NeedsSection({
                 {hasOffers ? <ArrowRight size={16} className="mt-0.5 shrink-0 text-[#ED164F]" /> : <MessageCircleMore size={16} className="mt-0.5 shrink-0 text-[#ED164F]" />}
               </div>
               <p className="mt-3 text-xs font-semibold text-[#C2103F]">
-                {hasOffers ? `${need._count.offerEntries} ${need._count.offerEntries === 1 ? 'oferta relacionada' : 'ofertas relacionadas'}` : 'Hablar con ZAP'}
+                {hasOffers ? 'Ver qué puede servirte' : 'Hablar con ZAP'}
               </p>
             </Link>
           )
