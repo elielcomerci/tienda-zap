@@ -94,7 +94,7 @@ export default function ProductConfigurator({
 
   const hasOptions = product.options && product.options.length > 0
   const isServiceProduct = isServiceDomainProduct(product)
-  const isContactOnly = product.modality === 'CONSULTAR'
+  const isContactOnly = product.modality === 'CONSULTAR' || isServiceProduct
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
