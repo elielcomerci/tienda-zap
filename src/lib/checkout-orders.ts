@@ -228,6 +228,10 @@ export async function resolveCheckoutOrderItems(
       throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
     }
 
+    if (isServiceProduct(product)) {
+      throw new Error(`${product.name} se coordina con ZAP y no se compra online.`)
+    }
+
     const hasArtworkFile = Boolean(item.fileUrl || item.briefReferenceFiles?.length)
 
     return {
