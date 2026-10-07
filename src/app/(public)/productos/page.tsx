@@ -205,6 +205,7 @@ export default async function ProductsPage({
             intent={intent} 
             situation={situacion}
             businessType={rubro}
+            catalogType={tipo}
           />
 
           <div className="space-y-5 min-w-0">
