@@ -835,6 +835,40 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   },
 };
 
+// ─── Papelería corporativa: membretes y sobres ────────────────────────────────
+// Lista Print, pág. 20. Costos de proveedor, sin IVA.
+// Estas matrices quedan como fuente de costo hasta que exista un configurador
+// comercial específico para cada producto.
+//
+// Membretes: A4, Papel Obra 80g.
+// Sobres: Papel Obra 63g, blanco, impresión 4/0.
+// La impresión de sobres no cubre el 100% de la cara.
+export const papeleriaMembretesSobresProviderCostMatrix = {
+  source: 'LISTA_PRINT_PAG_20',
+  currency: 'ARS',
+  taxIncluded: false,
+  membretes: {
+    material: 'obra_80g',
+    format: 'a4',
+    printing: {
+      '1_0': { '100': 748, '200': 692, '300': 654, '500': 617, '1000': 580 },
+      '4_0': { '100': 844, '200': 774, '300': 727, '500': 680, '1000': 633 },
+    },
+  },
+  sobres: {
+    material: 'obra_63g',
+    color: 'blanco',
+    printing: '4_0',
+    note: 'La impresión no puede cubrir el 100% de la cara del sobre.',
+    sizes: {
+      '22.9x32.4': { label: 'Sobre bolsa A4', '100': 795, '200': 732, '300': 690, '500': 648, '1000': 606 },
+      '27x37': { label: 'Sobre bolsa', '100': 520, '200': 498, '300': 484, '500': 469, '1000': 455 },
+      '25x35.3': { label: 'Sobre bolsa Oficio', '100': 748, '200': 692, '300': 654, '500': 617, '1000': 580 },
+      '12x23.5': { label: 'Sobre inglés', '100': 844, '200': 774, '300': 727, '500': 680, '1000': 633 },
+    },
+  },
+};
+
 // ─── 5. Carpetas & Folders ────────────────────────────────────────────────────
 // Base: Carpetas corporativas con solapa pegada en Papel Ilustración 300g (lista-low.txt p. 14).
 // Modelo de pricing: TIERED_UNIT_TABLE (escalas de cantidad x opciones comerciales fijadas celda por celda).
