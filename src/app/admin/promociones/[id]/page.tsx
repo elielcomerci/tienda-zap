@@ -90,7 +90,7 @@ export default async function PromotionDetailPage({ params }: PromotionDetailPag
 
   if (!promotion) notFound()
 
-  const [scanAggregate, reservedRedemptions, confirmedRedemptions, auditLogs, products, categories] =
+  const [scanAggregate, reservedRedemptions, confirmedRedemptions, auditLogs, products] =
     await Promise.all([
       prisma.promotionCoupon.aggregate({
         where: { promotionId: promotion.id },
@@ -140,18 +140,9 @@ export default async function PromotionDetailPage({ params }: PromotionDetailPag
         },
         select: { id: true, name: true },
       }),
-      prisma.category.findMany({
-        where: {
-          id: {
-            in: [...promotion.allowedCategoryIds, ...promotion.excludedCategoryIds],
-          },
-        },
-        select: { id: true, name: true },
-      }),
     ])
 
   const productNameById = new Map(products.map((product) => [product.id, product.name]))
-  const categoryNameById = new Map(categories.map((category) => [category.id, category.name]))
   const confirmedCount = confirmedRedemptions.length
   const totalScans = scanAggregate._sum.scanCount ?? 0
   const attributedRevenue = confirmedRedemptions.reduce(
@@ -264,14 +255,6 @@ export default async function PromotionDetailPage({ params }: PromotionDetailPag
             <p>Retorno estimado: {revenuePerDiscountPeso ? `${revenuePerDiscountPeso.toFixed(1)}x` : '-'}</p>
           </div>
           <div className="mt-5 space-y-3 text-xs">
-            <p className="font-black uppercase tracking-[0.14em] text-gray-500">Categorias permitidas</p>
-            <p className="text-gray-700">
-              {promotion.allowedCategoryIds.map((id) => categoryNameById.get(id) || id).join(', ') || 'Todas'}
-            </p>
-            <p className="font-black uppercase tracking-[0.14em] text-gray-500">Categorias excluidas</p>
-            <p className="text-gray-700">
-              {promotion.excludedCategoryIds.map((id) => categoryNameById.get(id) || id).join(', ') || 'Ninguna'}
-            </p>
             <p className="font-black uppercase tracking-[0.14em] text-gray-500">Productos permitidos</p>
             <p className="text-gray-700">
               {promotion.allowedProductIds.map((id) => productNameById.get(id) || id).join(', ') || 'Todos'}
