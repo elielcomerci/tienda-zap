@@ -43,7 +43,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-reforzar-la-identidad" ,
-    "name": "Necesito que mi marca se note" ,
+    "name": "Necesito que mi marca se reconozca" ,
     "order": 90
   },
   {
@@ -58,7 +58,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-presentar-la-marca" ,
-    "name": "Necesito presentar mi marca" ,
+    "name": "Necesito mostrar quiénes somos" ,
     "order": 120
   },
   {
@@ -113,7 +113,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-actualizar-la-identidad" ,
-    "name": "Necesito actualizar la imagen de mi marca" ,
+    "name": "Necesito que mi marca se vea actual" ,
     "order": 210
   },
   {
@@ -123,7 +123,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-construir-una-identidad" ,
-    "name": "Necesito que mi negocio tenga una identidad propia" ,
+    "name": "Necesito que mi negocio se reconozca" ,
     "order": 230
   },
   {
@@ -158,7 +158,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-presentarme-con-profesionalismo" ,
-    "name": "Necesito que mi negocio se vea profesional" ,
+    "name": "Necesito transmitir confianza" ,
     "order": 300
   },
   {
@@ -173,7 +173,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-comunicar-servicios" ,
-    "name": "Necesito explicar bien mis servicios" ,
+    "name": "Necesito que entiendan qué hago" ,
     "order": 340
   },
   {
@@ -213,7 +213,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-comunicar-promociones" ,
-    "name": "Necesito comunicar promociones" ,
+    "name": "Necesito que se enteren de mis promociones" ,
     "order": 430
   },
   {
@@ -223,7 +223,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-vender-online" ,
-    "name": "Necesito vender online" ,
+    "name": "Necesito que también puedan comprarme online" ,
     "order": 450
   },
   {
@@ -233,12 +233,12 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-producir-materiales" ,
-    "name": "Necesito tener listos los materiales del evento" ,
+    "name": "Necesito tener todo listo para el evento" ,
     "order": 480
   },
   {
     "slug": "necesito-construir-presencia-de-marca" ,
-    "name": "Necesito que mi marca esté presente en todo el evento" ,
+    "name": "Necesito que mi marca se reconozca en el evento" ,
     "order": 490
   },
   {
@@ -248,12 +248,12 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-generar-atencion" ,
-    "name": "Necesito llamar la atención" ,
+    "name": "Necesito que me vean" ,
     "order": 510
   },
   {
     "slug": "necesito-una-experiencia-de-marca-reconocible" ,
-    "name": "Necesito que la gente se acuerde de mi marca" ,
+    "name": "Necesito que recuerden mi marca" ,
     "order": 520
   },
   {
@@ -288,7 +288,7 @@ export const needsData: NeedSeedData[] = [
   },
   {
     "slug": "necesito-reforzar-la-identidad-del-espacio" ,
-    "name": "Necesito que el espacio se sienta mío" ,
+    "name": "Necesito que el espacio se sienta como mi marca" ,
     "order": 620
   },
   {
