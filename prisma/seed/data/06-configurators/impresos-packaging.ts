@@ -449,7 +449,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
           '15x20': { '1000': 64000, '2500': 128000, '5000': 170000 },
           '20x30': { '1000': 128000, '2500': 256000, '5000': 340000 },
           '30x40': { '1000': 256000, '2500': 512000, '5000': 680000 },
-        },,
+        },
       // Impresión digital on-demand — Ricoh Pro C9200.
       // Lista económica/promocional, sin IVA.
       // No se mezcla con la matriz offset: es un canal de producción distinto.
