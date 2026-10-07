@@ -6,7 +6,7 @@ import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductDetailExperience from '@/components/public/ProductDetailExperience'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { getProductFamilyLabel } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
 
 export const revalidate = 300
 
@@ -40,7 +40,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       categoryName: getProductFamilyLabel(product),
       price: displayPrice,
       slug: product.slug,
-      intent: displayPrice === null ? 'cotizar' : 'consultar',
+      intent: isServiceProduct(product) || displayPrice === null ? 'cotizar' : 'consultar',
     })
   )
 
