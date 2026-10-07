@@ -184,62 +184,6 @@ export default async function ProductsPage({
           )}
 
           <div className="space-y-5 min-w-0">
-            {!isSituationMode && (
-              <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <form className="flex flex-1 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 min-w-0">
-                  <Search size={18} className="text-gray-400" />
-                  <input
-                    type="text"
-                    name="q"
-                    defaultValue={q}
-                    placeholder="Buscar productos, trabajos o materiales"
-                    className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-                  />
-                  {cat ? <input type="hidden" name="cat" value={cat} /> : null}
-                  {mode ? <input type="hidden" name="mode" value={mode} /> : null}
-                  {situationSlug ? <input type="hidden" name="situacion" value={situationSlug} /> : null}
-                  {necesidad ? <input type="hidden" name="necesidad" value={necesidad} /> : null}
-                  {rubro ? <input type="hidden" name="rubro" value={rubro} /> : null}
-                  {tipo ? <input type="hidden" name="tipo" value={tipo} /> : null}
-                </form>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <ShareModal />
-                  {selectedSituation && isSituationMode && (
-                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
-                      Situación: {selectedSituation.name}
-                    </span>
-                  )}
-                  {selectedSituation?.needs.find((need) => need.slug === necesidad) && (
-                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
-                      Necesidad: {selectedSituation.needs.find((need) => need.slug === necesidad)?.name}
-                    </span>
-                  )}
-                  {selectedBusinessType && mode === 'rubro' && (
-                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
-                      Rubro: {selectedBusinessType.name}
-                    </span>
-                  )}
-                  {selectedCategory && !isSituationMode && mode !== 'rubro' && !tipo && (
-                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
-                      Categoría: {selectedCategory.name}
-                    </span>
-                  )}
-                  {selectedCatalogTypeLabel && mode === 'product' && (
-                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
-                      Tipo: {selectedCatalogTypeLabel}
-                    </span>
-                  )}
-                  {q?.trim() && (
-                    <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-700">
-                      Búsqueda: {q.trim()}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
             {selectedBusinessType && mode === 'rubro' && !selectedSituation && (
               <section className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-5 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.16)] sm:p-6">
                 <div className="mb-5">
