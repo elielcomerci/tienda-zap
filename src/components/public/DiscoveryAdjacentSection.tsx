@@ -7,6 +7,7 @@ type ContextualProduct = {
   name: string
   slug: string
   description: string | null
+  catalogType: 'COSA' | 'DESARROLLO'
   purpose?: string | null
   whatIs?: string | null
   modality: 'DIRECTO' | 'CONFIGURABLE' | 'CONSULTAR'
