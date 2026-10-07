@@ -184,7 +184,7 @@ function CheckoutContent() {
   } = useCreditEligibility()
 
   const hasUnavailableItems = items.some((item) => item.price <= 0)
-  const hasItemsRequiringArtwork = items.some((item) => !item.isService)
+  const hasItemsRequiringArtwork = items.some((item) => !item.designRequested && !item.fileUrl && !item.briefReferenceFiles?.length)
   const baseDownPaymentPercent = calculateWeightedDownPaymentPercent(
     items.map((item) => ({
       unitPrice: item.price,
@@ -296,7 +296,6 @@ function CheckoutContent() {
         briefReferenceFiles: item.briefReferenceFiles,
         fileUrl: item.fileUrl,
         designRequested: item.designRequested,
-        isService: item.isService,
         selectedOptions: item.selectedOptions,
       }))
     )
