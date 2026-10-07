@@ -55,14 +55,17 @@ function mapSituation(situation: {
   }
 }
 
-export async function getPublicSituationBySlug(slug?: string) {
+export async function getPublicSituationBySlug(slug?: string, businessTypeSlug?: string) {
   if (!slug) return undefined
 
   const situation = await prisma.situation.findFirst({
     where: { slug, active: true },
     include: {
       offerEntries: {
-        where: activeOffer,
+        where: {
+        ...activeOffer,
+        ...(businessTypeSlug ? { businessType: { slug: businessTypeSlug } } : {}),
+      },
         include: { need: true },
         orderBy: { order: 'asc' },
       },
