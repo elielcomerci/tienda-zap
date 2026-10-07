@@ -282,6 +282,9 @@ export default async function ProductsPage({
                     <DiscoveryOfferSection
                       products={products}
                       needName={selectedNeed.name}
+                      businessTypeSlug={rubro}
+                      situationSlug={selectedSituation.slug}
+                      needSlug={selectedNeed.slug}
                     />
                     {rubro && (
                       <DiscoveryAdjacentSection
