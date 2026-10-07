@@ -53,20 +53,13 @@ export async function POST(req: NextRequest) {
       if (existingProduct) {
         genericProductId = existingProduct.id
       } else {
-        // Find or create hidden category first
-        let hiddenCat = await prisma.category.findUnique({ where: { slug: 'sistema' } })
-        if (!hiddenCat) {
-          hiddenCat = await prisma.category.create({
-            data: { name: 'Sistema (Oculto)', slug: 'sistema', isService: true },
-          })
-        }
-        
         const newGenericProd = await prisma.product.create({
           data: {
             name: 'Ítem Personalizado',
             slug: 'venta-manual',
             price: 0,
-            categoryId: hiddenCat.id,
+            catalogType: 'COSA',
+            modality: 'DIRECTO',
             active: false, // Keep it invisible
           },
         })
