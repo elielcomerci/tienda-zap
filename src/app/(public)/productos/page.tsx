@@ -9,6 +9,7 @@ import AddToCartButton from '@/components/public/AddToCartButton'
 import CatalogSidebar from '@/components/public/CatalogSidebar'
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
+import DiscoveryAdjacentSection from '@/components/public/DiscoveryAdjacentSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { auth } from '@/auth'
@@ -97,7 +98,7 @@ export default async function ProductsPage({
     businessTypeName = selectedBusinessType.name
   }
 
-  const [products, categories] = await Promise.all([
+  const [products, contextualProducts, categories] = await Promise.all([
     mode === 'combo'
       ? Promise.resolve([])
       : getProducts(
@@ -109,6 +110,7 @@ export default async function ProductsPage({
             businessTypeSlug: mode === 'rubro' ? rubro : undefined,
           }
         ), 
+    getProducts(undefined, undefined, rubro ? { businessTypeSlug: rubro, take: 10 } : undefined),
     getPublicCategories()
   ])
   const selectedCategory = categories.find((category) => category.slug === cat)
@@ -294,10 +296,18 @@ export default async function ProductsPage({
                 <IntentionHero intention={selectedSituation} />
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} selectedNeedSlug={necesidad} />
                 {selectedNeed && (
-                  <DiscoveryOfferSection
-                    products={products}
-                    needName={selectedNeed.name}
-                  />
+                  <>
+                    <DiscoveryOfferSection
+                      products={products}
+                      needName={selectedNeed.name}
+                    />
+                    {rubro && (
+                      <DiscoveryAdjacentSection
+                        products={contextualProducts}
+                        selectedProductIds={products.map((product) => product.id)}
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}
