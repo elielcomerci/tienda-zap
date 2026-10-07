@@ -235,6 +235,7 @@ export default async function ProductsPage({
               </>
             )}
 
+            {!isSituationMode && (
             {products.length === 0 ? (
               <div className="rounded-[32px] border border-dashed border-gray-300 bg-white/80 px-6 py-16 text-center shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)]">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
@@ -343,6 +344,7 @@ export default async function ProductsPage({
                 })}
               </div>
             )}
+
           </div>
         </div>
       </div>
