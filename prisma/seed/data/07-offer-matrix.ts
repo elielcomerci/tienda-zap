@@ -364,12 +364,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   {
     "businessTypeSlug": "moda-showrooms",
     "situationSlug": "quiero-vender-online",
-    "needSlug": "necesito-contenido-para-mostrar-lo-que-vendo",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "moda-showrooms",
-    "situationSlug": "quiero-vender-online",
     "needSlug": "necesito-llevar-trafico",
     "productSlug": "anuncios-campanas"
   },
@@ -519,12 +513,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "inmobiliarias",
-    "situationSlug": "quiero-captar-propiedades",
-    "needSlug": "necesito-que-una-propuesta-se-vea",
-    "productSlug": "anuncios-campanas"
-  },
-  {
-    "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-conseguir-mas-consultas",
     "needSlug": "necesito-mostrar-mejor-las-propiedades",
     "productSlug": "produccion-audiovisual"
@@ -582,12 +570,6 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-transmitir-mas-confianza",
     "needSlug": "necesito-presentarme-con-profesionalismo",
     "productSlug": "produccion-audiovisual"
-  },
-  {
-    "businessTypeSlug": "inmobiliarias",
-    "situationSlug": "quiero-transmitir-mas-confianza",
-    "needSlug": "necesito-presentarme-con-profesionalismo",
-    "productSlug": "anuncios-campanas"
   },
   {
     "businessTypeSlug": "inmobiliarias",
