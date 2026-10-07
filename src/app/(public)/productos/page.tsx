@@ -389,7 +389,6 @@ export default async function ProductsPage({
                                 creditDownPaymentPercent: product.creditDownPaymentPercent,
                                 image: product.images[0] || '',
                                 quantity: 1,
-                                isService: development,
                               }}
                               hasVariants={requiresConfiguration}
                               slug={product.slug}
