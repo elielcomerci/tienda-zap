@@ -34,7 +34,7 @@ export default function NeedsSection({
           return (
             <Link
               key={need.id}
-              href={hasOffers ? `/productos?${href.toString()}` : salesWhatsappUrl}
+              href={hasOffers ? `/productos?${href.toString()}#recomendacion` : salesWhatsappUrl}
               target={hasOffers ? undefined : '_blank'}
               rel={hasOffers ? undefined : 'noreferrer'}
               className={`group rounded-2xl border p-4 transition-all ${active ? 'border-[#ED164F] bg-white shadow-sm' : 'border-gray-200 bg-white/80 hover:-translate-y-0.5 hover:border-[#F7638B]/40'}`}
