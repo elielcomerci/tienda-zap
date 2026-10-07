@@ -385,8 +385,7 @@ export const orderCheckoutSchema = z.object({
         .optional(),
       fileUrl: z.string().url().optional(),
       designRequested: z.boolean().optional(),
-      isService: z.boolean().optional(),
-      selectedOptions: z.array(z.object({
+        selectedOptions: z.array(z.object({
         name: z.string(),
         value: z.string(),
       })).optional(),
