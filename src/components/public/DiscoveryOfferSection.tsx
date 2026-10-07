@@ -79,7 +79,7 @@ export default function DiscoveryOfferSection({
   }
 
   return (
-    <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23-42,0.24)] sm:p-7">
+    <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] sm:p-7">
       <div className="mb-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">Paso 3 · Recomendación</p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto puede servirte</h2>
@@ -119,7 +119,8 @@ export default function DiscoveryOfferSection({
               </div>
 
               <div className="mt-4">
-                <p className="text-sm leading-6 text-gray-700">{explanation}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Por qué aparece acá</p>
+                <p className="mt-1.5 text-sm leading-6 text-gray-700">{explanation}</p>
               </div>
 
               <div className="mt-5 border-t border-gray-200 pt-4">
