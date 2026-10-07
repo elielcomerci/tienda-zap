@@ -60,9 +60,10 @@ export default async function ProductsPage({
     situacion?: string
     necesidad?: string
     rubro?: string
+    tipo?: 'cosa' | 'desarrollo'
   }>
 }) {
-  const { cat, q, mode, intent, situacion, necesidad, rubro } = await searchParams
+  const { cat, q, mode, intent, situacion, necesidad, rubro, tipo } = await searchParams
   const isSituationMode = mode === 'objective' || mode === 'situation'
   const situationSlug = situacion || intent
   
@@ -108,12 +109,14 @@ export default async function ProductsPage({
             situationSlug: selectedSituation?.slug,
             needSlug: selectedSituation ? necesidad : undefined,
             businessTypeSlug: mode === 'rubro' ? rubro : undefined,
+            catalogType: mode === 'product' ? tipo : undefined,
           }
         ), 
     getProducts(undefined, undefined, rubro ? { businessTypeSlug: rubro, take: 10 } : undefined),
     getPublicCategories()
   ])
   const selectedCategory = categories.find((category) => category.slug === cat)
+  const selectedCatalogTypeLabel = tipo === 'desarrollo' ? 'Desarrollos' : tipo === 'cosa' ? 'Cosas' : null
 
   // Guided discovery now follows a single path:
   // Situación → Necesidad → OfertaMatrix → next step.
@@ -136,7 +139,7 @@ export default async function ProductsPage({
                     ? 'Opciones para esta situación'
                     : mode === 'rubro'
                       ? selectedBusinessType?.name || 'Elegí tu rubro'
-                      : 'Cosas y desarrollos ZAP'}
+                      : tipo === 'desarrollo' ? 'Desarrollos ZAP' : tipo === 'cosa' ? 'Cosas ZAP' : 'Cosas y desarrollos ZAP'}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
                 {mode === 'combo'
@@ -147,7 +150,11 @@ export default async function ProductsPage({
                       ? selectedBusinessType
                         ? BUSINESS_CONTEXT[selectedBusinessType.slug] || 'Conocemos el contexto de este rubro. Primero mirá qué está pasando en tu negocio y después decidimos dónde tiene sentido intervenir.'
                         : 'Elegí tu rubro para empezar desde el contexto de tu negocio.'
-                      : 'Para cuando ya sabés qué necesitás: gráfica, cartelería, exhibidores, merchandising, web y presencia digital.'}
+                      : tipo === 'desarrollo'
+                        ? 'Lo que construimos para resolver algo que necesita contexto, trabajo a medida o una intervención que no se compra como una cosa.'
+                        : tipo === 'cosa'
+                          ? 'Lo que producimos y podés elegir, configurar o comprar directamente para tu negocio.'
+                          : 'Para cuando ya sabés qué necesitás: gráfica, cartelería, exhibidores, merchandising, web y presencia digital.'}
               </p>
             </div>
 
@@ -217,6 +224,7 @@ export default async function ProductsPage({
                   {situationSlug ? <input type="hidden" name="situacion" value={situationSlug} /> : null}
                   {necesidad ? <input type="hidden" name="necesidad" value={necesidad} /> : null}
                   {rubro ? <input type="hidden" name="rubro" value={rubro} /> : null}
+                  {tipo ? <input type="hidden" name="tipo" value={tipo} /> : null}
                 </form>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -241,9 +249,14 @@ export default async function ProductsPage({
                       Rubro: {selectedBusinessType.name}
                     </span>
                   )}
-                  {selectedCategory && !isSituationMode && mode !== 'combo' && mode !== 'rubro' && (
+                  {selectedCategory && !isSituationMode && mode !== 'combo' && mode !== 'rubro' && !tipo && (
                     <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
                       Categoría: {selectedCategory.name}
+                    </span>
+                  )}
+                  {selectedCatalogTypeLabel && mode === 'product' && (
+                    <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
+                      Tipo: {selectedCatalogTypeLabel}
                     </span>
                   )}
                   {q?.trim() && (
