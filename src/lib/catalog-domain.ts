@@ -47,6 +47,16 @@ export function isDevelopment(product: ProductDomainIdentity) {
   return product.catalogType === 'DESARROLLO'
 }
 
+/** La modalidad CONSULTAR requiere conversación, independientemente de qué sea la oferta. */
+export function isConsultationOnly(product: ProductDomainIdentity) {
+  return product.modality === 'CONSULTAR'
+}
+
+/** El flujo no debe tratar un Desarrollo configurable como una compra online. */
+export function requiresConversation(product: ProductDomainIdentity) {
+  return isDevelopment(product) || isConsultationOnly(product)
+}
+
 /** @deprecated Usar isDevelopment. Se conserva temporalmente para evitar mezclar dominio y compatibilidad. */
 export function isServiceProduct(product: ProductDomainIdentity) {
   return isDevelopment(product)
