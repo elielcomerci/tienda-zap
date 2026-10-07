@@ -12,7 +12,7 @@ import {
   getApparelMockupConfig,
   hasApparelMockupImages,
 } from '@/lib/apparel-mockup'
-import { getProductFamilyLabel, getProductModalityLabel, isServiceProduct } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, getProductModalityLabel, isDevelopment } from '@/lib/catalog-domain'
 
 function normalize(value?: string | null) {
   return (value || '')
@@ -65,7 +65,7 @@ export default function ProductDetailExperience({
     ? apparelMockup
     : fallbackApparelMockup
   const showApparelMockup = hasApparelMockupImages(activeApparelMockup)
-  const isDevelopment = isServiceProduct(product)
+  const isDevelopment = isDevelopment(product)
   const editorialIncludes = Array.isArray(product.includes) ? product.includes : []
   const editorialConfigurable = Array.isArray(product.configurable) ? product.configurable : []
   const hasEditorialDetail = Boolean(
