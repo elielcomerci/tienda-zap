@@ -57,7 +57,7 @@ export default function CatalogSidebar({
             Combos
           </Link>
           <Link
-            href="/productos?mode=situation"
+            href={businessType ? `/productos?mode=situation&rubro=${businessType}` : "/productos?mode=situation"}
             scroll={false}
             className={`flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all ${
               isSituationMode
@@ -168,7 +168,7 @@ export default function CatalogSidebar({
             {intentions.map((intention) => (
               <Link
                 key={intention.id}
-                href={`/productos?mode=situation&situacion=${intention.slug}`}
+                href={`/productos?mode=situation&situacion=${intention.slug}${businessType ? `&rubro=${businessType}` : ""}`}
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   currentSituation === intention.slug
