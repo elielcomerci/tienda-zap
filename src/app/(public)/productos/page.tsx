@@ -136,7 +136,7 @@ export default async function ProductsPage({
               </p>
             </div>
 
-            <div className={`grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-${q?.trim() ? '3' : '2'}`}>
+            <div className={`grid gap-3 sm:grid-cols-3 lg:grid-cols-1 ${q?.trim() ? 'xl:grid-cols-3' : 'xl:grid-cols-2'}`}>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Resultados
@@ -216,7 +216,7 @@ export default async function ProductsPage({
                   <Link href={`/productos?mode=situation&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-600 hover:text-[#ED164F]">
                     Ver todas las situaciones →
                   </Link>
-                  <Link href={`/productos?mode=product&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-700 hover:text-[#ED164F]">
+                  <Link href={`/productos?mode=rubro&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-700 hover:text-[#ED164F]">
                     Ver todo lo que hacemos para {selectedBusinessType.name} →
                   </Link>
                 </div>
