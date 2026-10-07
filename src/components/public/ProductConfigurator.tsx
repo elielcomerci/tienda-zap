@@ -7,7 +7,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
-import { getProductFamilyLabel, isServiceProduct as isServiceDomainProduct } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
 type ProductWithOptions = {
   id: string
@@ -93,8 +93,8 @@ export default function ProductConfigurator({
   const addItem = useCartStore((state) => state.addItem)
 
   const hasOptions = product.options && product.options.length > 0
-  const isServiceProduct = isServiceDomainProduct(product)
-  const isContactOnly = product.modality === 'CONSULTAR' || isServiceProduct
+  const isDevelopment = isDevelopment(product)
+  const isContactOnly = product.modality === 'CONSULTAR' || isDevelopment
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
@@ -298,7 +298,7 @@ export default function ProductConfigurator({
         ? 'Revisá la combinación'
         : 'Falta una opción'
 
-  const availabilityLabel = isServiceProduct
+  const availabilityLabel = isDevelopment
     ? 'Servicio coordinado con ZAP'
     : product.stock && product.stock > 0
       ? `${product.stock} disponibles`
@@ -453,7 +453,7 @@ export default function ProductConfigurator({
         creditDownPaymentPercent,
         image: previewImageUrl || product.images[0] || '',
         quantity: 1,
-        isService: isServiceProduct,
+        isService: isDevelopment,
         briefType: normalizeBriefType(product.briefType),
         fileUrl: designFileUrl,
         briefReferenceFiles: designReferenceFiles,
@@ -483,7 +483,7 @@ export default function ProductConfigurator({
       creditDownPaymentPercent,
       image: product.images[0] || '',
       quantity: 1,
-      isService: isServiceProduct,
+      isService: isDevelopment,
       briefType: normalizeBriefType(product.briefType),
       selectedOptions: quoteResult.selectedOptions,
     })
