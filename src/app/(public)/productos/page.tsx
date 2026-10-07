@@ -18,12 +18,32 @@ import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
-  'moda-y-showrooms': 'Sabemos que una marca de moda necesita que producto, espacio, comunicación y experiencia se sientan parte de lo mismo.',
+  'moda-showrooms': 'Sabemos que una marca de moda necesita que producto, espacio, comunicación y experiencia se sientan parte de lo mismo.',
   inmobiliarias: 'Sabemos que una inmobiliaria puede necesitar captar propiedades, generar consultas, transmitir confianza y hacer que sus propiedades se vean mejor.',
-  'belleza-y-salud': 'Sabemos que un negocio de belleza o salud necesita que marca, espacio, agenda y comunicación acompañen la experiencia que quiere construir.',
-  retail: 'Sabemos que un comercio puede necesitar atraer gente, vender mejor en el local, ordenar su presencia y hacer que su marca se reconozca.',
-  'eventos-y-experiencias': 'Sabemos que un evento necesita atraer personas, generar contactos y convertir cada punto de contacto en parte de la experiencia.',
+  'belleza-salud': 'Sabemos que un negocio de belleza o salud necesita que marca, espacio, agenda y comunicación acompañen la experiencia que quiere construir.',
+  'comercios-retail': 'Sabemos que un comercio puede necesitar atraer gente, vender mejor en el local, ordenar su presencia y hacer que su marca se reconozca.',
+  'eventos-experiencias': 'Sabemos que un evento necesita atraer personas, generar contactos y convertir cada punto de contacto en parte de la experiencia.',
   wellness: 'Sabemos que un espacio de wellness puede necesitar conseguir alumnos, llenar la agenda, hacerse reconocer y ordenar cómo se presenta.',
+}
+
+const BUSINESS_SITUATION_PRIORITY: Record<string, string[]> = {
+  gastronomia: ['estoy-por-abrir', 'quiero-conseguir-mas-pedidos', 'quiero-vender-mas-en-el-local', 'quiero-que-mis-clientes-vuelvan', 'quiero-que-mi-comida-se-vea-mejor'],
+  'moda-showrooms': ['estoy-por-abrir', 'quiero-vender-mas-en-el-local', 'quiero-vender-online', 'quiero-renovar-la-marca-o-el-espacio', 'quiero-que-mi-marca-se-vea-mejor'],
+  inmobiliarias: ['estoy-abriendo-o-renovando-la-inmobiliaria', 'quiero-captar-propiedades', 'quiero-conseguir-mas-consultas', 'quiero-transmitir-mas-confianza', 'quiero-vender-o-alquilar-mas'],
+  'belleza-salud': ['estoy-por-abrir', 'quiero-llenar-la-agenda', 'quiero-que-mis-clientes-vuelvan', 'quiero-que-mi-marca-se-vea-mejor', 'quiero-renovar-la-marca-o-el-espacio'],
+  'comercios-retail': ['estoy-por-abrir', 'quiero-que-me-encuentren', 'quiero-vender-mas', 'quiero-renovar-el-local'],
+  'eventos-experiencias': ['tengo-un-evento', 'quiero-atraer-gente-al-evento-o-stand', 'quiero-generar-contactos'],
+  wellness: ['estoy-por-abrir', 'quiero-conseguir-alumnos', 'quiero-llenar-la-agenda', 'quiero-mejorar-mi-espacio', 'quiero-que-mis-clientes-vuelvan'],
+}
+
+function getBusinessSituations<T extends { slug: string }>(businessTypeSlug: string | undefined, situations: T[]) {
+  if (!businessTypeSlug) return situations
+  const priority = BUSINESS_SITUATION_PRIORITY[businessTypeSlug]
+  if (!priority) return situations
+  const rank = new Map(priority.map((slug, index) => [slug, index]))
+  return [...situations]
+    .sort((a, b) => (rank.get(a.slug) ?? priority.length) - (rank.get(b.slug) ?? priority.length))
+    .slice(0, Math.max(priority.length, 5))
 }
 
 
@@ -52,6 +72,7 @@ export default async function ProductsPage({
     getPublicBusinessTypes(),
   ])
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
+  const businessSituations = getBusinessSituations(rubro, situations)
   const session = await auth()
   let businessTypeId: string | null = null
   let businessTypeName: string | null = null
@@ -241,7 +262,7 @@ export default async function ProductsPage({
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">Elegí la situación que más se parece a la tuya. A partir de ahí afinamos qué necesitás resolver.</p>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
-                  {situations.map((situation) => (
+                  {businessSituations.map((situation) => (
                     <Link
                       key={situation.id}
                       href={`/productos?mode=situation&rubro=${encodeURIComponent(rubro || '')}&situacion=${encodeURIComponent(situation.slug)}`}
@@ -258,7 +279,10 @@ export default async function ProductsPage({
                     </Link>
                   ))}
                 </div>
-                <div className="mt-5 border-t border-gray-200 pt-4">
+                <div className="mt-5 flex flex-col gap-2 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <Link href={`/productos?mode=situation&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-600 hover:text-[#ED164F]">
+                    Ver todas las situaciones →
+                  </Link>
                   <Link href={`/productos?mode=product&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-700 hover:text-[#ED164F]">
                     Ver todo lo que hacemos para {selectedBusinessType.name} →
                   </Link>
