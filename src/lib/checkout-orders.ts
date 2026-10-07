@@ -244,14 +244,9 @@ export async function resolveCheckoutOrderItems(
       briefResponses: item.briefResponses || undefined,
       briefReferenceLinks: item.briefReferenceLinks || [],
       briefReferenceFiles: item.briefReferenceFiles || undefined,
-      isService: isDevelopment(product),
-      fileUrl: isDevelopment(product) ? undefined : item.fileUrl,
-      designRequested: isDevelopment(product) || hasArtworkFile ? false : Boolean(item.designRequested),
-      artworkSubmissionChannel: isDevelopment(product)
-        ? ('PENDING' as const)
-        : hasArtworkFile
-          ? ('R2' as const)
-          : ('PENDING' as const),
+      fileUrl: item.fileUrl,
+      designRequested: hasArtworkFile ? false : Boolean(item.designRequested),
+      artworkSubmissionChannel: hasArtworkFile ? ('R2' as const) : ('PENDING' as const),
       configurationSnapshot: buildConfigurationSnapshot({
         product,
         selectedOptions,
