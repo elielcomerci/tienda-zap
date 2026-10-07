@@ -64,7 +64,7 @@ export default function DiscoveryOfferSection({
 
   if (needsZAPReview) {
     return (
-      <section className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-6 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.18)] sm:p-8">
+      <section id="recomendacion" className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-6 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.18)] sm:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">Paso 3 · Recomendación</p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto conviene mirarlo como un conjunto</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
