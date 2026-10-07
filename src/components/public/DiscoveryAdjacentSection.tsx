@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { getProductFamilyLabel, getProductModalityLabel, isServiceProduct } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, getProductModalityLabel, isDevelopment } from '@/lib/catalog-domain'
 
 type ContextualProduct = {
   id: string
@@ -22,7 +22,7 @@ export default function DiscoveryAdjacentSection({
 }) {
   const selected = new Set(selectedProductIds)
   const recommendations = products
-    .filter((product) => !selected.has(product.id) && !isServiceProduct(product))
+    .filter((product) => !selected.has(product.id) && !isDevelopment(product))
     .filter((product) => product.purpose?.trim() || product.whatIs?.trim() || product.description?.trim())
     .slice(0, 4)
 
