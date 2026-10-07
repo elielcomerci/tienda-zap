@@ -81,15 +81,8 @@ export default async function ProductsPage({
   ])
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
   const businessSituations = getBusinessSituations(rubro, situations)
-  if (selectedBusinessType) {
-    businessTypeId = selectedBusinessType.id
-    businessTypeName = selectedBusinessType.name
-  }
-
   const [products, contextualProducts, categories] = await Promise.all([
-    mode === 'combo'
-      ? Promise.resolve([])
-      : getProducts(
+    getProducts(
           isSituationMode || mode === 'rubro' ? undefined : cat,
           q, 
           {
@@ -117,21 +110,17 @@ export default async function ProductsPage({
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                {mode === 'combo' ? 'Soluciones' : isSituationMode ? 'Situaciones' : mode === 'rubro' ? 'Tu rubro' : 'Catálogo técnico'}
+                {isSituationMode ? 'Situaciones' : mode === 'rubro' ? 'Soluciones' : 'Catálogo técnico'}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                {mode === 'combo' 
-                  ? 'Packs y Combos ZAP' 
-                  : isSituationMode
+                {isSituationMode
                     ? 'Opciones para esta situación'
                     : mode === 'rubro'
                       ? selectedBusinessType?.name || 'Elegí tu rubro'
                       : tipo === 'desarrollo' ? 'Desarrollos ZAP' : tipo === 'cosa' ? 'Cosas ZAP' : 'Cosas y desarrollos ZAP'}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                {mode === 'combo'
-                  ? 'Kits completos y combos todo-en-uno diseñados específicamente para resolver la gráfica, papelería y presencia digital de tu local o lanzamiento en un solo click.'
-                  : isSituationMode
+                {isSituationMode
                     ? 'Partimos de lo que está pasando o de lo que querés lograr. Elegí sólo lo que tenga sentido para avanzar.'
                     : mode === 'rubro'
                       ? selectedBusinessType
@@ -159,11 +148,7 @@ export default async function ProductsPage({
                 <p className="mt-2 text-base font-bold text-gray-950">
                   {isSituationMode && selectedSituation
                     ? selectedSituation.name
-                    : mode === 'combo'
-                      ? businessTypeName
-                        ? `Combos para ${businessTypeName}`
-                        : 'Todos los Combos'
-                      : mode === 'rubro'
+                    : mode === 'rubro'
                         ? selectedBusinessType?.name || 'Todos los rubros'
                         : selectedCatalogTypeLabel || selectedCategory?.name || 'Todos'}
                 </p>
@@ -217,11 +202,6 @@ export default async function ProductsPage({
 
                 <div className="flex flex-wrap items-center gap-2">
                   <ShareModal />
-                  {mode === 'combo' && (
-                    <span className="rounded-full border border-[#4576B9]/25 bg-[#EEF4FC] px-3 py-1.5 text-xs font-semibold text-[#2F5F9F]">
-                      Packs y Combos
-                    </span>
-                  )}
                   {selectedSituation && isSituationMode && (
                     <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
                       Situación: {selectedSituation.name}
