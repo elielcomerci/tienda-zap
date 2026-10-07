@@ -17,10 +17,8 @@ type BusinessType = {
 
 export default function RubrosClient({
   businessTypes,
-  categories,
 }: {
   businessTypes: BusinessType[]
-  categories: Category[]
 }) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
