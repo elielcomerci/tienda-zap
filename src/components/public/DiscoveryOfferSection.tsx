@@ -55,8 +55,8 @@ export default function DiscoveryOfferSection({
           Esto puede servirte
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-          Entendemos que querés <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>.
-          Por eso te mostramos primero estas opciones, en lugar de hacerte recorrer todo el catálogo.
+          Partimos de <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>.
+          No es todo lo que hacemos: son algunas formas concretas en las que podemos intervenir sobre eso.
         </p>
       </div>
 
@@ -84,7 +84,12 @@ export default function DiscoveryOfferSection({
                 </span>
               </div>
 
-              <p className="mt-3 text-sm leading-6 text-gray-600">{explanation}</p>
+              <div className="mt-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
+                  Por qué aparece acá
+                </p>
+                <p className="mt-1 text-sm leading-6 text-gray-600">{explanation}</p>
+              </div>
 
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-200 pt-4">
                 <span className="text-xs font-semibold text-gray-500">
