@@ -168,21 +168,24 @@ export default async function ProductsPage({
           </div>
         </section>
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]">
-          <CatalogSidebar 
-            categories={categories}
-            intentions={situations}
-            businessTypes={businessTypes}
-            cat={cat} 
-            mode={mode} 
-            intent={intent} 
-            situation={situacion}
-            businessType={rubro}
-            catalogType={tipo}
-          />
+        <div className={`mt-8 ${isSituationMode ? 'mx-auto max-w-5xl' : 'grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
+          {!isSituationMode && (
+            <CatalogSidebar 
+              categories={categories}
+              intentions={situations}
+              businessTypes={businessTypes}
+              cat={cat} 
+              mode={mode} 
+              intent={intent} 
+              situation={situacion}
+              businessType={rubro}
+              catalogType={tipo}
+            />
+          )}
 
           <div className="space-y-5 min-w-0">
-            <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
+            {!isSituationMode && (
+              <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)]">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <form className="flex flex-1 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 min-w-0">
                   <Search size={18} className="text-gray-400" />
@@ -235,7 +238,7 @@ export default async function ProductsPage({
                   )}
                 </div>
               </div>
-            </div>
+            )}
 
             {selectedBusinessType && mode === 'rubro' && !selectedSituation && (
               <section className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-5 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.16)] sm:p-6">
@@ -275,6 +278,15 @@ export default async function ProductsPage({
 
             {selectedSituation && isSituationMode && (
               <>
+                <div className="flex items-center justify-between gap-4 px-1">
+                  <Link
+                    href={rubro ? `/productos?mode=rubro&rubro=${encodeURIComponent(rubro)}` : '/productos'}
+                    className="text-sm font-semibold text-gray-500 hover:text-[#C2103F]"
+                  >
+                    ← Cambiar contexto
+                  </Link>
+                  <ShareModal />
+                </div>
                 <IntentionHero intention={selectedSituation} />
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} selectedNeedSlug={necesidad} />
                 {selectedNeed && (
