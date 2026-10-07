@@ -11,11 +11,9 @@ export async function createBusinessTypeAction(formData: FormData) {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
 
-  const categoryIds = formData.getAll('categoryIds') as string[]
-
   if (!name || !slug) throw new Error('Nombre y slug son requeridos')
 
-  await createBusinessType({ name, slug, categoryIds })
+  await createBusinessType({ name, slug })
   revalidatePath('/admin/rubros')
 }
 
@@ -28,11 +26,9 @@ export async function updateBusinessTypeAction(formData: FormData) {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
 
-  const categoryIds = formData.getAll('categoryIds') as string[]
-
   if (!id || !name || !slug) throw new Error('Datos incompletos')
 
-  await updateBusinessType(id, { name, slug, categoryIds })
+  await updateBusinessType(id, { name, slug })
   revalidatePath('/admin/rubros')
 }
 
