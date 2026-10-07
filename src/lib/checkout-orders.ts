@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
-import { isServiceProduct } from '@/lib/catalog-domain'
+import { isDevelopment } from '@/lib/catalog-domain'
 
 function sortSelectedOptions(options: Array<{ name: string; value: string }> = []) {
   return [...options].sort((a, b) => a.name.localeCompare(b.name))
@@ -228,7 +228,7 @@ export async function resolveCheckoutOrderItems(
       throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
     }
 
-    if (isServiceProduct(product)) {
+    if (isDevelopment(product)) {
       throw new Error(`${product.name} se coordina con ZAP y no se compra online.`)
     }
 
@@ -244,10 +244,10 @@ export async function resolveCheckoutOrderItems(
       briefResponses: item.briefResponses || undefined,
       briefReferenceLinks: item.briefReferenceLinks || [],
       briefReferenceFiles: item.briefReferenceFiles || undefined,
-      isService: isServiceProduct(product),
-      fileUrl: isServiceProduct(product) ? undefined : item.fileUrl,
-      designRequested: isServiceProduct(product) || hasArtworkFile ? false : Boolean(item.designRequested),
-      artworkSubmissionChannel: isServiceProduct(product)
+      isService: isDevelopment(product),
+      fileUrl: isDevelopment(product) ? undefined : item.fileUrl,
+      designRequested: isDevelopment(product) || hasArtworkFile ? false : Boolean(item.designRequested),
+      artworkSubmissionChannel: isDevelopment(product)
         ? ('PENDING' as const)
         : hasArtworkFile
           ? ('R2' as const)
