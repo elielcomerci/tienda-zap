@@ -1,7 +1,5 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { isServiceProduct } from '@/lib/catalog-domain'
-
 interface ProductSnippet {
   id: string
   name: string
@@ -10,6 +8,7 @@ interface ProductSnippet {
   images: string[]
   price: number
   modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  catalogType: 'COSA' | 'DESARROLLO'
   engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   variants: { price: number }[]
   quoterConfig: unknown | null
@@ -20,8 +19,8 @@ export default function CatalogEntrySection({
 }: {
   products: ProductSnippet[]
 }) {
-  const hasCosas = products.some((p) => !isServiceProduct(p))
-  const hasDesarrollos = products.some((p) => isServiceProduct(p))
+  const hasCosas = products.some((p) => p.catalogType === 'COSA')
+  const hasDesarrollos = products.some((p) => p.catalogType === 'DESARROLLO')
 
 
   return (
