@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 import { NextRequest } from 'next/server'
 
 function clean(value: unknown) {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Este producto no requiere una consulta previa.' }, { status: 400 })
     }
 
-    const snapshot = {
+    const snapshot: Prisma.InputJsonValue = {
       source: 'product-context-form',
       product: { id: product.id, name: product.name, slug: product.slug },
       answers,
