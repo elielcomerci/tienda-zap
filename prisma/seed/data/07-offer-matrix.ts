@@ -1358,6 +1358,24 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "productSlug": "produccion-audiovisual"
   },
   {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mi-comida-se-vea-mejor",
+    "needSlug": "necesito-que-mi-comida-se-vea-mejor",
+    "productSlug": "flyers-desplegables"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mi-comida-se-vea-mejor",
+    "needSlug": "necesito-que-mi-comida-se-vea-mejor",
+    "productSlug": "carteleria-ploteo"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mi-comida-se-vea-mejor",
+    "needSlug": "necesito-que-mi-comida-se-vea-mejor",
+    "productSlug": "menus-cartas"
+  },
+  {
     "businessTypeSlug": "moda-showrooms",
     "situationSlug": "quiero-que-mi-marca-se-vea-mejor",
     "needSlug": "necesito-que-mi-marca-se-vea-mejor",
