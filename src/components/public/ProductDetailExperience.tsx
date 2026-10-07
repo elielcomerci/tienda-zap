@@ -67,7 +67,6 @@ export default function ProductDetailExperience({
   const showApparelMockup = hasApparelMockupImages(activeApparelMockup)
   const development = isDevelopment(product)
   const consultationOnly = isConsultationOnly(product)
-  const requiresConversation = development || consultationOnly
   const editorialIncludes = Array.isArray(product.includes) ? product.includes : []
   const editorialConfigurable = Array.isArray(product.configurable) ? product.configurable : []
   const hasEditorialDetail = Boolean(
@@ -159,8 +158,7 @@ export default function ProductDetailExperience({
               )}
             </div>
           )}
-
-
+        </section>
 
         <ProductConfigurator
           product={product}

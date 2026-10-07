@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import { ArrowRight, Check, LoaderCircle } from 'lucide-react'
 import { PRODUCT_INQUIRY_CONFIGS, type ProductInquiryQuestion } from '@/lib/product-inquiry-config'
 
@@ -68,7 +69,7 @@ export default function ProductContextForm({
     return result
   }, {})
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!requiredComplete || submitting) return
     setSubmitting(true)
