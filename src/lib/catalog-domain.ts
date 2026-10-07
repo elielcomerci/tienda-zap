@@ -1,6 +1,7 @@
-import type { ConfiguratorEngine, ProductModality } from '@prisma/client'
+import type { CatalogType, ConfiguratorEngine, ProductModality } from '@prisma/client'
 
 export type ProductDomainIdentity = {
+  catalogType: CatalogType
   modality: ProductModality
   engine: ConfiguratorEngine | null
 }
@@ -41,11 +42,17 @@ export function getProductModalityLabel(modality: ProductModality) {
   }
 }
 
-/** La categoría ya no define el tratamiento operativo del producto. */
+/** El tipo de catálogo define qué es la oferta; la modalidad define cómo se avanza con ella. */
+export function isDevelopment(product: ProductDomainIdentity) {
+  return product.catalogType === 'DESARROLLO'
+}
+
+/** @deprecated Usar isDevelopment. Se conserva temporalmente para evitar mezclar dominio y compatibilidad. */
 export function isServiceProduct(product: ProductDomainIdentity) {
-  return product.modality === 'CONSULTAR' || product.engine === 'DIGITAL' || product.engine === 'CAMPANAS'
+  return isDevelopment(product)
 }
 
 export function requiresArtwork(product: ProductDomainIdentity) {
-  return !isServiceProduct(product)
+  return product.catalogType === 'COSA'
 }
+
