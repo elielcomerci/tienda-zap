@@ -13,12 +13,12 @@ export default function IntentionHero({ intention }: { intention: DiscoverySitua
       <div className="relative z-10 grid gap-6 md:grid-cols-[1fr_auto] items-center">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF1F5] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F] mb-3">
-            {intention.icon} Contexto de descubrimiento
+            {intention.icon} Lo que está pasando
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-tight">
             {intention.name}
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed max-w-xl">
+          <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed max-w-2xl">
             {intention.description}
           </p>
         </div>
