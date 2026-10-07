@@ -11,6 +11,7 @@ export default function CatalogSidebar({
   intent,
   situation,
   businessType,
+  catalogType,
 }: {
   categories: { id: string; name: string; slug: string }[]
   intentions: DiscoverySituation[]
@@ -20,10 +21,12 @@ export default function CatalogSidebar({
   intent?: string
   situation?: string
   businessType?: string
+  catalogType?: 'cosa' | 'desarrollo'
 }) {
   const currentMode = mode || 'product'
   const isSituationMode = currentMode === 'objective' || currentMode === 'situation'
   const currentSituation = situation || intent
+  const isCatalogTypeMode = currentMode === 'product' && Boolean(catalogType)
 
   return (
     <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start min-w-0">
@@ -87,6 +90,42 @@ export default function CatalogSidebar({
         </p>
 
         {currentMode === 'product' ? (
+          isCatalogTypeMode ? (
+            <div className="space-y-2">
+              <Link
+                href="/productos?mode=product&tipo=cosa"
+                scroll={false}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
+                  catalogType === 'cosa'
+                    ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
+                    : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <PackageOpen size={18} className={catalogType === 'cosa' ? 'text-[#ED164F]' : 'text-gray-400'} />
+                <span className="leading-tight">Cosas</span>
+              </Link>
+              <Link
+                href="/productos?mode=product&tipo=desarrollo"
+                scroll={false}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
+                  catalogType === 'desarrollo'
+                    ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
+                    : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <BriefcaseBusiness size={18} className={catalogType === 'desarrollo' ? 'text-[#ED164F]' : 'text-gray-400'} />
+                <span className="leading-tight">Desarrollos</span>
+              </Link>
+              <Link
+                href="/productos?mode=product"
+                scroll={false}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900"
+              >
+                <LayoutGrid size={18} className="text-gray-400" />
+                <span className="leading-tight">Todo</span>
+              </Link>
+            </div>
+          ) : (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
               href="/productos?mode=product"
@@ -116,6 +155,7 @@ export default function CatalogSidebar({
               </Link>
             ))}
           </div>
+          )
         ) : currentMode === 'combo' ? (
           <div className="rounded-2xl border border-[#4576B9]/15 bg-[#EEF4FC]/50 p-4 space-y-2.5">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#2F5F9F]">
