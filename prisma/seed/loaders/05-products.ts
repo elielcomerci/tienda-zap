@@ -8,7 +8,6 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
       update: {
         name: p.name,
         catalogType: p.catalogType,
-        catalogType: p.catalogType,
         modality: p.modality,
         engine: p.engine,
         whatIs: p.whatIs,
@@ -22,6 +21,7 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
       create: {
         slug: p.slug,
         name: p.name,
+        catalogType: p.catalogType,
         modality: p.modality,
         engine: p.engine,
         whatIs: p.whatIs,
