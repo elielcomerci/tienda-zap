@@ -217,7 +217,7 @@ export default async function ProductsPage({
                       Rubro: {selectedBusinessType.name}
                     </span>
                   )}
-                  {selectedCategory && !isSituationMode && mode !== 'combo' && mode !== 'rubro' && !tipo && (
+                  {selectedCategory && !isSituationMode && mode !== 'rubro' && !tipo && (
                     <span className="rounded-full border border-[#F7638B]/25 bg-[#FEF1F5] px-3 py-1.5 text-xs font-semibold text-[#C2103F]">
                       Categoría: {selectedCategory.name}
                     </span>
