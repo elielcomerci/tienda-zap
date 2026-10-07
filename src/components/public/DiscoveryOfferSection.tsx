@@ -79,7 +79,7 @@ export default function DiscoveryOfferSection({
   }
 
   return (
-    <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] sm:p-7">
+    <section id="recomendacion" className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] sm:p-7">
       <div className="mb-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">Paso 3 · Recomendación</p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto puede servirte</h2>
@@ -134,7 +134,7 @@ export default function DiscoveryOfferSection({
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold text-gray-500">{getProductModalityLabel(product.modality)}</span>
                   <Link
-                    href={`/productos/${product.slug}`}
+                    href={product.modality === 'CONSULTAR' ? (whatsappUrl || '/') : `/productos/${product.slug}`}
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
                   >
                     {actionLabel} <ArrowRight size={15} />
