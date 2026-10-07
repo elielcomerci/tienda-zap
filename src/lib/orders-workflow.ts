@@ -21,7 +21,6 @@ export function revalidateOrderViews(orderId: string) {
 }
 
 function allItemsReadyForProduction(items: Array<{
-  isService?: boolean | null
   designRequested?: boolean | null
   fileObjectKey?: string | null
   fileUrl?: string | null
@@ -36,7 +35,6 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
       id: true,
       items: {
         select: {
-          isService: true,
           designRequested: true,
           fileObjectKey: true,
           fileUrl: true,
@@ -92,7 +90,6 @@ export async function syncOrderStatusAfterArtworkChange(orderId: string) {
       status: true,
       items: {
         select: {
-          isService: true,
           designRequested: true,
           fileObjectKey: true,
           fileUrl: true,
