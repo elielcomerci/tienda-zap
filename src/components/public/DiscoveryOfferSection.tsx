@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { getProductFamilyLabel, getProductModalityLabel, isServiceProduct } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, getProductModalityLabel, isDevelopment } from '@/lib/catalog-domain'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 type OfferProduct = {
@@ -12,6 +12,7 @@ type OfferProduct = {
   whatIs?: string | null
   modality: 'DIRECTO' | 'CONFIGURABLE' | 'CONSULTAR'
   engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
+  catalogType: 'COSA' | 'DESARROLLO'
 }
 
 export default function DiscoveryOfferSection({
@@ -23,7 +24,7 @@ export default function DiscoveryOfferSection({
 }) {
   const offers = products.slice(0, 4)
   const engines = new Set(offers.map((product) => product.engine).filter(Boolean))
-  const includesDevelopment = offers.some((product) => isServiceProduct(product))
+  const includesDevelopment = offers.some((product) => isDevelopment(product))
   const needsZAPReview = offers.length >= 3 && includesDevelopment && engines.size > 1
   const whatsappUrl = buildWhatsappUrl(undefined, `Hola, necesito orientación para resolver: ${needName}.`)
 
