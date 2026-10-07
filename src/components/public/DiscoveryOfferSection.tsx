@@ -91,8 +91,8 @@ export default function DiscoveryOfferSection({
 
       <div className="grid gap-4 md:grid-cols-2">
         {offers.map((product) => {
-          const isDevelopment = isServiceProduct(product)
-          const typeLabel = isDevelopment ? 'Desarrollo' : 'Cosa'
+          const development = isDevelopment(product)
+          const typeLabel = development ? 'Desarrollo' : 'Cosa'
           const explanation =
             product.purpose?.trim() ||
             product.whatIs?.trim() ||
