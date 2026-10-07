@@ -1,4 +1,4 @@
-import { ProductModality, ConfiguratorEngine, ConfiguratorStatus, PackPricingMode } from '@prisma/client';
+import { ProductModality, ConfiguratorEngine, ConfiguratorStatus, PackPricingMode, CatalogType } from '@prisma/client';
 
 export interface AdminSeedData {
   email: string;
@@ -27,6 +27,7 @@ export interface ProductSeedData {
   order: number;
   slug: string;
   name: string;
+  catalogType: CatalogType;
   modality: ProductModality;
   engine: ConfiguratorEngine | null;
   whatIs?: string;
