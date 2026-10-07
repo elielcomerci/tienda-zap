@@ -13,6 +13,7 @@ type RelatedProduct = {
   images: string[]
   active: boolean
   modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+  catalogType: 'COSA' | 'DESARROLLO'
   engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
   variants: Array<{
     price: number
