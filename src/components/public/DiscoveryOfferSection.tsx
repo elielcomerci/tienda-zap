@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { getProductFamilyLabel, getProductModalityLabel, isServiceProduct } from '@/lib/catalog-domain'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 type OfferProduct = {
   id: string
@@ -24,6 +25,7 @@ export default function DiscoveryOfferSection({
   const engines = new Set(offers.map((product) => product.engine).filter(Boolean))
   const includesDevelopment = offers.some((product) => isServiceProduct(product))
   const needsZAPReview = offers.length >= 3 && includesDevelopment && engines.size > 1
+  const whatsappUrl = buildWhatsappUrl(undefined, `Hola, necesito orientación para resolver: ${needName}.`)
 
   if (offers.length === 0) {
     return (
@@ -39,7 +41,7 @@ export default function DiscoveryOfferSection({
           Podemos mirar qué está pasando y decidir con vos dónde tiene sentido intervenir.
         </p>
         <Link
-          href="/contacto"
+          href={whatsappUrl || "/"}
           className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-5 py-3 text-sm font-bold text-white"
         >
           Hablar con ZAP <ArrowRight size={16} />
