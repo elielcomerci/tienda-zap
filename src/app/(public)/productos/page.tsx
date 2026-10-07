@@ -11,7 +11,6 @@ import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import SituationResultExperience from '@/components/public/SituationResultExperience'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
@@ -43,7 +42,7 @@ function getBusinessSituations<T extends { slug: string }>(businessTypeSlug: str
   const rank = new Map(priority.map((slug, index) => [slug, index]))
   return [...situations]
     .sort((a, b) => (rank.get(a.slug) ?? priority.length) - (rank.get(b.slug) ?? priority.length))
-    .slice(0, Math.max(priority.length, 5))
+    .slice(0, priority.length)
 }
 
 
