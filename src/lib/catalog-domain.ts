@@ -27,9 +27,9 @@ export function engineForCatalogFamily(slug?: string) {
 }
 
 export function getProductFamilyLabel(product: ProductDomainIdentity) {
-  if (product.engine) return engineLabels[product.engine]
   if (isDevelopment(product)) return 'Desarrollo ZAP'
   if (isConsultationOnly(product)) return 'Cosa a medida'
+  if (product.engine) return engineLabels[product.engine]
   return 'Producto directo'
 }
 
