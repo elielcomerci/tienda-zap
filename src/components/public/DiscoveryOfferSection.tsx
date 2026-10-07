@@ -135,6 +135,18 @@ export default function DiscoveryOfferSection({
           )
         })}
       </div>
+
+      <div className="mt-6 flex flex-col gap-3 border-t border-gray-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-6 text-gray-600">
+          ¿No estás seguro de cuál tiene más sentido para tu caso? Podemos mirarlo antes de que elijas.
+        </p>
+        <Link
+          href={whatsappUrl || "/"}
+          className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+        >
+          Hablar con ZAP <ArrowRight size={15} />
+        </Link>
+      </div>
     </section>
   )
 }
