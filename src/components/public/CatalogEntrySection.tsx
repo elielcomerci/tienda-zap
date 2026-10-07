@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Box, Code2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { isServiceProduct } from '@/lib/catalog-domain'
 
 interface ProductSnippet {
@@ -38,7 +38,7 @@ export default function CatalogEntrySection({
         <div className="border-t border-gray-900">
           {hasCosas && (
             <Link
-              href="/productos?mode=product"
+              href="/productos?mode=product&tipo=cosa"
               className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
             >
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
@@ -52,7 +52,7 @@ export default function CatalogEntrySection({
 
           {hasDesarrollos && (
             <Link
-              href="/productos?mode=product"
+              href="/productos?mode=product&tipo=desarrollo"
               className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
             >
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
