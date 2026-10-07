@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getProducts } from '@/lib/products'
 import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
@@ -39,11 +40,10 @@ export default async function HomePage() {
     getPublicBusinessTypes(),
   ])
 
-  const salesWhatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
-    ? `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        'Hola! Estoy viendo la tienda y quiero elegir lo mejor para mi negocio.'
-      )}`
-    : null
+  const salesWhatsappUrl = buildWhatsappUrl(
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+    'Hola! Estoy viendo la tienda y quiero contarles qué está pasando en mi negocio.'
+  )
 
   return (
     <div className="bg-white">
@@ -75,14 +75,7 @@ export default async function HomePage() {
               >
                 Hablemos <ArrowRight size={18} />
               </Link>
-            ) : (
-              <Link
-                href="/productos?mode=product"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ED164F] px-8 py-4 text-base font-bold text-white transition-all hover:bg-[#C2103F] active:scale-[0.98]"
-              >
-                Hablemos <ArrowRight size={18} />
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

@@ -190,7 +190,7 @@ export default async function ProductsPage({
             {selectedBusinessType && mode === 'rubro' && !selectedSituation && (
               <section className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-5 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.16)] sm:p-6">
                 <div className="mb-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">Paso 1 · Contexto</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">01 · Contexto</p>
                   <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">¿Qué está pasando en tu negocio?</h2>
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">Elegí la situación que más se parece a la tuya. A partir de ahí afinamos qué necesitás resolver.</p>
                 </div>
