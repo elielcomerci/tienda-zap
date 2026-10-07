@@ -26,13 +26,13 @@ const BUSINESS_CONTEXT: Record<string, string> = {
 }
 
 const BUSINESS_SITUATION_PRIORITY: Record<string, string[]> = {
-  gastronomia: ['estoy-por-abrir', 'quiero-conseguir-mas-pedidos', 'quiero-vender-mas-en-el-local', 'quiero-que-mis-clientes-vuelvan', 'quiero-que-mi-comida-se-vea-mejor'],
-  'moda-showrooms': ['estoy-por-abrir', 'quiero-vender-mas-en-el-local', 'quiero-vender-online', 'quiero-renovar-la-marca-o-el-espacio', 'quiero-que-mi-marca-se-vea-mejor'],
-  inmobiliarias: ['estoy-abriendo-o-renovando-la-inmobiliaria', 'quiero-captar-propiedades', 'quiero-conseguir-mas-consultas', 'quiero-transmitir-mas-confianza', 'quiero-vender-o-alquilar-mas'],
-  'belleza-salud': ['estoy-por-abrir', 'quiero-llenar-la-agenda', 'quiero-que-mis-clientes-vuelvan', 'quiero-que-mi-marca-se-vea-mejor', 'quiero-renovar-la-marca-o-el-espacio'],
-  'comercios-retail': ['estoy-por-abrir', 'quiero-que-me-encuentren', 'quiero-vender-mas', 'quiero-renovar-el-local'],
-  'eventos-experiencias': ['tengo-un-evento', 'quiero-atraer-gente-al-evento-o-stand', 'quiero-generar-contactos'],
-  wellness: ['estoy-por-abrir', 'quiero-conseguir-alumnos', 'quiero-llenar-la-agenda', 'quiero-mejorar-mi-espacio', 'quiero-que-mis-clientes-vuelvan'],
+  gastronomia: ['estoy-por-abrir', 'quiero-conseguir-mas-pedidos', 'quiero-vender-mas-en-el-local', 'quiero-que-mis-clientes-vuelvan', 'quiero-ordenar-mi-negocio'],
+  'moda-showrooms': ['estoy-por-abrir', 'quiero-vender-mas-en-el-local', 'quiero-vender-online', 'quiero-renovar-la-marca-o-el-espacio', 'quiero-ordenar-mi-negocio'],
+  inmobiliarias: ['estoy-abriendo-o-renovando-la-inmobiliaria', 'quiero-captar-propiedades', 'quiero-conseguir-mas-consultas', 'quiero-transmitir-mas-confianza', 'quiero-ordenar-mi-negocio'],
+  'belleza-salud': ['estoy-por-abrir', 'quiero-llenar-la-agenda', 'quiero-que-mis-clientes-vuelvan', 'quiero-que-mi-marca-se-vea-mejor', 'quiero-ordenar-mi-negocio'],
+  'comercios-retail': ['estoy-por-abrir', 'quiero-que-me-encuentren', 'quiero-vender-mas', 'quiero-renovar-el-local', 'quiero-ordenar-mi-negocio'],
+  'eventos-experiencias': ['tengo-un-evento', 'quiero-atraer-gente-al-evento-o-stand', 'quiero-generar-contactos', 'quiero-ordenar-mi-negocio'],
+  wellness: ['estoy-por-abrir', 'quiero-conseguir-alumnos', 'quiero-llenar-la-agenda', 'quiero-mejorar-mi-espacio', 'quiero-ordenar-mi-negocio'],
 }
 
 function getBusinessSituations<T extends { slug: string }>(businessTypeSlug: string | undefined, situations: T[]) {
