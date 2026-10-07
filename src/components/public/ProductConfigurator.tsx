@@ -7,7 +7,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
-import { getProductFamilyLabel, isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
+import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
 
 type ProductWithOptions = {
   id: string
