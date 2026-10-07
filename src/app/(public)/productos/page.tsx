@@ -385,13 +385,13 @@ export default async function ProductsPage({
                                 productId: product.id,
                                 name: product.name,
                                 price: displayPrice ?? 0,
+                                catalogType: product.catalogType,
                                 creditDownPaymentPercent: product.creditDownPaymentPercent,
                                 image: product.images[0] || '',
                                 quantity: 1,
                                 isService: development,
                               }}
                               hasVariants={requiresConfiguration}
-                              isService={development}
                               slug={product.slug}
                               disabled={isConsultationOnlyFlow}
                             />
