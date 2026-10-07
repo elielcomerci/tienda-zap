@@ -5,6 +5,7 @@ export interface CartItem {
   productId: string
   name: string
   price: number
+  catalogType: 'COSA' | 'DESARROLLO'
   creditDownPaymentPercent?: number
   image: string
   quantity: number
