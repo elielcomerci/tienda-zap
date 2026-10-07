@@ -21,6 +21,9 @@ export default function DiscoveryOfferSection({
   needName: string
 }) {
   const offers = products.slice(0, 4)
+  const engines = new Set(offers.map((product) => product.engine).filter(Boolean))
+  const includesDevelopment = offers.some((product) => isServiceProduct(product))
+  const needsZAPReview = offers.length >= 3 && includesDevelopment && engines.size > 1
 
   if (offers.length === 0) {
     return (
@@ -34,6 +37,29 @@ export default function DiscoveryOfferSection({
         <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
           Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, no queremos inventarte una oferta.
           Podemos mirar qué está pasando y decidir con vos dónde tiene sentido intervenir.
+        </p>
+        <Link
+          href="/contacto"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-5 py-3 text-sm font-bold text-white"
+        >
+          Hablar con ZAP <ArrowRight size={16} />
+        </Link>
+      </section>
+    )
+  }
+
+  if (needsZAPReview) {
+    return (
+      <section className="rounded-[28px] border border-[#F7638B]/20 bg-[#fff9fb] p-6 shadow-[0_18px_50px_-42px_rgba(237,22,79,0.18)] sm:p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
+          Paso 3 · Recomendación
+        </p>
+        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
+          Esto conviene mirarlo como un conjunto
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
+          Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, hay varias formas de intervenir y probablemente tengan que trabajar juntas.
+          Antes de hacerte elegir una cosa, podemos mirar el contexto y decirte por dónde tiene más sentido empezar.
         </p>
         <Link
           href="/contacto"
