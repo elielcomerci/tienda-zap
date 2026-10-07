@@ -24,32 +24,62 @@ export default function HomeHero({
   businessTypes: BusinessTypeItem[]
   situations: SituationItem[]
 }) {
-  const [selectedRubro, setSelectedRubro] = useState<string>(
-    () => businessTypes[0]?.slug ?? 'gastronomia'
-  )
-  const [selectedSituacion, setSelectedSituacion] = useState<string>(
-    () => situations[0]?.slug ?? ''
-  )
+  // No asumimos ningún rubro al entrar. La animación solo demuestra las opciones:
+  // el valor real del selector permanece vacío hasta que la persona elige.
+  const [selectedRubro, setSelectedRubro] = useState<string>('')
+  const [selectedSituacion, setSelectedSituacion] = useState<string>('')
+  const [demoRubroIndex, setDemoRubroIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (businessTypes.length === 0) return
+
+    let index = 0
+    let interval: ReturnType<typeof setInterval> | undefined
+
+    const start = setTimeout(() => {
+      setDemoRubroIndex(0)
+
+      interval = setInterval(() => {
+        index += 1
+
+        if (index >= businessTypes.length) {
+          if (interval) clearInterval(interval)
+          setDemoRubroIndex(null)
+          return
+        }
+
+        setDemoRubroIndex(index)
+      }, 700)
+    }, 350)
+
+    return () => {
+      clearTimeout(start)
+      if (interval) clearInterval(interval)
+    }
+  }, [businessTypes])
   const [filteredSituations, setFilteredSituations] = useState<SituationItem[]>(situations)
   const [isRubroOpen, setIsRubroOpen] = useState(false)
   const [isSituacionOpen, setIsSituacionOpen] = useState(false)
 
   // Re-fetch situations filtered by rubro whenever rubro changes
   useEffect(() => {
-    if (!selectedRubro) return
+    if (!selectedRubro) {
+      setFilteredSituations(situations)
+      setSelectedSituacion('')
+      return
+    }
+
+    setSelectedSituacion('')
+
     fetch(`/api/situaciones?rubro=${selectedRubro}`)
       .then((r) => r.json())
       .then((data: SituationItem[]) => {
         setFilteredSituations(data)
-        // Reset to first valid situation for this rubro
-        if (data.length > 0) {
-          setSelectedSituacion(data[0].slug)
-        }
       })
       .catch(() => {
         // On error keep current situations
       })
-  }, [selectedRubro])
+  }, [selectedRubro, situations])
 
   const heroRef = useRef<HTMLDivElement>(null)
   const situacionBtnRef = useRef<HTMLButtonElement>(null)
@@ -92,14 +122,21 @@ export default function HomeHero({
     btn.style.whiteSpace = 'nowrap'
   }, [selectedSituacion])
 
-  const currentRubro = businessTypes.find((b) => b.slug === selectedRubro) || {
-    name: 'gastronomía',
-    slug: 'gastronomia',
-  }
-  const currentSituacion = filteredSituations.find((s) => s.slug === selectedSituacion) ||
-    filteredSituations[0] || { name: 'estoy por abrir', slug: 'estoy-por-abrir' }
+  const currentRubro = businessTypes.find((b) => b.slug === selectedRubro)
+  const currentSituacion = filteredSituations.find((s) => s.slug === selectedSituacion)
 
-  // Format names to lowercase without trailing punctuation for inline sentence flow
+  const demoRubro = demoRubroIndex !== null ? businessTypes[demoRubroIndex] : null
+
+  // El texto animado es solo una demostración. Nunca modifica selectedRubro.
+  const visibleRubroName = selectedRubro
+    ? currentRubro?.name ?? ''
+    : demoRubro?.name ?? 'elegí tu rubro'
+
+  const visibleSituacionName = selectedSituacion
+    ? currentSituacion?.name ?? ''
+    : 'qué está pasando'
+
+  // Format names to lowercase for inline sentence flow
   const formatRubroName = (name: string) => name.toLowerCase()
   const formatSituacionName = (name: string) => name.toLowerCase()
 
@@ -126,7 +163,12 @@ export default function HomeHero({
                   className="border-b-[4px] border-[#ED164F] pb-0.5 inline-flex items-center gap-1.5 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity"
                   aria-expanded={isRubroOpen}
                 >
-                  <span>{formatRubroName(currentRubro.name)}</span>
+                  <span
+                    key={visibleRubroName}
+                    className="inline-block animate-in fade-in duration-300"
+                  >
+                    {formatRubroName(visibleRubroName)}
+                  </span>
                   <ChevronDown
                     size={22}
                     className={`transition-transform duration-200 text-gray-950 ${
@@ -171,13 +213,15 @@ export default function HomeHero({
                   ref={situacionBtnRef}
                   type="button"
                   onClick={() => {
+                    if (!selectedRubro) return
                     setIsSituacionOpen(!isSituacionOpen)
                     setIsRubroOpen(false)
                   }}
-                  className="border-b-[4px] border-[#ED164F] pb-0.5 inline-flex items-center gap-1.5 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap"
+                  disabled={!selectedRubro}
+                  className="border-b-[4px] border-[#ED164F] pb-0.5 inline-flex items-center gap-1.5 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-70"
                   aria-expanded={isSituacionOpen}
                 >
-                  <span>{formatSituacionName(currentSituacion.name)}</span>
+                  <span>{formatSituacionName(visibleSituacionName)}</span>
                   <ChevronDown
                     size={22}
                     className={`transition-transform duration-200 text-gray-950 ${
@@ -223,8 +267,8 @@ export default function HomeHero({
           <div className="sm:hidden space-y-4">
             <h1 className="text-3xl font-black tracking-tight text-gray-950 leading-tight">
               Tengo un negocio de{' '}
-              <span className="text-[#ED164F]">{formatRubroName(currentRubro.name)}</span> y{' '}
-              <span className="text-[#ED164F]">{formatSituacionName(currentSituacion.name)}</span>.
+              <span className="text-[#ED164F]">{formatRubroName(visibleRubroName)}</span> y{' '}
+              <span className="text-[#ED164F]">{formatSituacionName(visibleSituacionName)}</span>.
             </h1>
             <div className="grid gap-3 pt-2">
               <div className="space-y-1">
@@ -236,6 +280,9 @@ export default function HomeHero({
                   onChange={(e) => setSelectedRubro(e.target.value)}
                   className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none"
                 >
+                  <option value="" disabled>
+                    Elegí tu rubro
+                  </option>
                   {businessTypes.map((bt) => (
                     <option key={bt.id} value={bt.slug}>
                       {bt.name}
@@ -250,7 +297,8 @@ export default function HomeHero({
                 <select
                   value={selectedSituacion}
                   onChange={(e) => setSelectedSituacion(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none"
+                  disabled={!selectedRubro}
+                  className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   {filteredSituations.map((sit) => (
                     <option key={sit.id} value={sit.slug}>
@@ -271,7 +319,12 @@ export default function HomeHero({
           <div className="mt-8 flex flex-wrap items-center gap-6">
             <Link
               href={`/productos?mode=situation&situacion=${selectedSituacion}&rubro=${selectedRubro}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all hover:bg-[#C2103F] active:scale-[0.98] shadow-sm"
+              aria-disabled={!selectedRubro || !selectedSituacion}
+              className={`inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all shadow-sm ${
+                selectedRubro && selectedSituacion
+                  ? 'hover:bg-[#C2103F] active:scale-[0.98]'
+                  : 'pointer-events-none opacity-40'
+              }`}
             >
               Ver qué me conviene <ArrowRight size={18} />
             </Link>
