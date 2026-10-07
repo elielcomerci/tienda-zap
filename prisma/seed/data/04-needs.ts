@@ -262,11 +262,6 @@ export const needsData: NeedSeedData[] = [
     "order": 535
   },
   {
-    "slug": "necesito-dejar-un-punto-de-contacto" ,
-    "name": "Necesito que puedan volver a encontrarme" ,
-    "order": 530
-  },
-  {
     "slug": "necesito-preparar-el-espacio" ,
     "name": "Necesito preparar el espacio" ,
     "order": 550
