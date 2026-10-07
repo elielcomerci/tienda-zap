@@ -178,7 +178,7 @@ export default async function ProductsPage({
                         : 'Todos los Combos'
                       : mode === 'rubro'
                         ? selectedBusinessType?.name || 'Todos los rubros'
-                        : selectedCategory?.name || 'Todos'}
+                        : selectedCatalogTypeLabel || selectedCategory?.name || 'Todos'}
                 </p>
               </div>
               {q?.trim() && (
