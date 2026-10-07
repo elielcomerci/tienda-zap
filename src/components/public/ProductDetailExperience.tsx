@@ -12,7 +12,7 @@ import {
   getApparelMockupConfig,
   hasApparelMockupImages,
 } from '@/lib/apparel-mockup'
-import { getProductFamilyLabel, getProductModalityLabel } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, getProductModalityLabel, isServiceProduct } from '@/lib/catalog-domain'
 
 function normalize(value?: string | null) {
   return (value || '')
@@ -65,6 +65,7 @@ export default function ProductDetailExperience({
     ? apparelMockup
     : fallbackApparelMockup
   const showApparelMockup = hasApparelMockupImages(activeApparelMockup)
+  const isDevelopment = isServiceProduct(product)
   const editorialIncludes = Array.isArray(product.includes) ? product.includes : []
   const editorialConfigurable = Array.isArray(product.configurable) ? product.configurable : []
   const hasEditorialDetail = Boolean(
@@ -171,7 +172,7 @@ export default function ProductDetailExperience({
                 Modalidad
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {product.modality === 'CONSULTAR' ? 'Hablar con ZAP' : product.modality === 'CONFIGURABLE' ? 'Definir configuración' : 'Agregar al carrito'}
+                {isDevelopment ? 'Hablar con ZAP' : product.modality === 'CONFIGURABLE' ? 'Definir configuración' : 'Agregar al carrito'}
               </dd>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -179,7 +180,7 @@ export default function ProductDetailExperience({
                 Siguiente paso
               </dt>
               <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {product.modality === 'CONSULTAR' ? 'Contanos tu caso' : 'Elegir y avanzar'}
+                {isDevelopment ? 'Contanos tu caso' : 'Elegir y avanzar'}
               </dd>
             </div>
           </dl>
