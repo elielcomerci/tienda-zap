@@ -12,14 +12,7 @@ type BusinessType = {
   id: string
   name: string
   slug: string
-  categories: { id: string; name: string; slug: string }[]
   _count: { users: number }
-}
-
-type Category = {
-  id: string
-  name: string
-  slug: string
 }
 
 export default function RubrosClient({
@@ -33,28 +26,18 @@ export default function RubrosClient({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
-
   const resetForm = () => {
     setShowForm(false)
     setEditingId(null)
     setName('')
     setSlug('')
-    setSelectedCategoryIds([])
   }
 
   const startEdit = (bt: BusinessType) => {
     setEditingId(bt.id)
     setName(bt.name)
     setSlug(bt.slug)
-    setSelectedCategoryIds(bt.categories.map((c) => c.id))
     setShowForm(true)
-  }
-
-  const toggleCategory = (catId: string) => {
-    setSelectedCategoryIds((prev) =>
-      prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId]
-    )
   }
 
   const handleNameChange = (value: string) => {
@@ -121,36 +104,6 @@ export default function RubrosClient({
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                 />
-              </div>
-            </div>
-
-            <div>
-              <label className="label">Categorías asociadas</label>
-              <p className="mb-2 text-xs text-gray-500">
-                Los usuarios de este rubro verán priorizados los productos de estas categorías en la
-                página principal.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => {
-                  const isSelected = selectedCategoryIds.includes(cat.id)
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => toggleCategory(cat.id)}
-                      className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-all ${
-                        isSelected
-                          ? 'border-[#ED164F] bg-[#FEF1F5] text-[#C2103F]'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  )
-                })}
-                {selectedCategoryIds.map((id) => (
-                  <input key={id} type="hidden" name="categoryIds" value={id} />
-                ))}
               </div>
             </div>
 
@@ -224,24 +177,11 @@ export default function RubrosClient({
               </div>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {bt.categories.length > 0 ? (
-                  bt.categories.map((cat) => (
-                    <span
-                      key={cat.id}
-                      className="rounded-full bg-[#FEF1F5] px-2.5 py-0.5 text-[11px] font-semibold text-[#C2103F]"
-                    >
-                      {cat.name}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-gray-400 italic">Sin categorías</span>
-                )}
+                <span className="text-xs text-gray-400">
+                {bt._count.users} usuario{bt._count.users !== 1 ? 's' : ''} registrado{bt._count.users !== 1 ? 's' : ''}
+              </span>
               </div>
 
-              <p className="mt-3 text-xs text-gray-400">
-                {bt._count.users} usuario{bt._count.users !== 1 ? 's' : ''} registrado
-                {bt._count.users !== 1 ? 's' : ''}
-              </p>
             </div>
           ))}
         </div>
