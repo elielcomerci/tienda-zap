@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pri
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
 import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
+import ProductContextForm from '@/components/public/ProductContextForm'
 
 type ProductWithOptions = {
   id: string
@@ -500,6 +501,20 @@ export default function ProductConfigurator({
 
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
+  }
+
+  if (isContactOnly) {
+    return (
+      <ProductContextForm
+        product={{
+          id: product.id,
+          slug: product.slug,
+          name: product.name,
+          catalogType: product.catalogType,
+          modality: product.modality,
+        }}
+      />
+    )
   }
 
   if (quoterConfig) {

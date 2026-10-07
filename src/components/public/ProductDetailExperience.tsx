@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import ApparelMockupPreview, {
@@ -160,33 +160,7 @@ export default function ProductDetailExperience({
             </div>
           )}
 
-          <dl className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                Tipo
-              </dt>
-              <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {getProductModalityLabel(product.modality)}
-              </dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                Modalidad
-              </dt>
-              <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {requiresConversation ? 'Hablar con ZAP' : product.modality === 'CONFIGURABLE' ? 'Definir configuración' : 'Agregar al carrito'}
-              </dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                Siguiente paso
-              </dt>
-              <dd className="mt-2 text-sm font-semibold text-gray-900">
-                {requiresConversation ? 'Contanos tu caso' : 'Elegir y avanzar'}
-              </dd>
-            </div>
-          </dl>
-        </section>
+
 
         <ProductConfigurator
           product={product}
