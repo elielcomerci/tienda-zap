@@ -13,7 +13,7 @@ import NeedsSection from '@/components/public/NeedsSection'
 import DiscoveryAdjacentSection from '@/components/public/DiscoveryAdjacentSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
@@ -319,7 +319,8 @@ export default async function ProductsPage({
                   const requiresConfiguration = product.modality === 'CONFIGURABLE' || hasVariants || Boolean(product.quoterConfig)
                   const displayPrice = getProductDisplayPrice(product)
                   const isPurchasable = displayPrice !== null && product.modality === 'DIRECTO'
-                  const isConsultationOnly = product.modality === 'CONSULTAR' || (!requiresConfiguration && !isPurchasable)
+                  const requiresConversation = isDevelopment(product) || isConsultationOnly(product)
+                  const isConsultationOnlyFlow = requiresConversation || (!requiresConfiguration && !isPurchasable)
 
                   return (
                     <article
@@ -392,7 +393,7 @@ export default async function ProductsPage({
                               hasVariants={requiresConfiguration}
                               isService={development}
                               slug={product.slug}
-                              disabled={isConsultationOnly}
+                              disabled={isConsultationOnlyFlow}
                             />
                           </div>
                         </div>
