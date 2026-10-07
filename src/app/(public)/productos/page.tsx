@@ -132,7 +132,7 @@ export default async function ProductsPage({
                         ? 'Lo que construimos para resolver algo que necesita contexto, trabajo a medida o una intervención que no se compra como una cosa.'
                         : tipo === 'cosa'
                           ? 'Lo que producimos y podés elegir, configurar o comprar directamente para tu negocio.'
-                          : 'Para cuando ya sabés qué necesitás: cosas que podés elegir, configurar o comprar para tu negocio.'}
+                          : 'Para cuando ya sabés qué necesitás: cosas que podés elegir, configurar o comprar, o desarrollos que podés conocer.'}
               </p>
             </div>
 
