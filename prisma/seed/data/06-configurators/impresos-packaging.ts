@@ -149,7 +149,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
             },
           },
           ilustracion_300g: {
-            note: 'Tarjetas personales / postales — Papel Ilustración 300g. La fuente no especifica una medida única; se conserva como matriz de costo digital sin inventar formato.',
+            note: 'Tarjetas personales / postales — Papel Ilustración 300g. Cuando la fuente no indica medida, se interpreta como formato estándar 9x5 cm.',
             quantities: {
               '100': {
                 '4_0': { sin_laminar: 13031, laca_uv: 14374, laminado_brillo: 14703, laminado_mate: 14703 },
