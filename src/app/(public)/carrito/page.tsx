@@ -262,7 +262,7 @@ export default function CartPage() {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                              {item.isService ? 'Servicio' : 'Producción'}
+                              {item.catalogType === 'DESARROLLO' ? 'Desarrollo' : 'Producción'}
                             </span>
                           </div>
 
