@@ -107,6 +107,13 @@ export default function DiscoveryOfferSection({
             product.whatIs?.trim() ||
             product.description?.trim() ||
             'Una forma concreta de avanzar sobre esta necesidad.'
+          const actionLabel = development
+            ? 'Conocer desarrollo'
+            : product.modality === 'CONFIGURABLE'
+              ? 'Configurar'
+              : product.modality === 'CONSULTAR'
+                ? 'Hablar con ZAP'
+                : 'Ver producto'
 
           return (
             <article key={product.id} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-5">
@@ -130,7 +137,7 @@ export default function DiscoveryOfferSection({
                     href={`/productos/${product.slug}`}
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
                   >
-                    Ver más <ArrowRight size={15} />
+                    {actionLabel} <ArrowRight size={15} />
                   </Link>
                 </div>
               </div>
