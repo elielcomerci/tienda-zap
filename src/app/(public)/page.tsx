@@ -32,8 +32,9 @@ export default async function HomePage() {
     }
   }
 
-  const [allProducts, situations, businessTypes] = await Promise.all([
-    getProducts(undefined, undefined, { take: 20 }),
+  const [cosas, desarrollos, situations, businessTypes] = await Promise.all([
+    getProducts(undefined, undefined, { take: 12, catalogType: 'cosa' }),
+    getProducts(undefined, undefined, { take: 12, catalogType: 'desarrollo' }),
     getPublicSituations(),
     getPublicBusinessTypes(),
   ])
@@ -51,7 +52,7 @@ export default async function HomePage() {
 
       {/* ── 01. PACKS ──────────────────────────────────────────────── */}
       {/* ── 02. COSAS / DESARROLLOS ────────────────────────────────── */}
-      <CatalogEntrySection products={allProducts} />
+      <CatalogEntrySection products={[...cosas, ...desarrollos]} />
 
       {/* ── 5. CIERRE ─────────────────────────────────────────────── */}
       <section className="bg-black text-white">
