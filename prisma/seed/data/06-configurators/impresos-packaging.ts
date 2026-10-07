@@ -232,6 +232,37 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'ProductQuoterConfig',
+    // Costo real de proveedor: offset 4/4, producto terminado, empaquetado y con caja.
+    // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
+    providerFinishedCostMatrix: {
+      source: 'PROMO_DIRECTA_OFFSET',
+      currency: 'ARS',
+      taxIncluded: false,
+      paymentCondition: 'PAGO_ANTICIPADO',
+      delivery: 'NORMAL_5_7_DIAS',
+      includes: ['IMPRESION_OFFSET_4_4', 'TERMINACION', 'EMPAQUETADO', 'CAJA'],
+      validity: 'JUNIO_JULIO_2026',
+      matrix: {
+        obra_80g: {
+          '10x15': { '1000': 23000, '2500': 46000, '5000': 50000 },
+          '15x20': { '1000': 46000, '2500': 92000, '5000': 100000 },
+          '20x30': { '1000': 92000, '2500': 184000, '5000': 200000 },
+          '30x40': { '1000': 184000, '2500': 368000, '5000': 400000 },
+        },
+        ilustracion_115g: {
+          '10x15': { '1000': 25000, '2500': 50000, '5000': 70000 },
+          '15x20': { '1000': 50000, '2500': 100000, '5000': 140000 },
+          '20x30': { '1000': 100000, '2500': 200000, '5000': 280000 },
+          '30x40': { '1000': 200000, '2500': 400000, '5000': 560000 },
+        },
+        ilustracion_150g: {
+          '10x15': { '1000': 32000, '2500': 64000, '5000': 85000 },
+          '15x20': { '1000': 64000, '2500': 128000, '5000': 170000 },
+          '20x30': { '1000': 128000, '2500': 256000, '5000': 340000 },
+          '30x40': { '1000': 256000, '2500': 512000, '5000': 680000 },
+        },
+      },
+    },
     adapter: {
       matrixFormatMapping: {
         plano: {
