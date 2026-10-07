@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, Search } from 'lucide-react'
 import { getProducts } from '@/lib/products'
 import { getPublicCategories } from '@/lib/categories'
@@ -12,8 +13,6 @@ import NeedsSection from '@/components/public/NeedsSection'
 import DiscoveryAdjacentSection from '@/components/public/DiscoveryAdjacentSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
 import { getProductFamilyLabel, isServiceProduct } from '@/lib/catalog-domain'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
@@ -63,7 +62,15 @@ export default async function ProductsPage({
     tipo?: 'cosa' | 'desarrollo'
   }>
 }) {
-  const { cat, q, mode, intent, situacion, necesidad, rubro, tipo } = await searchParams
+  const { cat, q, mode: requestedMode, intent, situacion, necesidad, rubro, tipo } = await searchParams
+
+  // Legacy public entry: Packs/Combos no longer exist as a public layer.
+  // Keep old links working by sending them into the real Solutions discovery.
+  if (requestedMode === 'combo') {
+    redirect('/productos?mode=rubro')
+  }
+
+  const mode = requestedMode
   const isSituationMode = mode === 'objective' || mode === 'situation'
   const situationSlug = situacion || intent
   
@@ -74,26 +81,6 @@ export default async function ProductsPage({
   ])
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
   const businessSituations = getBusinessSituations(rubro, situations)
-  const session = await auth()
-  let businessTypeId: string | null = null
-  let businessTypeName: string | null = null
-
-  if (mode === 'combo' && !selectedBusinessType && session?.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        businessType: {
-          select: { id: true, name: true },
-        },
-      },
-    })
-
-    if (user?.businessType) {
-      businessTypeId = user.businessType.id
-      businessTypeName = user.businessType.name
-    }
-  }
-
   if (selectedBusinessType) {
     businessTypeId = selectedBusinessType.id
     businessTypeName = selectedBusinessType.name
