@@ -227,28 +227,10 @@ export default async function ProductsPage({
                 <IntentionHero intention={selectedSituation} />
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} selectedNeedSlug={necesidad} />
                 {selectedNeed && (
-                  <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
-                      Paso 3 · Oferta
-                    </p>
-                    <h2 className="mt-2 text-xl font-black text-gray-950">
-                      Esto puede servirte
-                    </h2>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">
-                      La necesidad queda como contexto. A partir de acá, ZAP decide qué tiene sentido mostrar.
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700">
-                        {selectedNeed.name}
-                      </span>
-                      <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700">
-                        {products.length} {products.length === 1 ? 'oferta' : 'ofertas'}
-                      </span>
-                    </div>
-                    <p className="mt-4 text-xs text-gray-500">
-                      Próximo paso disponible: {DISCOVERY_RESULT_NEXT_STEPS.COSA}.
-                    </p>
-                  </div>
+                  <DiscoveryOfferSection
+                    products={products}
+                    needName={selectedNeed.name}
+                  />
                 )}
               </>
             )}
