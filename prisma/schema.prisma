@@ -238,6 +238,11 @@ model Need {
   @@index([active, order])
 }
 
+enum CatalogType {
+  COSA
+  DESARROLLO
+}
+
 model Product {
   id                       String              @id @default(cuid())
   name                     String
@@ -245,6 +250,7 @@ model Product {
   description              String?
   price                    Float               @default(0)
   priceFrom                Float?
+  catalogType              CatalogType          @default(COSA)
   modality                 ProductModality
   engine                   ConfiguratorEngine?
   images                   String[]            @default([])
@@ -275,6 +281,7 @@ model Product {
   packItems            PackItem[]
   consultRequests      ConsultRequest[]
 
+  @@index([catalogType, active])
   @@index([modality, active])
   @@index([engine])
 }
