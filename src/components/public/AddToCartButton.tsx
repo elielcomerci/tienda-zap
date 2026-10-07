@@ -10,7 +10,6 @@ export default function AddToCartButton({
   hasVariants,
   slug,
   disabled = false,
-  isService = false,
   consultUrl,
   consultLabel = 'Consultar',
 }: {
@@ -18,7 +17,6 @@ export default function AddToCartButton({
   hasVariants?: boolean
   slug?: string
   disabled?: boolean
-  isService?: boolean
   consultUrl?: string | null
   consultLabel?: string
 }) {
@@ -33,7 +31,7 @@ export default function AddToCartButton({
   }
 
   // 1. Desarrollo -> "Ver desarrollo"
-  if ((isService || product.isService) && slug) {
+  if (product.catalogType === 'DESARROLLO' && slug) {
     return (
       <Link
         href={`/productos/${slug}`}
