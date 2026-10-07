@@ -184,17 +184,17 @@ export default function PublicHeader({
                 </div>
               </li>
 
-              {/* Desktop link: Packs */}
+              {/* Desktop link: Soluciones */}
               <li className="h-full flex items-center">
                 <Link
-                  href="/productos?mode=combo"
+                  href="/productos?mode=rubro"
                   className={`text-sm font-semibold transition-colors ${
-                    isLinkActive('/productos?mode=combo')
+                    searchParams.get('mode') === 'rubro'
                       ? 'text-[#ED164F]'
                       : 'text-gray-900 hover:text-[#ED164F]'
                   }`}
                 >
-                  Packs
+                  Soluciones
                 </Link>
               </li>
 
@@ -437,14 +437,14 @@ export default function PublicHeader({
               </div>
             </li>
 
-            {/* Packs */}
+            {/* Soluciones */}
             <li>
               <Link
-                href="/productos?mode=combo"
+                href="/productos?mode=rubro"
                 onClick={() => setMenuOpen(false)}
                 className="block text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
               >
-                Packs
+                Soluciones
               </Link>
             </li>
 
