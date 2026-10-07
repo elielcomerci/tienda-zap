@@ -43,6 +43,12 @@ export async function POST(req: NextRequest) {
             productId: true,
             quantity: true,
             unitPrice: true,
+            product: {
+              select: {
+                catalogType: true,
+                modality: true,
+              },
+            },
           },
         },
         zapCreditPlan: {
