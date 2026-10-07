@@ -33,8 +33,8 @@ export default async function HomePage() {
   }
 
   const [cosas, desarrollos, situations, businessTypes] = await Promise.all([
-    getProducts(undefined, undefined, { take: 12, catalogType: 'cosa' }),
-    getProducts(undefined, undefined, { take: 12, catalogType: 'desarrollo' }),
+    getProducts(undefined, undefined, { take: 12, catalogType: 'COSA' }),
+    getProducts(undefined, undefined, { take: 12, catalogType: 'DESARROLLO' }),
     getPublicSituations(),
     getPublicBusinessTypes(),
   ])
