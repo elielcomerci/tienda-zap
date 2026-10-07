@@ -723,8 +723,8 @@ export default function ProductConfigurator({
                 </>
               ) : (
                 <>
-                  <p className="mt-3 text-3xl font-black text-[#F7638B]">No disponible</p>
-                  <p className="mt-2 text-sm text-gray-300">Sin pedido online por ahora.</p>
+                  <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p>
+                  <p className="mt-2 text-sm text-gray-300">Este producto se define con ZAP antes de avanzar.</p>
                 </>
               )}
             </div>
