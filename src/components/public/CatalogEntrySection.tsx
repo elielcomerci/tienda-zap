@@ -23,7 +23,6 @@ export default function CatalogEntrySection({
   const hasCosas = products.some((p) => !isServiceProduct(p))
   const hasDesarrollos = products.some((p) => isServiceProduct(p))
 
-  if (!hasCosas && !hasDesarrollos) return null
 
   return (
     <section className="border-t border-gray-200 bg-white">
@@ -31,11 +30,23 @@ export default function CatalogEntrySection({
         <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-gray-950 flex items-baseline">
             <span className="text-gray-400 font-bold mr-3 text-lg sm:text-xl lg:text-2xl">02</span>
-            ¿Ya sabés qué buscás?
+            ¿Cómo querés avanzar?
           </h2>
         </div>
 
         <div className="border-t border-gray-900">
+          <Link
+            href="/productos?mode=rubro"
+            className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
+          >
+            <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
+              Soluciones
+            </span>
+            <span className="text-base sm:text-lg font-medium text-gray-600 group-hover:text-[#ED164F] flex items-center gap-2 transition-colors">
+              Empezá por tu negocio <ArrowRight size={18} />
+            </span>
+          </Link>
+
           {hasCosas && (
             <Link
               href="/productos?mode=product&tipo=cosa"
