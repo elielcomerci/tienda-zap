@@ -28,7 +28,7 @@ export default async function PublicLayout({ children }: { children: React.React
         categories={categories}
         intentions={intentions}
       />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pt-[70px]">{children}</main>
       <Footer />
     </div>
   )
