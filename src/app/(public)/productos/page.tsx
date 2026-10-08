@@ -419,6 +419,7 @@ export default async function ProductsPage({
                               }}
                               hasVariants={requiresConfiguration}
                               slug={product.slug}
+                              productHref={buildProductUrl(product.slug, explorationContext)}
                               disabled={isConsultationOnlyFlow}
                             />
                           </div>
