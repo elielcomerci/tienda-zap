@@ -18,5 +18,10 @@ export async function loadSituations(prisma: PrismaClient): Promise<void> {
     });
   }
 
+  const expectedSlugs = situationsData.map((sit) => sit.slug);
+  await prisma.situation.deleteMany({
+    where: { slug: { notIn: expectedSlugs } },
+  });
+
   console.log(`[SEED] ${situationsData.length} Situations persistidas.`);
 }
