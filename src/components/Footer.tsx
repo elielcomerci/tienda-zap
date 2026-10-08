@@ -12,6 +12,11 @@ export default function Footer() {
     return (
       <footer className="bg-black py-6 border-t border-white/10 text-gray-500 text-xs text-center">
         <div className="container mx-auto px-4">
+          <p className="mb-2 flex items-center justify-center gap-2 text-xs font-medium text-gray-300">
+            <span>Hecho con</span>
+            <Heart className="h-4 w-4 fill-[#ED164F] text-[#ED164F]" />
+            <span>en Parque Leloir</span>
+          </p>
           <p>© {new Date().getFullYear()} ZAP Tienda · Todos los derechos reservados.</p>
         </div>
       </footer>
