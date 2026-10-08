@@ -4,7 +4,6 @@ import { presenciaFisicaConfigurators } from '../data/06-configurators/presencia
 import { textilConfigurators } from '../data/06-configurators/textil';
 import { digitalConfigurators } from '../data/06-configurators/digital';
 import { campanasConfigurators } from '../data/06-configurators/campanas';
-import { draftConfiguratorPlaceholders } from '../data/06-configurators/draft-placeholders';
 
 export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   const allConfigs = [
@@ -13,7 +12,6 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     ...textilConfigurators,
     ...digitalConfigurators,
     ...campanasConfigurators,
-    ...draftConfiguratorPlaceholders,
   ];
 
   const products = await prisma.product.findMany({
@@ -33,7 +31,7 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
 
   const resolvedKeys = new Set(
     resolvedConfigs.map(({ cfg }) => cfg.productSlug + '|' + cfg.schemaVersion)
-  )
+  );
 
   await prisma.$transaction(async (tx) => {
     for (const { cfg, productId } of resolvedConfigs) {
@@ -64,28 +62,27 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     const activeProducts = await tx.product.findMany({
       where: { active: true },
       select: { id: true, slug: true },
-    })
+    });
 
-    const activeProductSlugs = new Map(activeProducts.map((product) => [product.id, product.slug]))
+    const activeProductSlugs = new Map(activeProducts.map((product) => [product.id, product.slug]));
     const staleVersions = await tx.configuratorVersion.findMany({
       where: { productId: { in: activeProducts.map((product) => product.id) } },
       select: { id: true, productId: true, schemaVersion: true },
-    })
+    });
 
     const staleIds = staleVersions
       .filter((version) => {
-        const slug = activeProductSlugs.get(version.productId)
-        return !slug || !resolvedKeys.has(slug + '|' + version.schemaVersion)
+        const slug = activeProductSlugs.get(version.productId);
+        return !slug || !resolvedKeys.has(slug + '|' + version.schemaVersion);
       })
-      .map((version) => version.id)
+      .map((version) => version.id);
 
     if (staleIds.length > 0) {
       await tx.configuratorVersion.updateMany({
         where: { id: { in: staleIds } },
         data: { status: 'ARCHIVED' },
-      })
+      });
     }
-  
   }, { maxWait: 10000, timeout: 15000 });
 
   console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (schema 1.0) persistidas; versiones obsoletas archivadas.`);
