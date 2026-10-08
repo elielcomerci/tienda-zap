@@ -8,6 +8,7 @@ export async function loadNeeds(prisma: PrismaClient): Promise<void> {
       update: {
         name: need.name,
         order: need.order,
+        active: true,
       },
       create: {
         slug: need.slug,
@@ -19,8 +20,9 @@ export async function loadNeeds(prisma: PrismaClient): Promise<void> {
   }
 
   const expectedSlugs = needsData.map((need) => need.slug);
-  await prisma.need.deleteMany({
-    where: { slug: { notIn: expectedSlugs } },
+  await prisma.need.updateMany({
+    where: { slug: { notIn: expectedSlugs }, active: true },
+    data: { active: false },
   });
 
   console.log(`[SEED] ${needsData.length} Needs persistidas.`);
