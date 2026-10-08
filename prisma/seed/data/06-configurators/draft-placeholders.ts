@@ -1,6 +1,6 @@
-import { ConfiguratorVersionSeedData } from '../types';
+// Contractual placeholders only: no options or pricing are invented, and DRAFT versions never render in the public configurator.
 
-// Contractual placeholders only: no options or pricing are invented, and DRAFT versions never render in the public configurator.\nexport const draftConfiguratorPlaceholders: ConfiguratorVersionSeedData[] = [
+export const draftConfiguratorPlaceholders = [
   'fajas-envoltorios',
   'bolsas-contenedores',
   'menus-cartas',
@@ -12,6 +12,6 @@ import { ConfiguratorVersionSeedData } from '../types';
 ].map((productSlug) => ({
   productSlug,
   schemaVersion: '1.0',
-  status: 'DRAFT',
+  status: 'DRAFT' as const,
   schema: {},
 }));
