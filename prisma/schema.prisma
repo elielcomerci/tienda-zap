@@ -1257,6 +1257,36 @@ model FinishingTier {
   @@map("finishing_tiers")
 }
 
+model ProductQuoteCache {
+  id                 String   @id @default(cuid())
+  cacheKey           String
+  pricingFingerprint String
+  engineVersion      String
+  sourceType         String
+  status             String   @default("CALCULATED")
+  unitPrice          Float
+  totalPrice         Float
+  totalCost          Float
+  materialCost       Float?
+  printingCost       Float?
+  processCost        Float?
+  finishingCost      Float?
+  wasteCost          Float?
+  productionCost     Float?
+  marginPercent      Float?
+  marginAmount       Float?
+  currency           String   @default("ARS")
+  taxIncluded        Boolean  @default(false)
+  selectedOptions    Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([cacheKey, pricingFingerprint])
+  @@index([cacheKey])
+  @@index([pricingFingerprint])
+  @@map("product_quote_cache")
+}
+
 model ProductQuoterConfig {
   id               String                        @id @default(cuid())
   productId        String                        @unique
