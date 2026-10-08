@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { productRelationsData } from '../data/10-product-relations';
 
 export async function loadProductRelations(prisma: PrismaClient): Promise<void> {
-  const products = await prisma.product.findMany({ select: { id: true, slug: true } });
+  const products = await prisma.product.findMany({ where: { active: true }, select: { id: true, slug: true } });
   const productIds = new Map(products.map((product) => [product.slug, product.id]));
 
   // Validar las relaciones antes de eliminar las actuales.
