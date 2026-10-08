@@ -15,6 +15,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         default: '9x5',
         options: [
           { id: '9x5', label: '9×5 cm (Estándar)' },
+          { id: '9x10_plegada', label: '9×10 cm plegada (con hendido)' },
         ],
       },
       material: {
@@ -61,7 +62,10 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         type: 'multiselect',
         required: false,
         default: [],
-        options: [],
+        options: [
+          { id: 'puntas_redondeadas', label: 'Puntas redondeadas' },
+          { id: 'perforacion', label: 'Perforación / ojalillo' },
+        ],
       },
       quantity: {
         label: 'Cantidad',
