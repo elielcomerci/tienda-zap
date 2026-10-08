@@ -71,8 +71,8 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   const expectedProductSlugs = new Set(productsData.map((p) => p.slug));
   const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
 
-  if (dbProducts.length !== 22) {
-    errors.push(`[PRODUCTS COUNT] Esperados 22, encontrados en DB: ${dbProducts.length}`);
+  if (dbProducts.length !== productsData.length) {
+    errors.push(`[PRODUCTS COUNT] Esperados ${productsData.length}, encontrados en DB: ${dbProducts.length}`);
   }
   for (const slug of expectedProductSlugs) {
     if (!actualProductSlugs.has(slug)) {
