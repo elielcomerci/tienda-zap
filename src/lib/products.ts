@@ -12,9 +12,18 @@ async function requireAdmin() {
 const quoterConfigInclude = {
   rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } },
   allowedMaterials: { include: { rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } } },
-  finishings: { include: { finishing: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } } },
+  finishings: { include: { finishing: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } },
   quantityPresets: { orderBy: { sortOrder: 'asc' as const } },
   sizePresets: { orderBy: { sortOrder: 'asc' as const } },
+}
+
+/** Minimal public catalog metadata for homepage entry points. */
+export async function getPublicCatalogTypes() {
+  return prisma.product.findMany({
+    where: { active: true },
+    select: { catalogType: true },
+    distinct: ['catalogType'],
+  })
 }
 
 export async function getProducts(
@@ -46,9 +55,9 @@ export async function getProducts(
             { description: { contains: search, mode: 'insensitive' } },
             { whatIs: { contains: search, mode: 'insensitive' } },
             { purpose: { contains: search, mode: 'insensitive' } },
-            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } } },
-            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } } },
-            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } } },
+            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } },
+            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } },
+            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } },
           ],
         }
       : {}),
@@ -75,7 +84,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
         orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
       variants: {
-        include: { options: { include: { optionValue: { include: { option: true } } } } },
+        include: { options: { include: { optionValue: { include: { option: true } } } },
       },
       quoterConfig: { include: quoterConfigInclude },
       configuratorVersions: {
@@ -87,7 +96,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
           relatedProduct: {
             include: {
               options: { include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } } },
-              variants: { include: { options: { include: { optionValue: { include: { option: true } } } } } },
+              variants: { include: { options: { include: { optionValue: { include: { option: true } } } } },
               quoterConfig: { include: quoterConfigInclude },
             },
           },
