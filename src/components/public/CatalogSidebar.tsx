@@ -32,6 +32,7 @@ export default function CatalogSidebar({
   const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
   const isSoluciones = currentMode === 'rubro' || isSituationMode
   const explorationContext: ExplorationContext = {
+    mode: isSituationMode ? 'situation' : currentMode === 'rubro' ? 'rubro' : currentMode === 'product' ? 'product' : undefined,
     businessTypeSlug: businessType,
     situationSlug: currentSituation,
   }
