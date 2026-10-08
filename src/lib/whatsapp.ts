@@ -46,7 +46,15 @@ export function appendWhatsappDetails(
       .map((detail) => `- ${detail.name}: ${detail.value}`);
 
     if (detailLines.length === 0) return inquiryUrl;
-    url.searchParams.set('text', [...baseLines, heading, ...detailLines].join('\n'));
+    const linkIndex = baseLines.findIndex((line) => line.startsWith('Link:'));
+    const insertAt = linkIndex >= 0 ? linkIndex : baseLines.length;
+    const messageLines = [
+      ...baseLines.slice(0, insertAt),
+      heading,
+      ...detailLines,
+      ...baseLines.slice(insertAt),
+    ];
+    url.searchParams.set('text', messageLines.join('\n'));
     return url.toString();
   } catch {
     return inquiryUrl;

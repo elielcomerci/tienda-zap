@@ -332,7 +332,10 @@ export default async function ProductsPage({
                   const development = isDevelopment(product)
                   const hasVariants = Boolean(product.variants && product.variants.length > 0)
                   const requiresConfiguration = product.modality === 'CONFIGURABLE' || hasVariants || Boolean(product.quoterConfig)
-                  const displayPrice = getProductDisplayPrice(product)
+                  // Active semantic configurators use their own commercial price engine.
+                  // The legacy quoter minimum is not a reliable "Desde" price for those products.
+                  const hasActiveSemanticConfigurator = product.configuratorVersions?.some((version) => version.status === 'ACTIVE')
+                  const displayPrice = hasActiveSemanticConfigurator ? null : getProductDisplayPrice(product)
                   const isPurchasable = displayPrice !== null && product.modality === 'DIRECTO'
                   const requiresConversation = isDevelopment(product) || isConsultationOnly(product)
                   const isConsultationOnlyFlow = requiresConversation || (!requiresConfiguration && !isPurchasable)
@@ -387,8 +390,10 @@ export default async function ProductsPage({
                             )}
                             <p className="mt-1 text-2xl font-black text-gray-950">
                               {displayPrice !== null
-                                ? `$${displayPrice.toLocaleString('es-AR')}`
-                                : 'Consultar'}
+                                ? `${displayPrice.toLocaleString('es-AR')}`
+                                : requiresConfiguration
+                                  ? 'Según configuración'
+                                  : 'Consultar'}
                             </p>
                           </div>
 
