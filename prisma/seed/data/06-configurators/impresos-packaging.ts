@@ -830,6 +830,7 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
       },
     },
   },
+  },
 };
 
 // ─── Papelería digital on-demand: membretes y sobres ──────────────────────────
