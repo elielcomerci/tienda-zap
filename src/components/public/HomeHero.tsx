@@ -62,6 +62,7 @@ export default function HomeHero({
     }
   }, [businessTypes])
   const [filteredSituations, setFilteredSituations] = useState<SituationItem[]>(situations)
+  const [isSituationsLoading, setIsSituationsLoading] = useState(false)
   const [isRubroOpen, setIsRubroOpen] = useState(false)
   const [isSituacionOpen, setIsSituacionOpen] = useState(false)
 
@@ -70,10 +71,13 @@ export default function HomeHero({
     if (!selectedRubro) {
       setFilteredSituations(situations)
       setSelectedSituacion('')
+      setIsSituationsLoading(false)
       return
     }
 
     setSelectedSituacion('')
+    setFilteredSituations([])
+    setIsSituationsLoading(true)
 
     const controller = new AbortController()
     fetch(`/api/situaciones?rubro=${encodeURIComponent(selectedRubro)}`, { signal: controller.signal })
@@ -86,7 +90,10 @@ export default function HomeHero({
       })
       .catch((error: unknown) => {
         if (error instanceof Error && error.name === 'AbortError') return
-        // On error keep the current options instead of breaking the selector.
+        setFilteredSituations([])
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsSituationsLoading(false)
       })
 
     return () => controller.abort()
@@ -308,11 +315,11 @@ export default function HomeHero({
                 <select
                   value={selectedSituacion}
                   onChange={(e) => setSelectedSituacion(e.target.value)}
-                  disabled={!selectedRubro}
+                  disabled={!selectedRubro || isSituationsLoading}
                   className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <option value="" disabled>
-                    {selectedRubro ? 'Elegí qué está pasando' : 'Primero elegí tu rubro'}
+                    {!selectedRubro ? 'Primero elegí tu rubro' : isSituationsLoading ? 'Cargando situaciones…' : 'Elegí qué está pasando'}
                   </option>
                   {filteredSituations.map((sit) => (
                     <option key={sit.id} value={sit.slug}>
