@@ -35,7 +35,13 @@ export default function PublicHeader({
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const requestedExplorationMode = searchParams.get('mode')
   const explorationContext = {
+    mode: requestedExplorationMode === 'objective'
+      ? 'situation' as const
+      : requestedExplorationMode === 'product' || requestedExplorationMode === 'situation' || requestedExplorationMode === 'rubro'
+        ? requestedExplorationMode
+        : undefined,
     businessTypeSlug: searchParams.get('rubro') || undefined,
     situationSlug: searchParams.get('situacion') || undefined,
     needSlug: searchParams.get('necesidad') || undefined,
