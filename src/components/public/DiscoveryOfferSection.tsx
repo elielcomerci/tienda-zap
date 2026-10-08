@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { isDevelopment } from '@/lib/catalog-domain'
+import { buildProductUrl } from '@/lib/exploration-context'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getDiscoveryOfferReason } from '@/lib/discovery-offer-reasons'
 
@@ -115,7 +116,14 @@ export default function DiscoveryOfferSection({
               <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
 
               <Link
-                href={product.modality === 'CONSULTAR' ? (whatsappUrl || '/') : `/productos/${product.slug}`}
+                href={product.modality === 'CONSULTAR'
+                  ? (whatsappUrl || '/')
+                  : buildProductUrl(product.slug, {
+                      mode: 'situation',
+                      businessTypeSlug,
+                      situationSlug,
+                      needSlug,
+                    })}
                 className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
               >
                 {actionLabel} <ArrowRight size={15} />
