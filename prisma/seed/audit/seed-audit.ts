@@ -7,6 +7,11 @@ import { offerMatrixData } from '../data/07-offer-matrix';
 import { initialQuoterConfigs } from '../data/09-quoter-config';
 import { quoterOptionConfigs } from '../data/09-quoter-options';
 import { productRelationsData } from '../data/10-product-relations';
+import { impresosPackagingConfigurators } from '../data/06-configurators/impresos-packaging';
+import { presenciaFisicaConfigurators } from '../data/06-configurators/presencia-fisica';
+import { textilConfigurators } from '../data/06-configurators/textil';
+import { digitalConfigurators } from '../data/06-configurators/digital';
+import { campanasConfigurators } from '../data/06-configurators/campanas';
 
 export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log('\n========================================');
@@ -38,6 +43,20 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   );
   assertNoSourceDuplicates('Quoter config products', initialQuoterConfigs.map((item) => item.productSlug));
   assertNoSourceDuplicates('Quoter option config products', quoterOptionConfigs.map((item) => item.productSlug));
+
+  const configuratorSourceData = [
+    ...impresosPackagingConfigurators,
+    ...presenciaFisicaConfigurators,
+    ...textilConfigurators,
+    ...digitalConfigurators,
+    ...campanasConfigurators,
+  ];
+  const configuratorSourceKey = (item: { productSlug: string; schemaVersion: string }) =>
+    `${item.productSlug}|${item.schemaVersion}`;
+  assertNoSourceDuplicates(
+    'ConfiguratorVersion keys',
+    configuratorSourceData.map(configuratorSourceKey)
+  );
 
   // Product Bases are the 23 ordered base offers. Eight additional direct
   // design products (orders 24–31) are complementary catalog entries.
@@ -159,7 +178,19 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     include: { product: { select: { slug: true, modality: true, engine: true } } },
   });
 
+  let unexpectedActiveCount = 0;
   for (const cv of dbConfigurators) {
+    const sourceVersion = configuratorSourceData.find(
+      (item) => configuratorSourceKey(item) === `${cv.product.slug}|${cv.schemaVersion}`
+    );
+    if (!sourceVersion) {
+      errors.push(`[CONFIGURATOR SOURCE MISSING] No hay definición fuente para '${cv.product.slug}|${cv.schemaVersion}'.`);
+    } else if (cv.status !== sourceVersion.status) {
+      if (cv.status === 'ACTIVE' && sourceVersion.status !== 'ACTIVE') unexpectedActiveCount += 1;
+      errors.push(
+        `[CONFIGURATOR STATUS MISMATCH] '${cv.product.slug}|${cv.schemaVersion}': DB='${cv.status}', seed='${sourceVersion.status}'.`
+      );
+    }
     if (cv.product.modality !== 'CONFIGURABLE') {
       errors.push(`[CONFIGURATOR ERROR] ConfiguratorVersion creado para producto ${cv.product.modality} '${cv.product.slug}'`);
     }
@@ -430,6 +461,6 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log(`Offer Matrix:        EXACT MATCH (${dbEntries.length} tuplas verificadas 1:1)`);
   console.log('Packs:               0 (preparado sin packs ficticios)');
   console.log('Orphans:             0');
-  console.log('Unexpected active records: 0\n');
+  console.log(`Unexpected active records: ${unexpectedActiveCount}\n`);
   console.log('🎉 Seed audit passed. FASE D SEED v1.0: OK\n');
 }
