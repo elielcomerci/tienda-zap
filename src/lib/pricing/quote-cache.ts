@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 import type { ProductQuoteResult } from './product-quoter'
 
-export const PRODUCT_QUOTE_CACHE_ENGINE_VERSION = '1'
+export const PRODUCT_QUOTE_CACHE_ENGINE_VERSION = '2'
 
 function stableSerialize(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value)

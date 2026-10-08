@@ -1,15 +1,16 @@
+import { prisma } from '@/lib/prisma'
 import { catalogFamilies } from '@/lib/catalog-domain'
 
-/**
- * Compatibilidad de ruta: el catálogo ahora se organiza por familia comercial
- * derivada del motor, no por el modelo Prisma Category retirado.
- */
+/** Las familias son internas; la navegación pública se deriva de productos activos. */
 export async function getPublicCategories() {
-  return catalogFamilies.map((family) => ({
-    id: family.slug,
-    name: family.label,
-    slug: family.slug,
+  const activeFamilies = await prisma.product.findMany({
+    where: { active: true, engine: { not: null } },
+    select: { engine: true },
+    distinct: ['engine'],
+  })
+  const activeEngines = new Set(activeFamilies.map((product) => product.engine).filter(Boolean))
+  return catalogFamilies.filter((family) => activeEngines.has(family.engine)).map((family) => ({
+    id: family.slug, name: family.label, slug: family.slug,
   }))
 }
-
 export const getCategories = getPublicCategories

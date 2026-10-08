@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote } from '@/lib/pricing/product-quoter'
+import { quoteConfiguratorSelection } from '@/lib/pricing/configurator-adapter'
 import { getOrCreateCachedProductQuote, buildProductQuotePricingFingerprintInput } from '@/lib/pricing/quote-cache'
 
 const quoterConfigInclude = {
@@ -31,19 +32,22 @@ export async function POST(request: Request) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId, active: true },
-      select: { quoterConfig: { include: quoterConfigInclude } },
+      select: { quoterConfig: { include: quoterConfigInclude }, configuratorVersions: { where: { status: 'ACTIVE' }, orderBy: { schemaVersion: 'desc' }, take: 1 } },
     })
 
     const config = product?.quoterConfig
-    if (!config) {
+    const configurator = product?.configuratorVersions?.[0]
+    if (!config && !configurator) {
       return NextResponse.json({ error: 'Este producto no tiene un cotizador activo.' }, { status: 404 })
     }
 
     const quote = await getOrCreateCachedProductQuote({
       cacheKeyInput: { productId, selection },
-      pricingFingerprintInput: buildProductQuotePricingFingerprintInput(config, selection),
-      sourceType: 'PRODUCT_QUOTER',
-      calculate: () => calculateProductQuote(config as any, selection),
+      pricingFingerprintInput: configurator
+        ? { configurator: { id: configurator.id, schemaVersion: configurator.schemaVersion, schema: configurator.schema, compatibility: configurator.compatibility, pricing: configurator.pricing }, quoterConfig: config ? buildProductQuotePricingFingerprintInput(config, selection) : null, selection }
+        : buildProductQuotePricingFingerprintInput(config, selection),
+      sourceType: configurator ? 'CONFIGURATOR_VERSION' : 'PRODUCT_QUOTER',
+      calculate: () => configurator ? quoteConfiguratorSelection(configurator as any, selection, config as any) : calculateProductQuote(config as any, selection),
     })
 
     return NextResponse.json(quote, {

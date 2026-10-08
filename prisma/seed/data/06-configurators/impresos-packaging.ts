@@ -15,9 +15,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         default: '9x5',
         options: [
           { id: '9x5', label: '9×5 cm (Estándar)' },
-          { id: '9x3', label: '9×3 cm (Mini / Turnero)' },
-          { id: '9x10_plegada', label: '9×10 cm (Díptica / Plegada a 9×5)' },
-          { id: '10x15', label: '10×15 cm (Postal / Grande)' },
         ],
       },
       material: {
@@ -27,7 +24,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         default: 'ilustracion_350g',
         options: [
           { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
-          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
         ],
       },
       printing: {
@@ -58,7 +54,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         default: 'frente',
         options: [
           { id: 'frente', label: 'Frente' },
-          { id: 'ambas', label: 'Ambas caras' },
         ],
       },
       additionalFinishings: {
@@ -66,11 +61,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         type: 'multiselect',
         required: false,
         default: [],
-        options: [
-          { id: 'laca_uv_sectorizada', label: 'Laca UV Sectorizada' },
-          { id: 'puntas_redondeadas', label: 'Puntas redondeadas' },
-          { id: 'perforacion', label: 'Perforación / Ojalillo' },
-        ],
+        options: [],
       },
       quantity: {
         label: 'Cantidad',
@@ -421,8 +412,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     ],
   },
   pricing: {
-    engine: 'PROVIDER_FINISHED_COST',
-    // Costo real de proveedor: offset 4/4, producto terminado, empaquetado y con caja.
+    engine: 'PRODUCT_QUOTER',
+    // El automático se resuelve contra el cotizador real: material + formato + plegado + cantidad.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
     providerFinishedCostMatrix: {
       resolver: { type: 'FLYERS_DIGITAL' },
@@ -689,8 +680,6 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
         options: [
           { value: 500,  label: '500 u.' },
           { value: 1000, label: '1.000 u.' },
-          { value: 2000, label: '2.000 u.' },
-          { value: 3000, label: '3.000 u.' },
         ],
       },
     },
@@ -783,7 +772,6 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         default: 'circular',
         options: [
           { id: 'circular', label: 'Circular' },
-          { id: 'cuadrado', label: 'Cuadrado / Rectangular' },
         ],
       },
       lamination: {
@@ -894,11 +882,9 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
       format: { label: 'Formato', type: 'select', required: true, default: 'a4', options: [{ id: 'a4', label: 'A4 (21×29,7 cm cerrado)' }] },
       material: { label: 'Material', type: 'select', required: true, default: 'ilustracion_300g', options: [
         { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
-        { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
       ] },
       printing: { label: 'Impresión', type: 'select', required: true, default: '4_0', options: [
         { id: '4_0', label: 'Frente solo color (4/0)' },
-        { id: '4_1', label: 'Frente color + dorso negro (4/1)' },
         { id: '4_4', label: 'Frente y dorso color (4/4)' },
       ] },
       lamination: { label: 'Terminación / Laminado', type: 'select', required: true, default: 'sin_laminar', options: [

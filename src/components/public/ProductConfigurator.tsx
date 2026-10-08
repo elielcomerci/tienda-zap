@@ -9,6 +9,7 @@ import { getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
 import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
 import ProductContextForm from '@/components/public/ProductContextForm'
+import SemanticProductConfigurator from '@/components/public/SemanticProductConfigurator'
 
 type CachedQuoteResponse = {
   unitPrice: number
@@ -61,6 +62,7 @@ type ProductWithOptions = {
     }[]
   }[]
   quoterConfig?: any
+  configuratorVersions?: any[]
   [key: string]: any
 }
 
@@ -117,6 +119,7 @@ export default function ProductConfigurator({
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
+  const activeSemanticConfigurator = product.configuratorVersions?.[0] || null
   const quoterConfig = product.quoterConfig
   const quoterMaterials = useMemo(
     () => (quoterConfig ? getQuoterMaterials(quoterConfig) : []),
@@ -576,6 +579,8 @@ export default function ProductConfigurator({
       />
     )
   }
+
+  if (activeSemanticConfigurator) return <SemanticProductConfigurator product={product} configurator={activeSemanticConfigurator} inquiryUrl={inquiryUrl} />
 
   if (quoterConfig) {
     const selectedFinishingIds = quoteSelection.finishingIds

@@ -311,8 +311,6 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
     rawMaterialIds: [
       'raw_mat_ilustracion_350g_4_4',
       'raw_mat_ilustracion_350g_4_0',
-      'raw_mat_ilustracion_300g_4_4',
-      'raw_mat_ilustracion_300g_4_0',
     ],
     finishingIds: [
       'fin_opp_mate_1c',
@@ -326,9 +324,6 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
     ],
     sizePresets: [
       { label: '9x5 cm', width: 9, height: 5, sortOrder: 0 },
-      { label: '9x3 cm', width: 9, height: 3, sortOrder: 1 },
-      { label: '9x10 cm', width: 9, height: 10, sortOrder: 2 },
-      { label: '10x15 cm', width: 10, height: 15, sortOrder: 3 },
     ],
     quantityPresets: [
       { quantity: 100, sortOrder: 0 },
@@ -410,8 +405,6 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
     quantityPresets: [
       { quantity: 500,  sortOrder: 0 },
       { quantity: 1000, sortOrder: 1 },
-      { quantity: 2000, sortOrder: 2 },
-      { quantity: 3000, sortOrder: 3 },
     ],
   },
 ];
