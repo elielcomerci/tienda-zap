@@ -20,11 +20,11 @@ type Props = {
 }
 
 export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug }: Props) {
-  const ref = useRef<HTMLAnchorElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
   const hasRubro = Boolean(businessTypeSlug && businessTypeName)
   const href = hasRubro ? ZAP_RUBRO_PATHS[businessTypeSlug!] || 'https://zap.com.ar/' : 'https://zap.com.ar/'
 
-  function handlePointerMove(event: PointerEvent<HTMLAnchorElement>) {
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     const element = ref.current
     if (!element || event.pointerType === 'touch') return
 
@@ -44,11 +44,8 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
   }
 
   return (
-    <Link
+    <div
       ref={ref}
-      href={href}
-      target="_blank"
-      rel="noreferrer"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       className="zap-context-bridge group relative isolate block w-full overflow-hidden rounded-[24px] border border-gray-200/80 bg-[#101014] px-5 py-5 text-white transition-[border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-gray-300 sm:px-7 sm:py-6"
@@ -63,7 +60,7 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
       <span className="zap-context-bridge__wash zap-context-bridge__wash--secondary" aria-hidden="true" />
       <span className="zap-context-bridge__grain" aria-hidden="true" />
 
-      <span className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+      <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
         <span className="min-w-0 max-w-3xl">
           <span className="block text-[11px] font-bold uppercase tracking-[0.18em] text-white/55">
             ZAP
@@ -74,9 +71,15 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
               <span className="mt-1.5 block text-xl font-black tracking-tight sm:text-2xl">
                 ¿Todavía no sabés qué necesitás?
               </span>
-              <span className="mt-1 block text-sm leading-6 text-white/65 sm:text-[15px]">
-                Hacé el Primer paso y obtené sugerencias concretas para{' '}
-                <strong className="font-semibold text-white/85">{businessTypeName}</strong>.
+              <span className="mt-1 block text-sm leading-6 text-white/70 sm:text-[15px]">
+                <Link
+                  href={href}
+                  className="inline-flex items-center gap-1 font-bold text-white underline decoration-[#ED164F] decoration-2 underline-offset-4 transition-colors hover:text-white/80 focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ED164F]"
+                >
+                  Hacé el Primer paso <ArrowUpRight size={14} strokeWidth={2.5} />
+                </Link>{' '}
+                y obtené sugerencias concretas para{' '}
+                <strong className="font-semibold text-white">{businessTypeName}</strong>.
               </span>
             </>
           ) : (
@@ -91,11 +94,18 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
           )}
         </span>
 
-        <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 group-hover:border-white/25 group-hover:bg-white/[0.1] sm:self-center">
-          {hasRubro ? 'Hacer el Primer paso' : 'Conocer ZAP'}
-          <ArrowUpRight size={16} strokeWidth={2.5} />
-        </span>
-      </span>
+        {!hasRubro && (
+          <Link
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:border-white/25 hover:bg-white/[0.1] sm:self-center"
+          >
+            Conocer ZAP
+            <ArrowUpRight size={16} strokeWidth={2.5} />
+          </Link>
+        )}
+      </div>
 
       <style jsx>{`
         .zap-context-bridge {
@@ -193,6 +203,6 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
         }
       `}
       </style>
-    </Link>
+    </div>
   )
 }
