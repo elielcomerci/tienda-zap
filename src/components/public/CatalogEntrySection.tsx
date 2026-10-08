@@ -1,27 +1,17 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-interface ProductSnippet {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  images: string[]
-  price: number
-  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+
+interface CatalogTypeItem {
   catalogType: 'COSA' | 'DESARROLLO'
-  engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
-  variants: { price: number }[]
-  quoterConfig: unknown | null
 }
 
 export default function CatalogEntrySection({
   products,
 }: {
-  products: ProductSnippet[]
+  products: CatalogTypeItem[]
 }) {
   const hasCosas = products.some((p) => p.catalogType === 'COSA')
   const hasDesarrollos = products.some((p) => p.catalogType === 'DESARROLLO')
-
 
   return (
     <section className="border-t border-gray-200 bg-white">
