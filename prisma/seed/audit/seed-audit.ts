@@ -179,6 +179,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   });
 
   let unexpectedActiveCount = 0;
+  let configuratorStatusMismatchCount = 0;
   for (const cv of dbConfigurators) {
     const sourceVersion = configuratorSourceData.find(
       (item) => configuratorSourceKey(item) === `${cv.product.slug}|${cv.schemaVersion}`
@@ -186,6 +187,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     if (!sourceVersion) {
       errors.push(`[CONFIGURATOR SOURCE MISSING] No hay definición fuente para '${cv.product.slug}|${cv.schemaVersion}'.`);
     } else if (cv.status !== sourceVersion.status) {
+      configuratorStatusMismatchCount += 1;
       if (cv.status === 'ACTIVE' && sourceVersion.status !== 'ACTIVE') unexpectedActiveCount += 1;
       errors.push(
         `[CONFIGURATOR STATUS MISMATCH] '${cv.product.slug}|${cv.schemaVersion}': DB='${cv.status}', seed='${sourceVersion.status}'.`
@@ -461,6 +463,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log(`Offer Matrix:        EXACT MATCH (${dbEntries.length} tuplas verificadas 1:1)`);
   console.log('Packs:               0 (preparado sin packs ficticios)');
   console.log('Orphans:             0');
+  console.log(`Status mismatches vs seed: ${configuratorStatusMismatchCount}`);
   console.log(`Unexpected active records: ${unexpectedActiveCount}\n`);
   console.log('🎉 Seed audit passed. FASE D SEED v1.0: OK\n');
 }
