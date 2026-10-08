@@ -129,6 +129,57 @@ export async function getOrCreateCachedProductQuote({
   return { ...result, cacheHit: false, pricingFingerprint }
 }
 
-export function buildProductQuotePricingFingerprintInput(config: unknown, selection: unknown) {
-  return { config, selection }
+function pickTierSnapshot(tiers: Array<{ minQty: number; maxQty: number | null; unitPrice: number }>) {
+  return tiers.map(({ minQty, maxQty, unitPrice }) => ({ minQty, maxQty, unitPrice }))
+}
+
+export function buildProductQuotePricingFingerprintInput(config: any, selection: unknown) {
+  return {
+    config: {
+      id: config.id,
+      pricingMode: config.pricingMode,
+      itemWidth: config.itemWidth,
+      itemHeight: config.itemHeight,
+      margin: config.margin,
+      bleed: config.bleed,
+      profitMargin: config.profitMargin,
+      allowCustomSize: config.allowCustomSize,
+      minWidth: config.minWidth,
+      maxWidth: config.maxWidth,
+      minHeight: config.minHeight,
+      maxHeight: config.maxHeight,
+      rawMaterial: config.rawMaterial
+        ? {
+            id: config.rawMaterial.id,
+            width: config.rawMaterial.width,
+            height: config.rawMaterial.height,
+            unit: config.rawMaterial.unit,
+            tiers: pickTierSnapshot(config.rawMaterial.tiers ?? []),
+          }
+        : null,
+      allowedMaterials: (config.allowedMaterials ?? []).map((entry: any) => ({
+        rawMaterialId: entry.rawMaterialId,
+        rawMaterial: entry.rawMaterial
+          ? {
+              id: entry.rawMaterial.id,
+              width: entry.rawMaterial.width,
+              height: entry.rawMaterial.height,
+              unit: entry.rawMaterial.unit,
+              tiers: pickTierSnapshot(entry.rawMaterial.tiers ?? []),
+            }
+          : null,
+      })),
+      finishings: (config.finishings ?? []).map((entry: any) => ({
+        finishingId: entry.finishingId,
+        finishing: entry.finishing
+          ? {
+              id: entry.finishing.id,
+              costType: entry.finishing.costType,
+              tiers: pickTierSnapshot(entry.finishing.tiers ?? []),
+            }
+          : null,
+      })),
+    },
+    selection,
+  }
 }
