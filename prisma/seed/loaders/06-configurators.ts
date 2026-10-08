@@ -29,6 +29,10 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     return { cfg, productId };
   });
 
+  const resolvedKeys = new Set(
+    resolvedConfigs.map(({ cfg }) => cfg.productSlug + '|' + cfg.schemaVersion)
+  )
+
   await prisma.$transaction(async (tx) => {
     for (const { cfg, productId } of resolvedConfigs) {
       await tx.configuratorVersion.upsert({
@@ -57,5 +61,5 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   
   }, { maxWait: 10000, timeout: 15000 });
 
-  console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (schema 1.0) persistidas.`);
+  console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (schema 1.0) persistidas; versiones obsoletas archivadas.`);
 }
