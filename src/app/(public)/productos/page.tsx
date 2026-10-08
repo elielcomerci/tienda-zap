@@ -15,6 +15,7 @@ import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
 import ShareModal from '@/components/public/ShareModal'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
+import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
@@ -103,6 +104,11 @@ export default async function ProductsPage({
   // Situación → Necesidad → OfertaMatrix → next step.
   // The old multi-step situation prototype is no longer part of the primary flow.
   const selectedNeed = selectedSituation?.needs.find((need) => need.slug === necesidad)
+  const explorationContext: ExplorationContext = {
+    businessTypeSlug: rubro,
+    situationSlug: selectedSituation?.slug,
+    needSlug: selectedNeed?.slug,
+  }
 
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_20%,#f8fafc_100%)]">
@@ -145,7 +151,7 @@ export default async function ProductsPage({
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Filtro Activo
+                  Explorando
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
                   {isSituationMode && selectedSituation
@@ -289,7 +295,7 @@ export default async function ProductsPage({
                       key={product.id}
                       className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/25 hover:shadow-[0_28px_70px_-44px_rgba(237, 22, 79,0.28)]"
                     >
-                      <Link href={`/productos/${product.slug}`} className="block">
+                      <Link href={buildProductUrl(product.slug, explorationContext)} className="block">
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
                           <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
                             <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
@@ -315,7 +321,7 @@ export default async function ProductsPage({
 
                       <div className="space-y-4 p-5">
                         <div>
-                          <Link href={`/productos/${product.slug}`}>
+                          <Link href={buildProductUrl(product.slug, explorationContext)}>
                             <h2 className="line-clamp-2 text-xl font-black tracking-tight text-gray-950 transition-colors hover:text-[#ED164F]">
                               {product.name}
                             </h2>
