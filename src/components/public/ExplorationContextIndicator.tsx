@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import type { ExplorationContext } from '@/lib/exploration-context'
+import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 export default function ExplorationContextIndicator({
   context,
@@ -16,14 +16,27 @@ export default function ExplorationContextIndicator({
   const labels = [businessTypeName, situationName, needName].filter(Boolean)
   if (labels.length === 0) return null
 
-  const situationHref = context.businessTypeSlug
-    ? `/productos?mode=situation&rubro=${encodeURIComponent(context.businessTypeSlug)}`
-    : '/productos?mode=situation'
-
-  const needHref =
-    context.businessTypeSlug && context.situationSlug
-      ? `/productos?mode=situation&rubro=${encodeURIComponent(context.businessTypeSlug)}&situacion=${encodeURIComponent(context.situationSlug)}`
-      : situationHref
+  const rubroHref = buildProductsUrl(context, {
+    mode: 'rubro',
+    rubro: undefined,
+    situacion: undefined,
+    necesidad: undefined,
+    cat: undefined,
+    tipo: undefined,
+  })
+  const situationHref = buildProductsUrl(context, {
+    mode: 'situation',
+    situacion: undefined,
+    necesidad: undefined,
+    cat: undefined,
+    tipo: undefined,
+  })
+  const needHref = buildProductsUrl(context, {
+    mode: 'situation',
+    necesidad: undefined,
+    cat: undefined,
+    tipo: undefined,
+  })
 
   return (
     <details className="group relative mb-5">
@@ -37,7 +50,7 @@ export default function ExplorationContextIndicator({
           Cambiar contexto
         </p>
         <div className="mt-1 grid gap-1">
-          <Link href="/productos?mode=rubro" className="rounded-xl px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+          <Link href={rubroHref} className="rounded-xl px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
             Cambiar rubro
           </Link>
           <Link href={situationHref} className="rounded-xl px-2 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
