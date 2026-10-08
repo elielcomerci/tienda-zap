@@ -63,7 +63,7 @@ export default async function ProductDetailPage({
       price: displayPrice,
       slug: product.slug,
       intent: isDevelopment(product) || displayPrice === null ? 'cotizar' : 'consultar',
-      contextLabel: [selectedBusinessType?.name, selectedSituation?.name, selectedNeed?.name].filter(Boolean).join(' · ') || null,
+      contextLabel: selectedBusinessType?.name || selectedSituation?.name || selectedNeed?.name || null,
     })
   )
 
