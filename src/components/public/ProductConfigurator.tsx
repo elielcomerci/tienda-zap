@@ -9,6 +9,7 @@ import { getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
 import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
 import ProductContextForm from '@/components/public/ProductContextForm'
+import type { ExplorationContext } from '@/lib/exploration-context'
 import SemanticProductConfigurator from '@/components/public/SemanticProductConfigurator'
 
 type CachedQuoteResponse = {
@@ -99,12 +100,16 @@ export default function ProductConfigurator({
   onPreviewImageChange,
   onSelectionChange,
   apparelDesignSelection,
+  explorationContext,
+  businessTypeId,
 }: {
   product: ProductWithOptions
   inquiryUrl?: string | null
   onPreviewImageChange?: (imageUrl: string | null) => void
   onSelectionChange?: (selectedOptions: Record<string, string>) => void
   apparelDesignSelection?: ApparelDesignSelection | null
+  explorationContext?: ExplorationContext
+  businessTypeId?: string | null
 }) {
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [added, setAdded] = useState(false)
