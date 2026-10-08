@@ -235,7 +235,7 @@ export default function HomeHero({
                     setIsSituacionOpen(!isSituacionOpen)
                     setIsRubroOpen(false)
                   }}
-                  disabled={!selectedRubro}
+                  disabled={!selectedRubro || isSituationsLoading}
                   className="border-b-[4px] border-[#ED164F] pb-0.5 inline-flex items-center gap-1.5 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-70"
                   aria-expanded={isSituacionOpen}
                 >
