@@ -8,17 +8,17 @@ type BriefType = NonNullable<CartItem['briefType']>
 
 const briefLabels: Record<BriefType, string> = {
   NONE: 'Sin brief',
-  DESIGN: 'Brief de diseno',
+  DESIGN: 'Brief de diseño',
   MUSIC: 'Brief de musica',
   VIDEO: 'Brief de video',
 }
 
 const briefFields: Record<Exclude<BriefType, 'NONE'>, Array<{ key: string; label: string; placeholder: string }>> = {
   DESIGN: [
-    { key: 'subject', label: 'Que estamos diseñando', placeholder: 'Contanos que pieza/producto es y para que la vas a usar' },
-    { key: 'objective', label: 'Que queres comunicar', placeholder: 'Que tiene que lograr esta pieza?' },
-    { key: 'content', label: 'Contenido que ya tenes', placeholder: 'Textos, precios, productos, datos o información que debe aparecer' },
-    { key: 'audience', label: 'Para quien es', placeholder: 'A quien tiene que hablarle esta pieza?' },
+    { key: 'subject', label: 'Qué estamos diseñando', placeholder: 'Contanos qué pieza/producto es y para qué la vas a usar' },
+    { key: 'objective', label: 'Qué querés comunicar', placeholder: '¿Qué tiene que lograr esta pieza?' },
+    { key: 'content', label: 'Contenido que ya tenés', placeholder: 'Textos, precios, productos, datos o información que debe aparecer' },
+    { key: 'audience', label: 'Para quién es', placeholder: '¿A quién tiene que hablarle esta pieza?' },
   ],
   MUSIC: [
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
@@ -41,13 +41,13 @@ function normalizeLinks(rawLinks: string[]) {
 function getDesignContextFields(itemName: string) {
   if (itemName === 'Diseño Pack de piezas para redes (10)') {
     return [
-      { key: 'platform', label: 'Donde se van a publicar', placeholder: 'Ej: Instagram, historias, WhatsApp, varias plataformas' },
+      { key: 'platform', label: 'Dónde se van a publicar', placeholder: 'Ej: Instagram, historias, WhatsApp, varias plataformas' },
     ]
   }
 
   if (itemName === 'Diseño de Papelería Corporativa') {
     return [
-      { key: 'pieces', label: 'Que piezas necesitás', placeholder: 'Ej: tarjetas, hoja membretada y sobre' },
+      { key: 'pieces', label: 'Qué piezas necesitás', placeholder: 'Ej: tarjetas, hoja membretada y sobre' },
     ]
   }
 
@@ -122,13 +122,23 @@ export default function OrderItemBrief({
         {fields.map((field) => (
           <label key={field.key} className="block">
             <span className="mb-1 block text-xs font-semibold text-gray-700">{field.label}</span>
-            <input
-              type="text"
-              value={responses[field.key] || ''}
-              onChange={(event) => updateResponse(field.key, event.target.value)}
-              className="input !bg-white"
-              placeholder={field.placeholder}
-            />
+            {field.key === 'content' ? (
+              <textarea
+                rows={3}
+                value={responses[field.key] || ''}
+                onChange={(event) => updateResponse(field.key, event.target.value)}
+                className="input !bg-white min-h-[96px] resize-y"
+                placeholder={field.placeholder}
+              />
+            ) : (
+              <input
+                type="text"
+                value={responses[field.key] || ''}
+                onChange={(event) => updateResponse(field.key, event.target.value)}
+                className="input !bg-white"
+                placeholder={field.placeholder}
+              />
+            )}
           </label>
         ))}
       </div>
