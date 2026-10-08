@@ -339,7 +339,7 @@ function quoteProviderFinishedCostSelection(
   const quantity = Number(selection.quantity || 0);
   if (!quantity) throw new Error('Debe especificar la cantidad.');
 
-  let totalCost: number | null = null;
+  let totalCost = 0;
   const fields = configurator.schema?.fields || {};
 
   if (resolver.type === 'CARDS_DIGITAL') {
