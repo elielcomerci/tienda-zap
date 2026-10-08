@@ -96,31 +96,33 @@ export default function HomeHero({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Shrink situacion font-size to always fit on one line
+  // Ajusta la situación al ancho disponible y vuelve a medir al cambiar el viewport.
   useLayoutEffect(() => {
     const btn = situacionBtnRef.current
     if (!btn) return
 
-    // Force single-line before measuring (critical: without this,
-    // scrollWidth returns the widest wrapped line, not the full text width)
-    btn.style.fontSize = ''
-    btn.style.whiteSpace = 'nowrap'
+    const fitSituation = () => {
+      btn.style.fontSize = ''
+      btn.style.whiteSpace = 'nowrap'
 
-    const h1 = btn.closest('h1')
-    if (!h1) return
+      const h1 = btn.closest('h1')
+      if (!h1) return
 
-    const available = h1.offsetWidth
-    const naturalWidth = btn.scrollWidth
+      const available = h1.clientWidth
+      const naturalWidth = btn.scrollWidth
 
-    if (naturalWidth > available) {
-      const computedSize = parseFloat(window.getComputedStyle(btn).fontSize)
-      const ratio = available / naturalWidth
-      // 0.9 breathing room so it doesn't touch the edges
-      btn.style.fontSize = `${Math.floor(computedSize * ratio * 0.9)}px`
+      if (naturalWidth > available) {
+        const computedSize = parseFloat(window.getComputedStyle(btn).fontSize)
+        const ratio = available / naturalWidth
+        // Deja un pequeño margen para que el texto no quede pegado al borde.
+        btn.style.fontSize = `${Math.floor(computedSize * ratio * 0.9)}px`
+      }
     }
-    // Keep nowrap so the scaled text never wraps either
-    btn.style.whiteSpace = 'nowrap'
-  }, [selectedSituacion])
+
+    fitSituation()
+    window.addEventListener('resize', fitSituation)
+    return () => window.removeEventListener('resize', fitSituation)
+  }, [selectedSituacion, selectedRubro, visibleSituacionName])
 
   const currentRubro = businessTypes.find((b) => b.slug === selectedRubro)
   const currentSituacion = filteredSituations.find((s) => s.slug === selectedSituacion)
@@ -146,7 +148,7 @@ export default function HomeHero({
         <div className="max-w-4xl">
           {/* Desktop & Tablet: Inline Interactive Headline */}
           <div className="hidden sm:block">
-            <h1 className="text-5xl md:text-6xl lg:text-[76px] font-black tracking-tight text-gray-950 leading-[1.15]">
+            <h1 className="text-[clamp(2.25rem,5.5vw,4.75rem)] font-black tracking-tight text-gray-950 leading-[1.15]">
               <span>Tengo un negocio de </span>
               <span className="relative inline-block align-baseline">
                 <button
@@ -203,7 +205,7 @@ export default function HomeHero({
               </span>
               <span> y </span>
               <br />
-              <span className="relative inline-block align-baseline">
+              <span className="relative inline-block align-baseline whitespace-nowrap">
                 <button
                   ref={situacionBtnRef}
                   type="button"
@@ -260,10 +262,10 @@ export default function HomeHero({
 
           {/* Mobile UI: Clean standard form dropdowns */}
           <div className="sm:hidden space-y-4">
-            <h1 className="text-3xl font-black tracking-tight text-gray-950 leading-tight">
+            <h1 className="text-[clamp(1.75rem,7.2vw,2.25rem)] font-black tracking-tight text-gray-950 leading-tight">
               Tengo un negocio de{' '}
               <span className="text-[#ED164F]">{formatRubroName(visibleRubroName)}</span> y{' '}
-              <span className="text-[#ED164F]">{formatSituacionName(visibleSituacionName)}</span>.
+              <span className="text-[#ED164F]">{formatSituacionName(visibleSituacionName)}.</span>
             </h1>
             <div className="grid gap-3 pt-2">
               <div className="space-y-1">
