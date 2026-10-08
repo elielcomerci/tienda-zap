@@ -4,7 +4,8 @@ import { productsData } from '../data/05-products';
 import { situationsData } from '../data/03-situations';
 import { needsData } from '../data/04-needs';
 import { offerMatrixData } from '../data/07-offer-matrix';
-import { initialQuoterConfigs } from '../data/09-quoter-config';\nimport { quoterOptionConfigs } from '../data/09-quoter-options';
+import { initialQuoterConfigs } from '../data/09-quoter-config';
+import { quoterOptionConfigs } from '../data/09-quoter-options';
 
 export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log('\n========================================');
@@ -182,7 +183,8 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
       allowedMaterials: { include: { rawMaterial: { include: { tiers: true } } } },
       finishings: { include: { finishing: { include: { tiers: true } } } },
       quantityPresets: true,
-      sizePresets: true,\n      optionGroups: { include: { options: { include: { allowedSizes: true, constraintsFrom: true, constraintsTo: true } } } },
+      sizePresets: true,
+      optionGroups: { include: { options: { include: { allowedSizes: true, constraintsFrom: true, constraintsTo: true } } } },
     },
   });
 
