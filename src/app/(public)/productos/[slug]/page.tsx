@@ -64,6 +64,7 @@ export default async function ProductDetailPage({
       slug: product.slug,
       intent: isDevelopment(product) || displayPrice === null ? 'cotizar' : 'consultar',
       contextLabel: selectedBusinessType?.name || selectedSituation?.name || selectedNeed?.name || null,
+      context: explorationContext,
     })
   )
 
