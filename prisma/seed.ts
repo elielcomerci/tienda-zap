@@ -12,6 +12,7 @@ import { loadConfigurators } from './seed/loaders/06-configurators';
 import { loadOfferMatrix } from './seed/loaders/07-offer-matrix';
 import { loadPacks } from './seed/loaders/08-packs';
 import { loadQuoterConfig } from './seed/loaders/09-quoter-config';
+import { loadProductRelations } from './seed/loaders/10-product-relations';
 import { runSeedAudit } from './seed/audit/seed-audit';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL as string });
@@ -32,6 +33,7 @@ async function main() {
   await loadOfferMatrix(prisma);
   await loadPacks(prisma);
   await loadQuoterConfig(prisma);
+  await loadProductRelations(prisma);
 
   console.log('\n[SEED] Carga finalizada con éxito. Ejecutando auditoría de integridad...');
   await runSeedAudit(prisma);

@@ -38,10 +38,10 @@ export default function RelatedProductsSection({
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            Piezas que pueden acompañar
+            Puede completar este trabajo
           </h2>
           <p className="text-sm text-gray-500">
-            Seleccionadas para completar mejor este trabajo.
+            Una pieza que puede tener sentido junto con esta.
           </p>
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function RelatedProductsSection({
                   </div>
 
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#ED164F]">
-                    Ver pieza
+                    Ver complemento
                     <ArrowRight size={16} />
                   </span>
                 </div>

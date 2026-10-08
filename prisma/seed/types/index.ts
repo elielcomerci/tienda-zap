@@ -35,6 +35,8 @@ export interface ProductSeedData {
   includes?: string[];
   configurable?: string[];
   consultationNote?: string;
+  price?: number;
+  briefType?: string | null;
   priceFrom?: number | null;
   active?: boolean;
 }
@@ -54,6 +56,8 @@ export interface OfferMatrixEntrySeedData {
   needSlug: string;
   productSlug: string;
 }
+
+export interface ProductRelationSeedData { productSlug: string; relatedProductSlug: string; }
 
 export interface PackSeedData {
   slug: string;

@@ -327,4 +327,52 @@ export const productsData: ProductSeedData[] = [
     priceFrom: null,
     active: true,
   },
+  {
+    order: 24,
+    slug: 'diseno-flyer-volante',
+    catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 128792, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 25,
+    slug: 'diseno-cartel-afiche',
+    catalogType: 'COSA', name: 'Diseño de Cartel / Afiche', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 225386, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 26,
+    slug: 'diseno-pack-graficos-redes',
+    catalogType: 'COSA', name: 'Diseño Pack de piezas para redes (10)', modality: 'DIRECTO', engine: null,
+    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas', 'Criterio visual unificado', 'Archivos finales listos para publicar'], configurable: [], price: 225386, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 27,
+    slug: 'diseno-carteleria-rotulos',
+    catalogType: 'COSA', name: 'Diseño de Cartelería / Rótulos', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño de piezas gráficas para cartelería y rótulos comerciales.', purpose: 'Definir qué se comunica y cómo se ve antes de producir la cartelería.', includes: ['Diseño de la pieza', 'Adaptación al formato definido', 'Archivo final listo para producción'], configurable: [], price: 289782, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 28,
+    slug: 'diseno-menu-gastronomico',
+    catalogType: 'COSA', name: 'Diseño de Menú Gastronómico', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño del menú', 'Jerarquía de contenidos', 'Archivo final listo para producción'], configurable: [], price: 321980, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 29,
+    slug: 'diseno-vidriera',
+    catalogType: 'COSA', name: 'Diseño de Vidriera', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño de una propuesta gráfica para una vidriera o escaparate comercial.', purpose: 'Definir qué debería ver primero quien pasa frente al local.', includes: ['Concepto visual', 'Diseño de la propuesta', 'Archivo final listo para producción'], configurable: [], price: 402475, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 30,
+    slug: 'diseno-etiquetas',
+    catalogType: 'COSA', name: 'Diseño de Etiquetas', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 241485, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
+  {
+    order: 31,
+    slug: 'diseno-papeleria-corporativa',
+    catalogType: 'COSA', name: 'Diseño de Papelería Corporativa', modality: 'DIRECTO', engine: null,
+    whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Sistema visual aplicado a la papelería acordada', 'Archivos finales listos para producción'], configurable: [], price: 536097, briefType: 'DESIGN', priceFrom: null, active: true,
+  },
 ];
