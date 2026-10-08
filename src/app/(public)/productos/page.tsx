@@ -15,7 +15,7 @@ import ShareModal from '@/components/public/ShareModal'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
-import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
+import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
