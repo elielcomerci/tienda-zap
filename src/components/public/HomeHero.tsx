@@ -96,6 +96,20 @@ export default function HomeHero({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  const currentRubro = businessTypes.find((b) => b.slug === selectedRubro)
+  const currentSituacion = filteredSituations.find((s) => s.slug === selectedSituacion)
+
+  const demoRubro = demoRubroIndex !== null ? businessTypes[demoRubroIndex] : null
+
+  // El texto animado es solo una demostración. Nunca modifica selectedRubro.
+  const visibleRubroName = selectedRubro
+    ? currentRubro?.name ?? ''
+    : demoRubro?.name ?? 'elegí tu rubro'
+
+  const visibleSituacionName = selectedSituacion
+    ? currentSituacion?.name ?? ''
+    : 'qué está pasando'
+
   // Ajusta la situación al ancho disponible y vuelve a medir al cambiar el viewport.
   useLayoutEffect(() => {
     const btn = situacionBtnRef.current
@@ -123,20 +137,6 @@ export default function HomeHero({
     window.addEventListener('resize', fitSituation)
     return () => window.removeEventListener('resize', fitSituation)
   }, [selectedSituacion, selectedRubro, visibleSituacionName])
-
-  const currentRubro = businessTypes.find((b) => b.slug === selectedRubro)
-  const currentSituacion = filteredSituations.find((s) => s.slug === selectedSituacion)
-
-  const demoRubro = demoRubroIndex !== null ? businessTypes[demoRubroIndex] : null
-
-  // El texto animado es solo una demostración. Nunca modifica selectedRubro.
-  const visibleRubroName = selectedRubro
-    ? currentRubro?.name ?? ''
-    : demoRubro?.name ?? 'elegí tu rubro'
-
-  const visibleSituacionName = selectedSituacion
-    ? currentSituacion?.name ?? ''
-    : 'qué está pasando'
 
   // Format names to lowercase for inline sentence flow
   const formatRubroName = (name: string) => name.toLowerCase()
