@@ -143,13 +143,37 @@ export function calculateProductQuote(
   let totalPrice = 0
 
   if (config.pricingMode === 'AREA_M2') {
-    const area = Math.max(0.01, (size.width * size.height) / 10000)
-    const materialCost = area * getTierPrice(rawMaterial.tiers, Math.ceil(area))
+    // Este modo trabaja con materias primas cuyo costo está expresado por m².
+    // La escala se determina sobre el área total comprada, no sobre el área
+    // de una sola pieza. Así evitamos aplicar accidentalmente el tier mínimo
+    // de 1 m² a cada unidad.
+    if (rawMaterial.unit.toUpperCase() !== 'M2' && rawMaterial.unit.toUpperCase() !== 'M²') {
+      throw new Error('CONSULT_REQUIRED: El modo AREA_M2 requiere una materia prima con costo expresado por m².')
+    }
+
+    const areaPerUnit = Math.max(0.01, (size.width * size.height) / 10000)
+    const totalArea = areaPerUnit * selection.quantity
+    const materialUnitPrice = getTierPrice(rawMaterial.tiers, Math.ceil(totalArea))
+    const materialCost = totalArea * materialUnitPrice
+
     const finishingCost = finishings.reduce((sum, finishing) => {
-      const unit = getTierPrice(finishing.tiers, Math.ceil(area))
-      return sum + unit * (finishing.costType === 'PER_UNIT' ? selection.quantity : area)
+      if (finishing.costType === 'PER_SHEET') {
+        throw new Error('CONSULT_REQUIRED: Una terminación por pliego no es compatible con AREA_M2.')
+      }
+
+      const qtyToMatch = finishing.costType === 'PER_UNIT'
+        ? selection.quantity
+        : Math.ceil(totalArea)
+      const unit = getTierPrice(finishing.tiers, qtyToMatch)
+
+      if (finishing.costType === 'FIXED_SETUP') {
+        return sum + unit
+      }
+
+      return sum + unit * selection.quantity
     }, 0)
-    totalCost = (materialCost + finishingCost) * selection.quantity
+
+    totalCost = materialCost + finishingCost
     totalPrice = totalCost * (1 + getQuoteMargin(config, selection.quantity) / 100)
   } else {
     const nesting = calculateNesting({
