@@ -465,7 +465,7 @@ function quoteProviderFinishedCostSelection(
     selectedOptions,
     breakdown: {
       materialCost: 0,
-      printingCost: totalCost,
+      printingCost: 0,
       processCost: 0,
       finishingCost: 0,
       wasteCost: 0,
