@@ -14,15 +14,11 @@ export async function loadOfferMatrix(prisma: PrismaClient): Promise<void> {
   const needMap = new Map(needs.map((n) => [n.slug, n.id]));
   const prodMap = new Map(products.map((p) => [p.slug, p.id]));
 
-  // Remove relaciones que dejaron de formar parte de la matriz editorial.
-  // La carga principal es upsert-based, así que sin esta limpieza una relación
-  // retirada del seed seguiría apareciendo en producción.
-  await prisma.offerMatrixEntry.deleteMany({
-    where: {
-      situation: { slug: 'quiero-generar-contactos' },
-      need: { slug: 'necesito-facilitar-que-se-lleven-la-marca' },
-    },
-  });
+  // La matriz editorial es una fuente completa, no incremental:
+  // cualquier relación que ya no esté en el seed debe desaparecer de la DB.
+  // OfferMatrixEntry no es referenciada por otras entidades, por lo que podemos
+  // reconstruirla de forma determinista en cada seed.
+  await prisma.offerMatrixEntry.deleteMany({});
 
   for (let i = 0; i < offerMatrixData.length; i++) {
     const entry = offerMatrixData[i];
