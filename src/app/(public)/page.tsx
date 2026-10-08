@@ -6,8 +6,7 @@ import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import HomeHero from '@/components/public/HomeHero'
-import CatalogEntrySection from '@/components/public/CatalogEntrySection'
+import HomeLandingSections from '@/components/public/HomeLandingSections'
 
 export const metadata = {
   title: 'Tienda ZAP — Soluciones concretas para tu marca',
@@ -47,12 +46,11 @@ export default async function HomePage() {
 
   return (
     <div className="bg-white">
-      {/* ── HERO ────────────────────────────────────────────────────── */}
-      <HomeHero businessTypes={businessTypes} situations={situations} />
-
-      {/* ── 01. PACKS ──────────────────────────────────────────────── */}
-      {/* ── 02. COSAS / DESARROLLOS ────────────────────────────────── */}
-      <CatalogEntrySection products={[...cosas, ...desarrollos]} />
+      <HomeLandingSections
+        businessTypes={businessTypes}
+        situations={situations}
+        products={[...cosas, ...desarrollos]}
+      />
 
       {/* ── 5. CIERRE ─────────────────────────────────────────────── */}
       <section className="bg-black text-white">
