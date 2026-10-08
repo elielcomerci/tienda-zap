@@ -128,13 +128,13 @@ export default function CartPage() {
               <ShoppingBag size={36} />
             </div>
             <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-              Carrito vacio
+              Carrito vacío
             </p>
             <h1 className="mt-3 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-              Todavia no elegiste tus piezas.
+              Todavía no elegiste tus piezas.
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-gray-600">
-              Cuando empieces a sumar piezas, aca vas a ver cantidades, variantes y detalles para
+              Cuando empieces a sumar piezas, acá vas a ver cantidades, variantes y detalles para
               revisar antes de avanzar.
             </p>
             <div className="mt-8 flex justify-center">
@@ -186,7 +186,7 @@ export default function CartPage() {
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Preparacion
+                  Preparación
                 </p>
                 <p className="mt-2 text-base font-bold text-gray-950">
                   Archivos o diseño
@@ -215,7 +215,7 @@ export default function CartPage() {
                   Revisá cada pieza seleccionada.
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                  Podes ajustar cantidades, sumar observaciones y definir si el trabajo llega con
+                  Podés ajustar cantidades, sumar observaciones y definir si el trabajo llega con
                   archivo final o con diseño a coordinar.
                 </p>
               </div>
@@ -342,7 +342,7 @@ export default function CartPage() {
                             <label className="label">Nota para este trabajo</label>
                             <input
                               type="text"
-                              placeholder="Algo importante para este producto?"
+                              placeholder="¿Algo importante para este producto?"
                               value={item.notes || ''}
                               onChange={(event) =>
                                 updateNotes(item.cartItemId!, event.target.value)
@@ -354,10 +354,10 @@ export default function CartPage() {
 
                         <div className="rounded-2xl border border-white bg-white p-4">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                            Preparacion
+                            Preparación
                           </p>
                           <p className="mt-2 text-sm font-semibold text-gray-900">
-                            Defini si envias archivo final o si preferis que lo coordinemos.
+                            Definí si enviás archivo final o si preferís que lo coordinemos.
                           </p>
                           <OrderItemOptions item={item} compact />
                           <OrderItemBrief item={item} compact />
@@ -380,7 +380,7 @@ export default function CartPage() {
                   Todo listo para avanzar.
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-gray-300">
-                  Revisamos total, disponibilidad y preparacion para que el pedido avance prolijo.
+                  Revisamos total, disponibilidad y preparación para que el pedido avance prolijo.
                 </p>
               </div>
 
@@ -459,12 +459,12 @@ export default function CartPage() {
 
               {hasUnavailableItems ? (
                 <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
-                  Hay piezas que todavia no estan listas para compra online. Quitalas antes de
+                  Hay piezas que todavía no están listas para compra online. Quitalas antes de
                   continuar.
                 </div>
               ) : (
                 <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-                  El pedido esta en condiciones de avanzar.
+                  El pedido está en condiciones de avanzar.
                 </div>
               )}
 
@@ -530,7 +530,7 @@ export default function CartPage() {
                   <div className="flex items-start gap-3">
                     <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#F7638B]" />
                     <p className="text-sm leading-7 text-gray-300">
-                      En el siguiente paso confirmas datos, elegis medio de pago y dejamos el
+                      En el siguiente paso confirmás datos, elegís medio de pago y dejamos el
                       trabajo listo para empezar.
                     </p>
                   </div>

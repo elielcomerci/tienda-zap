@@ -9,7 +9,7 @@ type BriefType = NonNullable<CartItem['briefType']>
 const briefLabels: Record<BriefType, string> = {
   NONE: 'Sin brief',
   DESIGN: 'Brief de diseño',
-  MUSIC: 'Brief de musica',
+  MUSIC: 'Brief de música',
   VIDEO: 'Brief de video',
 }
 
@@ -22,15 +22,15 @@ const briefFields: Record<Exclude<BriefType, 'NONE'>, Array<{ key: string; label
   ],
   MUSIC: [
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
-    { key: 'mood', label: 'Estilo / energia', placeholder: 'Ej: urbano, alegre, institucional, epico' },
-    { key: 'duration', label: 'Duracion esperada', placeholder: 'Ej: 10s, 30s, 1 minuto' },
-    { key: 'voice', label: 'Voz o instrumental', placeholder: 'Voz masculina/femenina, locucion, solo instrumental' },
+    { key: 'mood', label: 'Estilo / energía', placeholder: 'Ej: urbano, alegre, institucional, epico' },
+    { key: 'duration', label: 'Duración esperada', placeholder: 'Ej: 10s, 30s, 1 minuto' },
+    { key: 'voice', label: 'Voz o instrumental', placeholder: 'Voz masculina/femenina, locución, solo instrumental' },
   ],
   VIDEO: [
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
     { key: 'format', label: 'Formato / plataforma', placeholder: 'Ej: reel vertical, historia, pantalla local' },
-    { key: 'message', label: 'Mensaje principal', placeholder: 'Que tiene que vender o mostrar?' },
-    { key: 'style', label: 'Estilo del video', placeholder: 'Ej: dinamico, testimonial, promocional, elegante' },
+    { key: 'message', label: 'Mensaje principal', placeholder: '¿Qué tiene que vender o mostrar?' },
+    { key: 'style', label: 'Estilo del video', placeholder: 'Ej: dinámico, testimonial, promocional, elegante' },
   ],
 }
 

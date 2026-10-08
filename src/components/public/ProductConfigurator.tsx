@@ -331,10 +331,10 @@ export default function ProductConfigurator({
         : !allRequiredSelected
           ? 'Elegí las opciones'
           : !activeVariant
-            ? 'Completá la variante'
+            ? 'Completá la combinación'
             : selectedVariantAvailable
               ? 'Agregar al carrito'
-              : 'Variante no disponible'
+              : 'Combinación no disponible'
 
   const selectedCount = Object.values(selected).filter(Boolean).length
   const requiredCount = hasOptions
@@ -346,19 +346,19 @@ export default function ProductConfigurator({
     : consultationOnly
       ? 'Esta pieza se define con ZAP antes de avanzar.'
       : !allRequiredSelected
-        ? 'Elegí las opciones requeridas.'
+        ? 'Elegí las opciones que faltan.'
         : allRequiredSelected && !activeVariant
-          ? 'Falta una combinación válida.'
+          ? 'Revisá la combinación.'
           : activeVariant && !selectedVariantAvailable
             ? 'Esta combinación no está disponible.'
             : minPrice === null && !activeVariant
-              ? 'Sin variantes disponibles online.'
-              : 'Disponible para compra online.'
+              ? 'No hay variantes disponibles online.'
+              : 'Listo para comprar online.'
 
   const summaryStateLabel = isContactOnly
     ? 'Listo para conversar'
     : !allRequiredSelected
-      ? 'Faltan requeridas'
+      ? 'Faltan opciones'
       : activeVariant && selectedVariantAvailable
         ? 'Listo para sumar'
         : activeVariant
@@ -795,7 +795,7 @@ export default function ProductConfigurator({
                     <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                   </div>
                   <p className="mt-2 text-sm text-gray-300">
-                    'Precio unitario final.'
+                    'Precio unitario.'
                   </p>
                 </>
               ) : (
@@ -884,23 +884,15 @@ export default function ProductConfigurator({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              Configurá tu pieza
+              Configuración
             </span>
           </div>
 
           <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
-            Elegí las variantes
+            Elegí cómo la querés
           </h2>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
-            {selectedCount} seleccionadas
-          </span>
-          <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
-            {requiredCount} requeridas
-          </span>
-        </div>
       </div>
 
       <div className="mt-6 space-y-4">
@@ -912,15 +904,10 @@ export default function ProductConfigurator({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-gray-900">{option.name}</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {option.isRequired ? 'Requerida' : 'Opcional'}
+                <p className="mt-1 text-xs text-gray-400">
+                  {option.isRequired ? 'Obligatorio' : 'Opcional'}
                 </p>
               </div>
-              {option.isRequired && (
-                <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-xs font-semibold text-[#C2103F]">
-                  Requerido
-                </span>
-              )}
             </div>
 
             <div

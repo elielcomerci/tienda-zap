@@ -533,7 +533,7 @@ function CheckoutContent() {
                 </div>
 
                 <h1 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                  Ultimo repaso antes de poner tu pieza en marcha.
+                  Último repaso antes de poner tu pieza en marcha.
                 </h1>
                 <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
                   Confirmamos datos, pago, archivos y detalles para que el trabajo arranque prolijo
@@ -546,7 +546,7 @@ function CheckoutContent() {
                       Paso 1
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Confirmás tus datos y dejas notas si hacen falta.
+                      Confirmás tus datos y dejás notas si hacen falta.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
@@ -563,7 +563,7 @@ function CheckoutContent() {
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
                       {hasItemsRequiringArtwork
-                        ? 'Dejas archivos o pedis diseño despues de confirmar.'
+                        ? 'Dejás archivos o pedís diseño después de confirmar.'
                         : 'El pedido queda listo para seguir sin pasos extra.'}
                     </p>
                   </div>
@@ -688,7 +688,7 @@ function CheckoutContent() {
                     Paso 2
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
-                    Metodo de pago
+                    Método de pago
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
                     Mostramos cada opcion con el contexto justo para que no tengas que interpretar
@@ -746,20 +746,20 @@ function CheckoutContent() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                        Cupon opcional
+                        Cupón opcional
                       </p>
                       <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
                         Escanea el QR o carga el código sin salir de la confirmación.
                       </h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                        Es opcional. Si no usas cupon, podés seguir con el pedido normalmente.
+                        Es opcional. Si no usás cupón, podés seguir con el pedido normalmente.
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-4 flex flex-col gap-3 lg:flex-row">
                     <div className="flex-1">
-                      <label className="label">Codigo del cupon</label>
+                      <label className="label">Código del cupón</label>
                       <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-[#FEF1F5]">
                         <input
                           value={couponDraft}
@@ -877,7 +877,7 @@ function CheckoutContent() {
                     <div className="flex items-start gap-3">
                       <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
                       <div>
-                        <p className="font-semibold">Tenes cuotas vencidas en otros créditos</p>
+                        <p className="font-semibold">Tenés cuotas vencidas en otros créditos</p>
                         <p className="mt-1 text-amber-800">
                           La simulación ya incluye el recargo vigente:{' '}
                           <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
@@ -912,7 +912,7 @@ function CheckoutContent() {
 
               {Object.keys(errors).length > 0 && (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                  <p className="mb-1 font-bold">Por favor, revisa los siguientes campos:</p>
+                  <p className="mb-1 font-bold">Por favor, revisá los siguientes campos:</p>
                   <ul className="list-disc list-inside space-y-0.5 opacity-80">
                     {Object.entries(errors).map(([key, err]) => (
                       <li key={key}>{(err as any)?.message}</li>
@@ -954,7 +954,7 @@ function CheckoutContent() {
 
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                      Cupon
+                      Cupón
                     </p>
                     {couponPreview?.normalizedCode ? (
                       <>
@@ -976,7 +976,7 @@ function CheckoutContent() {
                         <p className="mt-3 text-xs leading-6 text-gray-400">
                           {previewDiscountAmount > 0
                             ? 'Este ahorro ya se refleja en el total visible antes de confirmar.'
-                            : 'El cupon quedo registrado, pero no genero descuento para este pedido.'}
+                            : 'El cupón quedó registrado, pero no genero descuento para este pedido.'}
                         </p>
                       </>
                     ) : (
@@ -985,7 +985,7 @@ function CheckoutContent() {
                           Sin cupon cargado
                         </p>
                         <p className="mt-1 text-xs text-gray-400">
-                          Podes seguir normal o cargarlo desde el bloque de pago.
+                          Podés seguir normalmente o cargarlo desde el bloque de pago.
                         </p>
                       </>
                     )}
@@ -1006,7 +1006,7 @@ function CheckoutContent() {
 
                 {hasUnavailableItems && (
                   <div className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
-                    Hay productos con precio 0 en tu carrito. Quita esas piezas o elige una
+                    Hay productos con precio 0 en tu carrito. Quitá esas piezas o elegí una
                     variante disponible antes de confirmar.
                   </div>
                 )}
@@ -1054,7 +1054,7 @@ function CheckoutContent() {
                   )}
                   {couponPreview?.normalizedCode && (
                     <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-sm text-gray-300">
-                      <span>Cupon cargado</span>
+                      <span>Cupón cargado</span>
                       <span className="max-w-[180px] truncate text-right text-[#F7638B]">
                         {couponPreview.normalizedCode}
                       </span>
