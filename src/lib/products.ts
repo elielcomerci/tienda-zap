@@ -55,9 +55,9 @@ export async function getProducts(
             { description: { contains: search, mode: 'insensitive' } },
             { whatIs: { contains: search, mode: 'insensitive' } },
             { purpose: { contains: search, mode: 'insensitive' } },
-            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } },
-            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } },
-            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } },
+            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } } },
+            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } } },
+            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } } },
           ],
         }
       : {}),
