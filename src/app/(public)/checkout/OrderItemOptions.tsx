@@ -15,7 +15,7 @@ export default function OrderItemOptions({
   const isDesignProduct = item.catalogType === 'COSA' && item.briefType === 'DESIGN'
 
   // En un producto de diseño, el archivo final es justamente lo que estamos comprando.
-  // No corresponde pedir otro archivo ni ofrecer "Necesito diseño".
+  // No corresponde pedir otro archivo ni ofrecer "Quiero que ZAP lo diseñe".
   if (isDesignProduct) return null
 
   const handleDesignRequest = () => {
@@ -46,7 +46,7 @@ export default function OrderItemOptions({
     >
       <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-3'}`}>
         <h4 className="text-sm font-semibold text-gray-900">
-          {compact ? 'Preparacion del item' : `Archivos para ${item.name}`}
+          {compact ? 'Cómo seguimos con este pedido' : `Cómo seguimos con ${item.name}`}
         </h4>
       </div>
 
@@ -61,12 +61,12 @@ export default function OrderItemOptions({
             className={`text-gray-400 ${compact ? 'mb-1.5' : 'mb-2'}`}
           />
           <span className="text-xs font-medium text-gray-700">
-            Subis el archivo despues de comprar
+            Todavia no tengo el archivo
           </span>
           <span
             className={`text-gray-400 ${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'}`}
           >
-            Desde la página de exito o desde tu perfil
+            Podés subirlo después de comprar
           </span>
         </div>
 
@@ -88,7 +88,7 @@ export default function OrderItemOptions({
               <span
                 className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'} text-[#ED164F]`}
               >
-                Lo coordinamos por WhatsApp
+                El brief queda asociado a este trabajo
               </span>
             </>
           ) : (
@@ -101,7 +101,7 @@ export default function OrderItemOptions({
               <span
                 className={`${compact ? 'mt-0.5 text-[9px]' : 'mt-0.5 text-[10px]'} text-gray-400`}
               >
-                Marcamos este item para coordinarlo
+                Lo vemos con vos antes de producir
               </span>
             </>
           )}
