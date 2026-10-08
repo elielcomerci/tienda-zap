@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { buildProductsUrl } from '@/lib/exploration-context'
 import { ArrowRight, ChevronDown } from 'lucide-react'
-import ContextBridgeBanner from '@/components/public/ContextBridgeBanner'
 
 interface BusinessTypeItem {
   id: string
@@ -22,13 +21,16 @@ interface SituationItem {
 export default function HomeHero({
   businessTypes = [],
   situations = [],
+  selectedRubro,
+  onSelectedRubroChange,
 }: {
   businessTypes: BusinessTypeItem[]
   situations: SituationItem[]
+  selectedRubro: string
+  onSelectedRubroChange: (slug: string) => void
 }) {
   // No asumimos ningún rubro al entrar. La animación solo demuestra las opciones:
   // el valor real del selector permanece vacío hasta que la persona elige.
-  const [selectedRubro, setSelectedRubro] = useState<string>('')
   const [selectedSituacion, setSelectedSituacion] = useState<string>('')
   const [demoRubroIndex, setDemoRubroIndex] = useState<number | null>(null)
 
@@ -196,7 +198,7 @@ export default function HomeHero({
                           key={bt.id}
                           type="button"
                           onClick={() => {
-                            setSelectedRubro(bt.slug)
+                            onSelectedRubroChange(bt.slug)
                             setIsRubroOpen(false)
                           }}
                           className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors ${
@@ -213,13 +215,6 @@ export default function HomeHero({
                 )}
               </span>
             </h1>
-
-            <div className="my-5 max-w-4xl">
-              <ContextBridgeBanner
-                businessTypeName={currentRubro?.name}
-                businessTypeSlug={selectedRubro || undefined}
-              />
-            </div>
 
             <h1 className="text-[clamp(2.25rem,5.5vw,4.75rem)] font-black tracking-tight text-gray-950 leading-[1.15]">
               <span>y </span>
@@ -293,7 +288,7 @@ export default function HomeHero({
                 </label>
                 <select
                   value={selectedRubro}
-                  onChange={(e) => setSelectedRubro(e.target.value)}
+                  onChange={(e) => onSelectedRubroChange(e.target.value)}
                   className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none"
                 >
                   <option value="" disabled>
@@ -305,12 +300,6 @@ export default function HomeHero({
                     </option>
                   ))}
                 </select>
-              </div>
-              <div className="pt-1">
-                <ContextBridgeBanner
-                  businessTypeName={currentRubro?.name}
-                  businessTypeSlug={selectedRubro || undefined}
-                />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
