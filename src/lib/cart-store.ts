@@ -36,7 +36,7 @@ interface CartStore {
   updateNotes: (cartItemId: string, notes: string) => void
   updateBrief: (
     cartItemId: string,
-    brief: Pick<CartItem, 'briefResponses' | 'briefReferenceLinks' | 'briefReferenceFiles'>
+    brief: Pick<CartItem, 'briefType' | 'briefResponses' | 'briefReferenceLinks' | 'briefReferenceFiles'>
   ) => void
   updateItemOptions: (cartItemId: string, options: { fileUrl?: string; designRequested?: boolean }) => void
   clearCart: () => void

@@ -10,22 +10,32 @@ export default function OrderItemOptions({
   item: any
   compact?: boolean
 }) {
-  const { updateItemOptions } = useCartStore()
+  const { updateItemOptions, updateBrief } = useCartStore()
 
-  if (item.isService) {
-    return (
-      <div className="mt-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-blue-800">
-        Este item es un servicio, asi que no necesita archivo final ni stock fisico.
-      </div>
-    )
-  }
+  const isDesignProduct = item.catalogType === 'COSA' && item.briefType === 'DESIGN'
+
+  // En un producto de diseño, el archivo final es justamente lo que estamos comprando.
+  // No corresponde pedir otro archivo ni ofrecer "Necesito diseño".
+  if (isDesignProduct) return null
 
   const handleDesignRequest = () => {
     updateItemOptions(item.cartItemId!, { designRequested: true, fileUrl: undefined })
+    updateBrief(item.cartItemId!, {
+      briefType: 'DESIGN',
+      briefResponses: item.briefResponses || {},
+      briefReferenceLinks: item.briefReferenceLinks || [],
+      briefReferenceFiles: item.briefReferenceFiles || [],
+    })
   }
 
   const clearOptions = () => {
     updateItemOptions(item.cartItemId!, { designRequested: false, fileUrl: undefined })
+    updateBrief(item.cartItemId!, {
+      briefType: 'NONE',
+      briefResponses: undefined,
+      briefReferenceLinks: [],
+      briefReferenceFiles: [],
+    })
   }
 
   return (

@@ -184,7 +184,14 @@ function CheckoutContent() {
   } = useCreditEligibility()
 
   const hasUnavailableItems = items.some((item) => item.price <= 0)
-  const hasItemsRequiringArtwork = items.some((item) => !item.designRequested && !item.fileUrl && !item.briefReferenceFiles?.length)
+  const hasItemsRequiringArtwork = items.some(
+    (item) =>
+      item.catalogType === 'COSA' &&
+      item.briefType !== 'DESIGN' &&
+      !item.designRequested &&
+      !item.fileUrl &&
+      !item.briefReferenceFiles?.length
+  )
   const baseDownPaymentPercent = calculateWeightedDownPaymentPercent(
     items.map((item) => ({
       unitPrice: item.price,
