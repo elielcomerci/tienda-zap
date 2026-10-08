@@ -29,9 +29,16 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     return { cfg, productId };
   });
 
-  const resolvedKeys = new Set(
-    resolvedConfigs.map(({ cfg }) => cfg.productSlug + '|' + cfg.schemaVersion)
+  const configKeys = resolvedConfigs.map(
+    ({ cfg }) => cfg.productSlug + '|' + cfg.schemaVersion
   );
+  const resolvedKeys = new Set(configKeys);
+  if (resolvedKeys.size !== configKeys.length) {
+    const duplicateKeys = [...new Set(
+      configKeys.filter((key, index) => configKeys.indexOf(key) !== index)
+    )];
+    throw new Error(`[SEED ERROR] ConfiguratorVersion duplicada: ${duplicateKeys.join(', ')}.`);
+  }
 
   await prisma.$transaction(async (tx) => {
     for (const { cfg, productId } of resolvedConfigs) {
