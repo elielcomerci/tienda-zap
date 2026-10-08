@@ -1,6 +1,6 @@
 import { ConfiguratorVersionSeedData } from '../types';
 
-export const draftConfiguratorPlaceholders: ConfiguratorVersionSeedData[] = [
+// Contractual placeholders only: no options or pricing are invented, and DRAFT versions never render in the public configurator.\nexport const draftConfiguratorPlaceholders: ConfiguratorVersionSeedData[] = [
   'fajas-envoltorios',
   'bolsas-contenedores',
   'menus-cartas',
