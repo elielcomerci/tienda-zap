@@ -402,13 +402,59 @@ export default function PublicHeader({
               </Link>
             </li>
 
-            {/* Exploración móvil: Producto */}
+            {/* Selector de perspectiva — móvil */}
+            <li className="border-b border-white/10 pb-4">
+              <div
+                role="group"
+                aria-label="Elegí cómo explorar la tienda"
+                className="grid grid-cols-3 gap-1 rounded-xl border border-white/15 bg-white/10 p-1"
+              >
+                <Link
+                  href={buildProductsUrl(explorationContext, { mode: 'situation', cat: undefined, tipo: undefined })}
+                  aria-current={isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective') ? 'page' : undefined}
+                  onClick={() => setMenuOpen(false)}
+                  className={`rounded-lg px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
+                    isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective')
+                      ? 'bg-white text-[#ED164F]'
+                      : 'text-white/90 hover:bg-white/10'
+                  }`}
+                >
+                  Situación
+                </Link>
+                <Link
+                  href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
+                  aria-current={isProductArea && searchParams.get('mode') === 'rubro' ? 'page' : undefined}
+                  onClick={() => setMenuOpen(false)}
+                  className={`rounded-lg px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
+                    isProductArea && searchParams.get('mode') === 'rubro'
+                      ? 'bg-white text-[#ED164F]'
+                      : 'text-white/90 hover:bg-white/10'
+                  }`}
+                >
+                  Rubro
+                </Link>
+                <Link
+                  href={buildProductsUrl(explorationContext, { mode: 'product' })}
+                  aria-current={isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo' ? 'page' : undefined}
+                  onClick={() => setMenuOpen(false)}
+                  className={`rounded-lg px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
+                    isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo'
+                      ? 'bg-white text-[#ED164F]'
+                      : 'text-white/90 hover:bg-white/10'
+                  }`}
+                >
+                  Producto
+                </Link>
+              </div>
+            </li>
+
+            {/* Categorías de producto */}
             <li className="border-b border-white/10 pb-3">
               <button
                 onClick={() => setMobileProdOpen(!mobileProdOpen)}
                 className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
               >
-                <span>Producto</span>
+                <span>Categorías</span>
                 <ChevronDown size={20} className={`transition-transform duration-300 ${mobileProdOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -438,18 +484,7 @@ export default function PublicHeader({
               </div>
             </li>
 
-            {/* Rubro */}
-            <li>
-              <Link
-                href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
-                onClick={() => setMenuOpen(false)}
-                className="block text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
-              >
-                Rubro
-              </Link>
-            </li>
-
-            {/* Situación — móvil */}
+            {/* Situaciones destacadas — móvil */}
             <li className="border-b border-white/10 pb-3">
               <button
                 onClick={() => setMobileObjOpen(!mobileObjOpen)}
