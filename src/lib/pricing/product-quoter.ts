@@ -82,7 +82,10 @@ function getTierPrice(
   qty: number
 ) {
   const tier = tiers.find((entry) => qty >= entry.minQty && (!entry.maxQty || qty <= entry.maxQty))
-  return tier ? tier.unitPrice : tiers[tiers.length - 1]?.unitPrice || 0
+  if (!tier) {
+    throw new Error(`No hay costo real cargado para la cantidad ${qty}.`)
+  }
+  return tier.unitPrice
 }
 
 function getQuoteMargin(config: ProductQuoterConfigInput, quantity: number) {
