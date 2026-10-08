@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { isDevelopment } from '@/lib/catalog-domain'
+import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 type ContextualProduct = {
   id: string
@@ -17,9 +18,11 @@ type ContextualProduct = {
 export default function DiscoveryAdjacentSection({
   products,
   selectedProductIds,
+  context,
 }: {
   products: ContextualProduct[]
   selectedProductIds: string[]
+  context?: ExplorationContext
 }) {
   const selected = new Set(selectedProductIds)
   const recommendations = products
@@ -50,7 +53,7 @@ export default function DiscoveryAdjacentSection({
               <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
 
               <Link
-                href={`/productos/${product.slug}`}
+                href={buildProductUrl(product.slug, context)}
                 className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
               >
                 Ver más <ArrowRight size={15} />
