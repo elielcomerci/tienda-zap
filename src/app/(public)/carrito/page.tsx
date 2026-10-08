@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -13,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
+import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 import { extractCouponCode } from '@/components/public/CouponSession'
 import OrderItemOptions from '../checkout/OrderItemOptions'
 import OrderItemBrief from '../checkout/OrderItemBrief'
@@ -28,6 +30,13 @@ type CouponPreviewState = {
 }
 
 export default function CartPage() {
+  const searchParams = useSearchParams()
+  const explorationContext: ExplorationContext = {
+    businessTypeSlug: searchParams.get('rubro') || undefined,
+    situationSlug: searchParams.get('situacion') || undefined,
+    needSlug: searchParams.get('necesidad') || undefined,
+  }
+  const continueExploringHref = buildProductsUrl(explorationContext)
   const {
     items,
     removeItem,
