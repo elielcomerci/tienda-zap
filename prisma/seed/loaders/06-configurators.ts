@@ -58,6 +58,31 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
         },
       });
     }
+
+    const activeProducts = await tx.product.findMany({
+      where: { active: true },
+      select: { id: true, slug: true },
+    })
+
+    const activeProductSlugs = new Map(activeProducts.map((product) => [product.id, product.slug]))
+    const staleVersions = await tx.configuratorVersion.findMany({
+      where: { productId: { in: activeProducts.map((product) => product.id) } },
+      select: { id: true, productId: true, schemaVersion: true },
+    })
+
+    const staleIds = staleVersions
+      .filter((version) => {
+        const slug = activeProductSlugs.get(version.productId)
+        return !slug || !resolvedKeys.has(slug + '|' + version.schemaVersion)
+      })
+      .map((version) => version.id)
+
+    if (staleIds.length > 0) {
+      await tx.configuratorVersion.updateMany({
+        where: { id: { in: staleIds } },
+        data: { status: 'ARCHIVED' },
+      })
+    }
   
   }, { maxWait: 10000, timeout: 15000 });
 
