@@ -6,6 +6,10 @@ import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductDetailExperience from '@/components/public/ProductDetailExperience'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import { getPublicBusinessTypes } from '@/lib/business-types'
+import { getPublicSituationBySlug } from '@/lib/discovery'
+import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
+import ExplorationContextIndicator from '@/components/public/ExplorationContextIndicator'
 import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
 export const revalidate = 300
@@ -24,10 +28,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: product.name, description: product.description || '' }
 }
 
-export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+export default async function ProductDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ rubro?: string; situacion?: string; necesidad?: string; mode?: string }>
+}) {
+  const [{ slug }, { rubro, situacion, necesidad }] = await Promise.all([params, searchParams])
   const product = await getProduct(slug)
   if (!product || !product.active) notFound()
+
+  const [businessTypes, selectedSituation] = await Promise.all([
+    getPublicBusinessTypes(),
+    getPublicSituationBySlug(situacion, rubro),
+  ])
+  const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
+  const selectedNeed = selectedSituation?.needs.find((need) => need.slug === necesidad)
+  const explorationContext: ExplorationContext = {
+    businessTypeSlug: selectedBusinessType?.slug,
+    situationSlug: selectedSituation?.slug,
+    needSlug: selectedNeed?.slug,
+  }
 
   const relatedProducts = product.outgoingRelations
     .map((relation) => relation.relatedProduct)
@@ -41,6 +63,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       price: displayPrice,
       slug: product.slug,
       intent: isDevelopment(product) || displayPrice === null ? 'cotizar' : 'consultar',
+      contextLabel: [selectedBusinessType?.name, selectedSituation?.name, selectedNeed?.name].filter(Boolean).join(' · ') || null,
     })
   )
 
@@ -52,16 +75,28 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             Inicio
           </Link>
           <ChevronRight size={14} />
-          <Link href="/productos" className="transition-colors hover:text-gray-900">
+          <Link href={buildProductUrl('', explorationContext).replace(/\/productos\/$/, '/productos')} className="transition-colors hover:text-gray-900">
             Productos
           </Link>
           <ChevronRight size={14} />
           <span className="font-medium text-gray-900">{product.name}</span>
         </nav>
 
-        <ProductDetailExperience product={product} inquiryUrl={inquiryUrl} />
+        <ExplorationContextIndicator
+          context={explorationContext}
+          businessTypeName={selectedBusinessType?.name}
+          situationName={selectedSituation?.name}
+          needName={selectedNeed?.name}
+        />
 
-        <RelatedProductsSection products={relatedProducts} />
+        <ProductDetailExperience
+          product={product}
+          inquiryUrl={inquiryUrl}
+          explorationContext={explorationContext}
+          businessTypeId={selectedBusinessType?.id || null}
+        />
+
+        <RelatedProductsSection products={relatedProducts} context={explorationContext} />
       </div>
     </div>
   )
