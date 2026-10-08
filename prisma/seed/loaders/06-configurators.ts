@@ -4,6 +4,7 @@ import { presenciaFisicaConfigurators } from '../data/06-configurators/presencia
 import { textilConfigurators } from '../data/06-configurators/textil';
 import { digitalConfigurators } from '../data/06-configurators/digital';
 import { campanasConfigurators } from '../data/06-configurators/campanas';
+import { draftConfiguratorPlaceholders } from '../data/06-configurators/draft-placeholders';
 
 export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   const allConfigs = [
@@ -12,6 +13,7 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     ...textilConfigurators,
     ...digitalConfigurators,
     ...campanasConfigurators,
+    ...draftConfiguratorPlaceholders,
   ];
 
   const products = await prisma.product.findMany({
