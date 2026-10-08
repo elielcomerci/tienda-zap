@@ -188,7 +188,7 @@ No crear necesidades adicionales porque exista un Product Base que podría resol
 
 # 8. Product Bases
 
-El universo v1.0 está cerrado en exactamente 22 Product Bases.
+El universo v1.0 contiene exactamente 23 Product Bases. El catálogo persiste además 8 ofertas directas de diseño como productos complementarios; no se cuentan como Product Bases.
 
 |  # | Product Base              | Modalidad    | Engine             |
 | -: | ------------------------- | ------------ | ------------------ |
@@ -198,7 +198,7 @@ El universo v1.0 está cerrado en exactamente 22 Product Bases.
 | 04 | Adhesivos & Stickers      | CONFIGURABLE | IMPRESOS_PACKAGING |
 | 05 | Fajas & Envoltorios       | CONFIGURABLE | IMPRESOS_PACKAGING |
 | 06 | Bolsas & Contenedores     | CONFIGURABLE | IMPRESOS_PACKAGING |
-| 07 | Cajas Personalizadas      | CONFIGURABLE | IMPRESOS_PACKAGING |
+| 07 | Cajas Personalizadas      | CONSULTAR    | —                  |
 | 08 | Carpetas & Folders        | CONFIGURABLE | IMPRESOS_PACKAGING |
 | 09 | Menús & Cartas            | CONFIGURABLE | IMPRESOS_PACKAGING |
 | 10 | Individuales & Posavasos  | CONFIGURABLE | IMPRESOS_PACKAGING |
@@ -214,6 +214,11 @@ El universo v1.0 está cerrado en exactamente 22 Product Bases.
 | 20 | Producción Audiovisual    | CONSULTAR    | —                  |
 | 21 | Sistema de Identidad      | CONSULTAR    | —                  |
 | 22 | Operaciones & Consultoría | CONSULTAR    | —                  |
+| 23 | Sistema de Captación para Eventos | CONSULTAR | — |
+
+Las ocho ofertas directas de diseño adicionales son: Diseño de Flyer / Volante, Diseño de Cartel / Afiche, Diseño Pack de piezas para redes (10), Diseño de Cartelería / Rótulos, Diseño de Menú Gastronómico, Diseño de Vidriera, Diseño de Etiquetas y Diseño de Papelería Corporativa. Se persisten como productos `DIRECTO` complementarios y se relacionan con las Product Bases correspondientes; no se agregan automáticamente a la matriz editorial.
+
+El catálogo contiene, por tanto, **31 registros de producto activos: 23 Product Bases y 8 productos directos complementarios**.
 
 ---
 
@@ -364,8 +369,7 @@ Aplica a:
 4. Adhesivos & Stickers
 5. Fajas & Envoltorios
 6. Bolsas & Contenedores
-7. Cajas Personalizadas
-8. Carpetas & Folders
+7. Carpetas & Folders
 9. Menús & Cartas
 10. Individuales & Posavasos
 
@@ -381,7 +385,7 @@ Cantidad
 
 Las dimensiones concretas son Product Base-specific.
 
-No forzar un schema idéntico para los diez productos.
+No forzar un schema idéntico para los nueve productos.
 
 ---
 
@@ -517,6 +521,13 @@ No implementar en el seed una regla genérica de porcentaje sobre inversión pub
 
 No tienen `ConfiguratorVersion`.
 
+### 07. Cajas Personalizadas
+
+```text
+modality = CONSULTAR
+engine = null
+```
+
 ### 20. Producción Audiovisual
 
 ```text
@@ -532,6 +543,13 @@ engine = null
 ```
 
 ### 22. Operaciones & Consultoría
+
+```text
+modality = CONSULTAR
+engine = null
+```
+
+### 23. Sistema de Captación para Eventos
 
 ```text
 modality = CONSULTAR
@@ -849,10 +867,10 @@ slug incorrecto
 Verificar:
 
 ```text
-cantidad = 22
+cantidad = 23
 ```
 
-y además comparar contra el universo cerrado de 22 slugs.
+y además comparar contra el universo cerrado de 23 slugs.
 
 Debe detectar:
 
@@ -1027,13 +1045,14 @@ y mostrar un resumen similar a:
 Rubros:              7 / 7
 Situaciones:         OK
 Necesidades:         OK
-Product Bases:       22 / 22
+Product Bases:       23 / 23
+Productos de catálogo: 31 / 31
 Configuradores:      OK
 Offer Matrix:        EXACT MATCH
 Packs:               0
 Costeo:              OK
 Orphans:             0
-Unexpected records:  0
+Unexpected active records: 0
 
 FASE D SEED v1.0: OK
 ```
@@ -1100,7 +1119,8 @@ FASE D queda conceptualmente cerrada cuando:
 * auditoría pasa;
 * matriz y DB coinciden exactamente;
 * existen exactamente 7 rubros;
-* existen exactamente 22 Product Bases;
+* existen exactamente 23 Product Bases;
+* existen exactamente 31 registros de producto activos, incluidas 8 ofertas directas de diseño complementarias;
 * no existen entidades comerciales fuera del universo definido;
 * configuradores respetan modalidad + engine;
 * no existen packs ficticios;
