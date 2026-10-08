@@ -10,6 +10,22 @@ import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPr
 import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
 import ProductContextForm from '@/components/public/ProductContextForm'
 
+type CachedQuoteResponse = {
+  unitPrice: number
+  totalPrice: number
+  totalCost: number
+  selectedOptions: Array<{ name: string; value: string }>
+  breakdown?: Record<string, number>
+  cacheHit?: boolean
+  pricingFingerprint?: string
+}
+
+const quoteResponseCache = new Map<string, CachedQuoteResponse>()
+
+function createQuoteRequestKey(productId: string, selection: Record<string, unknown>) {
+  return productId + ':' + JSON.stringify(selection)
+}
+
 type ProductWithOptions = {
   id: string
   name: string
@@ -107,7 +123,7 @@ export default function ProductConfigurator({
     [quoterConfig]
   )
   const [quoteSelection, setQuoteSelection] = useState<Record<string, string>>({})
-  const [quoteResult, setQuoteResult] = useState<any>(null)
+  const [quoteResult, setQuoteResult] = useState<CachedQuoteResponse | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
 
   const quoteRequest = useMemo(() => {
@@ -143,6 +159,15 @@ export default function ProductConfigurator({
       return
     }
 
+    const cacheKey = createQuoteRequestKey(product.id, quoteRequest)
+    const cachedQuote = quoteResponseCache.get(cacheKey)
+
+    if (cachedQuote) {
+      setQuoteResult(cachedQuote)
+      setQuoteLoading(false)
+      return
+    }
+
     const controller = new AbortController()
     setQuoteLoading(true)
 
@@ -157,7 +182,10 @@ export default function ProductConfigurator({
         if (!response.ok) throw new Error(data.error || 'No pudimos calcular esta configuración.')
         return data
       })
-      .then((data) => setQuoteResult(data))
+      .then((data) => {
+        quoteResponseCache.set(cacheKey, data)
+        setQuoteResult(data)
+      })
       .catch((error) => {
         if (error?.name !== 'AbortError') setQuoteResult(null)
       })
