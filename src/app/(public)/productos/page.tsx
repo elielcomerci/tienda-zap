@@ -107,9 +107,10 @@ export default async function ProductsPage({
   // The old multi-step situation prototype is no longer part of the primary flow.
   const selectedNeed = selectedSituation?.needs.find((need) => need.slug === necesidad)
   const explorationContext: ExplorationContext = {
+    mode: isSituationMode ? 'situation' : mode === 'rubro' ? 'rubro' : mode === 'product' ? 'product' : undefined,
     businessTypeSlug: rubro,
-    situationSlug: selectedSituation?.slug,
-    needSlug: selectedNeed?.slug,
+    situationSlug: selectedSituation?.slug || situationSlug,
+    needSlug: selectedNeed?.slug || necesidad,
   }
 
   return (
