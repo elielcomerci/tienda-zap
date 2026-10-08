@@ -126,7 +126,10 @@ export function calculateQuote({
     const tier = f.tiers.find(t => 
       qtyToMatch >= t.minQty && (!t.maxQty || qtyToMatch <= t.maxQty)
     )
-    const costUnit = tier ? tier.unitPrice : (f.tiers[f.tiers.length - 1]?.unitPrice || 0)
+    if (!tier) {
+      throw new Error(`No hay costo real cargado para la cantidad ${qtyToMatch}.`)
+    }
+    const costUnit = tier.unitPrice
 
     if (f.costType === 'FIXED_SETUP') {
       finishingsCost += costUnit // Costo fijo único por el lote
