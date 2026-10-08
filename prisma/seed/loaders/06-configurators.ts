@@ -30,32 +30,32 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   });
 
   await prisma.$transaction(async (tx) => {
-  for (const { cfg, productId } of resolvedConfigs) {
-    await tx.configuratorVersion.upsert({
-      where: {
-        productId_schemaVersion: {
+    for (const { cfg, productId } of resolvedConfigs) {
+      await tx.configuratorVersion.upsert({
+        where: {
+          productId_schemaVersion: {
+            productId,
+            schemaVersion: cfg.schemaVersion,
+          },
+        },
+        update: {
+          status: cfg.status,
+          schema: cfg.schema,
+          compatibility: cfg.compatibility || undefined,
+          pricing: cfg.pricing || undefined,
+        },
+        create: {
           productId,
           schemaVersion: cfg.schemaVersion,
+          status: cfg.status,
+          schema: cfg.schema,
+          compatibility: cfg.compatibility || undefined,
+          pricing: cfg.pricing || undefined,
         },
-      },
-      update: {
-        status: cfg.status,
-        schema: cfg.schema,
-        compatibility: cfg.compatibility || undefined,
-        pricing: cfg.pricing || undefined,
-      },
-      create: {
-        productId,
-        schemaVersion: cfg.schemaVersion,
-        status: cfg.status,
-        schema: cfg.schema,
-        compatibility: cfg.compatibility || undefined,
-        pricing: cfg.pricing || undefined,
-      },
-    });
-  }
-
-  });
+      });
+    }
+  
+  }, { maxWait: 10000, timeout: 15000 });
 
   console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (1.0 DRAFT) persistidas.`);
 }
