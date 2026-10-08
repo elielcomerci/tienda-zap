@@ -323,7 +323,7 @@ DRAFT
 
 **Discrepancia pendiente de resolución antes de dar por aprobado el Seed v1.0:** los datos fuente actuales declaran cinco versiones como `ACTIVE`: `tarjetas-vouchers`, `flyers-desplegables`, `tags-etiquetas`, `adhesivos-stickers` y `carpetas-folders`. La fuente incluye una nota explícita de pruebas E2E para `tags-etiquetas`; las otras cuatro declaraciones no documentan en el propio dataset su aprobación comercial o de producto.
 
-No inferir que esos estados están aprobados por el solo hecho de estar en el código. Antes de firmar esta fase, hay que documentar la aprobación de cada excepción o devolverla a `DRAFT) con una decisión explícita. La auditoría debe comprobar que la base de datos coincida con el estado declarado en la fuente, sin promover ni degradar estados por su cuenta.
+No inferir que esos estados están aprobados por el solo hecho de estar en el código. Antes de firmar esta fase, hay que documentar la aprobación de cada excepción o devolverla a `DRAFT` con una decisión explícita. La auditoría debe comprobar que la base de datos coincida con el estado declarado en la fuente, sin promover ni degradar estados por su cuenta.
 
 No se activa automáticamente un configurador por el mero hecho de existir.
 
