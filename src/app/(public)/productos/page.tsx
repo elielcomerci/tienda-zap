@@ -398,7 +398,7 @@ export default async function ProductsPage({
                             )}
                             <p className="mt-1 text-2xl font-black text-gray-950">
                               {displayPrice !== null
-                                ? `${displayPrice.toLocaleString('es-AR')}`
+                                ? `$${displayPrice.toLocaleString('es-AR')}`
                                 : requiresConfiguration
                                   ? 'Según configuración'
                                   : 'Consultar'}
