@@ -153,6 +153,9 @@ export function calculateProductQuote(
 
   let totalCost = 0
   let totalPrice = 0
+  let materialCost = 0
+  let finishingCost = 0
+  let marginPercent = getQuoteMargin(config, selection.quantity)
 
   if (config.pricingMode === 'AREA_M2') {
     // Este modo trabaja con materias primas cuyo costo está expresado por m².
@@ -166,9 +169,9 @@ export function calculateProductQuote(
     const areaPerUnit = Math.max(0.01, (size.width * size.height) / 10000)
     const totalArea = areaPerUnit * selection.quantity
     const materialUnitPrice = getTierPrice(rawMaterial.tiers, Math.ceil(totalArea))
-    const materialCost = totalArea * materialUnitPrice
+    materialCost = totalArea * materialUnitPrice
 
-    const finishingCost = finishings.reduce((sum, finishing) => {
+    finishingCost = finishings.reduce((sum, finishing) => {
       if (finishing.costType === 'PER_SHEET') {
         throw new Error('CONSULT_REQUIRED: Una terminación por pliego no es compatible con AREA_M2.')
       }
@@ -185,7 +188,6 @@ export function calculateProductQuote(
       return sum + unit * selection.quantity
     }, 0)
 
-    const marginPercent = getQuoteMargin(config, selection.quantity)
     totalCost = materialCost + finishingCost
     totalPrice = totalCost * (1 + marginPercent / 100)
   } else {
@@ -210,6 +212,8 @@ export function calculateProductQuote(
     })
     totalCost = quote.totalCost
     totalPrice = quote.totalPrice
+    materialCost = quote.materialCost
+    finishingCost = quote.finishingCost
   }
 
   const roundedTotalPrice = roundPsychological(totalPrice)
@@ -228,26 +232,14 @@ export function calculateProductQuote(
     totalPrice: roundedTotalPrice,
     totalCost,
     selectedOptions,
-    breakdown: config.pricingMode === 'AREA_M2'
-      ? {
-          materialCost: 0,
-          printingCost: 0,
-          processCost: 0,
-          finishingCost: 0,
-          wasteCost: 0,
-          productionCost: totalCost,
-          marginAmount: roundedTotalPrice - totalCost,
-          marginPercent: getQuoteMargin(config, selection.quantity),
-        }
-      : {
-          materialCost: quote.materialCost,
-          printingCost: 0,
-          processCost: 0,
-          finishingCost: quote.finishingCost,
-          wasteCost: 0,
-          productionCost: totalCost,
-          marginAmount: roundedTotalPrice - totalCost,
-          marginPercent: getQuoteMargin(config, selection.quantity),
-        },
-  }
+    breakdown: {
+      materialCost,
+      printingCost: 0,
+      processCost: 0,
+      finishingCost,
+      wasteCost: 0,
+      productionCost: totalCost,
+      marginAmount: roundedTotalPrice - totalCost,
+      marginPercent,
+    },
 }
