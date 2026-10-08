@@ -70,7 +70,7 @@ export default function DiscoveryOfferSection({
           Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, hay varias formas de intervenir y probablemente tengan que trabajar juntas.
           Antes de hacerte elegir una cosa, podemos mirar el contexto y decirte por dónde tiene más sentido empezar.
         </p>
-        <Link href="/contacto" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
+        <Link href={whatsappUrl || "/" } className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
           Hablar con ZAP <ArrowRight size={16} />
         </Link>
       </section>

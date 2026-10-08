@@ -245,6 +245,11 @@ export default function PublicHeader({
                 </div>
               </li>
 
+              {/* Puente de regreso a ZAP */}
+              <li className="h-full flex items-center">
+                <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors">ZAP</a>
+              </li>
+
               {/* User area */}
               <li className="relative h-full flex items-center">
                 {user ? (

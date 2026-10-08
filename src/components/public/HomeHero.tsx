@@ -144,11 +144,6 @@ export default function HomeHero({
     <section ref={heroRef} className="relative bg-white pt-10 pb-16 sm:pt-16 sm:pb-24">
       <div className="mx-auto max-w-[1380px] px-4 xl:px-8">
         <div className="max-w-4xl">
-          {/* Label */}
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-gray-800 mb-6 sm:mb-8">
-            TIENDA ZAP
-          </p>
-
           {/* Desktop & Tablet: Inline Interactive Headline */}
           <div className="hidden sm:block">
             <h1 className="text-5xl md:text-6xl lg:text-[76px] font-black tracking-tight text-gray-950 leading-[1.15]">

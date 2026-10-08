@@ -45,7 +45,7 @@ export default function NeedsSection({
                 </div>
                 {hasOffers ? <ArrowRight size={18} className="mt-0.5 shrink-0 text-[#ED164F]" /> : <MessageCircleMore size={18} className="mt-0.5 shrink-0 text-[#ED164F]" />}
               </div>
-              <p className="mt-auto pt-5 text-xs font-bold text-[#C2103F]">
+              <p className="mt-auto pt-5 text-xs font-bold text-[#C2103F] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 max-sm:hidden" aria-hidden="true">
                 {hasOffers ? 'Ver qué puede servirte' : 'Hablar con ZAP'}
               </p>
             </Link>
