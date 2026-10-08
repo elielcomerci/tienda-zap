@@ -13,6 +13,7 @@ import NeedsSection from '@/components/public/NeedsSection'
 import DiscoveryAdjacentSection from '@/components/public/DiscoveryAdjacentSection'
 import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
 import ShareModal from '@/components/public/ShareModal'
+import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
@@ -257,6 +258,7 @@ export default async function ProductsPage({
                       <DiscoveryAdjacentSection
                         products={contextualProducts}
                         selectedProductIds={products.map((product) => product.id)}
+                        context={explorationContext}
                       />
                     )}
                   </>
@@ -315,9 +317,7 @@ export default async function ProductsPage({
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-gray-300">
-                              IMG
-                            </div>
+                            <ProductImagePlaceholder label={`Imagen de ${product.name}`} />
                           )}
                         </div>
                       </Link>
@@ -329,9 +329,9 @@ export default async function ProductsPage({
                               {product.name}
                             </h2>
                           </Link>
-                          {product.description?.trim() && (
+                          {(product.description?.trim() || product.purpose?.trim() || product.whatIs?.trim()) && (
                             <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600">
-                              {product.description}
+                              {product.description?.trim() || product.purpose?.trim() || product.whatIs?.trim()}
                             </p>
                           )}
                         </div>
