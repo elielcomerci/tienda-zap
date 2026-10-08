@@ -101,25 +101,6 @@ export default function PublicHeader({
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const isLinkActive = (href: string) => {
-    const target = new URL(href, 'https://zap.local')
-    if (target.pathname !== pathname) return false
-    
-    const targetCat = target.searchParams.get('cat')
-    const currentCat = searchParams.get('cat')
-    if (targetCat) return currentCat === targetCat
-    
-    const targetMode = target.searchParams.get('mode')
-    const currentMode = searchParams.get('mode')
-    if (targetMode) return currentMode === targetMode
-    
-    if (target.pathname === '/productos') {
-      return !currentCat && !currentMode
-    }
-    
-    return true
-  }
-
   const handleLeadSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
