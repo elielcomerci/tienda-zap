@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const snapshot = {
       source: 'product-context-form',
       product: { id: product.id, name: product.name, slug: product.slug },
-      context: hasContext ? context : null,
+      context: hasContext ? JSON.parse(JSON.stringify(context)) : null,
       answers: JSON.parse(JSON.stringify(answers)),
       submittedAt: new Date().toISOString(),
     }
