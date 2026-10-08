@@ -250,6 +250,8 @@ export default async function ProductsPage({
                     <DiscoveryOfferSection
                       products={products}
                       needName={selectedNeed.name}
+                      businessTypeName={selectedBusinessType?.name}
+                      situationName={selectedSituation.name}
                       businessTypeSlug={rubro}
                       situationSlug={selectedSituation.slug}
                       needSlug={selectedNeed.slug}
