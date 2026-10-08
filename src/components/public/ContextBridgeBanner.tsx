@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
-import { useRef } from 'react'
+import { useRef, type CSSProperties, type PointerEvent } from 'react'
 
 const ZAP_RUBRO_PATHS: Record<string, string> = {
   gastronomia: '/gastronomia/primer-paso',
@@ -24,7 +24,7 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
   const hasRubro = Boolean(businessTypeSlug && businessTypeName)
   const href = hasRubro ? ZAP_RUBRO_PATHS[businessTypeSlug!] || 'https://zap.com.ar/' : 'https://zap.com.ar/'
 
-  function handlePointerMove(event: React.PointerEvent<HTMLAnchorElement>) {
+  function handlePointerMove(event: PointerEvent<HTMLAnchorElement>) {
     const element = ref.current
     if (!element || event.pointerType === 'touch') return
 
@@ -56,7 +56,7 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
         {
           '--mx': '50%',
           '--my': '50%',
-        } as React.CSSProperties
+        } as CSSProperties
       }
     >
       <span className="zap-context-bridge__wash" aria-hidden="true" />
