@@ -26,6 +26,7 @@ export function buildProductsUrl(
     params.set('situacion', context.situationSlug)
   }
   if (context?.needSlug) params.set('necesidad', context.needSlug)
+  else if (context?.businessTypeSlug && !context?.situationSlug) params.set('mode', 'rubro')
 
   Object.entries(overrides).forEach(([key, value]) => {
     if (value) params.set(key, value)
