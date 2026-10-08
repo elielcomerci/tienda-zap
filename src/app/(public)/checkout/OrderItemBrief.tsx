@@ -15,10 +15,10 @@ const briefLabels: Record<BriefType, string> = {
 
 const briefFields: Record<Exclude<BriefType, 'NONE'>, Array<{ key: string; label: string; placeholder: string }>> = {
   DESIGN: [
-    { key: 'subject', label: 'Qué estamos diseñando', placeholder: 'Contanos qué pieza/producto es y para qué la vas a usar' },
-    { key: 'objective', label: 'Qué querés comunicar', placeholder: '¿Qué tiene que lograr esta pieza?' },
-    { key: 'content', label: 'Contenido que ya tenés', placeholder: 'Textos, precios, productos, datos o información que debe aparecer' },
-    { key: 'audience', label: 'Para quién es', placeholder: '¿A quién tiene que hablarle esta pieza?' },
+    { key: 'subject', label: 'Qué estamos diseñando', placeholder: 'Ej: flyer para una promo, menú para el local...' },
+    { key: 'objective', label: 'Qué querés comunicar', placeholder: 'Ej: que conozcan la promo y vengan al local' },
+    { key: 'content', label: 'Contenido que ya tenés', placeholder: 'Pegá acá textos, precios, productos o datos que tengan que aparecer' },
+    { key: 'audience', label: 'Para quién es', placeholder: 'Ej: clientes actuales, gente del barrio...' },
   ],
   MUSIC: [
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
@@ -41,7 +41,7 @@ function normalizeLinks(rawLinks: string[]) {
 function getDesignContextFields(itemName: string) {
   if (itemName === 'Diseño Pack de piezas para redes (10)') {
     return [
-      { key: 'platform', label: 'Dónde se van a publicar', placeholder: 'Ej: Instagram, historias, WhatsApp, varias plataformas' },
+      { key: 'platform', label: 'Dónde se van a publicar', placeholder: 'Ej: Instagram, historias, WhatsApp...' },
     ]
   }
 
@@ -113,9 +113,6 @@ export default function OrderItemBrief({
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
           {briefLabels[briefType]}
         </p>
-        <p className="mt-1 text-xs leading-5 text-gray-600">
-          Contanos lo esencial. Con esto tenemos una primera dirección para empezar a trabajar.
-        </p>
       </div>
 
       <div className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2'}`}>
@@ -145,7 +142,7 @@ export default function OrderItemBrief({
 
       <div className="mt-3 rounded-xl border border-white bg-white p-3">
         <label className="mb-2 block text-xs font-semibold text-gray-700">
-          Referencias
+          Referencias <span className="font-normal text-gray-400">(opcional)</span>
         </label>
         <div className="flex gap-2">
           <div className="relative flex-1">
