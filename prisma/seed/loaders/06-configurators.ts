@@ -15,6 +15,7 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   ];
 
   const products = await prisma.product.findMany({
+    where: { active: true },
     select: { id: true, slug: true },
   });
   const productMap = new Map(products.map((p) => [p.slug, p.id]));
