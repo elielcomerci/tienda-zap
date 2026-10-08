@@ -186,14 +186,14 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
         schema.fields && typeof schema.fields === 'object' && !Array.isArray(schema.fields)
           ? (schema.fields as Record<string, unknown>)
           : {};
-      const pricing =
-        schema.pricing && typeof schema.pricing === 'object' && !Array.isArray(schema.pricing)
-          ? (schema.pricing as Record<string, unknown>)
+      const configuratorPricing =
+        cv.pricing && typeof cv.pricing === 'object' && !Array.isArray(cv.pricing)
+          ? (cv.pricing as Record<string, unknown>)
           : {};
       if (Object.keys(fields).length === 0) {
         errors.push(`[ACTIVE CONFIGURATOR FIELDS MISSING] '${cv.product.slug}' está ACTIVE sin campos comerciales.`);
       }
-      if (typeof pricing.engine !== 'string' || pricing.engine.length === 0) {
+      if (typeof configuratorPricing.engine !== 'string' || configuratorPricing.engine.length === 0) {
         errors.push(`[ACTIVE CONFIGURATOR PRICING MISSING] '${cv.product.slug}' está ACTIVE sin motor de cotización declarado.`);
       }
     }
