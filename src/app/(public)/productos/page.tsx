@@ -10,7 +10,6 @@ import AddToCartButton from '@/components/public/AddToCartButton'
 import CatalogSidebar from '@/components/public/CatalogSidebar'
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
-import DiscoveryAdjacentSection from '@/components/public/DiscoveryAdjacentSection'
 import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
 import ShareModal from '@/components/public/ShareModal'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
@@ -84,7 +83,7 @@ export default async function ProductsPage({
   ])
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
   const businessSituations = getBusinessSituations(rubro, situations)
-  const [products, contextualProducts, categories] = await Promise.all([
+  const [products, categories] = await Promise.all([
     getProducts(
       isSituationMode || mode === 'rubro' ? undefined : cat,
       q,
@@ -97,7 +96,6 @@ export default async function ProductsPage({
         catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
       }
     ), 
-    getProducts(undefined, undefined, rubro ? { businessTypeSlug: rubro, take: 10 } : undefined),
     getPublicCategories()
   ])
   const selectedCategory = categories.find((category) => category.slug === cat)
@@ -305,13 +303,6 @@ export default async function ProductsPage({
                       situationSlug={selectedSituation.slug}
                       needSlug={selectedNeed.slug}
                     />
-                    {rubro && (
-                      <DiscoveryAdjacentSection
-                        products={contextualProducts}
-                        selectedProductIds={products.map((product) => product.id)}
-                        context={explorationContext}
-                      />
-                    )}
                   </>
                 )}
               </>
