@@ -34,7 +34,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   // 2. Audit Situations
-  const dbSituations = await prisma.situation.findMany({ select: { slug: true } });
+  const dbSituations = await prisma.situation.findMany({ where: { active: true }, select: { slug: true } });
   const expectedSituationSlugs = new Set(situationsData.map((s) => s.slug));
   const actualSituationSlugs = new Set(dbSituations.map((s) => s.slug));
 
@@ -50,7 +50,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   // 3. Audit Needs
-  const dbNeeds = await prisma.need.findMany({ select: { slug: true } });
+  const dbNeeds = await prisma.need.findMany({ where: { active: true }, select: { slug: true } });
   const expectedNeedSlugs = new Set(needsData.map((n) => n.slug));
   const actualNeedSlugs = new Set(dbNeeds.map((n) => n.slug));
 
@@ -67,13 +67,14 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
 
   // 4. Audit Product Bases
   const dbProducts = await prisma.product.findMany({
+    where: { active: true },
     select: { id: true, slug: true, modality: true, engine: true },
   });
-  const expectedProductSlugs = new Set(productsData.map((p) => p.slug));
+  const expectedProductSlugs = new Set(productsData.filter((p) => p.active !== false).map((p) => p.slug));
   const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
 
-  if (dbProducts.length !== productsData.length) {
-    errors.push(`[PRODUCTS COUNT] Esperados ${productsData.length}, encontrados en DB: ${dbProducts.length}`);
+  if (dbProducts.length !== expectedProductSlugs.size) {
+    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} activos, encontrados en DB: ${dbProducts.length}`);
   }
   for (const slug of expectedProductSlugs) {
     if (!actualProductSlugs.has(slug)) {
@@ -109,6 +110,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
 
   // 6. Audit ConfiguratorVersion
   const dbConfigurators = await prisma.configuratorVersion.findMany({
+    where: { product: { active: true } },
     include: { product: { select: { slug: true, modality: true, engine: true } } },
   });
 
@@ -122,7 +124,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   const configurableSlugs = new Set(
-    productsData.filter((p) => p.modality === 'CONFIGURABLE').map((p) => p.slug)
+    productsData.filter((p) => p.active !== false && p.modality === 'CONFIGURABLE').map((p) => p.slug)
   );
   const actualConfigSlugs = new Set(dbConfigurators.map((cv) => cv.product.slug));
   for (const cSlug of configurableSlugs) {
@@ -170,14 +172,15 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   // 8. Audit Packs
-  const packCount = await prisma.pack.count();
-  const packItemCount = await prisma.packItem.count();
+  const packCount = await prisma.pack.count({ where: { active: true } });
+  const packItemCount = await prisma.packItem.count({ where: { pack: { active: true } } });
   if (packCount !== 0 || packItemCount !== 0) {
-    errors.push(`[PACKS ERROR] En v1.0 los packs deben ser 0. Encontrados: ${packCount} packs, ${packItemCount} items.`);
+    errors.push(`[PACKS ERROR] En v1.0 los packs activos deben ser 0. Encontrados: ${packCount} packs, ${packItemCount} items activos.`);
   }
 
   // 9. Audit Pricing Infrastructure
   const dbPricingConfigs = await prisma.productQuoterConfig.findMany({
+    where: { product: { active: true } },
     include: {
       product: { select: { slug: true, modality: true, engine: true } },
       allowedMaterials: { include: { rawMaterial: { include: { tiers: true } } } },
@@ -188,7 +191,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     },
   });
 
-  const expectedPricingSlugs = new Set(initialQuoterConfigs.map((c) => c.productSlug));
+  const expectedPricingSlugs = new Set(initialQuoterConfigs.filter((c) => expectedProductSlugs.has(c.productSlug)).map((c) => c.productSlug));
   const actualPricingSlugs = new Set(dbPricingConfigs.map((c) => c.product.slug));
   if (dbPricingConfigs.length !== initialQuoterConfigs.length) {
     errors.push(`[PRICING CONFIG COUNT] Esperados ${initialQuoterConfigs.length}, encontrados ${dbPricingConfigs.length}.`);
