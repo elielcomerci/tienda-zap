@@ -40,5 +40,13 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
     });
   }
 
-  console.log(`[SEED] ${productsData.length} Product Bases persistidos.`);
+  const expectedSlugs = productsData.map((product) => product.slug);
+  // Keep historical product rows (orders/relations may reference them), but remove
+  // products outside the current catalog from the public surface.
+  await prisma.product.updateMany({
+    where: { slug: { notIn: expectedSlugs }, active: true },
+    data: { active: false },
+  });
+
+  console.log(`[SEED] ${productsData.length} Product Bases persistidos; productos fuera de fuente desactivados.`);
 }
