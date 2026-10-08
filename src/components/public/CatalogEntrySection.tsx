@@ -27,8 +27,7 @@ export default function CatalogEntrySection({
     <section className="border-t border-gray-200 bg-white">
       <div className="mx-auto max-w-[1380px] px-4 py-16 xl:px-8">
         <div className="mb-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-gray-950 flex items-baseline">
-            <span className="text-gray-400 font-bold mr-3 text-lg sm:text-xl lg:text-2xl">02</span>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-gray-950">
             ¿Cómo querés avanzar?
           </h2>
         </div>
