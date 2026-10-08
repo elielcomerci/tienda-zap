@@ -829,9 +829,6 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         '10x10': { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
       },
     },
-      },
-    modifiers: {
-    },
   },
 };
 
@@ -917,9 +914,9 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
     engine: 'PROVIDER_FINISHED_COST',
     providerFinishedCostMatrix: {
       resolver: { type: 'FOLDERS_DIGITAL' },
-       tiers: carpetasDigital300gTiers },
-    providerFinishedCostMatrix: {
-      currency: 'ARS', taxIncluded: false, paymentCondition: 'PAGO_ANTICIPADO',
+      currency: 'ARS',
+      taxIncluded: false,
+      paymentCondition: 'PAGO_ANTICIPADO',
       digital_300g: { material: 'ilustracion_300g', format: 'a4', tiers: carpetasDigital300gTiers },
       offset_350g: {
         material: 'ilustracion_350g', format: 'a4_oficio', delivery: '14_DIAS',
