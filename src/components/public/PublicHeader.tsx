@@ -156,99 +156,46 @@ export default function PublicHeader({
           <nav className="hidden md:flex items-center space-x-8 h-full">
             <ul className="flex items-center space-x-8 h-full">
               
-              {/* Desktop link: Productos */}
-              <li className="relative group h-full flex items-center">
-                <Link 
-                  href="/productos?mode=product"
-                  className={`flex items-center gap-1 text-sm font-semibold transition-colors py-2 ${
-                    pathname === '/productos' && searchParams.get('mode') !== 'combo' && searchParams.get('mode') !== 'situation'
-                      ? 'text-[#ED164F]'
-                      : 'text-gray-900 hover:text-[#ED164F]'
-                  }`}
-                >
-                  <span>Productos</span>
-                  <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180 text-gray-500" />
-                </Link>
-                
-                <div className="absolute top-[100%] left-0 pt-2 w-[260px] hidden group-hover:block z-50">
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-1.5 mb-2">
-                      Categorías
-                    </p>
-                    <Link 
-                      href="/productos?mode=product" 
-                      className="block text-sm font-bold text-gray-900 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
-                    >
-                      Ver todo el catálogo
-                    </Link>
-                    <div className="max-h-[240px] overflow-y-auto pr-1 space-y-0.5">
-                      {categories.map((cat) => (
-                        <Link 
-                          key={cat.id} 
-                          href={`/productos?mode=product&cat=${cat.slug}`} 
-                          className="block text-sm font-medium text-gray-600 hover:text-[#ED164F] p-1.5 rounded-lg hover:bg-[#FEF1F5] transition-all"
-                        >
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              {/* Desktop link: Soluciones */}
+              {/* Cambiar la forma de explorar sin perder el contexto elegido */}
               <li className="h-full flex items-center">
-                <Link
-                  href="/productos?mode=rubro"
-                  className={`text-sm font-semibold transition-colors ${
-                    searchParams.get('mode') === 'rubro'
-                      ? 'text-[#ED164F]'
-                      : 'text-gray-900 hover:text-[#ED164F]'
-                  }`}
+                <div
+                  role="group"
+                  aria-label="Elegí cómo explorar la tienda"
+                  className="flex items-center gap-0.5 rounded-xl border border-gray-200 bg-gray-100/80 p-1"
                 >
-                  Soluciones
-                </Link>
-              </li>
-
-              {/* Desktop link: Situaciones */}
-              <li className="relative group h-full flex items-center">
-                <Link 
-                  href="/productos?mode=situation"
-                  className={`flex items-center gap-1 text-sm font-semibold transition-colors py-2 ${
-                    searchParams.get('mode') === 'situation'
-                      ? 'text-[#ED164F]'
-                      : 'text-gray-900 hover:text-[#ED164F]'
-                  }`}
-                >
-                  <span>Situaciones</span>
-                  <ChevronDown size={14} className="transition-transform duration-250 group-hover:rotate-180 text-gray-500" />
-                </Link>
-                
-                <div className="absolute top-[100%] left-0 pt-2 w-[260px] hidden group-hover:block z-50">
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {intentions
-                      .filter((i) => FEATURED_SITUATION_SLUGS.includes(i.slug))
-                      .sort((a, b) => FEATURED_SITUATION_SLUGS.indexOf(a.slug) - FEATURED_SITUATION_SLUGS.indexOf(b.slug))
-                      .map((intent) => (
-                        <Link 
-                          key={intent.id} 
-                          href={`/productos?mode=situation&situacion=${intent.slug}`}
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-[#ED164F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
-                        >
-                          {intent.icon && <span className="shrink-0 text-base">{intent.icon}</span>}
-                          <span className="truncate">{intent.name}</span>
-                        </Link>
-                      ))
-                    }
-                    <div className="border-t border-gray-100 pt-1 mt-1">
-                      <Link 
-                        href="/productos?mode=situation"
-                        className="block text-sm font-bold text-[#ED164F] hover:text-[#C2103F] p-2 rounded-lg hover:bg-[#FEF1F5] transition-all"
-                      >
-                        Ver todas las situaciones →
-                      </Link>
-                    </div>
-                  </div>
+                  <Link
+                    href={buildProductsUrl(explorationContext, { mode: 'situation', cat: undefined, tipo: undefined })}
+                    aria-current={searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective' ? 'page' : undefined}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                      searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective'
+                        ? 'bg-white text-[#ED164F] shadow-sm'
+                        : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
+                    }`}
+                  >
+                    Situación
+                  </Link>
+                  <Link
+                    href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
+                    aria-current={searchParams.get('mode') === 'rubro' ? 'page' : undefined}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                      searchParams.get('mode') === 'rubro'
+                        ? 'bg-white text-[#ED164F] shadow-sm'
+                        : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
+                    }`}
+                  >
+                    Rubro
+                  </Link>
+                  <Link
+                    href={buildProductsUrl(explorationContext, { mode: 'product' })}
+                    aria-current={searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo' ? 'page' : undefined}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                      searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo'
+                        ? 'bg-white text-[#ED164F] shadow-sm'
+                        : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
+                    }`}
+                  >
+                    Producto
+                  </Link>
                 </div>
               </li>
 
