@@ -147,10 +147,22 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   const configurableSlugs = new Set(
     productsData.filter((p) => p.active !== false && p.modality === 'CONFIGURABLE').map((p) => p.slug)
   );
-  const actualConfigSlugs = new Set(dbConfigurators.map((cv) => cv.product.slug));
-  for (const cSlug of configurableSlugs) {
-    if (!actualConfigSlugs.has(cSlug)) {
-      errors.push(`[CONFIGURATOR MISSING] Falta versión 1.0 para producto configurable '${cSlug}'`);
+  const actualConfigKeys = new Set(
+    dbConfigurators.map((cv) => cv.product.slug + '|' + cv.schemaVersion)
+  );
+  const expectedConfigKeys = new Set(
+    Array.from(configurableSlugs).map((slug) => slug + '|1.0')
+  );
+
+  for (const key of expectedConfigKeys) {
+    if (!actualConfigKeys.has(key)) {
+      errors.push(`[CONFIGURATOR MISSING] Falta versión esperada '${key}'`);
+    }
+  }
+
+  for (const key of actualConfigKeys) {
+    if (!expectedConfigKeys.has(key)) {
+      errors.push(`[CONFIGURATOR EXTRA] ConfiguratorVersion inesperado '${key}'`);
     }
   }
 
