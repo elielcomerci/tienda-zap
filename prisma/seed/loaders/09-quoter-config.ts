@@ -7,9 +7,10 @@ import {
 import { quoterOptionConfigs } from '../data/09-quoter-options';
 
 export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
+  await prisma.$transaction(async (tx) => {
   // 1. Materias Primas con IDs estables
   for (const material of sheetRawMaterials) {
-    await prisma.rawMaterial.upsert({
+    await tx.rawMaterial.upsert({
       where: { id: material.id },
       update: {
         name: material.name,
@@ -28,11 +29,11 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
       },
     });
 
-    await prisma.rawMaterialTier.deleteMany({
+    await tx.rawMaterialTier.deleteMany({
       where: { rawMaterialId: material.id },
     });
 
-    await prisma.rawMaterialTier.createMany({
+    await tx.rawMaterialTier.createMany({
       data: material.tiers.map((t) => ({
         rawMaterialId: material.id,
         minQty: t.minQty,
@@ -44,7 +45,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
 
   // 2. Operaciones de Terminación con IDs estables
   for (const finishing of sheetFinishingOperations) {
-    await prisma.finishingOperation.upsert({
+    await tx.finishingOperation.upsert({
       where: { id: finishing.id },
       update: {
         name: finishing.name,
@@ -59,11 +60,11 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
       },
     });
 
-    await prisma.finishingTier.deleteMany({
+    await tx.finishingTier.deleteMany({
       where: { finishingId: finishing.id },
     });
 
-    await prisma.finishingTier.createMany({
+    await tx.finishingTier.createMany({
       data: finishing.tiers.map((t) => ({
         finishingId: finishing.id,
         minQty: t.minQty,
@@ -75,7 +76,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
 
   // 3. ProductQuoterConfig para productos configurables
   for (const quoterCfg of initialQuoterConfigs) {
-    const product = await prisma.product.findUnique({
+    const product = await tx.product.findUnique({
       where: { slug: quoterCfg.productSlug },
       select: { id: true },
     });
@@ -85,7 +86,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
       continue;
     }
 
-    const config = await prisma.productQuoterConfig.upsert({
+    const config = await tx.productQuoterConfig.upsert({
       where: { productId: product.id },
       update: {
         pricingMode: quoterCfg.pricingMode,
@@ -109,10 +110,10 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
     });
 
     // Materials link
-    await prisma.productQuoterConfigMaterial.deleteMany({
+    await tx.productQuoterConfigMaterial.deleteMany({
       where: { configId: config.id },
     });
-    await prisma.productQuoterConfigMaterial.createMany({
+    await tx.productQuoterConfigMaterial.createMany({
       data: quoterCfg.rawMaterialIds.map((rawMaterialId) => ({
         configId: config.id,
         rawMaterialId,
@@ -120,10 +121,10 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
     });
 
     // Finishings link
-    await prisma.quoterConfigFinishing.deleteMany({
+    await tx.quoterConfigFinishing.deleteMany({
       where: { configId: config.id },
     });
-    await prisma.quoterConfigFinishing.createMany({
+    await tx.quoterConfigFinishing.createMany({
       data: quoterCfg.finishingIds.map((finishingId) => ({
         configId: config.id,
         finishingId,
@@ -131,10 +132,10 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
     });
 
     // Size presets
-    await prisma.productQuoterSizePreset.deleteMany({
+    await tx.productQuoterSizePreset.deleteMany({
       where: { configId: config.id },
     });
-    await prisma.productQuoterSizePreset.createMany({
+    await tx.productQuoterSizePreset.createMany({
       data: quoterCfg.sizePresets.map((sp) => ({
         configId: config.id,
         label: sp.label,
@@ -146,7 +147,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
 
     // Semantic option groups. Rebuild from the source of truth so stale
     // options/constraints/size links cannot survive a seed.
-    await prisma.productQuoterOptionGroup.deleteMany({
+    await tx.productQuoterOptionGroup.deleteMany({
       where: { configId: config.id },
     });
 
@@ -155,7 +156,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
     );
 
     for (const groupSeed of optionConfig?.groups ?? []) {
-      const group = await prisma.productQuoterOptionGroup.create({
+      const group = await tx.productQuoterOptionGroup.create({
         data: {
           configId: config.id,
           key: groupSeed.key,
@@ -176,7 +177,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
           );
         }
 
-        const option = await prisma.productQuoterOption.create({
+        const option = await tx.productQuoterOption.create({
           data: {
             groupId: group.id,
             key: optionSeed.key,
@@ -190,7 +191,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
         });
 
         for (const sizeLabel of optionSeed.allowedSizeLabels ?? []) {
-          const sizePreset = await prisma.productQuoterSizePreset.findUnique({
+          const sizePreset = await tx.productQuoterSizePreset.findUnique({
             where: {
               configId_label: {
                 configId: config.id,
@@ -206,7 +207,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
             );
           }
 
-          await prisma.productQuoterOptionSize.create({
+          await tx.productQuoterOptionSize.create({
             data: {
               optionId: option.id,
               sizePresetId: sizePreset.id,
@@ -217,10 +218,10 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
     }
 
     // Quantity presets
-    await prisma.productQuoterQuantityPreset.deleteMany({
+    await tx.productQuoterQuantityPreset.deleteMany({
       where: { configId: config.id },
     });
-    await prisma.productQuoterQuantityPreset.createMany({
+    await tx.productQuoterQuantityPreset.createMany({
       data: quoterCfg.quantityPresets.map((qp) => ({
         configId: config.id,
         quantity: qp.quantity,
@@ -228,6 +229,8 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
       })),
     });
   }
+
+  });
 
   const rawMaterialCount = await prisma.rawMaterial.count();
   const finishingCount = await prisma.finishingOperation.count();
