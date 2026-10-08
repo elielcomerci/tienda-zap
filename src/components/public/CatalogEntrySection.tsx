@@ -25,7 +25,7 @@ export default function CatalogEntrySection({
         <div className="border-t border-gray-900">
           <Link
             href="/productos?mode=rubro"
-            className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
+            className="group flex flex-col items-start gap-3 py-8 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:py-10 border-b border-gray-200 transition-colors"
           >
             <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
               Soluciones
@@ -38,7 +38,7 @@ export default function CatalogEntrySection({
           {hasCosas && (
             <Link
               href="/productos?mode=product&tipo=cosa"
-              className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
+              className="group flex flex-col items-start gap-3 py-8 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:py-10 border-b border-gray-200 transition-colors"
             >
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
                 Cosas
@@ -52,7 +52,7 @@ export default function CatalogEntrySection({
           {hasDesarrollos && (
             <Link
               href="/productos?mode=product&tipo=desarrollo"
-              className="group flex items-center justify-between py-8 sm:py-10 border-b border-gray-200 transition-colors"
+              className="group flex flex-col items-start gap-3 py-8 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:py-10 border-b border-gray-200 transition-colors"
             >
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-gray-950 group-hover:text-[#ED164F] transition-colors">
                 Desarrollos
