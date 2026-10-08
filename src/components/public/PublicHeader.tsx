@@ -35,6 +35,7 @@ export default function PublicHeader({
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
   const requestedExplorationMode = searchParams.get('mode')
   const explorationContext = {
     mode: requestedExplorationMode === 'objective'
@@ -152,9 +153,9 @@ export default function PublicHeader({
                 >
                   <Link
                     href={buildProductsUrl(explorationContext, { mode: 'situation', cat: undefined, tipo: undefined })}
-                    aria-current={searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective' ? 'page' : undefined}
+                    aria-current={isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective') ? 'page' : undefined}
                     className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                      searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective'
+                      isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective')
                         ? 'bg-white text-[#ED164F] shadow-sm'
                         : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
                     }`}
@@ -163,9 +164,9 @@ export default function PublicHeader({
                   </Link>
                   <Link
                     href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
-                    aria-current={searchParams.get('mode') === 'rubro' ? 'page' : undefined}
+                    aria-current={isProductArea && searchParams.get('mode') === 'rubro' ? 'page' : undefined}
                     className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                      searchParams.get('mode') === 'rubro'
+                      isProductArea && searchParams.get('mode') === 'rubro'
                         ? 'bg-white text-[#ED164F] shadow-sm'
                         : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
                     }`}
@@ -174,9 +175,9 @@ export default function PublicHeader({
                   </Link>
                   <Link
                     href={buildProductsUrl(explorationContext, { mode: 'product' })}
-                    aria-current={searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo' ? 'page' : undefined}
+                    aria-current={isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo' ? 'page' : undefined}
                     className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                      searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo'
+                      isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo'
                         ? 'bg-white text-[#ED164F] shadow-sm'
                         : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
                     }`}
