@@ -30,7 +30,7 @@ export default function CatalogSidebar({
   const isCatalogTypeMode = currentMode === 'product' && Boolean(catalogType)
   const isCosas = currentMode === 'product' && catalogType === 'cosa'
   const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
-  const isSoluciones = currentMode === 'rubro' || isSituationMode
+  const isRubro = currentMode === 'rubro'
   const explorationContext: ExplorationContext = {
     mode: isSituationMode ? 'situation' : currentMode === 'rubro' ? 'rubro' : currentMode === 'product' ? 'product' : undefined,
     businessTypeSlug: businessType,
@@ -49,7 +49,7 @@ export default function CatalogSidebar({
           <Link href={catalogUrl({ mode: 'product', tipo: 'cosa' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isCosas ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Cosas
           </Link>
-          <Link href={catalogUrl({ mode: 'rubro' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isSoluciones ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+          <Link href={catalogUrl({ mode: 'rubro' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isRubro ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Soluciones
           </Link>
           <Link href={catalogUrl({ mode: 'product', tipo: 'desarrollo' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isDesarrollos ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
