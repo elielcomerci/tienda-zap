@@ -6,7 +6,6 @@ export interface CartItem {
   name: string
   price: number
   catalogType: 'COSA' | 'DESARROLLO'
-  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
   creditDownPaymentPercent?: number
   image: string
   quantity: number

@@ -61,6 +61,7 @@ export default function OrderItemBrief({
 
   const updateResponse = (key: string, value: string) => {
     updateBrief(item.cartItemId!, {
+      briefType,
       briefResponses: { ...responses, [key]: value },
       briefReferenceLinks: referenceLinks,
       briefReferenceFiles: item.briefReferenceFiles || [],
@@ -71,6 +72,7 @@ export default function OrderItemBrief({
     const nextLinks = normalizeLinks([...referenceLinks, linkDraft])
     if (nextLinks.length === referenceLinks.length) return
     updateBrief(item.cartItemId!, {
+      briefType,
       briefResponses: responses,
       briefReferenceLinks: nextLinks,
       briefReferenceFiles: item.briefReferenceFiles || [],
@@ -80,6 +82,7 @@ export default function OrderItemBrief({
 
   const removeLink = (index: number) => {
     updateBrief(item.cartItemId!, {
+      briefType,
       briefResponses: responses,
       briefReferenceLinks: referenceLinks.filter((_, linkIndex) => linkIndex !== index),
       briefReferenceFiles: item.briefReferenceFiles || [],
