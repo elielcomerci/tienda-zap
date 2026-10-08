@@ -90,6 +90,10 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   const expectedProductSlugs = new Set(productsData.filter((p) => p.active !== false).map((p) => p.slug));
   const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
 
+  if (productsData.length !== new Set(productsData.map((p) => p.slug)).size) {
+    errors.push('[PRODUCT DATA DUPLICATE] Hay slugs de producto duplicados en productsData.');
+  }
+
   if (dbProducts.length !== expectedProductSlugs.size) {
     errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos, encontrados en DB: ${dbProducts.length}`);
   }
