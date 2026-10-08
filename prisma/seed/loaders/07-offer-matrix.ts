@@ -14,14 +14,8 @@ export async function loadOfferMatrix(prisma: PrismaClient): Promise<void> {
   const needMap = new Map(needs.map((n) => [n.slug, n.id]));
   const prodMap = new Map(products.map((p) => [p.slug, p.id]));
 
-  // La matriz editorial es una fuente completa, no incremental:
-  // cualquier relación que ya no esté en el seed debe desaparecer de la DB.
-  // OfferMatrixEntry no es referenciada por otras entidades, por lo que podemos
-  // reconstruirla de forma determinista en cada seed.
-  await prisma.offerMatrixEntry.deleteMany({});
-
-  for (let i = 0; i < offerMatrixData.length; i++) {
-    const entry = offerMatrixData[i];
+  // Resolver y validar todo antes de tocar la matriz persistida.
+  const resolvedEntries = offerMatrixData.map((entry, index) => {
     const businessTypeId = btMap.get(entry.businessTypeSlug);
     const situationId = sitMap.get(entry.situationSlug);
     const needId = needMap.get(entry.needSlug);
@@ -40,27 +34,23 @@ export async function loadOfferMatrix(prisma: PrismaClient): Promise<void> {
       throw new Error(`[SEED ERROR] Product no encontrado: ${entry.productSlug}`);
     }
 
-    await prisma.offerMatrixEntry.upsert({
-      where: {
-        businessTypeId_situationId_needId_productId: {
-          businessTypeId,
-          situationId,
-          needId,
-          productId,
-        },
-      },
-      update: {
-        order: (i + 1) * 10,
-      },
-      create: {
-        businessTypeId,
-        situationId,
-        needId,
-        productId,
-        order: (i + 1) * 10,
-      },
-    });
-  }
+    return {
+      businessTypeId,
+      situationId,
+      needId,
+      productId,
+      order: (index + 1) * 10,
+    };
+  });
 
-  console.log(`[SEED] ${offerMatrixData.length} OfferMatrixEntries persistidas.`);
+  // La matriz editorial es fuente completa. La sustitución es atómica:
+  // un error de escritura no deja la base con la matriz vacía o incompleta.
+  await prisma.$transaction(async (tx) => {
+    await tx.offerMatrixEntry.deleteMany({});
+    if (resolvedEntries.length > 0) {
+      await tx.offerMatrixEntry.createMany({ data: resolvedEntries });
+    }
+  });
+
+  console.log(`[SEED] ${resolvedEntries.length} OfferMatrixEntries persistidas.`);
 }
