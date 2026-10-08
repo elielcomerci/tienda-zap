@@ -15,7 +15,7 @@ const briefLabels: Record<BriefType, string> = {
 
 const briefFields: Record<Exclude<BriefType, 'NONE'>, Array<{ key: string; label: string; placeholder: string }>> = {
   DESIGN: [
-    { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o marca' },
+    { key: 'subject', label: 'Que estamos diseñando', placeholder: 'Contanos que pieza/producto es y para que la vas a usar' },
     { key: 'objective', label: 'Que queres comunicar', placeholder: 'Que tiene que lograr esta pieza?' },
     { key: 'content', label: 'Contenido que ya tenes', placeholder: 'Textos, precios, productos, datos o información que debe aparecer' },
     { key: 'audience', label: 'Para quien es', placeholder: 'A quien tiene que hablarle esta pieza?' },
@@ -38,6 +38,22 @@ function normalizeLinks(rawLinks: string[]) {
   return rawLinks.map((link) => link.trim()).filter(Boolean)
 }
 
+function getDesignContextFields(itemName: string) {
+  if (itemName === 'Diseño Pack de piezas para redes (10)') {
+    return [
+      { key: 'platform', label: 'Donde se van a publicar', placeholder: 'Ej: Instagram, historias, WhatsApp, varias plataformas' },
+    ]
+  }
+
+  if (itemName === 'Diseño de Papelería Corporativa') {
+    return [
+      { key: 'pieces', label: 'Que piezas necesitás', placeholder: 'Ej: tarjetas, hoja membretada y sobre' },
+    ]
+  }
+
+  return []
+}
+
 export default function OrderItemBrief({
   item,
   compact = false,
@@ -51,8 +67,10 @@ export default function OrderItemBrief({
 
   const fields = useMemo(() => {
     if (briefType === 'NONE') return []
-    return briefFields[briefType]
-  }, [briefType])
+    const baseFields = briefFields[briefType]
+    if (briefType !== 'DESIGN') return baseFields
+    return [...baseFields, ...getDesignContextFields(item.name)]
+  }, [briefType, item.name])
 
   if (briefType === 'NONE') return null
 
