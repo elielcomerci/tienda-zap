@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, Link2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { getProductFamilyLabel } from '@/lib/catalog-domain'
+import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 type RelatedProduct = {
   id: string
@@ -23,8 +24,10 @@ type RelatedProduct = {
 
 export default function RelatedProductsSection({
   products,
+  context,
 }: {
   products: RelatedProduct[]
+  context?: ExplorationContext
 }) {
   if (products.length === 0) {
     return null
@@ -54,7 +57,7 @@ export default function RelatedProductsSection({
           return (
             <Link
               key={product.id}
-              href={`/productos/${product.slug}`}
+              href={buildProductUrl(product.slug, context)}
               className="card group overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="aspect-square overflow-hidden bg-gray-100">
