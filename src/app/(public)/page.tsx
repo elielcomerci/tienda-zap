@@ -1,11 +1,9 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
-import { getProducts } from '@/lib/products'
+import { getPublicCatalogTypes } from '@/lib/products'
 import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
-import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
 import HomeLandingSections from '@/components/public/HomeLandingSections'
 
 export const metadata = {
@@ -15,26 +13,8 @@ export const metadata = {
 }
 
 export default async function HomePage() {
-  const session = await auth()
-  let businessTypeName: string | null = null
-  let businessTypeId: string | null = null
-
-  if (session?.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        businessType: true,
-      },
-    })
-    if (user?.businessType) {
-      businessTypeId = user.businessType.id
-      businessTypeName = user.businessType.name
-    }
-  }
-
-  const [cosas, desarrollos, situations, businessTypes] = await Promise.all([
-    getProducts(undefined, undefined, { take: 12, catalogType: 'COSA' }),
-    getProducts(undefined, undefined, { take: 12, catalogType: 'DESARROLLO' }),
+  const [catalogTypes, situations, businessTypes] = await Promise.all([
+    getPublicCatalogTypes(),
     getPublicSituations(),
     getPublicBusinessTypes(),
   ])
@@ -49,7 +29,7 @@ export default async function HomePage() {
       <HomeLandingSections
         businessTypes={businessTypes}
         situations={situations}
-        products={[...cosas, ...desarrollos]}
+        products={catalogTypes}
       />
 
       {/* ── 5. CIERRE ─────────────────────────────────────────────── */}
