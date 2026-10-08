@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { buildProductsUrl } from '@/lib/exploration-context'
 import { ArrowRight, ChevronDown } from 'lucide-react'
+import ContextBridgeBanner from '@/components/public/ContextBridgeBanner'
 
 interface BusinessTypeItem {
   id: string
@@ -211,7 +212,17 @@ export default function HomeHero({
                   </div>
                 )}
               </span>
-              <span> y </span>
+            </h1>
+
+            <div className="my-5 max-w-4xl">
+              <ContextBridgeBanner
+                businessTypeName={currentRubro?.name}
+                businessTypeSlug={selectedRubro || undefined}
+              />
+            </div>
+
+            <h1 className="text-[clamp(2.25rem,5.5vw,4.75rem)] font-black tracking-tight text-gray-950 leading-[1.15]">
+              <span>y </span>
               <br />
               <span className="relative inline-block align-baseline whitespace-nowrap">
                 <button
@@ -294,6 +305,12 @@ export default function HomeHero({
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="pt-1">
+                <ContextBridgeBanner
+                  businessTypeName={currentRubro?.name}
+                  businessTypeSlug={selectedRubro || undefined}
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
