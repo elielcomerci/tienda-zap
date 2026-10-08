@@ -241,5 +241,6 @@ export function calculateProductQuote(
       productionCost: totalCost,
       marginAmount: roundedTotalPrice - totalCost,
       marginPercent,
-      }
+    },
+  }
 }
