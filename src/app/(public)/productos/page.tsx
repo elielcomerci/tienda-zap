@@ -122,7 +122,7 @@ export default async function ProductsPage({
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                {isSituationMode ? 'Situaciones' : mode === 'rubro' ? 'Rubro' : tipo === 'desarrollo' ? 'Desarrollos' : 'Cosas'}
+                {mode === 'rubro' ? 'Rubro' : tipo === 'desarrollo' ? 'Desarrollos' : 'Cosas'}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
                 {isSituationMode
