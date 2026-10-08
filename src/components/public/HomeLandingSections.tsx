@@ -18,18 +18,8 @@ type SituationItem = {
   icon?: string | null
 }
 
-type ProductSnippet = {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  images: string[]
-  price: number
-  modality: 'CONFIGURABLE' | 'DIRECTO' | 'CONSULTAR'
+type CatalogTypeItem = {
   catalogType: 'COSA' | 'DESARROLLO'
-  engine: 'IMPRESOS_PACKAGING' | 'PRESENCIA_FISICA' | 'TEXTIL' | 'DIGITAL' | 'CAMPANAS' | null
-  variants: { price: number }[]
-  quoterConfig: unknown | null
 }
 
 export default function HomeLandingSections({
@@ -39,7 +29,7 @@ export default function HomeLandingSections({
 }: {
   businessTypes: BusinessTypeItem[]
   situations: SituationItem[]
-  products: ProductSnippet[]
+  products: CatalogTypeItem[]
 }) {
   const [selectedRubro, setSelectedRubro] = useState('')
 
@@ -54,7 +44,7 @@ export default function HomeLandingSections({
         onSelectedRubroChange={setSelectedRubro}
       />
 
-      {/* Separador editorial entre el Hero (01) y el catálogo (02). */}
+      {/* Separador editorial entre el Hero y el catálogo. */}
       <section
         aria-label="Conocé más sobre ZAP"
         className="relative overflow-hidden bg-gradient-to-r from-[#ED164F] via-[#C52C78] to-[#4576B9] text-white"
