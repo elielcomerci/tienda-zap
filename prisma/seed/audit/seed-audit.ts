@@ -14,6 +14,19 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
 
   const errors: string[] = [];
 
+  // Product Bases are the 23 ordered base offers. Eight additional direct
+  // design products (orders 24–31) are complementary catalog entries.
+  const productBaseData = productsData.filter((product) => product.order >= 1 && product.order <= 23);
+  const additionalCatalogProducts = productsData.filter((product) => product.order > 23);
+  const productBaseSlugs = new Set(productBaseData.map((product) => product.slug));
+
+  if (productBaseData.length !== 23 || productBaseSlugs.size !== 23) {
+    errors.push(`[PRODUCT BASES COUNT] Esperadas 23 Product Bases únicas, encontradas ${productBaseData.length} filas y ${productBaseSlugs.size} slugs.`);
+  }
+  if (additionalCatalogProducts.length !== 8) {
+    errors.push(`[CATALOG COMPLEMENTS COUNT] Esperados 8 productos directos complementarios, encontrados ${additionalCatalogProducts.length}.`);
+  }
+
   // 1. Audit Rubros (BusinessTypes)
   const dbRubros = await prisma.businessType.findMany({ select: { slug: true } });
   const expectedRubroSlugs = new Set(businessTypesData.map((b) => b.slug));
@@ -74,16 +87,16 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
 
   if (dbProducts.length !== expectedProductSlugs.size) {
-    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} activos, encontrados en DB: ${dbProducts.length}`);
+    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos, encontrados en DB: ${dbProducts.length}`);
   }
   for (const slug of expectedProductSlugs) {
     if (!actualProductSlugs.has(slug)) {
-      errors.push(`[PRODUCTS MISSING] Product Base faltante en DB: ${slug}`);
+      errors.push(`[PRODUCTS MISSING] Producto faltante en DB: ${slug}`);
     }
   }
   for (const slug of actualProductSlugs) {
     if (!expectedProductSlugs.has(slug)) {
-      errors.push(`[PRODUCTS EXTRA] Product Base no esperado en DB: ${slug}`);
+      errors.push(`[PRODUCTS EXTRA] Producto activo no esperado en DB: ${slug}`);
     }
   }
 
@@ -142,6 +155,16 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
       product: { select: { slug: true } },
     },
   });
+
+  const matrixProductSlugs = new Set(offerMatrixData.map((entry) => entry.productSlug));
+  if (matrixProductSlugs.size !== 22) {
+    errors.push(`[MATRIX PRODUCT BASE COUNT] Esperadas 22 Product Bases distintas en la matriz, encontradas ${matrixProductSlugs.size}.`);
+  }
+  for (const slug of matrixProductSlugs) {
+    if (!productBaseSlugs.has(slug)) {
+      errors.push(`[MATRIX PRODUCT NOT BASE] La matriz referencia '${slug}', que no está en las 23 Product Bases declaradas.`);
+    }
+  }
 
   const expectedTupleKeys = new Set(
     offerMatrixData.map(
@@ -285,6 +308,8 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   console.log('Rubros:              7 / 7');
+  console.log(`Product Bases:       ${productBaseData.length} / 23`);
+  console.log(`Productos catálogo:  ${dbProducts.length} / ${expectedProductSlugs.size}`);
   console.log(`Situaciones:         ${dbSituations.length} OK`);
   console.log(`Necesidades:         ${dbNeeds.length} OK`);
   const activeCount = dbConfigurators.filter((c) => c.status === 'ACTIVE').length;
