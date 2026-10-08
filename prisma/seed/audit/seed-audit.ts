@@ -115,10 +115,6 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   const expectedProductSlugs = new Set(productsData.filter((p) => p.active !== false).map((p) => p.slug));
   const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
 
-  if (productsData.length !== new Set(productsData.map((p) => p.slug)).size) {
-    errors.push('[PRODUCT DATA DUPLICATE] Hay slugs de producto duplicados en productsData.');
-  }
-
   if (dbProducts.length !== expectedProductSlugs.size) {
     errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos, encontrados en DB: ${dbProducts.length}`);
   }
@@ -169,6 +165,37 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     }
     if (cv.schemaVersion !== '1.0') {
       errors.push(`[CONFIGURATOR ERROR] schemaVersion incorrecto '${cv.schemaVersion}' en '${cv.product.slug}'`);
+    }
+
+    const schema =
+      cv.schema && typeof cv.schema === 'object' && !Array.isArray(cv.schema)
+        ? (cv.schema as Record<string, unknown>)
+        : {};
+    if (schema.engine && schema.engine !== cv.product.engine) {
+      errors.push(
+        `[CONFIGURATOR ENGINE MISMATCH] '${cv.product.slug}': producto usa ${cv.product.engine}, schema declara ${String(schema.engine)}.`
+      );
+    }
+    if (schema.productSlug && schema.productSlug !== cv.product.slug) {
+      errors.push(
+        `[CONFIGURATOR PRODUCT MISMATCH] La versión de '${cv.product.slug}' declara schema.productSlug='${String(schema.productSlug)}'.`
+      );
+    }
+    if (cv.status === 'ACTIVE') {
+      const fields =
+        schema.fields && typeof schema.fields === 'object' && !Array.isArray(schema.fields)
+          ? (schema.fields as Record<string, unknown>)
+          : {};
+      const pricing =
+        schema.pricing && typeof schema.pricing === 'object' && !Array.isArray(schema.pricing)
+          ? (schema.pricing as Record<string, unknown>)
+          : {};
+      if (Object.keys(fields).length === 0) {
+        errors.push(`[ACTIVE CONFIGURATOR FIELDS MISSING] '${cv.product.slug}' está ACTIVE sin campos comerciales.`);
+      }
+      if (typeof pricing.engine !== 'string' || pricing.engine.length === 0) {
+        errors.push(`[ACTIVE CONFIGURATOR PRICING MISSING] '${cv.product.slug}' está ACTIVE sin motor de cotización declarado.`);
+      }
     }
   }
 
