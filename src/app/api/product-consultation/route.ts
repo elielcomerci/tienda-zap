@@ -18,13 +18,22 @@ export async function POST(request: NextRequest) {
     const customerPhone = clean(body.customerPhone)
     const customerEmail = clean(body.customerEmail).toLowerCase()
     const businessTypeId = clean(body.businessTypeId) || null
+    const rawContext = body.context && typeof body.context === 'object' ? body.context as Record<string, unknown> : null
+    const context = rawContext
+      ? {
+          businessTypeSlug: clean(rawContext.businessTypeSlug) || undefined,
+          situationSlug: clean(rawContext.situationSlug) || undefined,
+          needSlug: clean(rawContext.needSlug) || undefined,
+        }
+      : null
+    const hasContext = Boolean(context?.businessTypeSlug || context?.situationSlug || context?.needSlug)
     const answers = (body.answers || {}) as Record<string, unknown>
 
-    if (!productId || !customerName || !customerPhone || !customerEmail) {
+    if (!productId || !customerName || !customerPhone) {
       return Response.json({ error: 'Completá tus datos de contacto.' }, { status: 400 })
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+    if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
       return Response.json({ error: 'Revisá el email.' }, { status: 400 })
     }
 
@@ -42,6 +51,7 @@ export async function POST(request: NextRequest) {
     const snapshot = {
       source: 'product-context-form',
       product: { id: product.id, name: product.name, slug: product.slug },
+      context: hasContext ? context : null,
       answers: JSON.parse(JSON.stringify(answers)),
       submittedAt: new Date().toISOString(),
     }
@@ -50,7 +60,10 @@ export async function POST(request: NextRequest) {
       .filter(([, value]) => answerText(value))
       .map(([key, value]) => (key.endsWith('_otro') ? 'Aclaración' : key) + ': ' + answerText(value))
 
-    const message = ['Consulta de ' + product.name, '', ...lines].join('\n')
+    const contextLine = hasContext
+      ? 'Contexto: ' + [context?.businessTypeSlug, context?.situationSlug, context?.needSlug].filter(Boolean).join(' · ')
+      : null
+    const message = ['Consulta de ' + product.name, contextLine, '', ...lines].filter((line) => line !== null).join('\n')
 
     const requestRecord = await prisma.consultRequest.create({
       data: {
@@ -58,7 +71,7 @@ export async function POST(request: NextRequest) {
         businessTypeId,
         snapshot,
         customerName,
-        customerEmail,
+        customerEmail: customerEmail || '',
         customerPhone,
         message,
       },
