@@ -57,5 +57,5 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   
   }, { maxWait: 10000, timeout: 15000 });
 
-  console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (1.0 DRAFT) persistidas.`);
+  console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (schema 1.0) persistidas.`);
 }
