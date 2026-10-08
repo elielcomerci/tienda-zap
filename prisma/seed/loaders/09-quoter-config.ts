@@ -4,6 +4,7 @@ import {
   sheetFinishingOperations,
   initialQuoterConfigs,
 } from '../data/09-quoter-config';
+import { quoterOptionConfigs } from '../data/09-quoter-options';
 
 export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
   // 1. Materias Primas con IDs estables
@@ -142,6 +143,78 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
         sortOrder: sp.sortOrder,
       })),
     });
+
+    // Semantic option groups. Rebuild from the source of truth so stale
+    // options/constraints/size links cannot survive a seed.
+    await prisma.productQuoterOptionGroup.deleteMany({
+      where: { configId: config.id },
+    });
+
+    const optionConfig = quoterOptionConfigs.find(
+      (entry) => entry.productSlug === quoterCfg.productSlug
+    );
+
+    for (const groupSeed of optionConfig?.groups ?? []) {
+      const group = await prisma.productQuoterOptionGroup.create({
+        data: {
+          configId: config.id,
+          key: groupSeed.key,
+          name: groupSeed.name,
+          selectionMode: groupSeed.selectionMode,
+          required: groupSeed.required ?? false,
+          sortOrder: groupSeed.sortOrder ?? 0,
+        },
+      });
+
+      for (const optionSeed of groupSeed.options) {
+        if (
+          optionSeed.finishingId &&
+          !quoterCfg.finishingIds.includes(optionSeed.finishingId)
+        ) {
+          throw new Error(
+            `[SEED ERROR] Opción '${optionSeed.key}' de '${quoterCfg.productSlug}' referencia terminación '${optionSeed.finishingId}' que no está habilitada en ProductQuoterConfig.`
+          );
+        }
+
+        const option = await prisma.productQuoterOption.create({
+          data: {
+            groupId: group.id,
+            key: optionSeed.key,
+            label: optionSeed.label,
+            required: optionSeed.required ?? false,
+            hidden: optionSeed.hidden ?? false,
+            defaultSelected: optionSeed.defaultSelected ?? false,
+            finishingId: optionSeed.finishingId ?? null,
+            sortOrder: optionSeed.sortOrder ?? 0,
+          },
+        });
+
+        for (const sizeLabel of optionSeed.allowedSizeLabels ?? []) {
+          const sizePreset = await prisma.productQuoterSizePreset.findUnique({
+            where: {
+              configId_label: {
+                configId: config.id,
+                label: sizeLabel,
+              },
+            },
+            select: { id: true },
+          });
+
+          if (!sizePreset) {
+            throw new Error(
+              `[SEED ERROR] Opción '${optionSeed.key}' de '${quoterCfg.productSlug}' referencia tamaño inexistente '${sizeLabel}'.`
+            );
+          }
+
+          await prisma.productQuoterOptionSize.create({
+            data: {
+              optionId: option.id,
+              sizePresetId: sizePreset.id,
+            },
+          });
+        }
+      }
+    }
 
     // Quantity presets
     await prisma.productQuoterQuantityPreset.deleteMany({
