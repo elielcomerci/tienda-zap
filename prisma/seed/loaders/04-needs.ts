@@ -18,5 +18,10 @@ export async function loadNeeds(prisma: PrismaClient): Promise<void> {
     });
   }
 
+  const expectedSlugs = needsData.map((need) => need.slug);
+  await prisma.need.deleteMany({
+    where: { slug: { notIn: expectedSlugs } },
+  });
+
   console.log(`[SEED] ${needsData.length} Needs persistidas.`);
 }
