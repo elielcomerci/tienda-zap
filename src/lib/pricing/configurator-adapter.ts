@@ -323,6 +323,12 @@ export function resolveQuoterSelection(
  * costo real cargado, falla y la operación debe pasar a consulta. No se
  * extrapolan precios ni se reutilizan costos de otra combinación.
  */
+function roundProviderPrice(price: number) {
+  if (price < 100) return Math.ceil(price / 10) * 10;
+  const rounded = Math.ceil(price / 100) * 100 - 10;
+  return rounded < price ? rounded + 100 : rounded;
+}
+
 function quoteProviderFinishedCostSelection(
   configurator: ConfiguratorVersionPayload,
   selection: CommercialSelection,
@@ -435,7 +441,7 @@ function quoteProviderFinishedCostSelection(
     throw new Error('CONSULT_REQUIRED: Falta el margen maestro del producto.');
   }
 
-  const totalPrice = totalCost * (1 + Number(margin) / 100);
+  const totalPrice = roundProviderPrice(totalCost * (1 + Number(margin) / 100));
 
   const selectedOptions: Array<{ name: string; value: string }> = [];
   for (const [key, val] of Object.entries(selection)) {
