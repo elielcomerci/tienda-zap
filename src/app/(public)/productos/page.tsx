@@ -348,6 +348,7 @@ export default async function ProductsPage({
                                 name: product.name,
                                 price: displayPrice ?? 0,
                                 catalogType: product.catalogType,
+                                modality: product.modality,
                                 creditDownPaymentPercent: product.creditDownPaymentPercent,
                                 image: product.images[0] || '',
                                 quantity: 1,
