@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowRight, Check, LoaderCircle } from 'lucide-react'
 import { PRODUCT_INQUIRY_CONFIGS, type ProductInquiryQuestion } from '@/lib/product-inquiry-config'
+import type { ExplorationContext } from '@/lib/exploration-context'
 
 type AnswerValue = string | string[]
 
@@ -18,9 +19,11 @@ function otherSelected(value: AnswerValue | undefined) {
 export default function ProductContextForm({
   product,
   businessTypeId,
+  explorationContext,
 }: {
   product: { id: string; slug: string; name: string; catalogType: string; modality: string }
   businessTypeId?: string | null
+  explorationContext?: ExplorationContext
 }) {
   const config = PRODUCT_INQUIRY_CONFIGS[product.slug]
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({})
@@ -84,6 +87,7 @@ export default function ProductContextForm({
           customerName: name.trim(),
           customerPhone: phone.trim(),
           customerEmail: email.trim(),
+          context: explorationContext || null,
           answers: answerPayload,
         }),
       })
