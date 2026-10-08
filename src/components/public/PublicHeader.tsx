@@ -126,7 +126,7 @@ export default function PublicHeader({
   return (
     <>
       <header
-        className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${
+        className={`sticky w-full top-0 z-50 transition-all duration-300 ${
           isScrolled
             ? 'bg-white shadow-sm border-b border-gray-200'
             : 'bg-white border-b border-gray-100'
