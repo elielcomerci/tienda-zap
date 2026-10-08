@@ -1239,6 +1239,7 @@ model FinishingOperation {
   updatedAt DateTime                @updatedAt
   tiers     FinishingTier[]
   configs   QuoterConfigFinishing[]
+  quoterOptions ProductQuoterOption[]
 
   @@map("finishing_operations")
 }
@@ -1309,12 +1310,94 @@ model ProductQuoterConfig {
   product          Product                       @relation(fields: [productId], references: [id], onDelete: Cascade)
   rawMaterial      RawMaterial?                  @relation(fields: [rawMaterialId], references: [id])
   finishings       QuoterConfigFinishing[]
+  optionGroups     ProductQuoterOptionGroup[]
   allowedMaterials ProductQuoterConfigMaterial[]
   quantityPresets  ProductQuoterQuantityPreset[]
   sizePresets      ProductQuoterSizePreset[]
 
   @@index([rawMaterialId])
   @@map("product_quoter_configs")
+}
+
+enum ProductQuoterOptionSelectionMode {
+  SINGLE
+  MULTIPLE
+}
+
+enum ProductQuoterOptionConstraintType {
+  REQUIRES
+  EXCLUDES
+}
+
+model ProductQuoterOptionGroup {
+  id            String                           @id @default(cuid())
+  configId      String
+  key           String
+  name          String
+  selectionMode ProductQuoterOptionSelectionMode @default(SINGLE)
+  required      Boolean                          @default(false)
+  sortOrder     Int                              @default(0)
+  createdAt     DateTime                         @default(now())
+  updatedAt     DateTime                         @updatedAt
+
+  config  ProductQuoterConfig   @relation(fields: [configId], references: [id], onDelete: Cascade)
+  options ProductQuoterOption[]
+
+  @@unique([configId, key])
+  @@index([configId, sortOrder])
+  @@map("product_quoter_option_groups")
+}
+
+model ProductQuoterOption {
+  id              String   @id @default(cuid())
+  groupId         String
+  key             String
+  label           String
+  required        Boolean  @default(false)
+  hidden          Boolean  @default(false)
+  defaultSelected Boolean  @default(false)
+  finishingId     String?
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  group           ProductQuoterOptionGroup       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  finishing       FinishingOperation?            @relation(fields: [finishingId], references: [id], onDelete: SetNull)
+  constraintsFrom ProductQuoterOptionConstraint[] @relation("OptionConstraintSource")
+  constraintsTo   ProductQuoterOptionConstraint[] @relation("OptionConstraintTarget")
+  allowedSizes    ProductQuoterOptionSize[]
+
+  @@unique([groupId, key])
+  @@index([groupId, sortOrder])
+  @@index([finishingId])
+  @@map("product_quoter_options")
+}
+
+model ProductQuoterOptionConstraint {
+  optionId       String
+  targetOptionId String
+  type           ProductQuoterOptionConstraintType
+  createdAt      DateTime @default(now())
+
+  option       ProductQuoterOption @relation("OptionConstraintSource", fields: [optionId], references: [id], onDelete: Cascade)
+  targetOption ProductQuoterOption @relation("OptionConstraintTarget", fields: [targetOptionId], references: [id], onDelete: Cascade)
+
+  @@id([optionId, targetOptionId, type])
+  @@index([targetOptionId])
+  @@map("product_quoter_option_constraints")
+}
+
+model ProductQuoterOptionSize {
+  optionId     String
+  sizePresetId String
+  createdAt    DateTime @default(now())
+
+  option     ProductQuoterOption     @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  sizePreset ProductQuoterSizePreset @relation(fields: [sizePresetId], references: [id], onDelete: Cascade)
+
+  @@id([optionId, sizePresetId])
+  @@index([sizePresetId])
+  @@map("product_quoter_option_sizes")
 }
 
 model ProductQuoterConfigMaterial {
@@ -1352,7 +1435,8 @@ model ProductQuoterSizePreset {
   height    Float
   sortOrder Int                 @default(0)
   createdAt DateTime            @default(now())
-  config    ProductQuoterConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  config      ProductQuoterConfig      @relation(fields: [configId], references: [id], onDelete: Cascade)
+  optionLinks ProductQuoterOptionSize[]
 
   @@unique([configId, label])
   @@index([configId])
