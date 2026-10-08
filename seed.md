@@ -370,8 +370,8 @@ Aplica a:
 5. Fajas & Envoltorios
 6. Bolsas & Contenedores
 7. Carpetas & Folders
-9. Menús & Cartas
-10. Individuales & Posavasos
+8. Menús & Cartas
+9. Individuales & Posavasos
 
 Dimensiones conceptuales comunes:
 
