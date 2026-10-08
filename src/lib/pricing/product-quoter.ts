@@ -64,11 +64,23 @@ export type ProductQuoteSelection = {
   finishingIds?: string[]
 }
 
+export type ProductQuoteBreakdown = {
+  materialCost: number
+  printingCost: number
+  processCost: number
+  finishingCost: number
+  wasteCost: number
+  productionCost: number
+  marginAmount: number
+  marginPercent: number
+}
+
 export type ProductQuoteResult = {
   unitPrice: number
   totalPrice: number
   totalCost: number
   selectedOptions: Array<{ name: string; value: string }>
+  breakdown?: ProductQuoteBreakdown
 }
 
 function roundPsychological(price: number) {
@@ -173,8 +185,9 @@ export function calculateProductQuote(
       return sum + unit * selection.quantity
     }, 0)
 
+    const marginPercent = getQuoteMargin(config, selection.quantity)
     totalCost = materialCost + finishingCost
-    totalPrice = totalCost * (1 + getQuoteMargin(config, selection.quantity) / 100)
+    totalPrice = totalCost * (1 + marginPercent / 100)
   } else {
     const nesting = calculateNesting({
       sheetWidth: rawMaterial.width,
@@ -215,5 +228,26 @@ export function calculateProductQuote(
     totalPrice: roundedTotalPrice,
     totalCost,
     selectedOptions,
+    breakdown: config.pricingMode === 'AREA_M2'
+      ? {
+          materialCost: 0,
+          printingCost: 0,
+          processCost: 0,
+          finishingCost: 0,
+          wasteCost: 0,
+          productionCost: totalCost,
+          marginAmount: roundedTotalPrice - totalCost,
+          marginPercent: getQuoteMargin(config, selection.quantity),
+        }
+      : {
+          materialCost: quote.materialCost,
+          printingCost: 0,
+          processCost: 0,
+          finishingCost: quote.finishingCost,
+          wasteCost: 0,
+          productionCost: totalCost,
+          marginAmount: roundedTotalPrice - totalCost,
+          marginPercent: getQuoteMargin(config, selection.quantity),
+        },
   }
 }
