@@ -29,11 +29,24 @@ export function calculateNesting({
   const usableWidth = sheetWidth - margin * 2
   const usableHeight = sheetHeight - margin * 2
 
-  if (usableWidth <= 0 || usableHeight <= 0) {
+  if (
+    sheetWidth <= 0 ||
+    sheetHeight <= 0 ||
+    itemWidth <= 0 ||
+    itemHeight <= 0 ||
+    margin < 0 ||
+    bleed < 0 ||
+    usableWidth <= 0 ||
+    usableHeight <= 0
+  ) {
     return { itemsPerSheet: 0, isRotated: false }
   }
 
   // Ancho y alto real de la pieza incluyendo la demasía (bleed de ambos lados)
+  // El bleed se interpreta como demasía por cada lado de la pieza.
+  // Por eso una pieza de W x H ocupa (W + 2*bleed) x (H + 2*bleed)
+  // dentro del pliego. El margin, en cambio, es el margen no utilizable
+  // del borde del pliego y se descuenta una sola vez por cada borde.
   const pieceTotalWidth = itemWidth + bleed * 2
   const pieceTotalHeight = itemHeight + bleed * 2
 
