@@ -4,7 +4,7 @@ import { productsData } from '../data/05-products';
 import { situationsData } from '../data/03-situations';
 import { needsData } from '../data/04-needs';
 import { offerMatrixData } from '../data/07-offer-matrix';
-import { initialQuoterConfigs } from '../data/09-quoter-config';
+import { initialQuoterConfigs } from '../data/09-quoter-config';\nimport { quoterOptionConfigs } from '../data/09-quoter-options';
 
 export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log('\n========================================');
@@ -182,7 +182,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
       allowedMaterials: { include: { rawMaterial: { include: { tiers: true } } } },
       finishings: { include: { finishing: { include: { tiers: true } } } },
       quantityPresets: true,
-      sizePresets: true,
+      sizePresets: true,\n      optionGroups: { include: { options: { include: { allowedSizes: true, constraintsFrom: true, constraintsTo: true } } } },
     },
   });
 
@@ -220,6 +220,38 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     if (cfg.allowedMaterials.length === 0) errors.push(`[PRICING MATERIALS MISSING] '${cfg.product.slug}' no tiene materias primas.`);
     if (cfg.quantityPresets.length === 0) errors.push(`[PRICING QUANTITIES MISSING] '${cfg.product.slug}' no tiene cantidades.`);
     if (cfg.sizePresets.length === 0 && !cfg.allowCustomSize) errors.push(`[PRICING SIZES MISSING] '${cfg.product.slug}' no tiene tamaños.`);
+
+    const expectedOptionConfig = quoterOptionConfigs.find((entry) => entry.productSlug === cfg.product.slug);
+    if (!expectedOptionConfig) {
+      errors.push(`[PRICING OPTIONS MISSING SEED] No hay semántica de opciones declarada para '${cfg.product.slug}'.`);
+    } else {
+      const expectedGroupKeys = new Set(expectedOptionConfig.groups.map((group) => group.key));
+      const actualGroupKeys = new Set(cfg.optionGroups.map((group) => group.key));
+      if (cfg.optionGroups.length !== expectedOptionConfig.groups.length) {
+        errors.push(`[PRICING OPTION GROUP COUNT] '${cfg.product.slug}': esperados ${expectedOptionConfig.groups.length}, encontrados ${cfg.optionGroups.length}.`);
+      }
+      for (const key of expectedGroupKeys) {
+        if (!actualGroupKeys.has(key)) errors.push(`[PRICING OPTION GROUP MISSING] '${cfg.product.slug}': falta '${key}'.`);
+      }
+      for (const key of actualGroupKeys) {
+        if (!expectedGroupKeys.has(key)) errors.push(`[PRICING OPTION GROUP EXTRA] '${cfg.product.slug}': sobra '${key}'.`);
+      }
+      for (const group of cfg.optionGroups) {
+        const seedGroup = expectedOptionConfig.groups.find((entry) => entry.key === group.key);
+        if (!seedGroup) continue;
+        const expectedOptionKeys = new Set(seedGroup.options.map((option) => option.key));
+        const actualOptionKeys = new Set(group.options.map((option) => option.key));
+        if (group.options.length !== seedGroup.options.length) {
+          errors.push(`[PRICING OPTION COUNT] '${cfg.product.slug}' / '${group.key}': esperadas ${seedGroup.options.length}, encontradas ${group.options.length}.`);
+        }
+        for (const key of expectedOptionKeys) {
+          if (!actualOptionKeys.has(key)) errors.push(`[PRICING OPTION MISSING] '${cfg.product.slug}' / '${group.key}': falta '${key}'.`);
+        }
+        for (const key of actualOptionKeys) {
+          if (!expectedOptionKeys.has(key)) errors.push(`[PRICING OPTION EXTRA] '${cfg.product.slug}' / '${group.key}': sobra '${key}'.`);
+        }
+      }
+    }
 
     for (const link of cfg.allowedMaterials) {
       if (!link.rawMaterial.active) errors.push(`[PRICING MATERIAL INACTIVE] '${cfg.product.slug}' usa '${link.rawMaterial.id}' inactiva.`);
