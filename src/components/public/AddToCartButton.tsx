@@ -9,6 +9,7 @@ export default function AddToCartButton({
   product,
   hasVariants,
   slug,
+  productHref,
   disabled = false,
   consultUrl,
   consultLabel = 'Consultar',
@@ -16,6 +17,7 @@ export default function AddToCartButton({
   product: CartItem
   hasVariants?: boolean
   slug?: string
+  productHref?: string
   disabled?: boolean
   consultUrl?: string | null
   consultLabel?: string
@@ -34,7 +36,7 @@ export default function AddToCartButton({
   if (product.catalogType === 'DESARROLLO' && slug) {
     return (
       <Link
-        href={`/productos/${slug}`}
+        href={productHref || `/productos/${slug}`}
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#4576B9]/25 bg-[#EEF4FC] px-4 py-3 text-sm font-semibold text-[#2F5F9F] transition-all hover:-translate-y-0.5 hover:border-[#4576B9]/40 hover:bg-[#E2EDFA]"
       >
         Ver desarrollo <ArrowRight size={15} />
@@ -46,7 +48,7 @@ export default function AddToCartButton({
   if (hasVariants && slug) {
     return (
       <Link
-        href={`/productos/${slug}`}
+        href={productHref || `/productos/${slug}`}
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
       >
         Configurar <ArrowRight size={15} />
@@ -58,7 +60,7 @@ export default function AddToCartButton({
   if (disabled && slug) {
     return (
       <Link
-        href={`/productos/${slug}`}
+        href={productHref || `/productos/${slug}`}
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
       >
         Consultar <ArrowRight size={15} />
