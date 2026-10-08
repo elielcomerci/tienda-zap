@@ -154,7 +154,7 @@ export default function HomeHero({
   const formatSituacionName = (name: string) => name.toLowerCase()
 
   return (
-    <section ref={heroRef} className="relative bg-white pt-[110px] pb-16 sm:pt-[134px] sm:pb-24">
+    <section ref={heroRef} className="relative bg-white pt-10 pb-16 sm:pt-16 sm:pb-24">
       <div className="mx-auto max-w-[1380px] px-4 xl:px-8">
         <div className="max-w-4xl">
           {/* Desktop & Tablet: Inline Interactive Headline */}
