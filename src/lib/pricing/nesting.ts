@@ -103,6 +103,9 @@ export function calculateQuote({
   sheetsNeeded: number
   unitCost: number
   totalCost: number
+  materialCost: number
+  finishingCost: number
+  marginAmount: number
   unitPrice: number
   totalPrice: number
 } {
@@ -147,12 +150,16 @@ export function calculateQuote({
   // Si margin es 150, significa Costo + 150% = Costo * 2.5
   const marginMultiplier = 1 + profitMarginPercent / 100
   const totalPrice = totalCost * marginMultiplier
+  const marginAmount = totalPrice - totalCost
   const unitPrice = totalPrice / quantity
 
   return {
     sheetsNeeded,
     unitCost,
     totalCost,
+    materialCost,
+    finishingCost: finishingsCost,
+    marginAmount,
     unitPrice,
     totalPrice,
   }
