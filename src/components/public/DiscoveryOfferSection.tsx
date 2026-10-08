@@ -27,12 +27,16 @@ function getOfferPriority(product: OfferProduct) {
 export default function DiscoveryOfferSection({
   products,
   needName,
+  businessTypeName,
+  situationName,
   businessTypeSlug,
   situationSlug,
   needSlug,
 }: {
   products: OfferProduct[]
   needName: string
+  businessTypeName?: string
+  situationName?: string
   businessTypeSlug?: string
   situationSlug?: string
   needSlug?: string
@@ -45,7 +49,12 @@ export default function DiscoveryOfferSection({
   const engines = new Set(offers.map((product) => product.engine).filter(Boolean))
   const includesDevelopment = offers.some((product) => isDevelopment(product))
   const needsZAPReview = offers.length >= 3 && includesDevelopment && engines.size > 1
-  const whatsappUrl = buildWhatsappUrl(undefined, `Hola, necesito orientación para resolver: ${needName}.`)
+  const whatsappMessage = [
+    `Hola, necesito orientación para resolver: ${needName}.`,
+    businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
+    situationName ? `Mi situación actual es: ${situationName}.` : null,
+  ].filter(Boolean).join('\\n')
+  const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
   if (offers.length === 0) {
     return (
