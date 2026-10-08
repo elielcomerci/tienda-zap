@@ -132,7 +132,10 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
 
   // 6. Audit ConfiguratorVersion
   const dbConfigurators = await prisma.configuratorVersion.findMany({
-    where: { product: { active: true } },
+    where: {
+      product: { active: true },
+      status: { in: ['ACTIVE', 'DRAFT'] },
+    },
     include: { product: { select: { slug: true, modality: true, engine: true } } },
   });
 
