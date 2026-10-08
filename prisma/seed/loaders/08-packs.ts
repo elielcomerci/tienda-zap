@@ -3,7 +3,13 @@ import { packsData } from '../data/08-packs';
 
 export async function loadPacks(prisma: PrismaClient): Promise<void> {
   if (packsData.length === 0) {
-    console.log(`[SEED] 0 Packs sembrados (catálogo de packs reservado para fase posterior).`);
+    // Packs are not part of the current public catalog. Preserve rows and items
+    // for history, but ensure old records cannot remain publicly active.
+    await prisma.pack.updateMany({
+      where: { active: true },
+      data: { active: false },
+    });
+    console.log(`[SEED] 0 Packs activos (catálogo reservado para fase posterior).`);
     return;
   }
 
@@ -25,6 +31,7 @@ export async function loadPacks(prisma: PrismaClient): Promise<void> {
         pricingMode: pack.pricingMode,
         fixedPrice: pack.fixedPrice ?? null,
         discountPercent: pack.discountPercent ?? 0,
+        active: true,
       },
       create: {
         slug: pack.slug,
