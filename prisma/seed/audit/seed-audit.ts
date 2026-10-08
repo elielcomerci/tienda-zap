@@ -4,6 +4,7 @@ import { productsData } from '../data/05-products';
 import { situationsData } from '../data/03-situations';
 import { needsData } from '../data/04-needs';
 import { offerMatrixData } from '../data/07-offer-matrix';
+import { initialQuoterConfigs } from '../data/09-quoter-config';
 
 export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log('\n========================================');
@@ -174,6 +175,69 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     errors.push(`[PACKS ERROR] En v1.0 los packs deben ser 0. Encontrados: ${packCount} packs, ${packItemCount} items.`);
   }
 
+  // 9. Audit Pricing Infrastructure
+  const dbPricingConfigs = await prisma.productQuoterConfig.findMany({
+    include: {
+      product: { select: { slug: true, modality: true, engine: true } },
+      allowedMaterials: { include: { rawMaterial: { include: { tiers: true } } } },
+      finishings: { include: { finishing: { include: { tiers: true } } } },
+      quantityPresets: true,
+      sizePresets: true,
+    },
+  });
+
+  const expectedPricingSlugs = new Set(initialQuoterConfigs.map((c) => c.productSlug));
+  const actualPricingSlugs = new Set(dbPricingConfigs.map((c) => c.product.slug));
+  if (dbPricingConfigs.length !== initialQuoterConfigs.length) {
+    errors.push(`[PRICING CONFIG COUNT] Esperados ${initialQuoterConfigs.length}, encontrados ${dbPricingConfigs.length}.`);
+  }
+  for (const slug of expectedPricingSlugs) {
+    if (!actualPricingSlugs.has(slug)) errors.push(`[PRICING CONFIG MISSING] Falta ProductQuoterConfig para '${slug}'.`);
+  }
+  for (const slug of actualPricingSlugs) {
+    if (!expectedPricingSlugs.has(slug)) errors.push(`[PRICING CONFIG EXTRA] ProductQuoterConfig inesperado para '${slug}'.`);
+  }
+
+  const auditTiers = (tiers: Array<{ minQty: number; maxQty: number | null; unitPrice: number }>, label: string) => {
+    if (tiers.length === 0) { errors.push(`[PRICING TIERS MISSING] ${label}: no tiene tiers.`); return; }
+    const ordered = [...tiers].sort((a, b) => a.minQty - b.minQty);
+    if (ordered[0].minQty !== 1) errors.push(`[PRICING TIERS START] ${label}: debe comenzar en 1.`);
+    for (let i = 0; i < ordered.length; i += 1) {
+      const tier = ordered[i];
+      if (tier.unitPrice <= 0) errors.push(`[PRICING TIER PRICE] ${label}: costo inválido (${tier.unitPrice}).`);
+      if (tier.maxQty !== null && tier.maxQty < tier.minQty) errors.push(`[PRICING TIER RANGE] ${label}: rango inválido.`);
+      const next = ordered[i + 1];
+      if (next && tier.maxQty === null) errors.push(`[PRICING TIER OVERLAP] ${label}: hay tiers después de un rango abierto.`);
+      if (next && tier.maxQty !== null && next.minQty !== tier.maxQty + 1) errors.push(`[PRICING TIER GAP] ${label}: salto entre ${tier.maxQty} y ${next.minQty}.`);
+    }
+    if (ordered[ordered.length - 1].maxQty !== null) errors.push(`[PRICING TIER OPEN END] ${label}: el último tier debe ser abierto.`);
+  };
+
+  for (const cfg of dbPricingConfigs) {
+    if (cfg.product.modality !== 'CONFIGURABLE' || !cfg.product.engine) {
+      errors.push(`[PRICING PRODUCT RULE] '${cfg.product.slug}' debe ser CONFIGURABLE y tener engine.`);
+    }
+    if (cfg.allowedMaterials.length === 0) errors.push(`[PRICING MATERIALS MISSING] '${cfg.product.slug}' no tiene materias primas.`);
+    if (cfg.quantityPresets.length === 0) errors.push(`[PRICING QUANTITIES MISSING] '${cfg.product.slug}' no tiene cantidades.`);
+    if (cfg.sizePresets.length === 0 && !cfg.allowCustomSize) errors.push(`[PRICING SIZES MISSING] '${cfg.product.slug}' no tiene tamaños.`);
+
+    for (const link of cfg.allowedMaterials) {
+      if (!link.rawMaterial.active) errors.push(`[PRICING MATERIAL INACTIVE] '${cfg.product.slug}' usa '${link.rawMaterial.id}' inactiva.`);
+      auditTiers(link.rawMaterial.tiers, `materia prima '${link.rawMaterial.id}'`);
+    }
+
+    const quantities = cfg.quantityPresets.map((q) => q.quantity);
+    for (const link of cfg.finishings) {
+      if (!link.finishing.active) errors.push(`[PRICING FINISHING INACTIVE] '${cfg.product.slug}' usa '${link.finishing.id}' inactiva.`);
+      auditTiers(link.finishing.tiers, `terminación '${link.finishing.id}'`);
+      if (link.finishing.costType === 'PER_UNIT') {
+        for (const quantity of quantities) {
+          const covered = link.finishing.tiers.some((t) => t.minQty <= quantity && (t.maxQty === null || t.maxQty >= quantity));
+          if (!covered) errors.push(`[PRICING QUANTITY COVERAGE] '${cfg.product.slug}' / '${link.finishing.id}': cantidad ${quantity} sin costo.`);
+        }
+      }
+    }
+  }
   // Final validation check
   if (errors.length > 0) {
     console.error('\n❌ AUDITORÍA FALLIDA CON LOS SIGUIENTES ERRORES:');
