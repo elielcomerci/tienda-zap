@@ -48,5 +48,5 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
     data: { active: false },
   });
 
-  console.log(`[SEED] ${productsData.length} Product Bases persistidos; productos fuera de fuente desactivados.`);
+  console.log(`[SEED] ${productsData.length} productos de catálogo persistidos; productos fuera de fuente desactivados.`);
 }
