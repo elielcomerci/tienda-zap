@@ -293,6 +293,6 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log(`Offer Matrix:        EXACT MATCH (${dbEntries.length} tuplas verificadas 1:1)`);
   console.log('Packs:               0 (preparado sin packs ficticios)');
   console.log('Orphans:             0');
-  console.log('Unexpected records:  0\n');
+  console.log('Unexpected active records: 0\n');
   console.log('🎉 Seed audit passed. FASE D SEED v1.0: OK\n');
 }
