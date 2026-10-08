@@ -333,9 +333,17 @@ export default async function ProductsPage({
                   const hasVariants = Boolean(product.variants && product.variants.length > 0)
                   const requiresConfiguration = product.modality === 'CONFIGURABLE' || hasVariants || Boolean(product.quoterConfig)
                   // Active semantic configurators use their own commercial price engine.
-                  // The legacy quoter minimum is not a reliable "Desde" price for those products.
+                  // Never show a legacy product.price as a price source for consultation-only
+                  // products or configurable products without a real variant/quoter source.
                   const hasActiveSemanticConfigurator = product.configuratorVersions?.some((version) => version.status === 'ACTIVE')
-                  const displayPrice = hasActiveSemanticConfigurator ? null : getProductDisplayPrice(product)
+                  const hasExplicitPriceSource =
+                    product.modality === 'DIRECTO' ||
+                    hasVariants ||
+                    Boolean(product.quoterConfig)
+                  const displayPrice =
+                    hasActiveSemanticConfigurator || !hasExplicitPriceSource
+                      ? null
+                      : getProductDisplayPrice(product)
                   const isPurchasable = displayPrice !== null && product.modality === 'DIRECTO'
                   const requiresConversation = isDevelopment(product) || isConsultationOnly(product)
                   const isConsultationOnlyFlow = requiresConversation || (!requiresConfiguration && !isPurchasable)
