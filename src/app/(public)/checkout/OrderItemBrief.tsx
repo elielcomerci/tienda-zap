@@ -15,10 +15,10 @@ const briefLabels: Record<BriefType, string> = {
 
 const briefFields: Record<Exclude<BriefType, 'NONE'>, Array<{ key: string; label: string; placeholder: string }>> = {
   DESIGN: [
-    { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
-    { key: 'mainMessage', label: 'Mensaje principal', placeholder: 'Que tiene que comunicar esta pieza?' },
-    { key: 'style', label: 'Estilo visual', placeholder: 'Ej: moderno, premium, llamativo, minimalista' },
-    { key: 'colors', label: 'Colores o restricciones', placeholder: 'Colores de marca, evitar algun color, etc.' },
+    { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o marca' },
+    { key: 'objective', label: 'Que queres comunicar', placeholder: 'Que tiene que lograr esta pieza?' },
+    { key: 'content', label: 'Contenido que ya tenes', placeholder: 'Textos, precios, productos, datos o información que debe aparecer' },
+    { key: 'references', label: 'Algo que quieras tomar como referencia', placeholder: 'Una idea, estilo, marca o ejemplo que te guste' },
   ],
   MUSIC: [
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
@@ -96,7 +96,7 @@ export default function OrderItemBrief({
           {briefLabels[briefType]}
         </p>
         <p className="mt-1 text-xs leading-5 text-gray-600">
-          Responde lo esencial para que este item pueda avanzar sin idas y vueltas.
+          Contanos lo esencial. Con esto tenemos una primera dirección para empezar a trabajar.
         </p>
       </div>
 
@@ -117,7 +117,7 @@ export default function OrderItemBrief({
 
       <div className="mt-3 rounded-xl border border-white bg-white p-3">
         <label className="mb-2 block text-xs font-semibold text-gray-700">
-          Links de referencia o inspiracion
+          Referencias
         </label>
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -136,7 +136,7 @@ export default function OrderItemBrief({
                 }
               }}
               className="input !pl-9"
-              placeholder="https://..."
+              placeholder="https://... (opcional)"
             />
           </div>
           <button
