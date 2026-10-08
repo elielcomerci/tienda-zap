@@ -85,15 +85,17 @@ export default async function ProductsPage({
   const businessSituations = getBusinessSituations(rubro, situations)
   const [products, contextualProducts, categories] = await Promise.all([
     getProducts(
-          isSituationMode || mode === 'rubro' ? undefined : cat,
-          q, 
-          {
-            situationSlug: selectedSituation?.slug,
-            needSlug: selectedSituation ? necesidad : undefined,
-            businessTypeSlug: mode === 'rubro' ? rubro : undefined,
-            catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
-          }
-        ), 
+      isSituationMode || mode === 'rubro' ? undefined : cat,
+      q,
+      {
+        // The URL may retain a previous choice as exploration context.
+        // It becomes a filter only when its corresponding mode is active.
+        situationSlug: isSituationMode ? selectedSituation?.slug : undefined,
+        needSlug: isSituationMode && selectedSituation ? necesidad : undefined,
+        businessTypeSlug: mode === 'rubro' ? rubro : undefined,
+        catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
+      }
+    ), 
     getProducts(undefined, undefined, rubro ? { businessTypeSlug: rubro, take: 10 } : undefined),
     getPublicCategories()
   ])
