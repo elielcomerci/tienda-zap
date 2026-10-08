@@ -197,6 +197,55 @@ export default async function ProductsPage({
           )}
 
           <div className="space-y-8 min-w-0">
+            {isSituationMode && !selectedSituation && (
+              <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
+                <div className="mb-5">
+                  <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">
+                    ¿Qué está pasando en tu negocio?
+                  </h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">
+                    Elegí la situación que más se parece a la tuya. A partir de ahí afinamos qué necesitás resolver.
+                  </p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {businessSituations.map((situation) => (
+                    <Link
+                      key={situation.id}
+                      href={buildProductsUrl(
+                        {
+                          mode: 'situation',
+                          businessTypeSlug: rubro,
+                        },
+                        { situacion: situation.slug, necesidad: undefined }
+                      )}
+                      className="group rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/40"
+                    >
+                      <div className="flex gap-3">
+                        {situation.icon ? <span className="shrink-0 text-lg">{situation.icon}</span> : null}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-gray-900">{situation.name}</p>
+                          {situation.description ? (
+                            <p className="mt-1 text-xs leading-5 text-gray-600">{situation.description}</p>
+                          ) : null}
+                        </div>
+                        <ArrowRight size={16} className="mt-0.5 shrink-0 text-[#ED164F]" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                {rubro && (
+                  <div className="mt-5 border-t border-gray-200 pt-4">
+                    <Link
+                      href={buildProductsUrl({ mode: 'rubro', businessTypeSlug: rubro })}
+                      className="text-sm font-semibold text-gray-600 hover:text-[#ED164F]"
+                    >
+                      ← Volver al rubro
+                    </Link>
+                  </div>
+                )}
+              </section>
+            )}
+
             {selectedBusinessType && mode === 'rubro' && !selectedSituation && (
               <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
                 <div className="mb-5">
