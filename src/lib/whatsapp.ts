@@ -1,3 +1,5 @@
+import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
+
 export const ZAP_WHATSAPP_NUMBER = '+541125832323'
 
 export function normalizeWhatsappNumber(value?: string | null) {
@@ -11,8 +13,8 @@ export function buildWhatsappUrl(number: string | undefined | null, text: string
   return `https://wa.me/${normalized}?text=${encodeURIComponent(text)}`
 }
 
-export function getPublicProductUrl(slug: string) {
-  const path = `/productos/${slug}`
+export function getPublicProductUrl(slug: string, context?: ExplorationContext) {
+  const path = buildProductUrl(slug, context)
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -33,6 +35,7 @@ export function buildProductInquiryMessage({
   slug,
   intent = 'consultar',
   contextLabel,
+  context,
 }: {
   name: string
   categoryName?: string | null
@@ -41,6 +44,7 @@ export function buildProductInquiryMessage({
   slug: string
   intent?: 'consultar' | 'cotizar' | 'credito'
   contextLabel?: string | null
+  context?: ExplorationContext
 }) {
   const action =
     intent === 'credito'
@@ -57,7 +61,7 @@ export function buildProductInquiryMessage({
     intent === 'credito' && creditDownPaymentPercent
       ? `Crédito ZAP desde ${creditDownPaymentPercent}% de anticipo.`
       : null,
-    `Link: ${getPublicProductUrl(slug)}`,
+    `Link: ${getPublicProductUrl(slug, context)}`,
   ].filter(Boolean)
 
   return lines.join('\n')
