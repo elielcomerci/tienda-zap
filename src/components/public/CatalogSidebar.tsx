@@ -1,6 +1,7 @@
 ﻿import Link from 'next/link'
 import { BriefcaseBusiness, LayoutGrid, PackageOpen } from 'lucide-react'
 import { DiscoverySituation } from '@/lib/discovery'
+import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 export default function CatalogSidebar({
   categories,
@@ -30,6 +31,11 @@ export default function CatalogSidebar({
   const isCosas = currentMode === 'product' && catalogType === 'cosa'
   const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
   const isSoluciones = currentMode === 'rubro' || isSituationMode
+  const explorationContext: ExplorationContext = {
+    businessTypeSlug: businessType,
+    situationSlug: currentSituation,
+  }
+  const catalogUrl = (overrides: Record<string, string | undefined> = {}) => buildProductsUrl(explorationContext, overrides)
 
   return (
     <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start min-w-0">
@@ -39,13 +45,13 @@ export default function CatalogSidebar({
         </p>
         
         <div className="grid grid-cols-3 gap-1 bg-gray-200/60 p-1 rounded-xl">
-          <Link href="/productos?mode=product&tipo=cosa" scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isCosas ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+          <Link href={catalogUrl({ mode: 'product', tipo: 'cosa' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isCosas ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Cosas
           </Link>
-          <Link href={businessType ? `/productos?mode=rubro&rubro=${businessType}` : "/productos?mode=rubro"} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isSoluciones ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+          <Link href={catalogUrl({ mode: 'rubro' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isSoluciones ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Soluciones
           </Link>
-          <Link href="/productos?mode=product&tipo=desarrollo" scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isDesarrollos ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
+          <Link href={catalogUrl({ mode: 'product', tipo: 'desarrollo' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isDesarrollos ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Desarrollos
           </Link>
         </div>
@@ -60,7 +66,7 @@ export default function CatalogSidebar({
           isCatalogTypeMode ? (
             <div className="space-y-2">
               <Link
-                href="/productos?mode=product&tipo=cosa"
+                href={catalogUrl({ mode: 'product', tipo: 'cosa' })}
                 scroll={false}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
                   catalogType === 'cosa'
@@ -72,7 +78,7 @@ export default function CatalogSidebar({
                 <span className="leading-tight">Cosas</span>
               </Link>
               <Link
-                href="/productos?mode=product&tipo=desarrollo"
+                href={catalogUrl({ mode: 'product', tipo: 'desarrollo' })}
                 scroll={false}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
                   catalogType === 'desarrollo'
@@ -84,7 +90,7 @@ export default function CatalogSidebar({
                 <span className="leading-tight">Desarrollos</span>
               </Link>
               <Link
-                href="/productos?mode=product"
+                href={catalogUrl({ mode: 'product' })}
                 scroll={false}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900"
               >
@@ -95,7 +101,7 @@ export default function CatalogSidebar({
           ) : (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
-              href="/productos?mode=product&tipo=cosa"
+              href={catalogUrl({ mode: 'product', tipo: 'cosa' })}
               scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !cat
@@ -109,7 +115,7 @@ export default function CatalogSidebar({
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/productos?mode=product&tipo=cosa&cat=${category.slug}`}
+                href={catalogUrl({ mode: 'product', tipo: 'cosa', cat: category.slug })}
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   cat === category.slug
@@ -126,7 +132,7 @@ export default function CatalogSidebar({
         ) : currentMode === 'rubro' ? (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
-              href="/productos?mode=rubro"
+              href={catalogUrl({ mode: 'rubro' })}
               scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !businessType ? 'bg-[#FEF1F5] text-[#ED164F] font-bold' : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
@@ -138,7 +144,7 @@ export default function CatalogSidebar({
             {businessTypes.map((item) => (
               <Link
                 key={item.id}
-                href={`/productos?mode=rubro&rubro=${item.slug}`}
+                href={catalogUrl({ mode: 'rubro', rubro: item.slug, situacion: undefined, necesidad: undefined })}
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   businessType === item.slug ? 'bg-[#FEF1F5] text-[#ED164F] font-bold' : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
@@ -152,7 +158,7 @@ export default function CatalogSidebar({
         ) : (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
             <Link
-              href="/productos?mode=situation"
+              href={catalogUrl({ mode: 'situation', situacion: undefined, necesidad: undefined })}
               scroll={false}
               className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                 !currentSituation
@@ -166,7 +172,7 @@ export default function CatalogSidebar({
             {intentions.map((intention) => (
               <Link
                 key={intention.id}
-                href={`/productos?mode=situation&situacion=${intention.slug}${businessType ? `&rubro=${businessType}` : ""}`}
+                href={catalogUrl({ mode: 'situation', situacion: intention.slug, necesidad: undefined })}
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
                   currentSituation === intention.slug
