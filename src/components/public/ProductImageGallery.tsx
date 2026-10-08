@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { ZoomIn } from 'lucide-react'
+import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 
 export default function ProductImageGallery({
   images,
@@ -60,8 +61,8 @@ export default function ProductImageGallery({
 
   if (safeImages.length === 0) {
     return (
-      <div className="flex aspect-square items-center justify-center rounded-[32px] border border-gray-200 bg-white text-3xl font-semibold text-gray-300 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
-        IMG
+      <div className="aspect-square overflow-hidden rounded-[32px] border border-gray-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
+        <ProductImagePlaceholder label={`Imagen de ${productName}`} />
       </div>
     )
   }
