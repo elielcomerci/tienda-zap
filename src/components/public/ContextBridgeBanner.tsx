@@ -20,7 +20,9 @@ type Props = {
 
 export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug }: Props) {
   const hasRubro = Boolean(businessTypeSlug && businessTypeName)
-  const href = hasRubro ? ZAP_RUBRO_PATHS[businessTypeSlug!] || 'https://zap.com.ar/' : 'https://zap.com.ar/'
+  const href = hasRubro
+    ? `https://zap.com.ar${ZAP_RUBRO_PATHS[businessTypeSlug!] || '/'}`
+    : 'https://zap.com.ar/'
 
   return (
     <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
