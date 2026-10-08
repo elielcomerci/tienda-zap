@@ -17,14 +17,18 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   // Product Bases are the 23 ordered base offers. Eight additional direct
   // design products (orders 24–31) are complementary catalog entries.
   const productBaseData = productsData.filter((product) => product.order >= 1 && product.order <= 23);
-  const additionalCatalogProducts = productsData.filter((product) => product.order > 23);
+  const additionalCatalogProducts = productsData.filter((product) => product.order >= 24 && product.order <= 31);
   const productBaseSlugs = new Set(productBaseData.map((product) => product.slug));
+  const productBaseOrders = new Set(productBaseData.map((product) => product.order));
+  const additionalCatalogOrders = new Set(additionalCatalogProducts.map((product) => product.order));
+  const missingBaseOrders = Array.from({ length: 23 }, (_, index) => index + 1).filter((order) => !productBaseOrders.has(order));
+  const missingComplementOrders = Array.from({ length: 8 }, (_, index) => index + 24).filter((order) => !additionalCatalogOrders.has(order));
 
-  if (productBaseData.length !== 23 || productBaseSlugs.size !== 23) {
-    errors.push(`[PRODUCT BASES COUNT] Esperadas 23 Product Bases únicas, encontradas ${productBaseData.length} filas y ${productBaseSlugs.size} slugs.`);
+  if (productBaseData.length !== 23 || productBaseSlugs.size !== 23 || productBaseOrders.size !== 23 || missingBaseOrders.length > 0) {
+    errors.push(`[PRODUCT BASES COUNT] Esperadas 23 Product Bases únicas, con órdenes 1–23; filas ${productBaseData.length}, slugs ${productBaseSlugs.size}, órdenes faltantes ${missingBaseOrders.join(', ') || 'ninguna'}.`);
   }
-  if (additionalCatalogProducts.length !== 8) {
-    errors.push(`[CATALOG COMPLEMENTS COUNT] Esperados 8 productos directos complementarios, encontrados ${additionalCatalogProducts.length}.`);
+  if (additionalCatalogProducts.length !== 8 || additionalCatalogOrders.size !== 8 || missingComplementOrders.length > 0) {
+    errors.push(`[CATALOG COMPLEMENTS COUNT] Esperados 8 productos directos complementarios con órdenes 24–31; filas ${additionalCatalogProducts.length}, órdenes faltantes ${missingComplementOrders.join(', ') || 'ninguna'}.`);
   }
 
   // 1. Audit Rubros (BusinessTypes)
