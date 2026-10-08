@@ -113,11 +113,13 @@ export default function DiscoveryOfferSection({
             product.whatIs?.trim() ||
             product.description?.trim() ||
             'Una forma concreta de avanzar sobre esta necesidad.'
-          const actionLabel = product.modality === 'CONFIGURABLE'
-            ? 'Configurar'
-            : product.modality === 'CONSULTAR'
-              ? 'Hablar con ZAP'
-              : 'Ver producto'
+          const actionLabel = isDevelopment(product)
+            ? 'Ver desarrollo'
+            : product.modality === 'CONFIGURABLE'
+              ? 'Configurar'
+              : product.modality === 'CONSULTAR'
+                ? 'Hablar con ZAP'
+                : 'Ver producto'
 
           return (
             <article key={product.id} className="flex min-h-[178px] flex-col rounded-[22px] bg-gray-50/80 p-5 sm:p-6">
@@ -125,14 +127,12 @@ export default function DiscoveryOfferSection({
               <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
 
               <Link
-                href={product.modality === 'CONSULTAR'
-                  ? (whatsappUrl || '/')
-                  : buildProductUrl(product.slug, {
-                      mode: 'situation',
-                      businessTypeSlug,
-                      situationSlug,
-                      needSlug,
-                    })}
+                href={buildProductUrl(product.slug, {
+                  mode: 'situation',
+                  businessTypeSlug,
+                  situationSlug,
+                  needSlug,
+                })}
                 className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
               >
                 {actionLabel} <ArrowRight size={15} />
