@@ -456,11 +456,23 @@ function quoteProviderFinishedCostSelection(
     selectedOptions.push({ name: fieldLabel, value: optionLabel });
   }
 
+  const marginPercent = Number(margin);
+
   return {
     unitPrice: totalPrice / quantity,
     totalPrice,
     totalCost,
     selectedOptions,
+    breakdown: {
+      materialCost: 0,
+      printingCost: totalCost,
+      processCost: 0,
+      finishingCost: 0,
+      wasteCost: 0,
+      productionCost: totalCost,
+      marginAmount: totalPrice - totalCost,
+      marginPercent,
+    },
   };
 }
 
