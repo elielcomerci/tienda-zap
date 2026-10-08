@@ -60,10 +60,7 @@ export async function POST(request: NextRequest) {
       .filter(([, value]) => answerText(value))
       .map(([key, value]) => (key.endsWith('_otro') ? 'Aclaración' : key) + ': ' + answerText(value))
 
-    const contextLine = hasContext
-      ? 'Contexto: ' + [context?.businessTypeSlug, context?.situationSlug, context?.needSlug].filter(Boolean).join(' · ')
-      : null
-    const message = ['Consulta de ' + product.name, contextLine, '', ...lines].filter((line) => line !== null).join('\n')
+    const message = ['Consulta de ' + product.name, '', ...lines].join('\n')
 
     const requestRecord = await prisma.consultRequest.create({
       data: {
