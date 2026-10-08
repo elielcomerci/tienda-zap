@@ -13,6 +13,7 @@ import {
   hasApparelMockupImages,
 } from '@/lib/apparel-mockup'
 import { getProductFamilyLabel, getProductModalityLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
+import type { ExplorationContext } from '@/lib/exploration-context'
 
 function normalize(value?: string | null) {
   return (value || '')
@@ -37,9 +38,13 @@ function isApparelProduct(product: any) {
 export default function ProductDetailExperience({
   product,
   inquiryUrl,
+  explorationContext,
+  businessTypeId,
 }: {
   product: any
   inquiryUrl?: string | null
+  explorationContext?: ExplorationContext
+  businessTypeId?: string | null
 }) {
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
@@ -166,6 +171,8 @@ export default function ProductDetailExperience({
           onPreviewImageChange={setSelectedImageUrl}
           onSelectionChange={setSelectedOptions}
           apparelDesignSelection={apparelDesignSelection}
+          explorationContext={explorationContext}
+          businessTypeId={businessTypeId}
         />
         {product.consultationNote && (
           <aside className="rounded-2xl border border-[#4576B9]/20 bg-[#EEF4FC]/60 p-4 text-sm leading-6 text-[#244D80]">
