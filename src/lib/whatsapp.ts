@@ -32,6 +32,7 @@ export function buildProductInquiryMessage({
   creditDownPaymentPercent,
   slug,
   intent = 'consultar',
+  contextLabel,
 }: {
   name: string
   categoryName?: string | null
@@ -39,6 +40,7 @@ export function buildProductInquiryMessage({
   creditDownPaymentPercent?: number | null
   slug: string
   intent?: 'consultar' | 'cotizar' | 'credito'
+  contextLabel?: string | null
 }) {
   const action =
     intent === 'credito'
@@ -50,6 +52,7 @@ export function buildProductInquiryMessage({
   const lines = [
     `Hola! Quiero ${action} por "${name}".`,
     categoryName ? `Rubro: ${categoryName}.` : null,
+    contextLabel ? `Estoy explorando: ${contextLabel}.` : null,
     typeof price === 'number' && price > 0 ? `Precio visto: $${price.toLocaleString('es-AR')}.` : null,
     intent === 'credito' && creditDownPaymentPercent
       ? `Crédito ZAP desde ${creditDownPaymentPercent}% de anticipo.`
