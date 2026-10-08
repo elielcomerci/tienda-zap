@@ -324,6 +324,7 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
     ],
     sizePresets: [
       { label: '9x5 cm', width: 9, height: 5, sortOrder: 0 },
+      { label: '9x10 cm', width: 9, height: 10, sortOrder: 1 },
     ],
     quantityPresets: [
       { quantity: 100, sortOrder: 0 },
