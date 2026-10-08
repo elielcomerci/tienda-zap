@@ -18,7 +18,7 @@ const briefFields: Record<Exclude<BriefType, 'NONE'>, Array<{ key: string; label
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o marca' },
     { key: 'objective', label: 'Que queres comunicar', placeholder: 'Que tiene que lograr esta pieza?' },
     { key: 'content', label: 'Contenido que ya tenes', placeholder: 'Textos, precios, productos, datos o información que debe aparecer' },
-    { key: 'references', label: 'Algo que quieras tomar como referencia', placeholder: 'Una idea, estilo, marca o ejemplo que te guste' },
+    { key: 'audience', label: 'Para quien es', placeholder: 'A quien tiene que hablarle esta pieza?' },
   ],
   MUSIC: [
     { key: 'business', label: 'Negocio / marca', placeholder: 'Nombre del negocio o rubro' },
