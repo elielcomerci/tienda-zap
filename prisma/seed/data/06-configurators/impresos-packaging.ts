@@ -103,13 +103,14 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
     ],
   },
   pricing: {
-    engine: 'ProductQuoterConfig',
+    engine: 'PROVIDER_FINISHED_COST',
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
     // Costo maestro de proveedor: producto terminado, sin IVA.
     // Una sola fuente de verdad: no se conservan listas alternativas.
     // Cuando existe más de un costo para la misma combinación, queda el mayor.
     providerFinishedCostMatrix: {
+      resolver: { type: 'CARDS_DIGITAL' },
       currency: 'ARS',
       taxIncluded: false,
       paymentCondition: 'PAGO_ANTICIPADO',
@@ -420,10 +421,11 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     ],
   },
   pricing: {
-    engine: 'ProductQuoterConfig',
+    engine: 'PROVIDER_FINISHED_COST',
     // Costo real de proveedor: offset 4/4, producto terminado, empaquetado y con caja.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
     providerFinishedCostMatrix: {
+      resolver: { type: 'FLYERS_DIGITAL' },
       source: 'PROMO_DIRECTA_OFFSET',
       currency: 'ARS',
       taxIncluded: false,
@@ -788,10 +790,9 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         label: 'Terminación',
         type: 'select',
         required: true,
-        default: 'sin_laca',
+        default: 'laca_uv_brillo',
         options: [
-          { id: 'sin_laca', label: 'Sin laca' },
-          { id: 'laca_uv_brillo', label: 'Laca UV Brillo (+15% recargo)' },
+          { id: 'laca_uv_brillo', label: 'Laca UV Brillo (incluida en tarifa)' },
         ],
       },
       quantity: {
@@ -813,8 +814,10 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
     uiRules: [],
   },
   pricing: {
-    engine: 'STICKER_TABLE',
-    matrix: {
+    engine: 'PROVIDER_FINISHED_COST',
+    providerFinishedCostMatrix: {
+      resolver: { type: 'STICKERS_CIRCULAR' },
+      quote: {
       papel_autoadhesivo_90g: {
         '3x3':   { '100': 2859,  '200': 5244,  '300': 5322,  '500': 8870,  '1000': 16566 },
         '4x4':   { '100': 4726,  '200': 4968,  '300': 8281,  '500': 13249, '1000': 24039 },
@@ -826,11 +829,8 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         '10x10': { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
       },
     },
-    modifiers: {
-      laca_uv_brillo: {
-        type: 'PERCENTAGE',
-        value: 15,
       },
+    modifiers: {
     },
   },
 };
@@ -914,8 +914,10 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   },
   compatibility: { uiRules: [] },
   pricing: {
-    engine: 'TIERED_UNIT_TABLE',
-    tieredUnitTable: { tiers: carpetasDigital300gTiers },
+    engine: 'PROVIDER_FINISHED_COST',
+    providerFinishedCostMatrix: {
+      resolver: { type: 'FOLDERS_DIGITAL' },
+       tiers: carpetasDigital300gTiers },
     providerFinishedCostMatrix: {
       currency: 'ARS', taxIncluded: false, paymentCondition: 'PAGO_ANTICIPADO',
       digital_300g: { material: 'ilustracion_300g', format: 'a4', tiers: carpetasDigital300gTiers },
