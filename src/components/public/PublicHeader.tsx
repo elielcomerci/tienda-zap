@@ -7,7 +7,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { useState, useEffect, useTransition } from 'react'
 import { createPublicSellerLead } from '@/lib/actions/leads'
 import { signOut } from 'next-auth/react'
-import { buildProductsUrl } from '@/lib/exploration-context'
+import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 const NAV_HEIGHT = 70
 
@@ -37,7 +37,7 @@ export default function PublicHeader({
   const searchParams = useSearchParams()
   const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
   const requestedExplorationMode = searchParams.get('mode')
-  const explorationContext = {
+  const explorationContext: ExplorationContext = {
     mode: requestedExplorationMode === 'objective'
       ? 'situation' as const
       : requestedExplorationMode === 'product' || requestedExplorationMode === 'situation' || requestedExplorationMode === 'rubro'
