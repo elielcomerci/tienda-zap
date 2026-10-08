@@ -589,6 +589,28 @@ export default function ProductConfigurator({
 
   if (activeSemanticConfigurator) return <SemanticProductConfigurator product={product} configurator={activeSemanticConfigurator} inquiryUrl={inquiryUrl} />
 
+  if (product.modality === 'CONFIGURABLE' && !quoterConfig && !hasOptions) {
+    return (
+      <section className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-7">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Configuración</p>
+        <h2 className="mt-3 text-2xl font-black sm:text-3xl">Lo definimos según lo que necesitás</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">
+          Este producto admite distintas configuraciones. Antes de darte una opción cerrada, prefiero que veamos medidas, materiales y alcance.
+        </p>
+        {inquiryUrl ? (
+          <Link
+            href={inquiryUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-8 py-4 font-bold text-white shadow-lg shadow-[#ED164F]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F7638B]"
+          >
+            Hablar con ZAP
+          </Link>
+        ) : null}
+      </section>
+    )
+  }
+
   if (quoterConfig) {
     const selectedFinishingIds = quoteSelection.finishingIds
       ? quoteSelection.finishingIds.split(',').filter(Boolean)
