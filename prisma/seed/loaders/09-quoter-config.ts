@@ -234,7 +234,7 @@ export async function loadQuoterConfig(prisma: PrismaClient): Promise<void> {
 
   const rawMaterialCount = await prisma.rawMaterial.count();
   const finishingCount = await prisma.finishingOperation.count();
-  const quoterConfigCount = await prisma.productQuoterConfig.count();
+  const quoterConfigCount = await prisma.productQuoterConfig.count({ where: { product: { active: true } } });
 
   console.log(
     `[SEED] Infraestructura de cotización cargada: ${rawMaterialCount} materiales, ${finishingCount} terminaciones, ${quoterConfigCount} configuradores de costeo.`
