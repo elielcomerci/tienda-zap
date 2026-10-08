@@ -4,9 +4,9 @@ import { offerMatrixData } from '../data/07-offer-matrix';
 export async function loadOfferMatrix(prisma: PrismaClient): Promise<void> {
   const [businessTypes, situations, needs, products] = await Promise.all([
     prisma.businessType.findMany({ select: { id: true, slug: true } }),
-    prisma.situation.findMany({ select: { id: true, slug: true } }),
-    prisma.need.findMany({ select: { id: true, slug: true } }),
-    prisma.product.findMany({ select: { id: true, slug: true } }),
+    prisma.situation.findMany({ where: { active: true }, select: { id: true, slug: true } }),
+    prisma.need.findMany({ where: { active: true }, select: { id: true, slug: true } }),
+    prisma.product.findMany({ where: { active: true }, select: { id: true, slug: true } }),
   ]);
 
   const btMap = new Map(businessTypes.map((b) => [b.slug, b.id]));
