@@ -313,6 +313,152 @@ export function resolveQuoterSelection(
 }
 
 /**
+ * Cotización contra un costo real de proveedor de producto terminado.
+ *
+ * La matriz sigue siendo costo, nunca precio de venta. El margen sale del
+ * ProductQuoterConfig del producto, por lo que cambiar el margen maestro
+ * actualiza todas las configuraciones que usan esta fuente.
+ *
+ * Los resolvers son deliberadamente explícitos: si una combinación no tiene
+ * costo real cargado, falla y la operación debe pasar a consulta. No se
+ * extrapolan precios ni se reutilizan costos de otra combinación.
+ */
+function quoteProviderFinishedCostSelection(
+  configurator: ConfiguratorVersionPayload,
+  selection: CommercialSelection,
+  quoterConfig?: ProductQuoterConfigInput
+): ProductQuoteResult {
+  const pricing: any = configurator.pricing;
+  const matrix: any = pricing?.providerFinishedCostMatrix;
+  const resolver = matrix?.resolver;
+
+  if (!matrix || !resolver) {
+    throw new Error('CONSULT_REQUIRED: Esta configuración no tiene un costo real de proveedor conectado.');
+  }
+
+  const quantity = Number(selection.quantity || 0);
+  if (!quantity) throw new Error('Debe especificar la cantidad.');
+
+  let totalCost: number | null = null;
+  const fields = configurator.schema?.fields || {};
+
+  if (resolver.type === 'CARDS_DIGITAL') {
+    if (selection.format !== '9x5') {
+      throw new Error('CONSULT_REQUIRED: El costo cargado para tarjetas no contempla este formato.');
+    }
+    if (selection.laminationSides && selection.laminationSides !== 'frente') {
+      throw new Error('CONSULT_REQUIRED: La fuente no discrimina el costo de laminado en ambas caras.');
+    }
+    if (selection.additionalFinishings?.includes('laca_uv_sectorizada')) {
+      throw new Error('CONSULT_REQUIRED: No hay costo de proveedor cargado para laca UV sectorizada.');
+    }
+
+    const cards = matrix.digitalOndemand?.cards?.[selection.material || ''];
+    const row = cards?.quantities?.[String(quantity)]?.[selection.printing || ''];
+    const finishKey =
+      selection.lamination === 'mate'
+        ? 'laminado_mate'
+        : selection.lamination === 'brillo'
+          ? 'laminado_brillo'
+          : selection.lamination === 'sin_laminar'
+            ? 'sin_laminar'
+            : null;
+    if (!row || !finishKey || row[finishKey] === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de tarjeta.');
+    }
+
+    totalCost = Number(row[finishKey]);
+
+    const finishing = matrix.digitalOndemand.finishing || {};
+    for (const finish of selection.additionalFinishings || []) {
+      if (finish === 'puntas_redondeadas' || finish === 'perforacion') {
+        const source = finish === 'puntas_redondeadas'
+          ? finishing.puntas_redondeadas
+          : finishing.agujereado_3mm;
+        const surcharge = source?.[String(quantity)];
+        if (surcharge === undefined) {
+          throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta terminación.');
+        }
+        totalCost += Number(surcharge);
+      }
+    }
+  } else if (resolver.type === 'FLYERS_DIGITAL') {
+    if (selection.foldingType !== 'plano') {
+      throw new Error('CONSULT_REQUIRED: El costo digital cargado no incluye el proceso de plegado.');
+    }
+    const source = matrix.digitalOndemand?.fullColor?.[selection.material || '']?.[selection.format || ''];
+    const row = source?.[String(quantity)]?.[selection.printing || ''];
+    if (row === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de folleto.');
+    }
+    totalCost = Number(row);
+  } else if (resolver.type === 'STICKERS_CIRCULAR') {
+    if (selection.shape !== 'circular') {
+      throw new Error('CONSULT_REQUIRED: La fuente cargada corresponde a stickers circulares.');
+    }
+    if (selection.lamination !== 'laca_uv_brillo') {
+      throw new Error('CONSULT_REQUIRED: La tarifa cargada de stickers ya incluye laca UV brillo; no hay costo separado sin laca.');
+    }
+    const source = matrix.quote?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
+    if (source === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta medida/cantidad de sticker.');
+    }
+    totalCost = Number(source);
+  } else if (resolver.type === 'FOLDERS_DIGITAL') {
+    if (selection.material !== 'ilustracion_300g') {
+      throw new Error('CONSULT_REQUIRED: No hay costo digital cargado para este material de carpeta.');
+    }
+    const tiers = matrix.digital_300g?.tiers || [];
+    const tier = tiers.find((entry: any) => quantity >= entry.minQty && quantity <= entry.maxQty);
+    const prices = tier?.prices?.[selection.printing || ''];
+    const key =
+      selection.lamination === 'sin_laminar'
+        ? 'sin_laminar'
+        : selection.lamination === 'laca_uv'
+          ? 'laca_uv'
+          : selection.lamination === 'opp_brillo'
+            ? 'opp_brillo'
+            : selection.lamination === 'opp_mate'
+              ? 'opp_mate'
+              : null;
+    if (!tier || !prices || !key || prices[key] === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de carpeta.');
+    }
+    const flap = selection.flap === 'impresa' ? Number(tier.flapSurcharge || 0) : 0;
+    totalCost = (Number(prices[key]) + flap) * quantity;
+  } else {
+    throw new Error('CONSULT_REQUIRED: Resolver de costo de proveedor no configurado.');
+  }
+
+  const margin = quoterConfig?.profitMargin;
+  if (margin === undefined || margin === null) {
+    throw new Error('CONSULT_REQUIRED: Falta el margen maestro del producto.');
+  }
+
+  const totalPrice = totalCost * (1 + Number(margin) / 100);
+
+  const selectedOptions: Array<{ name: string; value: string }> = [];
+  for (const [key, val] of Object.entries(selection)) {
+    if (val === undefined || val === null || val === '') continue;
+    const fieldDef = fields[key];
+    const fieldLabel = fieldDef?.label || key;
+    let optionLabel = String(val);
+    if (fieldDef?.options && Array.isArray(fieldDef.options)) {
+      const matched = fieldDef.options.find((opt: any) => (opt.id ?? opt.value) === val);
+      if (matched?.label) optionLabel = matched.label;
+    }
+    selectedOptions.push({ name: fieldLabel, value: optionLabel });
+  }
+
+  return {
+    unitPrice: totalPrice / quantity,
+    totalPrice,
+    totalCost,
+    selectedOptions,
+  };
+}
+
+/**
  * Cotización para configuradores con motor de tabla comercial (STICKER_TABLE).
  * Consulta la matriz de precios versionada en ConfiguratorVersion.pricing sin pasar por quoter de producción.
  * No asume ni inventa costos de producción: retorna totalCost = 0 para reflejar que la fuente es un precio de lista.
@@ -471,7 +617,8 @@ export function quoteTieredUnitTableSelection(
  * 1. Validación UI y compatibilidad.
  * 2. Si el motor es STICKER_TABLE: cotiza directo contra matriz comercial versionada.
  * 3. Si el motor es TIERED_UNIT_TABLE: resuelve unitPrice por escala + accesorios y multiplica por cantidad.
- * 4. Si el motor es PRODUCT_QUOTER: resuelve adapter y delega a calculateProductQuote (nesting/producción física).
+ * 4. Si el motor es PROVIDER_FINISHED_COST: consulta el costo real de producto terminado y aplica el margen maestro.
+ * 5. Si el motor es PRODUCT_QUOTER: resuelve adapter y delega a calculateProductQuote (nesting/producción física).
  */
 export function quoteConfiguratorSelection(
   configurator: ConfiguratorVersionPayload,
@@ -488,6 +635,10 @@ export function quoteConfiguratorSelection(
 
   if (configurator.pricing?.engine === 'TIERED_UNIT_TABLE') {
     return quoteTieredUnitTableSelection(configurator, sanitizedSelection);
+  }
+
+  if (configurator.pricing?.engine === 'PROVIDER_FINISHED_COST') {
+    return quoteProviderFinishedCostSelection(configurator, sanitizedSelection, quoterConfig);
   }
 
   if (!quoterConfig) {
