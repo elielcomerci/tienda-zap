@@ -50,7 +50,7 @@ export default function CatalogSidebar({
             Cosas
           </Link>
           <Link href={catalogUrl({ mode: 'rubro' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isRubro ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
-            Soluciones
+            Rubro
           </Link>
           <Link href={catalogUrl({ mode: 'product', tipo: 'desarrollo' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isDesarrollos ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Desarrollos
