@@ -56,12 +56,19 @@ export default async function ProductDetailPage({
     .map((relation) => relation.relatedProduct)
     .filter((relatedProduct) => relatedProduct.active)
   const displayPrice = getProductDisplayPrice(product)
+  const fixedDisplayedPrice =
+    product.modality === 'DIRECTO' &&
+    product.variants.length === 0 &&
+    !product.quoterConfig &&
+    product.configuratorVersions.length === 0
+      ? displayPrice
+      : null
   const inquiryUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     buildProductInquiryMessage({
       name: product.name,
       categoryName: getProductFamilyLabel(product),
-      price: displayPrice,
+      price: fixedDisplayedPrice,
       slug: product.slug,
       intent: isDevelopment(product) || displayPrice === null ? 'cotizar' : 'consultar',
       contextLabel: selectedBusinessType?.name || selectedSituation?.name || selectedNeed?.name || null,

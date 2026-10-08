@@ -27,6 +27,32 @@ export function getPublicProductUrl(slug: string, context?: ExplorationContext) 
   return new URL(path, baseUrl).toString()
 }
 
+export function appendWhatsappDetails(
+  inquiryUrl: string | null | undefined,
+  heading: string,
+  details: Array<{ name: string; value: string }>
+) {
+  if (!inquiryUrl || details.length === 0) return inquiryUrl || null;
+
+  try {
+    const url = new URL(inquiryUrl);
+    const message = url.searchParams.get('text');
+    if (!message) return inquiryUrl;
+
+    // A configurator's generic minimum is not necessarily the selected quote.
+    const baseLines = message.split('\n').filter((line) => !line.startsWith('Precio visto:'));
+    const detailLines = details
+      .filter((detail) => detail.name.trim() && detail.value.trim())
+      .map((detail) => `- ${detail.name}: ${detail.value}`);
+
+    if (detailLines.length === 0) return inquiryUrl;
+    url.searchParams.set('text', [...baseLines, heading, ...detailLines].join('\n'));
+    return url.toString();
+  } catch {
+    return inquiryUrl;
+  }
+}
+
 export function buildProductInquiryMessage({
   name,
   categoryName,

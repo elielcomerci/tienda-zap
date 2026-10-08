@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Check, MessageCircleMore } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
+import { appendWhatsappDetails } from '@/lib/whatsapp'
 type Props = { product: any; configurator: any; inquiryUrl?: string | null }
 type QuoteResult = { unitPrice: number; totalPrice: number; totalCost: number; selectedOptions: Array<{ name: string; value: string }>; breakdown?: Record<string, number> }
 const quoteCache = new Map<string, QuoteResult>()
@@ -40,6 +41,24 @@ export default function SemanticProductConfigurator({ product, configurator, inq
     Object.entries(selected).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== '') result[key] = value })
     return result
   }, [selected])
+  const configuredInquiryUrl = useMemo(() => {
+    const details = Object.entries(normalized).flatMap(([key, value]) => {
+      if (!visible(key, normalized, configurator)) return [];
+      const field = fields[key] || {};
+      const name = field.label || key;
+      if (Array.isArray(value)) {
+        const labels = value.map((entry) => {
+          const option = (field.options || []).find((item: any) => (item.id ?? item.value) === entry);
+          return option?.label || String(entry);
+        });
+        return labels.length ? [{ name, value: labels.join(', ') }] : [];
+      }
+      const option = (field.options || []).find((item: any) => (item.id ?? item.value) === value);
+      return [{ name, value: option?.label || String(value) }];
+    });
+    return appendWhatsappDetails(inquiryUrl, 'Configuración elegida:', details);
+  }, [configurator, fields, inquiryUrl, normalized]);
+
   const complete = Object.entries(fields).filter(([, field]: [string, any]) => field.required).every(([key, field]: [string, any]) => {
     const value = normalized[key]
     return field.type === 'multiselect' ? Array.isArray(value) : value !== undefined && value !== ''
@@ -78,7 +97,7 @@ export default function SemanticProductConfigurator({ product, configurator, inq
           return <label key={key} className="block rounded-[24px] border border-gray-200 bg-gray-50/70 p-4"><span className="text-base font-bold text-gray-900">{field.label || key}</span><select value={selected[key] ?? ''} onChange={(event) => change(key, field.type === 'quantity_selector' ? Number(event.target.value) : event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900">{options.map((option: any) => <option key={option.id ?? option.value} value={option.id ?? option.value}>{option.label ?? option.value}</option>)}</select></label>
         })}
       </div>
-      <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio final</p>{loading ? <p className="mt-3 text-sm text-gray-300">Calculando…</p> : quote ? <p className="mt-3 text-4xl font-black">{'$' + quote.totalPrice.toLocaleString('es-AR')}</p> : error === 'CONSULT_REQUIRED' ? <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p> : <p className="mt-3 text-sm text-gray-300">{complete ? 'Elegí una configuración válida.' : 'Elegí las opciones que faltan.'}</p>}{error === 'CONSULT_REQUIRED' ? <p className="mt-2 text-sm text-gray-300">Esta combinación necesita una revisión con ZAP.</p> : null}<div className="mt-5">{quote ? <button type="button" onClick={addQuoted} className="w-full rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white">{added ? 'Agregado' : 'Agregar al carrito'}</button> : <a href={inquiryUrl || '#'} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white"><MessageCircleMore size={18} />Hablar con ZAP</a>}</div></div>
+      <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio final</p>{loading ? <p className="mt-3 text-sm text-gray-300">Calculando…</p> : quote ? <p className="mt-3 text-4xl font-black">{'$' + quote.totalPrice.toLocaleString('es-AR')}</p> : error === 'CONSULT_REQUIRED' ? <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p> : <p className="mt-3 text-sm text-gray-300">{complete ? 'Elegí una configuración válida.' : 'Elegí las opciones que faltan.'}</p>}{error === 'CONSULT_REQUIRED' ? <p className="mt-2 text-sm text-gray-300">Esta combinación necesita una revisión con ZAP.</p> : null}<div className="mt-5">{quote ? <button type="button" onClick={addQuoted} className="w-full rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white">{added ? 'Agregado' : 'Agregar al carrito'}</button> : <a href={configuredInquiryUrl || inquiryUrl || '#'} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white"><MessageCircleMore size={18} />Hablar con ZAP</a>}</div></div>
     </section>
   )
 }

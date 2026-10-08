@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Check, MessageCircleMore, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
+import { appendWhatsappDetails } from '@/lib/whatsapp'
 import { getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
 import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
@@ -159,6 +160,30 @@ export default function ProductConfigurator({
       finishingIds,
     }
   }, [quoteSelection, quoterConfig, quoterMaterials])
+
+  const quoteInquiryUrl = useMemo(() => {
+    if (!quoteRequest || !quoterConfig) return inquiryUrl || null;
+    const material = quoterMaterials.find((item) => item.id === quoteRequest.rawMaterialId);
+    const sizeLabel = quoteRequest.sizeLabel ||
+      (quoteRequest.width && quoteRequest.height ? `${quoteRequest.width}x${quoteRequest.height} cm` : '');
+    const finishingNames = (quoteRequest.finishingIds || [])
+      .map((id) => quoterConfig.finishings.find((entry: any) => entry.finishing.id === id)?.finishing.name)
+      .filter((name: string | undefined): name is string => Boolean(name));
+    const details = [
+      ...(material ? [{ name: 'Material', value: material.name }] : []),
+      ...(sizeLabel ? [{ name: 'Medida', value: sizeLabel }] : []),
+      { name: 'Cantidad', value: String(quoteRequest.quantity) },
+      { name: 'Terminaciones', value: finishingNames.length ? finishingNames.join(' + ') : 'Sin terminaciones' },
+    ];
+    return appendWhatsappDetails(inquiryUrl, 'Configuración elegida:', details);
+  }, [inquiryUrl, quoteRequest, quoterConfig, quoterMaterials]);
+
+  const variantInquiryUrl = useMemo(() => {
+    const details = Object.entries(selected)
+      .filter(([, value]) => Boolean(value))
+      .map(([name, value]) => ({ name, value }));
+    return appendWhatsappDetails(inquiryUrl, 'Opciones elegidas:', details);
+  }, [inquiryUrl, selected]);
 
   useEffect(() => {
     if (!quoterConfig || !quoteRequest) {
@@ -783,15 +808,28 @@ export default function ProductConfigurator({
               Hablar con ZAP
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={handleAddQuotedToCart}
-              disabled={!quoteResult}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white transition hover:bg-[#C2103F] disabled:cursor-not-allowed disabled:bg-gray-700"
-            >
-              {added ? <Check size={18} /> : <ShoppingCart size={18} />}
-              {added ? 'Agregado' : 'Agregar al carrito'}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleAddQuotedToCart}
+                disabled={!quoteResult}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white transition hover:bg-[#C2103F] disabled:cursor-not-allowed disabled:bg-gray-700"
+              >
+                {added ? <Check size={18} /> : <ShoppingCart size={18} />}
+                {added ? 'Agregado' : 'Agregar al carrito'}
+              </button>
+              {!quoteResult && !quoteLoading && inquiryUrl ? (
+                <Link
+                  href={quoteInquiryUrl || inquiryUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/15"
+                >
+                  <MessageCircleMore size={18} />
+                  Consultar esta configuración
+                </Link>
+              ) : null}
+            </>
           )}
         </div>
       </section>
@@ -895,7 +933,7 @@ export default function ProductConfigurator({
 
                 {inquiryUrl && (
                   <Link
-                    href={inquiryUrl}
+                    href={variantInquiryUrl || inquiryUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
