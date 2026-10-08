@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
+import { buildProductsUrl } from '@/lib/exploration-context'
 import { ArrowRight, ChevronDown } from 'lucide-react'
 
 interface BusinessTypeItem {
@@ -71,14 +72,21 @@ export default function HomeHero({
 
     setSelectedSituacion('')
 
-    fetch(`/api/situaciones?rubro=${selectedRubro}`)
-      .then((r) => r.json())
+    const controller = new AbortController()
+    fetch(`/api/situaciones?rubro=${encodeURIComponent(selectedRubro)}`, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error('No se pudieron cargar las situaciones')
+        return r.json()
+      })
       .then((data: SituationItem[]) => {
         setFilteredSituations(data)
       })
-      .catch(() => {
-        // On error keep current situations
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.name === 'AbortError') return
+        // On error keep the current options instead of breaking the selector.
       })
+
+    return () => controller.abort()
   }, [selectedRubro, situations])
 
   const heroRef = useRef<HTMLDivElement>(null)
@@ -297,6 +305,9 @@ export default function HomeHero({
                   disabled={!selectedRubro}
                   className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
+                  <option value="" disabled>
+                    {selectedRubro ? 'Elegí qué está pasando' : 'Primero elegí tu rubro'}
+                  </option>
                   {filteredSituations.map((sit) => (
                     <option key={sit.id} value={sit.slug}>
                       {sit.name}
@@ -314,19 +325,32 @@ export default function HomeHero({
 
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap items-center gap-6">
+            {selectedRubro && selectedSituacion ? (
+              <Link
+                href={buildProductsUrl({
+                  mode: 'situation',
+                  businessTypeSlug: selectedRubro,
+                  situationSlug: selectedSituacion,
+                })}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all shadow-sm hover:bg-[#C2103F] active:scale-[0.98]"
+              >
+                Ver qué me conviene <ArrowRight size={18} />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white opacity-40 shadow-sm cursor-not-allowed"
+              >
+                Ver qué me conviene <ArrowRight size={18} />
+              </button>
+            )}
             <Link
-              href={`/productos?mode=situation&situacion=${selectedSituacion}&rubro=${selectedRubro}`}
-              aria-disabled={!selectedRubro || !selectedSituacion}
-              className={`inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all shadow-sm ${
-                selectedRubro && selectedSituacion
-                  ? 'hover:bg-[#C2103F] active:scale-[0.98]'
-                  : 'pointer-events-none opacity-40'
-              }`}
-            >
-              Ver qué me conviene <ArrowRight size={18} />
-            </Link>
-            <Link
-              href="/productos?mode=product"
+              href={buildProductsUrl({
+                mode: 'product',
+                businessTypeSlug: selectedRubro || undefined,
+                situationSlug: selectedSituacion || undefined,
+              })}
               className="text-base font-semibold text-gray-950 underline underline-offset-4 hover:text-[#ED164F] transition-colors"
             >
               Ya sé qué necesito
