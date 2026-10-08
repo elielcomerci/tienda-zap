@@ -4,12 +4,15 @@ import { ArrowRight, Link2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { getProductFamilyLabel } from '@/lib/catalog-domain'
 import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
+import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 
 type RelatedProduct = {
   id: string
   name: string
   slug: string
   description?: string | null
+  purpose?: string | null
+  whatIs?: string | null
   price: number
   images: string[]
   active: boolean
@@ -70,9 +73,7 @@ export default function RelatedProductsSection({
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-4xl text-gray-300">
-                    IMG
-                  </div>
+                  <ProductImagePlaceholder label={`Imagen de ${product.name}`} />
                 )}
               </div>
 
@@ -82,8 +83,10 @@ export default function RelatedProductsSection({
                   <h3 className="line-clamp-2 text-base font-bold text-gray-900">{product.name}</h3>
                 </div>
 
-                {product.description && (
-                  <p className="line-clamp-2 text-sm text-gray-500">{product.description}</p>
+                {(product.description?.trim() || product.purpose?.trim() || product.whatIs?.trim()) && (
+                  <p className="line-clamp-2 text-sm text-gray-500">
+                    {product.description?.trim() || product.purpose?.trim() || product.whatIs?.trim()}
+                  </p>
                 )}
 
                 <div className="flex items-center justify-between">
