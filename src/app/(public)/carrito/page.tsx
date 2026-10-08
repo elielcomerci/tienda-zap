@@ -230,7 +230,7 @@ export default function CartPage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Link href="/productos" className="btn-secondary">
+                <Link href={continueExploringHref} className="btn-secondary">
                   Seguir explorando
                 </Link>
                 <button
