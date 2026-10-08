@@ -178,13 +178,6 @@ export default function ProductConfigurator({
     return appendWhatsappDetails(inquiryUrl, 'Configuración elegida:', details);
   }, [inquiryUrl, quoteRequest, quoterConfig, quoterMaterials]);
 
-  const variantInquiryUrl = useMemo(() => {
-    const details = Object.entries(selected)
-      .filter(([, value]) => Boolean(value))
-      .map(([name, value]) => ({ name, value }));
-    return appendWhatsappDetails(inquiryUrl, 'Opciones elegidas:', details);
-  }, [inquiryUrl, selected]);
-
   useEffect(() => {
     if (!quoterConfig || !quoteRequest) {
       setQuoteResult(null)
@@ -485,6 +478,12 @@ export default function ProductConfigurator({
     return [...productOptions, ...apparelOptions]
   }
 
+  const selectedInquiryUrl = appendWhatsappDetails(
+    inquiryUrl,
+    'Configuración elegida:',
+    buildSelectedOptions()
+  )
+
   const handleAddToCart = () => {
     void addConfiguredProductToCart()
   }
@@ -624,7 +623,7 @@ export default function ProductConfigurator({
         </p>
         {inquiryUrl ? (
           <Link
-            href={inquiryUrl}
+            href={selectedInquiryUrl || inquiryUrl}
             target="_blank"
             rel="noreferrer"
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-8 py-4 font-bold text-white shadow-lg shadow-[#ED164F]/30 transition-all hover:-translate-y-0.5 hover:bg-[#F7638B]"
@@ -933,7 +932,7 @@ export default function ProductConfigurator({
 
                 {inquiryUrl && (
                   <Link
-                    href={variantInquiryUrl || inquiryUrl}
+                    href={selectedInquiryUrl || inquiryUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/15 bg-white/10 px-6 py-4 font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-white/15"
