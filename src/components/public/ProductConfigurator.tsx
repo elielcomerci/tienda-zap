@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Check, MessageCircleMore, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { getLowestPurchasablePrice, isPurchasablePrice } from '@/lib/product-pricing'
-import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
+import { getQuoterMaterials } from '@/lib/pricing/product-quoter'
 import type { ApparelDesignSelection } from '@/components/public/ApparelMockupPreview'
 import { isDevelopment, isConsultationOnly, requiresConversation } from '@/lib/catalog-domain'
 import ProductContextForm from '@/components/public/ProductContextForm'
@@ -107,8 +107,10 @@ export default function ProductConfigurator({
     [quoterConfig]
   )
   const [quoteSelection, setQuoteSelection] = useState<Record<string, string>>({})
+  const [quoteResult, setQuoteResult] = useState<any>(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
 
-  const quoteResult = useMemo(() => {
+  const quoteRequest = useMemo(() => {
     if (!quoterConfig || quoterMaterials.length === 0) return null
 
     const rawMaterialId = quoteSelection.rawMaterialId || quoterMaterials[0]?.id
@@ -124,19 +126,47 @@ export default function ProductConfigurator({
 
     if (!rawMaterialId || !quantity) return null
 
-    try {
-      return calculateProductQuote(quoterConfig, {
-        rawMaterialId,
-        quantity,
-        sizeLabel,
-        width: useCustomSize ? width : undefined,
-        height: useCustomSize ? height : undefined,
-        finishingIds,
-      })
-    } catch {
-      return null
+    return {
+      rawMaterialId,
+      quantity,
+      sizeLabel,
+      width: useCustomSize ? width : undefined,
+      height: useCustomSize ? height : undefined,
+      finishingIds,
     }
   }, [quoteSelection, quoterConfig, quoterMaterials])
+
+  useEffect(() => {
+    if (!quoterConfig || !quoteRequest) {
+      setQuoteResult(null)
+      setQuoteLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    setQuoteLoading(true)
+
+    fetch('/api/product-quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: product.id, selection: quoteRequest }),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'No pudimos calcular esta configuración.')
+        return data
+      })
+      .then((data) => setQuoteResult(data))
+      .catch((error) => {
+        if (error?.name !== 'AbortError') setQuoteResult(null)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setQuoteLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [product.id, quoteRequest, quoterConfig])
 
   const variantCombinations = useMemo(() => {
     if (!product.variants) return []
@@ -666,7 +696,9 @@ export default function ProductConfigurator({
 
         <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio final</p>
-          {quoteResult ? (
+          {quoteLoading ? (
+            <p className="mt-3 text-sm text-gray-300">Calculando…</p>
+          ) : quoteResult ? (
             <div className="mt-3 flex items-end gap-2">
               <span className="text-4xl font-black tracking-tight sm:text-5xl">
                 ${quoteResult.totalPrice.toLocaleString('es-AR')}
