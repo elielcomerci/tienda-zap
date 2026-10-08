@@ -88,17 +88,12 @@ function getTierPrice(
   return tier.unitPrice
 }
 
-function getQuoteMargin(config: ProductQuoterConfigInput, quantity: number) {
-  const quantities = config.quantityPresets.map((preset) => preset.quantity).filter((value) => value > 0)
-  const minQty = quantities.length > 0 ? Math.min(...quantities) : quantity
-  const maxQty = quantities.length > 0 ? Math.max(...quantities) : quantity
-
-  if (config.minProfitMargin === null || config.maxProfitMargin === null || minQty === maxQty) {
-    return config.profitMargin
-  }
-
-  const progress = Math.log(quantity / minQty) / Math.log(maxQty / minQty)
-  return config.maxProfitMargin - progress * (config.maxProfitMargin - config.minProfitMargin)
+function getQuoteMargin(config: ProductQuoterConfigInput, _quantity: number) {
+  // El margen maestro es único y estable para toda la configuración.
+  // minProfitMargin/maxProfitMargin se conservan en el modelo por compatibilidad
+  // histórica, pero no se interpolan automáticamente: eso introduciría una
+  // variación de precio que no surge de una fuente comercial explícita.
+  return config.profitMargin
 }
 
 function resolveSize(config: ProductQuoterConfigInput, selection: ProductQuoteSelection) {
