@@ -14,6 +14,30 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log('========================================\n');
 
   const errors: string[] = [];
+  const duplicateValues = (values: string[]) =>
+    [...new Set(values.filter((value, index) => values.indexOf(value) !== index))];
+  const assertNoSourceDuplicates = (label: string, values: string[]) => {
+    const duplicates = duplicateValues(values);
+    if (duplicates.length > 0) {
+      errors.push(`[SOURCE DUPLICATE] ${label}: ${duplicates.join(', ')}.`);
+    }
+  };
+
+  assertNoSourceDuplicates('BusinessType slugs', businessTypesData.map((item) => item.slug));
+  assertNoSourceDuplicates('Situation slugs', situationsData.map((item) => item.slug));
+  assertNoSourceDuplicates('Need slugs', needsData.map((item) => item.slug));
+  assertNoSourceDuplicates('Product slugs', productsData.map((item) => item.slug));
+  assertNoSourceDuplicates('Product orders', productsData.map((item) => String(item.order)));
+  assertNoSourceDuplicates(
+    'Offer matrix tuples',
+    offerMatrixData.map((item) => `${item.businessTypeSlug}|${item.situationSlug}|${item.needSlug}|${item.productSlug}`)
+  );
+  assertNoSourceDuplicates(
+    'Product relation pairs',
+    productRelationsData.map((item) => `${item.productSlug}|${item.relatedProductSlug}`)
+  );
+  assertNoSourceDuplicates('Quoter config products', initialQuoterConfigs.map((item) => item.productSlug));
+  assertNoSourceDuplicates('Quoter option config products', quoterOptionConfigs.map((item) => item.productSlug));
 
   // Product Bases are the 23 ordered base offers. Eight additional direct
   // design products (orders 24–31) are complementary catalog entries.
@@ -195,12 +219,17 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
       (t) => `${t.businessTypeSlug}|${t.situationSlug}|${t.needSlug}|${t.productSlug}`
     )
   );
+  if (expectedTupleKeys.size !== offerMatrixData.length) {
+    errors.push('[OFFER MATRIX DATA DUPLICATE] La fuente contiene tuplas repetidas.');
+  }
 
-  const actualTupleKeys = new Set(
-    dbEntries.map(
-      (e) => `${e.businessType.slug}|${e.situation.slug}|${e.need.slug}|${e.product.slug}`
-    )
+  const actualTupleList = dbEntries.map(
+    (e) => `${e.businessType.slug}|${e.situation.slug}|${e.need.slug}|${e.product.slug}`
   );
+  const actualTupleKeys = new Set(actualTupleList);
+  if (actualTupleKeys.size !== dbEntries.length) {
+    errors.push('[OFFER MATRIX DB DUPLICATE] La base contiene tuplas repetidas.');
+  }
 
   if (dbEntries.length !== offerMatrixData.length) {
     errors.push(`[OFFER MATRIX COUNT] Esperadas ${offerMatrixData.length} tuplas, encontradas ${dbEntries.length}`);
