@@ -8,7 +8,7 @@ import RelatedProductsSection from '@/components/public/RelatedProductsSection'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import { getPublicSituationBySlug } from '@/lib/discovery'
-import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
+import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 import ExplorationContextIndicator from '@/components/public/ExplorationContextIndicator'
 import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
@@ -75,7 +75,7 @@ export default async function ProductDetailPage({
             Inicio
           </Link>
           <ChevronRight size={14} />
-          <Link href={buildProductUrl('', explorationContext).replace(/\/productos\/$/, '/productos')} className="transition-colors hover:text-gray-900">
+          <Link href={buildProductsUrl(explorationContext)} className="transition-colors hover:text-gray-900">
             Productos
           </Link>
           <ChevronRight size={14} />
