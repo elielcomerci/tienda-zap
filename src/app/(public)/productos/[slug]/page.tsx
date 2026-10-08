@@ -35,7 +35,7 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>
   searchParams: Promise<{ rubro?: string; situacion?: string; necesidad?: string; mode?: string }>
 }) {
-  const [{ slug }, { rubro, situacion, necesidad }] = await Promise.all([params, searchParams])
+  const [{ slug }, { rubro, situacion, necesidad, mode }] = await Promise.all([params, searchParams])
   const product = await getProduct(slug)
   if (!product || !product.active) notFound()
 
@@ -46,6 +46,7 @@ export default async function ProductDetailPage({
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
   const selectedNeed = selectedSituation?.needs.find((need) => need.slug === necesidad)
   const explorationContext: ExplorationContext = {
+    mode: mode === 'objective' ? 'situation' : mode === 'product' || mode === 'situation' || mode === 'rubro' ? mode : undefined,
     businessTypeSlug: selectedBusinessType?.slug,
     situationSlug: selectedSituation?.slug,
     needSlug: selectedNeed?.slug,
