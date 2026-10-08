@@ -7,6 +7,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { useState, useEffect, useTransition } from 'react'
 import { createPublicSellerLead } from '@/lib/actions/leads'
 import { signOut } from 'next-auth/react'
+import { buildProductsUrl } from '@/lib/exploration-context'
 
 const NAV_HEIGHT = 70
 
@@ -34,6 +35,12 @@ export default function PublicHeader({
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const explorationContext = {
+    businessTypeSlug: searchParams.get('rubro') || undefined,
+    situationSlug: searchParams.get('situacion') || undefined,
+    needSlug: searchParams.get('necesidad') || undefined,
+  }
+  const cartHref = buildProductsUrl(explorationContext).replace(/^\/productos/, '/carrito')
   const [menuOpen, setMenuOpen] = useState(false)
   const [leadOpen, setLeadOpen] = useState(false)
   const [leadError, setLeadError] = useState<string | null>(null)
@@ -331,7 +338,7 @@ export default function PublicHeader({
               {/* Cart */}
               <li className="h-full flex items-center">
                 <Link
-                  href="/carrito"
+                  href={cartHref}
                   className="relative flex items-center text-gray-900 hover:text-[#ED164F] transition-colors"
                   aria-label="Ir al carrito"
                 >
@@ -367,7 +374,7 @@ export default function PublicHeader({
               </Link>
             )}
             <Link
-              href="/carrito"
+              href={cartHref}
               className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm"
               aria-label="Ir al carrito"
             >
