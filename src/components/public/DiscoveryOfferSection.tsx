@@ -53,7 +53,7 @@ export default function DiscoveryOfferSection({
     `Hola, necesito orientación para resolver: ${needName}.`,
     businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
     situationName ? `Mi situación actual es: ${situationName}.` : null,
-  ].filter(Boolean).join('\\n')
+  ].filter(Boolean).join('\n')
   const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
   if (offers.length === 0) {
