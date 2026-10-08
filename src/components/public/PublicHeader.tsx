@@ -414,13 +414,13 @@ export default function PublicHeader({
               </Link>
             </li>
 
-            {/* Collapsible: Productos */}
+            {/* Exploración móvil: Producto */}
             <li className="border-b border-white/10 pb-3">
               <button
                 onClick={() => setMobileProdOpen(!mobileProdOpen)}
                 className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
               >
-                <span>Productos</span>
+                <span>Producto</span>
                 <ChevronDown size={20} className={`transition-transform duration-300 ${mobileProdOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -428,7 +428,7 @@ export default function PublicHeader({
                 <ul className="pl-4 border-l border-white/20 space-y-2.5">
                   <li>
                     <Link
-                      href="/productos?mode=product"
+                      href={buildProductsUrl(explorationContext, { mode: 'product' })}
                       onClick={() => setMenuOpen(false)}
                       className="block text-sm font-semibold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
                     >
@@ -438,7 +438,7 @@ export default function PublicHeader({
                   {categories.map((cat) => (
                     <li key={cat.id}>
                       <Link
-                        href={`/productos?mode=product&cat=${cat.slug}`}
+                        href={buildProductsUrl(explorationContext, { mode: 'product', cat: cat.slug })}
                         onClick={() => setMenuOpen(false)}
                         className="block text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
                       >
@@ -450,24 +450,24 @@ export default function PublicHeader({
               </div>
             </li>
 
-            {/* Soluciones */}
+            {/* Rubro */}
             <li>
               <Link
-                href="/productos?mode=rubro"
+                href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
                 onClick={() => setMenuOpen(false)}
                 className="block text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
               >
-                Soluciones
+                Rubro
               </Link>
             </li>
 
-            {/* Situaciones — móvil */}
+            {/* Situación — móvil */}
             <li className="border-b border-white/10 pb-3">
               <button
                 onClick={() => setMobileObjOpen(!mobileObjOpen)}
                 className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
               >
-                <span>Situaciones</span>
+                <span>Situación</span>
                 <ChevronDown size={20} className={`transition-transform duration-300 ${mobileObjOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -479,7 +479,7 @@ export default function PublicHeader({
                     .map((intent) => (
                       <li key={intent.id}>
                         <Link
-                          href={`/productos?mode=situation&situacion=${intent.slug}`}
+                          href={buildProductsUrl(explorationContext, { mode: 'situation', situacion: intent.slug, necesidad: undefined, cat: undefined, tipo: undefined })}
                           onClick={() => setMenuOpen(false)}
                           className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
                         >
@@ -491,7 +491,7 @@ export default function PublicHeader({
                   }
                   <li>
                     <Link
-                      href="/productos?mode=situation"
+                      href={buildProductsUrl(explorationContext, { mode: 'situation', necesidad: undefined, cat: undefined, tipo: undefined })}
                       onClick={() => setMenuOpen(false)}
                       className="block text-sm font-bold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
                     >
