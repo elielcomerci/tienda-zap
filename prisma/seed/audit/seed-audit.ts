@@ -6,6 +6,7 @@ import { needsData } from '../data/04-needs';
 import { offerMatrixData } from '../data/07-offer-matrix';
 import { initialQuoterConfigs } from '../data/09-quoter-config';
 import { quoterOptionConfigs } from '../data/09-quoter-options';
+import { productRelationsData } from '../data/10-product-relations';
 
 export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   console.log('\n========================================');
@@ -211,6 +212,38 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   for (const key of actualTupleKeys) {
     if (!expectedTupleKeys.has(key)) {
       errors.push(`[OFFER MATRIX EXTRA] Tupla inesperada: ${key}`);
+    }
+  }
+
+  // 8. Audit ProductRelations
+  const dbRelations = await prisma.productRelation.findMany({
+    include: {
+      product: { select: { slug: true } },
+      relatedProduct: { select: { slug: true } },
+    },
+  });
+
+  const expectedRelationKeys = new Set(
+    productRelationsData.map((relation) => relation.productSlug + '|' + relation.relatedProductSlug)
+  );
+  const actualRelationKeys = new Set(
+    dbRelations.map((relation) => relation.product.slug + '|' + relation.relatedProduct.slug)
+  );
+
+  if (dbRelations.length !== productRelationsData.length) {
+    errors.push(`[PRODUCT RELATIONS COUNT] Esperadas ${productRelationsData.length}, encontradas ${dbRelations.length}`);
+  }
+  if (expectedRelationKeys.size !== productRelationsData.length) {
+    errors.push('[PRODUCT RELATIONS DATA DUPLICATE] Hay relaciones duplicadas en productRelationsData.');
+  }
+  for (const key of expectedRelationKeys) {
+    if (!actualRelationKeys.has(key)) {
+      errors.push(`[PRODUCT RELATIONS MISSING] Relación faltante: ${key}`);
+    }
+  }
+  for (const key of actualRelationKeys) {
+    if (!expectedRelationKeys.has(key)) {
+      errors.push(`[PRODUCT RELATIONS EXTRA] Relación inesperada: ${key}`);
     }
   }
 
