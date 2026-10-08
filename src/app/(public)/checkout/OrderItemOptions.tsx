@@ -61,7 +61,7 @@ export default function OrderItemOptions({
             className={`text-gray-400 ${compact ? 'mb-1.5' : 'mb-2'}`}
           />
           <span className="text-xs font-medium text-gray-700">
-            Todavia no tengo el archivo
+            Todavía no tengo el archivo
           </span>
           <span
             className={`text-gray-400 ${compact ? 'mt-0.5 text-[9px]' : 'mt-1 text-[10px]'}`}
