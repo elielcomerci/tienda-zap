@@ -20,6 +20,14 @@ export default async function PublicLayout({ children }: { children: React.React
     getPublicSituations(),
     getPublicBusinessTypes(),
   ])
+  const situationsByBusinessType = Object.fromEntries(
+    await Promise.all(
+      businessTypes.map(async (businessType) => [
+        businessType.slug,
+        await getPublicSituations(businessType.slug),
+      ] as const)
+    )
+  )
 
   return (
     <ExplorationContextProvider>
@@ -32,6 +40,7 @@ export default async function PublicLayout({ children }: { children: React.React
         categories={categories}
         intentions={intentions}
         businessTypes={businessTypes}
+        situationsByBusinessType={situationsByBusinessType}
       />
       <main className="flex-1">{children}</main>
       <Footer />
