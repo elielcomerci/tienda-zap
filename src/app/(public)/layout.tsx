@@ -30,7 +30,11 @@ export default async function PublicLayout({ children }: { children: React.React
   )
 
   return (
-    <ExplorationContextProvider>
+    <ExplorationContextProvider
+      businessTypeSlugs={businessTypes.map((item) => item.slug)}
+      allSituations={intentions}
+      situationsByBusinessType={situationsByBusinessType}
+    >
     <div className="min-h-screen flex flex-col bg-white">
       <CouponSession />
       <WelcomePromoModal />
