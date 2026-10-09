@@ -269,26 +269,16 @@ export default function HomeHero({
 
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap items-center gap-6">
-            {selectedRubro && selectedSituacion ? (
-              <Link
-                href={buildProductsUrl({
-                  mode: 'situation',
-                  businessTypeSlug: selectedRubro,
-                  situationSlug: selectedSituacion,
-                })}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all shadow-sm hover:bg-[#C2103F] active:scale-[0.98]"
-              >
-                Dame ideas <ArrowRight size={18} />
-              </Link>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white opacity-40 shadow-sm cursor-not-allowed"
-              >
-                Ver qué me conviene <ArrowRight size={18} />
-              </button>
-            )}
+            <Link
+              href={buildProductsUrl({
+                mode: selectedRubro && selectedSituacion ? 'situation' : 'rubro',
+                businessTypeSlug: selectedRubro || undefined,
+                situationSlug: selectedRubro && selectedSituacion ? selectedSituacion : undefined,
+              })}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all shadow-sm hover:bg-[#C2103F] active:scale-[0.98]"
+            >
+              Dame ideas <ArrowRight size={18} />
+            </Link>
             <Link
               href={buildProductsUrl({
                 mode: 'product',
