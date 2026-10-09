@@ -167,6 +167,8 @@ export async function POST(req: NextRequest) {
     })
   } catch (error: any) {
     console.error('MP checkout error:', error)
-    return Response.json({ error: error.message || 'Error al procesar el pago' }, { status: 500 })
+    const message = error?.message || 'Error al procesar el pago'
+    const staleConfiguration = /(cambió desde la última cotización|configuración .* incompleta|no pudimos validar el precio actual)/i.test(message)
+    return Response.json({ error: message }, { status: staleConfiguration ? 409 : 500 })
   }
 }

@@ -389,6 +389,7 @@ export const orderCheckoutSchema = z.object({
         name: z.string(),
         value: z.string(),
       })).optional(),
+      configuratorSelection: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
     })
   ).min(1),
 }).superRefine((data, ctx) => {

@@ -24,6 +24,8 @@ export interface CartItem {
   fileUrl?: string
   designRequested?: boolean
   selectedOptions?: { name: string; value: string }[]
+  /** Original machine-readable keys used to re-quote active semantic configurators on the server. */
+  configuratorSelection?: Record<string, string | number | boolean | string[]>
   cartItemId?: string // Generated on add to uniquely identify configurations
 }
 
@@ -55,10 +57,13 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (item) => {
         set((state) => {
-          // Generate a unique identifier based on product ID and its exact configuration
-          const optionsHash = item.selectedOptions 
-            ? JSON.stringify(item.selectedOptions.sort((a, b) => a.name.localeCompare(b.name)))
-            : ''
+          // Keep distinct configurations separate even when their display labels happen to match.
+          const optionsHash = JSON.stringify({
+            options: [...(item.selectedOptions || [])].sort((a, b) => a.name.localeCompare(b.name)),
+            selection: item.configuratorSelection
+              ? Object.fromEntries(Object.entries(item.configuratorSelection).sort(([a], [b]) => a.localeCompare(b)))
+              : null,
+          })
           const cartItemId = item.cartItemId || `${item.productId}-${optionsHash}`
 
           const itemWithId = { ...item, cartItemId }
@@ -68,7 +73,13 @@ export const useCartStore = create<CartStore>()(
             return {
               items: state.items.map((i) =>
                 i.cartItemId === cartItemId
-                  ? { ...i, quantity: i.quantity + item.quantity }
+                  ? {
+                      ...i,
+                      price: item.price,
+                      selectedOptions: item.selectedOptions,
+                      configuratorSelection: item.configuratorSelection,
+                      quantity: i.quantity + item.quantity,
+                    }
                   : i
               ),
             }

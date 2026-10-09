@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
+import { assertQuotedPriceCurrent, resolveSemanticCheckoutQuote } from '@/lib/pricing/semantic-checkout-quote'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 
 function sortSelectedOptions(options: Array<{ name: string; value: string }> = []) {
@@ -45,11 +46,12 @@ function parseSizeLabel(value?: string) {
 function buildConfigurationSnapshot(input: {
   product: any
   selectedOptions: Array<{ name: string; value: string }>
+  configuratorSelection?: Record<string, string | number | boolean | string[]>
   unitPrice: number
   quantity: number
   priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo'
 }) {
-  const { product, selectedOptions, unitPrice, quantity, priceSource } = input
+  const { product, selectedOptions, configuratorSelection, unitPrice, quantity, priceSource } = input
   const inferredBlocks = product.quoterConfig
     ? ['material', 'size', 'quantity', 'finishing']
     : product.options.map((option: { name: string }) => option.name)
@@ -58,7 +60,7 @@ function buildConfigurationSnapshot(input: {
     version: product.configuratorVersions?.[0]?.schemaVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
     result: product.modality === 'CONSULTAR'
       ? 'GUIDED_REVIEW'
-      : product.quoterConfig
+      : product.configuratorVersions?.[0] || product.quoterConfig
         ? 'CALCULATED_PRICE'
         : 'DIRECT_PRICE',
     definition: product.configuratorVersions?.[0]?.schema || {
@@ -66,6 +68,7 @@ function buildConfigurationSnapshot(input: {
       blocks: inferredBlocks,
     },
     selections: selectedOptions,
+    selectionValues: configuratorSelection || null,
     price: {
       unitPrice,
       quantity,
@@ -73,6 +76,13 @@ function buildConfigurationSnapshot(input: {
       source: priceSource,
       currency: 'ARS',
     },
+    pricingPolicy: product.configuratorVersions?.[0]
+      ? {
+          schemaVersion: product.configuratorVersions[0].schemaVersion,
+          compatibility: product.configuratorVersions[0].compatibility,
+          pricing: product.configuratorVersions[0].pricing,
+        }
+      : null,
   }
 }
 
@@ -95,6 +105,7 @@ export async function resolveCheckoutOrderItems(
     fileUrl?: string
     designRequested?: boolean
     selectedOptions?: Array<{ name: string; value: string }>
+    configuratorSelection?: Record<string, string | number | boolean | string[]>
   }>
 ) {
   const productIds = [...new Set(items.map((item) => item.productId))]
@@ -147,8 +158,8 @@ export async function resolveCheckoutOrderItems(
       },
       configuratorVersions: {
         where: { status: 'ACTIVE' },
-        orderBy: { schemaVersion: 'desc' },
-        select: { schemaVersion: true, schema: true },
+        orderBy: { updatedAt: 'desc' },
+        select: { id: true, schemaVersion: true, schema: true, compatibility: true, pricing: true, updatedAt: true },
       },
     },
   })
@@ -161,26 +172,42 @@ export async function resolveCheckoutOrderItems(
       throw new Error('Uno de los productos ya no esta disponible.')
     }
 
-    const selectedOptions = sortSelectedOptions(item.selectedOptions || [])
+    let selectedOptions = sortSelectedOptions(item.selectedOptions || [])
     const selectedMap = optionsToMap(selectedOptions)
+    const activeConfigurator = product.configuratorVersions?.[0]
 
-    for (const option of product.options) {
-      const selectedValue = selectedMap.get(option.name)
-      if (option.isRequired && !selectedValue) {
-        throw new Error(`Falta seleccionar ${option.name} para ${product.name}.`)
-      }
+    if (!activeConfigurator) {
+      for (const option of product.options) {
+        const selectedValue = selectedMap.get(option.name)
+        if (option.isRequired && !selectedValue) {
+          throw new Error(`Falta seleccionar ${option.name} para ${product.name}.`)
+        }
 
-      if (selectedValue) {
-        const optionValueExists = option.values.some((value) => value.value === selectedValue)
-        if (!optionValueExists) {
-          throw new Error(`La opcion ${selectedValue} no es valida para ${product.name}.`)
+        if (selectedValue) {
+          const optionValueExists = option.values.some((value) => value.value === selectedValue)
+          if (!optionValueExists) {
+            throw new Error(`La opcion ${selectedValue} no es valida para ${product.name}.`)
+          }
         }
       }
     }
 
     let unitPrice = product.price
     let priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo' = 'base'
-    if (product.quoterConfig) {
+    if (activeConfigurator) {
+      if (!item.configuratorSelection || typeof item.configuratorSelection !== 'object' || Array.isArray(item.configuratorSelection)) {
+        throw new Error(`La configuración de ${product.name} está incompleta. Volvé al producto y cotizalo de nuevo.`)
+      }
+      const quote = resolveSemanticCheckoutQuote(
+        activeConfigurator as any,
+        item.configuratorSelection,
+        product.quoterConfig as any
+      )
+      assertQuotedPriceCurrent(product.name, item.unitPrice, quote.totalPrice)
+      unitPrice = quote.totalPrice
+      priceSource = 'quote'
+      selectedOptions = sortSelectedOptions(quote.selectedOptions)
+    } else if (product.quoterConfig) {
       const materialName = selectedMap.get('Material')
       const sizeLabel = selectedMap.get('Medida')
       const parsedSize = parseSizeLabel(sizeLabel)
@@ -224,7 +251,7 @@ export async function resolveCheckoutOrderItems(
       priceSource = 'variant'
     }
 
-    if (unitPrice <= 0) {
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
       throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
     }
 
@@ -250,6 +277,7 @@ export async function resolveCheckoutOrderItems(
       configurationSnapshot: buildConfigurationSnapshot({
         product,
         selectedOptions,
+        configuratorSelection: item.configuratorSelection,
         unitPrice,
         quantity: item.quantity,
         priceSource,
