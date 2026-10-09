@@ -128,33 +128,35 @@ export default function HomeHero({
     ? currentSituacion?.name ?? ''
     : 'qué está pasando'
 
-  // Ajusta la situación al ancho disponible y vuelve a medir al cambiar el viewport.
+  // Ajusta cada renglón como una unidad: nunca parte frases ni permite desbordes.
   useLayoutEffect(() => {
-    const btn = situacionBtnRef.current
-    if (!btn) return
+    const headline = heroRef.current?.querySelector('.home-hero-headline')
+    if (!headline) return
 
-    const fitSituation = () => {
-      btn.style.fontSize = ''
-      btn.style.whiteSpace = 'nowrap'
-
-      const h1 = btn.closest('h1')
-      if (!h1) return
-
-      const available = h1.clientWidth
-      const naturalWidth = btn.scrollWidth
-
-      if (naturalWidth > available) {
-        const computedSize = parseFloat(window.getComputedStyle(btn).fontSize)
-        const ratio = available / naturalWidth
-        // Deja un pequeño margen para que el texto no quede pegado al borde.
-        btn.style.fontSize = `${Math.floor(computedSize * ratio * 0.9)}px`
-      }
+    const fitLines = () => {
+      const lines = headline.querySelectorAll<HTMLElement>('.home-hero-line')
+      lines.forEach((line) => {
+        line.style.fontSize = ''
+        line.style.whiteSpace = 'nowrap'
+        const available = headline.clientWidth
+        const naturalWidth = line.scrollWidth
+        if (naturalWidth > available) {
+          const computedSize = parseFloat(window.getComputedStyle(line).fontSize)
+          line.style.fontSize = `${Math.floor(computedSize * (available / naturalWidth) * 0.96)}px`
+        }
+      })
     }
 
-    fitSituation()
-    window.addEventListener('resize', fitSituation)
-    return () => window.removeEventListener('resize', fitSituation)
-  }, [selectedSituacion, selectedRubro, visibleSituacionName])
+    fitLines()
+    const observer = new ResizeObserver(fitLines)
+    observer.observe(headline)
+    window.addEventListener('resize', fitLines)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', fitLines)
+    }
+  }, [selectedSituacion, selectedRubro, visibleSituacionName, visibleRubroName])
+
 
   // Format names to lowercase for inline sentence flow
   const formatRubroName = (name: string) => name.toLowerCase()
@@ -164,10 +166,10 @@ export default function HomeHero({
     <section ref={heroRef} className="relative bg-white pt-10 pb-16 sm:pt-16 sm:pb-24">
       <div className="mx-auto max-w-[1380px] px-4 xl:px-8">
         <div className="max-w-4xl">
-          {/* Desktop & Tablet: Inline Interactive Headline */}
-          <div className="hidden sm:block">
-            <h1 className="text-[clamp(2.25rem,5.5vw,4.75rem)] font-black tracking-tight text-gray-950 leading-[1.15]">
-              <span>Tengo un negocio de </span>
+          {/* Encabezado en tres líneas fijas en todos los tamaños de pantalla */}
+          <h1 className="home-hero-headline text-[clamp(1.4rem,5.5vw,4.75rem)] font-black tracking-tight text-gray-950 leading-[1.08]">
+            <span className="home-hero-line block whitespace-nowrap">Tengo un negocio de</span>
+            <span className="home-hero-line block whitespace-nowrap">
               <span className="relative inline-block align-baseline">
                 <button
                   type="button"
@@ -175,30 +177,18 @@ export default function HomeHero({
                     setIsRubroOpen(!isRubroOpen)
                     setIsSituacionOpen(false)
                   }}
-                  className="border-b-[4px] border-[#ED164F] pb-0.5 inline-flex items-center gap-1.5 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity"
+                  className="border-b-[3px] sm:border-b-4 border-[#ED164F] pb-0.5 inline-flex items-center gap-1 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap"
                   aria-expanded={isRubroOpen}
                 >
-                  <span
-                    key={visibleRubroName}
-                    className="inline-block animate-in fade-in duration-300"
-                  >
+                  <span key={visibleRubroName} className="inline-block animate-in fade-in duration-300">
                     {formatRubroName(visibleRubroName)}
                   </span>
-                  <ChevronDown
-                    size={22}
-                    className={`transition-transform duration-200 text-gray-950 ${
-                      isRubroOpen ? 'rotate-180' : ''
-                    }`}
-                    strokeWidth={3}
-                  />
+                  <ChevronDown size={20} className={`shrink-0 transition-transform duration-200 text-gray-950 ${isRubroOpen ? 'rotate-180' : ''}`} strokeWidth={3} />
                 </button>
 
-                {/* Rubro Dropdown Popover */}
                 {isRubroOpen && (
-                  <div className="absolute top-[calc(100%+8px)] left-0 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-sm font-normal tracking-normal leading-normal" style={{ fontSize: '14px', fontWeight: 400, letterSpacing: 'normal', lineHeight: 1.5 }}>
-                    <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      Elegí tu rubro
-                    </p>
+                  <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-sm font-normal tracking-normal leading-normal" style={{ fontSize: '14px', fontWeight: 400, letterSpacing: 'normal', lineHeight: 1.5 }}>
+                    <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Elegí tu rubro</p>
                     <div className="max-h-64 overflow-y-auto space-y-1">
                       {businessTypes.map((bt) => (
                         <button
@@ -208,11 +198,7 @@ export default function HomeHero({
                             onSelectedRubroChange(bt.slug)
                             setIsRubroOpen(false)
                           }}
-                          className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors ${
-                            selectedRubro === bt.slug
-                              ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
-                              : 'text-gray-800 font-medium hover:bg-gray-50'
-                          }`}
+                          className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors ${selectedRubro === bt.slug ? 'bg-[#FEF1F5] text-[#ED164F] font-bold' : 'text-gray-800 font-medium hover:bg-gray-50'}`}
                         >
                           {bt.name}
                         </button>
@@ -220,13 +206,10 @@ export default function HomeHero({
                     </div>
                   </div>
                 )}
-              </span>
-            </h1>
-
-            <h1 className="text-[clamp(2.25rem,5.5vw,4.75rem)] font-black tracking-tight text-gray-950 leading-[1.15]">
-              <span>y </span>
-              <br />
-              <span className="relative inline-block align-baseline whitespace-nowrap">
+              </span>{' '}y
+            </span>
+            <span className="home-hero-line block whitespace-nowrap">
+              <span className="relative inline-block align-baseline">
                 <button
                   ref={situacionBtnRef}
                   type="button"
@@ -236,26 +219,16 @@ export default function HomeHero({
                     setIsRubroOpen(false)
                   }}
                   disabled={!selectedRubro || isSituationsLoading}
-                  className="border-b-[4px] border-[#ED164F] pb-0.5 inline-flex items-center gap-1.5 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-70"
+                  className="border-b-[3px] sm:border-b-4 border-[#ED164F] pb-0.5 inline-flex items-center gap-1 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-70"
                   aria-expanded={isSituacionOpen}
                 >
                   <span>{formatSituacionName(visibleSituacionName)}</span>
-                  <ChevronDown
-                    size={22}
-                    className={`transition-transform duration-200 text-gray-950 ${
-                      isSituacionOpen ? 'rotate-180' : ''
-                    }`}
-                    strokeWidth={3}
-                  />
+                  <ChevronDown size={20} className={`shrink-0 transition-transform duration-200 text-gray-950 ${isSituacionOpen ? 'rotate-180' : ''}`} strokeWidth={3} />
                 </button>
-                <span>.</span>
 
-                {/* Situacion Dropdown Popover */}
                 {isSituacionOpen && (
-                  <div className="absolute top-[calc(100%+8px)] left-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-sm font-normal tracking-normal leading-normal" style={{ fontSize: '14px', fontWeight: 400, letterSpacing: 'normal', lineHeight: 1.5 }}>
-                    <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      ¿Qué está pasando?
-                    </p>
+                  <div className="absolute top-[calc(100%+8px)] left-0 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-sm font-normal tracking-normal leading-normal" style={{ fontSize: '14px', fontWeight: 400, letterSpacing: 'normal', lineHeight: 1.5 }}>
+                    <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">¿Qué está pasando?</p>
                     <div className="max-h-64 overflow-y-auto space-y-1">
                       {filteredSituations.map((sit) => (
                         <button
@@ -265,11 +238,7 @@ export default function HomeHero({
                             setSelectedSituacion(sit.slug)
                             setIsSituacionOpen(false)
                           }}
-                          className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors ${
-                            selectedSituacion === sit.slug
-                              ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
-                              : 'text-gray-800 font-medium hover:bg-gray-50'
-                          }`}
+                          className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors ${selectedSituacion === sit.slug ? 'bg-[#FEF1F5] text-[#ED164F] font-bold' : 'text-gray-800 font-medium hover:bg-gray-50'}`}
                         >
                           {sit.name}
                         </button>
@@ -278,58 +247,8 @@ export default function HomeHero({
                   </div>
                 )}
               </span>
-            </h1>
-          </div>
-
-          {/* Mobile UI: Clean standard form dropdowns */}
-          <div className="sm:hidden space-y-4">
-            <h1 className="text-[clamp(1.75rem,7.2vw,2.25rem)] font-black tracking-tight text-gray-950 leading-tight">
-              Tengo un negocio de{' '}
-              <span className="text-[#ED164F]">{formatRubroName(visibleRubroName)}</span> y{' '}
-              <span className="text-[#ED164F]">{formatSituacionName(visibleSituacionName)}.</span>
-            </h1>
-            <div className="grid gap-3 pt-2">
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Rubro
-                </label>
-                <select
-                  value={selectedRubro}
-                  onChange={(e) => onSelectedRubroChange(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none"
-                >
-                  <option value="" disabled>
-                    Elegí tu rubro
-                  </option>
-                  {businessTypes.map((bt) => (
-                    <option key={bt.id} value={bt.slug}>
-                      {bt.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Situación actual
-                </label>
-                <select
-                  value={selectedSituacion}
-                  onChange={(e) => setSelectedSituacion(e.target.value)}
-                  disabled={!selectedRubro || isSituationsLoading}
-                  className="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white text-base font-semibold text-gray-900 focus:border-[#ED164F] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
-                >
-                  <option value="" disabled>
-                    {!selectedRubro ? 'Primero elegí tu rubro' : isSituationsLoading ? 'Cargando situaciones…' : 'Elegí qué está pasando'}
-                  </option>
-                  {filteredSituations.map((sit) => (
-                    <option key={sit.id} value={sit.slug}>
-                      {sit.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+            </span>
+          </h1>
 
           {/* Subtitle */}
           <p className="mt-8 text-base sm:text-lg text-gray-500 max-w-xl leading-relaxed">
