@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { registerUser } from '@/lib/actions/auth'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import Link from 'next/link'
-import { Zap } from 'lucide-react'
 import PasswordInput from '@/components/ui/PasswordInput'
 
 export const metadata = { title: 'Crear cuenta — ZAP Tienda' }
@@ -28,8 +27,8 @@ export default async function RegistroPage({
       <div className="pointer-events-none absolute -bottom-28 -left-20 -z-10 h-80 w-80 rounded-full bg-[#4576B9]/10 blur-3xl" />
       <div className="w-full max-w-md overflow-hidden rounded-[28px] border border-black/[0.06] bg-white shadow-[0_24px_80px_-32px_rgba(15,23,42,0.22)]">
         <div className="border-b border-gray-100 bg-white px-8 pb-7 pt-9 text-center">
-          <Link href="/" className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ED164F] to-[#4576B9] text-white shadow-lg shadow-[#ED164F]/20 transition-transform hover:scale-105">
-            <Zap size={32} />
+          <Link href="/" aria-label="ZAP Tienda — inicio" className="mb-5 inline-flex items-center justify-center transition-opacity hover:opacity-80">
+            <img src="https://res.cloudinary.com/dip14vkem/image/upload/v1756568241/logo_t37blz.png" alt="ZAP" width="180" height="60" className="h-12 w-auto max-w-[180px] object-contain" />
           </Link>
           <h1 className="text-2xl font-black tracking-tight text-gray-950">Crear tu cuenta</h1>
           <p className="mt-2 text-sm text-gray-500">Tus ideas y pedidos, en un mismo lugar.</p>
