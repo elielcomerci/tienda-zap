@@ -28,19 +28,24 @@ export default function PublicHeader({
   categories = [],
   intentions = [],
   businessTypes = [],
+  situationsByBusinessType = {},
 }: {
   user?: { name?: string | null; role?: string | null } | null
   referralSeller?: { id: string; name?: string | null } | null
   categories?: { id: string; name: string; slug: string }[]
   intentions?: { id: string; name: string; slug: string; icon: string | null; needs?: { id: string; name: string; slug: string }[] }[]
   businessTypes?: { id: string; name: string; slug: string }[]
+  situationsByBusinessType?: Record<string, { id: string; name: string; slug: string; icon: string | null; needs?: { id: string; name: string; slug: string }[] }[]>
 }) {
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
   const { context: explorationContext, setContext, clearContext, ready: contextReady } = useExplorationContext()
-  const currentSituation = intentions.find((item) => item.slug === explorationContext.situationSlug)
+  const availableSituations = explorationContext.businessTypeSlug
+    ? situationsByBusinessType[explorationContext.businessTypeSlug] || intentions
+    : intentions
+  const currentSituation = availableSituations.find((item) => item.slug === explorationContext.situationSlug)
   const cartHref = buildProductsUrl(explorationContext).replace(/^\/productos/, '/carrito')
   const [menuOpen, setMenuOpen] = useState(false)
   const [leadOpen, setLeadOpen] = useState(false)
@@ -325,7 +330,7 @@ export default function PublicHeader({
             <label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-rubro">Rubro</label>
             <select id="zap-context-rubro" value={explorationContext.businessTypeSlug || ''} onChange={(event) => setContext({ mode: 'rubro', businessTypeSlug: event.target.value || undefined, situationSlug: undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir rubro</option>{businessTypes.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
             <label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-situacion">Qué está pasando</label>
-            <select id="zap-context-situacion" value={explorationContext.situationSlug || ''} onChange={(event) => setContext({ mode: 'situation', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: event.target.value || undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir situación</option>{intentions.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+            <select id="zap-context-situacion" value={explorationContext.situationSlug || ''} onChange={(event) => setContext({ mode: 'situation', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: event.target.value || undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir situación</option>{availableSituations.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
             {currentSituation?.needs && currentSituation.needs.length > 0 && <><label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-necesidad">Qué necesitás resolver</label><select id="zap-context-necesidad" value={explorationContext.needSlug || ''} onChange={(event) => setContext({ ...explorationContext, needSlug: event.target.value || undefined })} className="w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Ver todas las necesidades</option>{currentSituation.needs.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></>}
             <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#ED164F]">Ver opciones →</Link>
           </section>}
