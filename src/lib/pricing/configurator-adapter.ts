@@ -220,7 +220,12 @@ export function resolveQuoterSelection(
   }
 
   // B. Resolver Materia Prima por identidad estable (RawMaterial.id)
-  const materialMap = adapter.materialResolution?.[sanitizedSelection.material || ''];
+  const materialResolution = adapter.materialResolution || {};
+  const materialKeys = Object.keys(materialResolution);
+  // Algunos productos (como tags) tienen un único material fijo que no se expone como opción comercial.
+  // Solo inferimos ese material cuando hay exactamente uno; si hay varios, la selección explícita sigue siendo obligatoria.
+  const selectedMaterial = sanitizedSelection.material || (materialKeys.length === 1 ? materialKeys[0] : undefined);
+  const materialMap = materialResolution[selectedMaterial || ''];
   if (!materialMap) {
     throw new Error(`Error de configuración: Material '${sanitizedSelection.material}' no mapeado en el adapter.`);
   }
@@ -228,7 +233,7 @@ export function resolveQuoterSelection(
   const rawMaterialId = materialMap[sanitizedSelection.printing || ''];
   if (!rawMaterialId) {
     throw new Error(
-      `Error de configuración: Combinación de material '${sanitizedSelection.material}' e impresión '${sanitizedSelection.printing}' no mapeada.`
+      `Error de configuración: Combinación de material '${selectedMaterial || sanitizedSelection.material}' e impresión '${sanitizedSelection.printing}' no mapeada.`
     );
   }
 

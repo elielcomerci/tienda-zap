@@ -14,6 +14,8 @@ import {
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
+const supportedPricingEngines = new Set(['PROVIDER_FINISHED_COST', 'PRODUCT_QUOTER', 'STICKER_TABLE', 'TIERED_UNIT_TABLE']);
+
 const configs: Config[] = [
   tarjetasVouchersConfigurator,
   flyersDesplegablesConfigurator,
@@ -103,6 +105,7 @@ test('los cinco configuradores tienen slug/version coherentes y campos utilizabl
   for (const config of configs) {
     assert.equal(config.schema.productSlug, config.productSlug, config.productSlug);
     assert.equal(config.schema.engine, 'IMPRESOS_PACKAGING', config.productSlug);
+    assert.ok(supportedPricingEngines.has((config.pricing as any)?.engine), `${config.productSlug}: motor de pricing no reconocido`);
     assert.ok(config.schema.fields && Object.keys(config.schema.fields).length > 0, config.productSlug);
 
     for (const [key, field] of Object.entries(config.schema.fields as Record<string, any>)) {

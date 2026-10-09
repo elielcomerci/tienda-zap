@@ -699,7 +699,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
     ],
   },
   pricing: {
-    engine: 'ProductQuoterConfig',
+    engine: 'PRODUCT_QUOTER',
     adapter: {
       formatMapping: {
         '9x5':  { sizeLabel: '9x5 cm',  width: 9,  height: 5  },
