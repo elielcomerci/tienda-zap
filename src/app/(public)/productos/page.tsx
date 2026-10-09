@@ -82,6 +82,20 @@ export default async function ProductsPage({
     getPublicBusinessTypes(),
   ])
   const selectedBusinessType = rubro ? businessTypes.find((businessType) => businessType.slug === rubro) : undefined
+
+  // A saved/shared situation may no longer apply to the selected business type.
+  // Remove only the invalid exploration fields and preserve ordinary catalog filters.
+  if (situationSlug && !selectedSituation) {
+    const params = new URLSearchParams()
+    if (requestedMode) params.set('mode', requestedMode)
+    if (rubro) params.set('rubro', rubro)
+    if (cat) params.set('cat', cat)
+    if (q) params.set('q', q)
+    if (tipo) params.set('tipo', tipo)
+    const suffix = params.toString()
+    redirect(suffix ? `/productos?${suffix}` : '/productos')
+  }
+
   const businessSituations = getBusinessSituations(rubro, situations)
   const [products, categories] = await Promise.all([
     getProducts(
@@ -108,8 +122,8 @@ export default async function ProductsPage({
   const explorationContext: ExplorationContext = {
     mode: isSituationMode ? 'situation' : mode === 'rubro' ? 'rubro' : mode === 'product' ? 'product' : undefined,
     businessTypeSlug: rubro,
-    situationSlug: selectedSituation?.slug || situationSlug,
-    needSlug: selectedNeed?.slug || necesidad,
+    situationSlug: selectedSituation?.slug,
+    needSlug: selectedNeed?.slug,
   }
 
   return (
