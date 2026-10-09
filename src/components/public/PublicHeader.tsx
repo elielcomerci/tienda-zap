@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams, useRouter } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { ChevronDown, Handshake, LayoutDashboard, LogOut, ShoppingCart, X } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState, useEffect, useTransition } from 'react'
@@ -40,7 +40,6 @@ export default function PublicHeader({
   const searchParams = useSearchParams()
   const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
   const { context: explorationContext, setContext, clearContext, ready: contextReady } = useExplorationContext()
-  const router = useRouter()
   const currentSituation = intentions.find((item) => item.slug === explorationContext.situationSlug)
   const cartHref = buildProductsUrl(explorationContext).replace(/^\/productos/, '/carrito')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -317,7 +316,7 @@ export default function PublicHeader({
         <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0"><span className="text-lg font-bold">ZAP Tienda</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-8 md:max-h-[calc(100vh-170px)]"><div className="mx-auto flex max-w-sm flex-col gap-6">
           <nav aria-label="Navegación principal" className="grid gap-4 text-lg font-bold">
-            <Link href={buildProductsUrl({ ...explorationContext, mode: 'rubro' })} onClick={() => setMenuOpen(false)}>Explorar soluciones →</Link>
+            <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)}>Explorar soluciones →</Link>
             <Link href={buildProductsUrl({ ...explorationContext, mode: 'product' }, { tipo: undefined, cat: undefined })} onClick={() => setMenuOpen(false)}>Ver todo</Link>
             <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos ↗</a>
           </nav>
