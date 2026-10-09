@@ -43,7 +43,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-8 pt-6 space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-6 py-7 sm:px-8 sm:py-8">
       {registered && (
         <div className="p-3 bg-green-50 text-green-700 text-sm rounded-xl text-center font-medium">
           ✓ ¡Cuenta creada! Ya podés ingresar.
@@ -57,7 +57,7 @@ export default function LoginForm() {
 
       <div>
         <label className="label">Email</label>
-        <input type="email" {...register('email')} className="input !bg-gray-50 focus:!bg-white" placeholder="admin@zap.com.ar" />
+        <input type="email" {...register('email')} className="input !bg-gray-50 focus:!bg-white" placeholder="tu@email.com" />
         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
       </div>
 
