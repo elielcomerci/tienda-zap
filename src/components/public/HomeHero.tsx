@@ -95,6 +95,10 @@ export default function HomeHero({
       })
       .then((data: SituationItem[]) => {
         setFilteredSituations(data)
+        setSelectedSituacion((current) => {
+          const candidate = current || context.situationSlug || ''
+          return data.some((item) => item.slug === candidate) ? candidate : ''
+        })
       })
       .catch((error: unknown) => {
         if (error instanceof Error && error.name === 'AbortError') return

@@ -38,10 +38,20 @@ export function ExplorationContextProvider({ children }: { children: React.React
       let saved: ExplorationContext = {}
       try { const raw = window.localStorage.getItem(STORAGE_KEY); if (raw) saved = normalizeExplorationContext(JSON.parse(raw)) } catch {}
       const routeMode = readContext(params).mode
-      setContextState(normalizeExplorationContext({ ...saved, mode: routeMode || saved.mode }))
+      const restored = normalizeExplorationContext({ ...saved, mode: routeMode || saved.mode })
+      setContextState(restored)
+      if (restored.businessTypeSlug || restored.situationSlug || restored.needSlug) {
+        const nextParams = new URLSearchParams(query)
+        if (restored.businessTypeSlug) nextParams.set('rubro', restored.businessTypeSlug)
+        if (restored.situationSlug) nextParams.set('situacion', restored.situationSlug)
+        if (restored.needSlug) nextParams.set('necesidad', restored.needSlug)
+        if (restored.mode) nextParams.set('mode', restored.mode)
+        const suffix = nextParams.toString()
+        if (suffix !== query) router.replace(suffix ? pathname + '?' + suffix : pathname, { scroll: false })
+      }
     }
     setReady(true)
-  }, [pathname, query])
+  }, [pathname, query, router])
 
   const setContext = useCallback((next: Partial<ExplorationContext>) => {
     const normalized = normalizeExplorationContext(next)
