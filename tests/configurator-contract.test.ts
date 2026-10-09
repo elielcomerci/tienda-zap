@@ -11,6 +11,7 @@ import {
   quoteConfiguratorSelection,
   validateCommercialSelection,
 } from '../src/lib/pricing/configurator-adapter';
+import { assertQuotedPriceCurrent, resolveSemanticCheckoutQuote } from '../src/lib/pricing/semantic-checkout-quote';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -195,6 +196,81 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1001 }, { profitMargin: 0 } as any),
     /Cantidad máxima permitida/
+  );
+});
+
+test('las políticas comerciales de tabla y escala producen precios reproducibles y editables', () => {
+  const stickerPolicy: any = {
+    schema: { fields: {
+      material: { label: 'Material', type: 'select', required: true, options: [{ id: 'paper', label: 'Papel' }] },
+      format: { label: 'Medida', type: 'select', required: true, options: [{ id: 'small', label: 'Pequeña' }] },
+      quantity: { label: 'Cantidad', type: 'quantity_selector', required: true, default: 100, options: [{ value: 100, label: '100 unidades' }] },
+      lamination: { label: 'Terminación', type: 'select', required: true, default: 'uv', options: [{ id: 'sin_laca', label: 'Sin laca' }, { id: 'uv', label: 'Laca UV' }] },
+    } },
+    compatibility: { uiRules: [] },
+    pricing: {
+      engine: 'STICKER_TABLE',
+      matrix: { paper: { small: { '100': 1000 } } },
+      modifiers: { uv: { type: 'PERCENTAGE', value: 15 } },
+    },
+  };
+  const selection = { material: 'paper', format: 'small', quantity: 100, lamination: 'uv' };
+  const first = resolveSemanticCheckoutQuote(stickerPolicy, selection);
+  assert.equal(first.totalPrice, 1150);
+  stickerPolicy.pricing.matrix.paper.small['100'] = 1200;
+  const updated = resolveSemanticCheckoutQuote(stickerPolicy, selection);
+  assert.equal(updated.totalPrice, 1380, 'el precio debe reflejar la política comercial vigente');
+
+  const tieredPolicy: any = {
+    schema: { fields: {
+      printing: { label: 'Impresión', type: 'select', required: true, default: '4_0', options: [{ id: '4_0', label: 'Frente' }] },
+      lamination: { label: 'Laminado', type: 'select', required: true, default: 'matte', options: [{ id: 'matte', label: 'Mate' }] },
+      flap: { label: 'Solapa', type: 'select', required: true, default: 'impresa', options: [{ id: 'blanca', label: 'Blanca' }, { id: 'impresa', label: 'Impresa' }] },
+      quantity: { label: 'Cantidad', type: 'quantity_input', required: true, default: 100, min: 1, max: 500 },
+    } },
+    compatibility: { uiRules: [] },
+    pricing: {
+      engine: 'TIERED_UNIT_TABLE',
+      tieredUnitTable: { tiers: [{ minQty: 1, maxQty: 500, prices: { '4_0': { matte: 100 } }, flapSurcharge: 20 }] },
+    },
+  };
+  const tiered = resolveSemanticCheckoutQuote(tieredPolicy, { printing: '4_0', lamination: 'matte', flap: 'impresa', quantity: 100 });
+  assert.equal(tiered.unitPrice, 120);
+  assert.equal(tiered.totalPrice, 12000);
+});
+
+test('checkout no cambia silenciosamente un precio que el cliente ya revisó', () => {
+  assert.doesNotThrow(() => assertQuotedPriceCurrent('Tarjetas', 1150, 1150));
+  assert.doesNotThrow(() => assertQuotedPriceCurrent('Tarjetas', undefined, 1150));
+  assert.throws(
+    () => assertQuotedPriceCurrent('Tarjetas', 1150, 1380),
+    /cambió desde la última cotización/i
+  );
+  assert.throws(
+    () => assertQuotedPriceCurrent('Tarjetas', Number.NaN, 1150),
+    /cambió desde la última cotización/i
+  );
+  assert.throws(
+    () => assertQuotedPriceCurrent('Tarjetas', undefined, Number.NaN),
+    /precio actual.*no pudimos validar|no pudimos validar el precio actual/i
+  );
+});
+
+test('checkout vuelve a cotizar con la política semántica activa y rechaza selección ausente', () => {
+  for (const config of configs) {
+    const selection = defaultSelection(config);
+    const engine = (config.pricing as any).engine;
+    const quoter = ['PRODUCT_QUOTER', 'PROVIDER_FINISHED_COST'].includes(engine)
+      ? makeQuoterConfig(config)
+      : undefined;
+    const catalogQuote = quoteConfiguratorSelection(config as any, selection, quoter as any);
+    const checkoutQuote = resolveSemanticCheckoutQuote(config as any, selection, quoter as any);
+    assert.equal(checkoutQuote.totalPrice, catalogQuote.totalPrice, config.productSlug);
+    assert.deepEqual(checkoutQuote.selectedOptions, catalogQuote.selectedOptions, config.productSlug);
+  }
+  assert.throws(
+    () => resolveSemanticCheckoutQuote(tarjetasVouchersConfigurator as any, {} as any, { profitMargin: 0 } as any),
+    /configuración está incompleta/i
   );
 });
 

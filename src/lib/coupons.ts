@@ -29,6 +29,7 @@ type CouponPreviewItem = {
   fileUrl?: string
   designRequested?: boolean
   selectedOptions?: Array<{ name: string; value: string }>
+  configuratorSelection?: Record<string, string | number | boolean | string[]>
 }
 
 type CouponDbClient = typeof prisma | Prisma.TransactionClient

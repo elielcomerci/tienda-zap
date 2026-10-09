@@ -89,7 +89,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
       quoterConfig: { include: quoterConfigInclude },
       configuratorVersions: {
         where: { status: 'ACTIVE' },
-        orderBy: { schemaVersion: 'desc' },
+        orderBy: { updatedAt: 'desc' },
       },
       outgoingRelations: {
         include: {

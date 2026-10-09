@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId, active: true },
-      select: { quoterConfig: { include: quoterConfigInclude }, configuratorVersions: { where: { status: 'ACTIVE' }, orderBy: { schemaVersion: 'desc' }, take: 1 } },
+      select: { quoterConfig: { include: quoterConfigInclude }, configuratorVersions: { where: { status: 'ACTIVE' }, orderBy: { updatedAt: 'desc' }, take: 1 } },
     })
 
     const config = product?.quoterConfig

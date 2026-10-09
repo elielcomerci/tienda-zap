@@ -304,6 +304,7 @@ function CheckoutContent() {
         fileUrl: item.fileUrl,
         designRequested: item.designRequested,
         selectedOptions: item.selectedOptions,
+        configuratorSelection: item.configuratorSelection,
       }))
     )
   }, [items, setValue])
@@ -410,6 +411,7 @@ function CheckoutContent() {
             fileUrl: item.fileUrl,
             designRequested: item.designRequested,
             selectedOptions: item.selectedOptions,
+            configuratorSelection: item.configuratorSelection,
           })),
         }),
       })
@@ -476,6 +478,7 @@ function CheckoutContent() {
         fileUrl: item.fileUrl,
         designRequested: item.designRequested,
         selectedOptions: item.selectedOptions,
+        configuratorSelection: item.configuratorSelection,
       })),
       zapCreditConfig: data.paymentType === 'ZAP_CREDIT' ? zapCreditSelection : undefined,
     }

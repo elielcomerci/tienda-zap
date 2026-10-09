@@ -158,6 +158,8 @@ export async function POST(req: NextRequest) {
       successQuery: buildOrderAccessQuery(order.id, publicAccessToken),
     })
   } catch (error: any) {
-    return Response.json({ error: error.message }, { status: 500 })
+    const message = error?.message || 'No pudimos crear el pedido.'
+    const staleConfiguration = /(cambió desde la última cotización|configuración .* incompleta|no pudimos validar el precio actual)/i.test(message)
+    return Response.json({ error: message }, { status: staleConfiguration ? 409 : 500 })
   }
 }
