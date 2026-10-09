@@ -13,8 +13,10 @@ export default async function RecuperarPage({
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 text-center">
+      <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#FAF8F8] px-4 py-10 sm:px-6">
+        <div className="pointer-events-none absolute -right-24 -top-24 -z-10 h-80 w-80 rounded-full bg-[#ED164F]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-28 -left-20 -z-10 h-80 w-80 rounded-full bg-[#4576B9]/10 blur-3xl" />
+        <div className="w-full max-w-md rounded-[28px] border border-black/[0.06] bg-white p-8 text-center shadow-[0_24px_80px_-32px_rgba(15,23,42,0.22)]">
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
             <KeyRound size={32} className="text-green-600" />
           </div>
@@ -31,17 +33,19 @@ export default async function RecuperarPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div className="p-8 pb-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#C2103F]/30 text-white text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#ED164F] shadow-lg shadow-[#ED164F]/20 mb-4">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#FAF8F8] px-4 py-10 sm:px-6">
+      <div className="pointer-events-none absolute -right-24 -top-24 -z-10 h-80 w-80 rounded-full bg-[#ED164F]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -left-20 -z-10 h-80 w-80 rounded-full bg-[#4576B9]/10 blur-3xl" />
+      <div className="w-full max-w-md overflow-hidden rounded-[28px] border border-black/[0.06] bg-white shadow-[0_24px_80px_-32px_rgba(15,23,42,0.22)]">
+        <div className="border-b border-gray-100 bg-white px-8 pb-7 pt-9 text-center">
+          <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ED164F] to-[#4576B9] text-white shadow-lg shadow-[#ED164F]/20">
             <KeyRound size={32} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold">Recuperar contraseña</h1>
-          <p className="text-gray-400 text-sm mt-1">Ingresá tu email para continuar</p>
+          <h1 className="text-2xl font-black tracking-tight text-gray-950">Recuperar contraseña</h1>
+          <p className="mt-2 text-sm text-gray-500">Te ayudamos a volver a entrar.</p>
         </div>
 
-        <form action={requestPasswordReset} className="p-8 pt-6 space-y-4">
+        <form action={requestPasswordReset} className="space-y-4 px-6 py-7 sm:px-8 sm:py-8">
           {error && (
             <div className="p-3 bg-red-50 text-red-700 text-sm rounded-xl text-center">
               {decodeURIComponent(error)}
