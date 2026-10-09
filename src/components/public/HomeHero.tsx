@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { buildProductsUrl } from '@/lib/exploration-context'
+import { useExplorationContext } from '@/components/public/ExplorationContextProvider'
 import { ArrowRight, ChevronDown } from 'lucide-react'
 
 interface BusinessTypeItem {
@@ -31,6 +32,7 @@ export default function HomeHero({
 }) {
   // No asumimos ningún rubro al entrar. La animación solo demuestra las opciones:
   // el valor real del selector permanece vacío hasta que la persona elige.
+  const { context, ready, setContext } = useExplorationContext()
   const [selectedSituacion, setSelectedSituacion] = useState<string>('')
   const [demoRubroIndex, setDemoRubroIndex] = useState<number | null>(null)
 
@@ -65,6 +67,12 @@ export default function HomeHero({
   const [isSituationsLoading, setIsSituationsLoading] = useState(false)
   const [isRubroOpen, setIsRubroOpen] = useState(false)
   const [isSituacionOpen, setIsSituacionOpen] = useState(false)
+
+  useEffect(() => {
+    if (!ready) return
+    if (context.businessTypeSlug && context.businessTypeSlug !== selectedRubro) onSelectedRubroChange(context.businessTypeSlug)
+    if (context.situationSlug) setSelectedSituacion(context.situationSlug)
+  }, [ready])
 
   // Re-fetch situations filtered by rubro whenever rubro changes
   useEffect(() => {
@@ -236,6 +244,7 @@ export default function HomeHero({
                           type="button"
                           onClick={() => {
                             setSelectedSituacion(sit.slug)
+                            setContext({ mode: 'situation', businessTypeSlug: selectedRubro, situationSlug: sit.slug, needSlug: undefined })
                             setIsSituacionOpen(false)
                           }}
                           className={`w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors ${selectedSituacion === sit.slug ? 'bg-[#FEF1F5] text-[#ED164F] font-bold' : 'text-gray-800 font-medium hover:bg-gray-50'}`}
@@ -266,7 +275,7 @@ export default function HomeHero({
                 })}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-8 py-3.5 text-base font-bold text-white transition-all shadow-sm hover:bg-[#C2103F] active:scale-[0.98]"
               >
-                Ver qué me conviene <ArrowRight size={18} />
+                Dame ideas <ArrowRight size={18} />
               </Link>
             ) : (
               <button

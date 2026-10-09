@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { ChevronDown, Handshake, LayoutDashboard, LogOut, ShoppingCart, X } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { useState, useEffect, useTransition } from 'react'
 import { createPublicSellerLead } from '@/lib/actions/leads'
 import { signOut } from 'next-auth/react'
-import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
+import { buildProductsUrl } from '@/lib/exploration-context'
+import { useExplorationContext } from '@/components/public/ExplorationContextProvider'
 
 const NAV_HEIGHT = 70
 
@@ -26,27 +27,21 @@ export default function PublicHeader({
   referralSeller,
   categories = [],
   intentions = [],
+  businessTypes = [],
 }: {
   user?: { name?: string | null; role?: string | null } | null
   referralSeller?: { id: string; name?: string | null } | null
   categories?: { id: string; name: string; slug: string }[]
-  intentions?: { id: string; name: string; slug: string; icon: string | null }[]
+  intentions?: { id: string; name: string; slug: string; icon: string | null; needs?: { id: string; name: string; slug: string }[] }[]
+  businessTypes?: { id: string; name: string; slug: string }[]
 }) {
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
-  const requestedExplorationMode = searchParams.get('mode')
-  const explorationContext: ExplorationContext = {
-    mode: requestedExplorationMode === 'objective'
-      ? 'situation' as const
-      : requestedExplorationMode === 'product' || requestedExplorationMode === 'situation' || requestedExplorationMode === 'rubro'
-        ? requestedExplorationMode
-        : undefined,
-    businessTypeSlug: searchParams.get('rubro') || undefined,
-    situationSlug: searchParams.get('situacion') || undefined,
-    needSlug: searchParams.get('necesidad') || undefined,
-  }
+  const { context: explorationContext, setContext, clearContext, ready: contextReady } = useExplorationContext()
+  const router = useRouter()
+  const currentSituation = intentions.find((item) => item.slug === explorationContext.situationSlug)
   const cartHref = buildProductsUrl(explorationContext).replace(/^\/productos/, '/carrito')
   const [menuOpen, setMenuOpen] = useState(false)
   const [leadOpen, setLeadOpen] = useState(false)
@@ -144,54 +139,8 @@ export default function PublicHeader({
           <nav className="hidden md:flex items-center space-x-8 h-full">
             <ul className="flex items-center space-x-8 h-full">
               
-              {/* Cambiar la forma de explorar sin perder el contexto elegido */}
-              <li className="h-full flex items-center">
-                <div
-                  role="group"
-                  aria-label="Elegí cómo explorar la tienda"
-                  className="flex items-center gap-0.5 rounded-xl border border-gray-200 bg-gray-100/80 p-1"
-                >
-                  <Link
-                    href={buildProductsUrl(explorationContext, { mode: 'situation', cat: undefined, tipo: undefined })}
-                    aria-current={isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective') ? 'page' : undefined}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                      isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective')
-                        ? 'bg-white text-[#ED164F] shadow-sm'
-                        : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
-                    }`}
-                  >
-                    Situación
-                  </Link>
-                  <Link
-                    href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
-                    aria-current={isProductArea && searchParams.get('mode') === 'rubro' ? 'page' : undefined}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                      isProductArea && searchParams.get('mode') === 'rubro'
-                        ? 'bg-white text-[#ED164F] shadow-sm'
-                        : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
-                    }`}
-                  >
-                    Rubro
-                  </Link>
-                  <Link
-                    href={buildProductsUrl(explorationContext, { mode: 'product' })}
-                    aria-current={isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo' ? 'page' : undefined}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                      isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo'
-                        ? 'bg-white text-[#ED164F] shadow-sm'
-                        : 'text-gray-600 hover:bg-white/70 hover:text-gray-950'
-                    }`}
-                  >
-                    Producto
-                  </Link>
-                </div>
-              </li>
-
-              {/* Puente de regreso a ZAP */}
-              <li className="h-full flex items-center">
-                <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors">ZAP</a>
-              </li>
-
+              <li className="h-full flex items-center"><Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.mode || 'rubro' })} className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Explorar</Link></li>
+              <li className="h-full flex items-center"><a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Hablemos</a></li>
               {/* User area */}
               <li className="relative h-full flex items-center">
                 {user ? (
@@ -270,6 +219,7 @@ export default function PublicHeader({
                 )}
               </li>
 
+              <li className="h-full flex items-center"><button type="button" onClick={() => setMenuOpen((open) => !open)} aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={menuOpen} className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:border-gray-400">{menuOpen ? <X size={18} /> : <span className="text-xl">☰</span>}</button></li>
               {/* Cart */}
               <li className="h-full flex items-center">
                 <Link
@@ -362,239 +312,27 @@ export default function PublicHeader({
         </div>
       )}
 
-      {/* Mobile menu — full screen overlay, highly scrollable and clean */}
-      <div
-        className={`md:hidden fixed inset-0 z-[60] flex flex-col w-full h-full text-white transition-all duration-500 ease-in-out ${
-          menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
-        }`}
-        style={{ background: 'linear-gradient(135deg, #ED164F 0%, #4576B9 100%)' }}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Top bar with logo and close button */}
-        <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0">
-          <Link href="/" onClick={() => setMenuOpen(false)} aria-label="Ir al inicio" className="flex items-center h-full py-3 shrink-0">
-            <img
-              src="https://res.cloudinary.com/dip14vkem/image/upload/v1756568241/logo_t37blz.png"
-              alt="ZAP Logo"
-              className="h-full w-auto object-contain brightness-0 invert"
-            />
-          </Link>
-          <button
-            onClick={() => setMenuOpen(false)}
-            className="w-10 h-10 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Cerrar menú"
-          >
-            <X size={26} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Scrollable menu content with padded bottom for home indicators */}
-        <div className="flex-1 overflow-y-auto px-6 pt-8 pb-16">
-          <ul className="flex flex-col space-y-5 text-left max-w-sm mx-auto">
-            <li>
-              <Link
-                href="/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
-              >
-                Inicio
-              </Link>
-            </li>
-
-            {/* Selector de perspectiva — móvil */}
-            <li className="border-b border-white/10 pb-4">
-              <div
-                role="group"
-                aria-label="Elegí cómo explorar la tienda"
-                className="grid grid-cols-3 gap-1 rounded-xl border border-white/15 bg-white/10 p-1"
-              >
-                <Link
-                  href={buildProductsUrl(explorationContext, { mode: 'situation', cat: undefined, tipo: undefined })}
-                  aria-current={isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective') ? 'page' : undefined}
-                  onClick={() => setMenuOpen(false)}
-                  className={`rounded-lg px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
-                    isProductArea && (searchParams.get('mode') === 'situation' || searchParams.get('mode') === 'objective')
-                      ? 'bg-white text-[#ED164F]'
-                      : 'text-white/90 hover:bg-white/10'
-                  }`}
-                >
-                  Situación
-                </Link>
-                <Link
-                  href={buildProductsUrl(explorationContext, { mode: 'rubro', cat: undefined, tipo: undefined })}
-                  aria-current={isProductArea && searchParams.get('mode') === 'rubro' ? 'page' : undefined}
-                  onClick={() => setMenuOpen(false)}
-                  className={`rounded-lg px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
-                    isProductArea && searchParams.get('mode') === 'rubro'
-                      ? 'bg-white text-[#ED164F]'
-                      : 'text-white/90 hover:bg-white/10'
-                  }`}
-                >
-                  Rubro
-                </Link>
-                <Link
-                  href={buildProductsUrl(explorationContext, { mode: 'product' })}
-                  aria-current={isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo' ? 'page' : undefined}
-                  onClick={() => setMenuOpen(false)}
-                  className={`rounded-lg px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
-                    isProductArea && searchParams.get('mode') !== 'situation' && searchParams.get('mode') !== 'objective' && searchParams.get('mode') !== 'rubro' && searchParams.get('mode') !== 'combo'
-                      ? 'bg-white text-[#ED164F]'
-                      : 'text-white/90 hover:bg-white/10'
-                  }`}
-                >
-                  Producto
-                </Link>
-              </div>
-            </li>
-
-            {/* Categorías de producto */}
-            <li className="border-b border-white/10 pb-3">
-              <button
-                onClick={() => setMobileProdOpen(!mobileProdOpen)}
-                className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
-              >
-                <span>Categorías</span>
-                <ChevronDown size={20} className={`transition-transform duration-300 ${mobileProdOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              <div className={`overflow-hidden transition-all duration-300 ${mobileProdOpen ? 'max-h-[800px] mt-3 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
-                <ul className="pl-4 border-l border-white/20 space-y-2.5">
-                  <li>
-                    <Link
-                      href={buildProductsUrl(explorationContext, { mode: 'product' })}
-                      onClick={() => setMenuOpen(false)}
-                      className="block text-sm font-semibold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
-                    >
-                      Ver todo el catálogo
-                    </Link>
-                  </li>
-                  {categories.map((cat) => (
-                    <li key={cat.id}>
-                      <Link
-                        href={buildProductsUrl(explorationContext, { mode: 'product', cat: cat.slug })}
-                        onClick={() => setMenuOpen(false)}
-                        className="block text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
-                      >
-                        {cat.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </li>
-
-            {/* Situaciones destacadas — móvil */}
-            <li className="border-b border-white/10 pb-3">
-              <button
-                onClick={() => setMobileObjOpen(!mobileObjOpen)}
-                className="flex items-center justify-between w-full text-xl font-bold hover:opacity-90 active:scale-[0.98] transition-all text-left"
-              >
-                <span>Situación</span>
-                <ChevronDown size={20} className={`transition-transform duration-300 ${mobileObjOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              <div className={`overflow-hidden transition-all duration-300 ${mobileObjOpen ? 'max-h-[600px] mt-3 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
-                <ul className="pl-4 border-l border-white/20 space-y-2.5">
-                  {intentions
-                    .filter((i) => FEATURED_SITUATION_SLUGS.includes(i.slug))
-                    .sort((a, b) => FEATURED_SITUATION_SLUGS.indexOf(a.slug) - FEATURED_SITUATION_SLUGS.indexOf(b.slug))
-                    .map((intent) => (
-                      <li key={intent.id}>
-                        <Link
-                          href={buildProductsUrl(explorationContext, { mode: 'situation', situacion: intent.slug, necesidad: undefined, cat: undefined, tipo: undefined })}
-                          onClick={() => setMenuOpen(false)}
-                          className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white active:translate-x-1 transition-all py-1"
-                        >
-                          {intent.icon && <span className="text-base shrink-0">{intent.icon}</span>}
-                          <span>{intent.name}</span>
-                        </Link>
-                      </li>
-                    ))
-                  }
-                  <li>
-                    <Link
-                      href={buildProductsUrl(explorationContext, { mode: 'situation', necesidad: undefined, cat: undefined, tipo: undefined })}
-                      onClick={() => setMenuOpen(false)}
-                      className="block text-sm font-bold text-white/90 hover:text-white active:translate-x-1 transition-all py-1"
-                    >
-                      Ver todas las situaciones →
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </li>
-
-            {/* Link back to zap.com.ar */}
-            <li className="pt-2">
-              <a
-                href="https://zap.com.ar"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMenuOpen(false)}
-                className="block text-base font-bold text-white/90 hover:text-white hover:opacity-80 active:scale-[0.98] transition-all"
-              >
-                ¿Necesitás algo que no aparece acá? <span className="underline underline-offset-2">Hablemos →</span>
-              </a>
-            </li>
-
-            {/* User area */}
-            <li className="pt-4 border-t border-white/10">
-              {user ? (
-                <div className="flex flex-col gap-3">
-                  <Link
-                    href="/perfil"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center justify-center bg-white text-[#ED164F] text-base py-2.5 px-6 rounded-full shadow-lg font-bold hover:bg-pink-50 active:scale-[0.98] transition-all"
-                  >
-                    Mi perfil
-                  </Link>
-                  {canOpenAdminPanel && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-center bg-white/20 text-white text-base py-2 px-6 rounded-full font-bold hover:bg-white/30 active:scale-[0.98] transition-all"
-                    >
-                      Panel Admin
-                    </Link>
-                  )}
-                  {canOpenSellerPanel && (
-                    <Link
-                      href="/seller"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-center bg-white/20 text-white text-base py-2 px-6 rounded-full font-bold hover:bg-white/30 active:scale-[0.98] transition-all"
-                    >
-                      Panel Asesores
-                    </Link>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false)
-                      void signOut({ callbackUrl: '/' })
-                    }}
-                    className="flex items-center justify-center gap-2 bg-white/10 text-white text-base py-2.5 px-6 rounded-full font-bold hover:bg-white/20 active:scale-[0.98] transition-all"
-                  >
-                    <LogOut size={16} />
-                    Cerrar sesión
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center bg-white text-[#ED164F] text-base font-bold py-3 px-6 rounded-full shadow-lg active:scale-95 transition-all"
-                >
-                  ⚡ Ingresar a mi cuenta
-                </Link>
-              )}
-            </li>
-
-          </ul>
-        </div>
+      <div className={'fixed inset-0 z-[60] flex flex-col w-full h-full text-white transition-all duration-300 md:inset-auto md:right-4 md:top-[78px] md:w-[420px] md:h-auto md:max-h-[calc(100vh-96px)] md:rounded-2xl md:shadow-2xl ' + (menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none')}
+        style={{ background: 'linear-gradient(135deg, #ED164F 0%, #4576B9 100%)' }} role="dialog" aria-modal="true" aria-label="Menú ZAP Tienda">
+        <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0"><span className="text-lg font-bold">ZAP Tienda</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
+        <div className="flex-1 overflow-y-auto px-6 pt-6 pb-8 md:max-h-[calc(100vh-170px)]"><div className="mx-auto flex max-w-sm flex-col gap-6">
+          <nav aria-label="Navegación principal" className="grid gap-4 text-lg font-bold">
+            <Link href={buildProductsUrl({ ...explorationContext, mode: 'rubro' })} onClick={() => setMenuOpen(false)}>Explorar soluciones →</Link>
+            <Link href={buildProductsUrl({ ...explorationContext, mode: 'product' }, { tipo: undefined, cat: undefined })} onClick={() => setMenuOpen(false)}>Ver todo</Link>
+            <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos ↗</a>
+          </nav>
+          {contextReady && (explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && <section className="border-t border-white/20 pt-5">
+            <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">Tu negocio</p><p className="mt-1 text-sm font-semibold text-white/90">Ajustá el contexto cuando quieras.</p></div><button type="button" onClick={() => { clearContext(); setMenuOpen(false) }} className="text-xs font-semibold underline underline-offset-2">Empezar de nuevo</button></div>
+            <label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-rubro">Rubro</label>
+            <select id="zap-context-rubro" value={explorationContext.businessTypeSlug || ''} onChange={(event) => setContext({ mode: 'rubro', businessTypeSlug: event.target.value || undefined, situationSlug: undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir rubro</option>{businessTypes.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+            <label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-situacion">Qué está pasando</label>
+            <select id="zap-context-situacion" value={explorationContext.situationSlug || ''} onChange={(event) => setContext({ mode: 'situation', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: event.target.value || undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir situación</option>{intentions.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+            {currentSituation?.needs && currentSituation.needs.length > 0 && <><label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-necesidad">Qué necesitás resolver</label><select id="zap-context-necesidad" value={explorationContext.needSlug || ''} onChange={(event) => setContext({ ...explorationContext, needSlug: event.target.value || undefined })} className="w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Ver todas las necesidades</option>{currentSituation.needs.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></>}
+            <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#ED164F]">Ver opciones →</Link>
+          </section>}
+          {!user ? <Link href="/login" onClick={() => setMenuOpen(false)} className="border-t border-white/20 pt-4 text-sm font-semibold">Ingresar a mi cuenta →</Link> : <div className="border-t border-white/20 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-white/80">Cerrar sesión</button></div>}
+        </div></div>
       </div>
-
       {leadOpen && referralSeller && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-gray-950/50 px-4 py-6 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">

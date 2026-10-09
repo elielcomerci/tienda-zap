@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import HomeHero from '@/components/public/HomeHero'
 import ContextBridgeBanner from '@/components/public/ContextBridgeBanner'
 import CatalogEntrySection from '@/components/public/CatalogEntrySection'
+import { useExplorationContext } from '@/components/public/ExplorationContextProvider'
 
 type BusinessTypeItem = {
   id: string
@@ -31,9 +32,14 @@ export default function HomeLandingSections({
   situations: SituationItem[]
   products: CatalogTypeItem[]
 }) {
+  const { context, setContext, ready } = useExplorationContext()
   const [selectedRubro, setSelectedRubro] = useState('')
 
   const currentRubro = businessTypes.find((businessType) => businessType.slug === selectedRubro)
+
+  useEffect(() => {
+    if (ready && context.businessTypeSlug && context.businessTypeSlug !== selectedRubro) setSelectedRubro(context.businessTypeSlug)
+  }, [ready, context.businessTypeSlug, selectedRubro])
 
   return (
     <>
@@ -41,7 +47,7 @@ export default function HomeLandingSections({
         businessTypes={businessTypes}
         situations={situations}
         selectedRubro={selectedRubro}
-        onSelectedRubroChange={setSelectedRubro}
+        onSelectedRubroChange={(slug) => { setSelectedRubro(slug); setContext({ mode: 'rubro', businessTypeSlug: slug || undefined, situationSlug: undefined, needSlug: undefined }) }}
       />
 
       {/* Separador editorial entre el Hero y el catálogo. */}
