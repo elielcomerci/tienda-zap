@@ -138,7 +138,7 @@ export default function PublicHeader({
           <nav className="hidden md:flex items-center space-x-8 h-full">
             <ul className="flex items-center space-x-8 h-full">
               
-              <li className="h-full flex items-center"><Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.mode || 'rubro' })} className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Explorar</Link></li>
+              <li className="h-full flex items-center"><Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Explorar</Link></li>
               <li className="h-full flex items-center"><a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Hablemos</a></li>
               {/* User area */}
               <li className="relative h-full flex items-center">
