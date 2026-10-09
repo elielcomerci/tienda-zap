@@ -42,10 +42,21 @@ export default function PublicHeader({
   const searchParams = useSearchParams()
   const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
   const { context: explorationContext, setContext, clearContext, ready: contextReady } = useExplorationContext()
+  // Mantener el mismo filtro por rubro que usa la Home. Si no hay una lista
+  // específica para el rubro, no mostrar por error todas las situaciones.
   const availableSituations = explorationContext.businessTypeSlug
-    ? situationsByBusinessType[explorationContext.businessTypeSlug] || intentions
+    ? situationsByBusinessType[explorationContext.businessTypeSlug] || []
     : intentions
   const currentSituation = availableSituations.find((item) => item.slug === explorationContext.situationSlug)
+  const currentNeed = currentSituation?.needs?.find((item) => item.slug === explorationContext.needSlug)
+  const businessTypeName = businessTypes.find((item) => item.slug === explorationContext.businessTypeSlug)?.name
+  const whatsappMessage = [
+    'Hola, estoy explorando ZAP Tienda y me gustaría conversar.',
+    businessTypeName ? `Mi rubro es: ${businessTypeName}.` : '',
+    currentSituation ? `Estoy en esta situación: ${currentSituation.name}.` : '',
+    currentNeed ? `Necesito resolver: ${currentNeed.name}.` : '',
+  ].filter(Boolean).join(' ')
+  const whatsappHref = `https://wa.me/541125832323?text=${encodeURIComponent(whatsappMessage)}`
   const cartHref = buildProductsUrl(explorationContext).replace(/^\/productos/, '/carrito')
   const [menuOpen, setMenuOpen] = useState(false)
   const [leadOpen, setLeadOpen] = useState(false)
@@ -144,7 +155,7 @@ export default function PublicHeader({
             <ul className="flex items-center space-x-8 h-full">
               
               <li className="h-full flex items-center"><Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Explorar</Link></li>
-              <li className="h-full flex items-center"><a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Hablemos</a></li>
+              <li className="h-full flex items-center"><a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Hablemos</a></li>
               {/* User area */}
               <li className="relative h-full flex items-center">
                 {user ? (
@@ -323,7 +334,7 @@ export default function PublicHeader({
           <nav aria-label="Navegación principal" className="grid gap-4 text-lg font-bold">
             <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)}>Explorar soluciones →</Link>
             <Link href={buildProductsUrl({ ...explorationContext, mode: 'product' }, { tipo: undefined, cat: undefined })} onClick={() => setMenuOpen(false)}>Ver todo</Link>
-            <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos ↗</a>
+            <a href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos por WhatsApp ↗</a>
           </nav>
           {contextReady && (explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && <section className="border-t border-white/20 pt-5">
             <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">Tu negocio</p><p className="mt-1 text-sm font-semibold text-white/90">Ajustá el contexto cuando quieras.</p></div><button type="button" onClick={() => { clearContext(); setMenuOpen(false) }} className="text-xs font-semibold underline underline-offset-2">Empezar de nuevo</button></div>
@@ -334,7 +345,7 @@ export default function PublicHeader({
             {currentSituation?.needs && currentSituation.needs.length > 0 && <><label className="mb-1 block text-xs font-semibold text-white/80" htmlFor="zap-context-necesidad">Qué necesitás resolver</label><select id="zap-context-necesidad" value={explorationContext.needSlug || ''} onChange={(event) => setContext({ ...explorationContext, needSlug: event.target.value || undefined })} className="w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Ver todas las necesidades</option>{currentSituation.needs.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></>}
             <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#ED164F]">Ver opciones →</Link>
           </section>}
-          {!user ? <Link href="/login" onClick={() => setMenuOpen(false)} className="border-t border-white/20 pt-4 text-sm font-semibold">Ingresar a mi cuenta →</Link> : <div className="border-t border-white/20 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-white/80">Cerrar sesión</button></div>}
+          {!user ? <Link href="/login" onClick={() => setMenuOpen(false)} className="border-t border-white/20 pt-4 text-sm font-semibold md:hidden">Ingresar a mi cuenta →</Link> : <div className="border-t border-white/20 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-white/80">Cerrar sesión</button></div>}
         </div></div>
       </div>
       {leadOpen && referralSeller && (
