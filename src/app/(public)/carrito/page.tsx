@@ -31,7 +31,9 @@ type CouponPreviewState = {
 
 export default function CartPage() {
   const searchParams = useSearchParams()
+  const rawMode = searchParams.get('mode')
   const explorationContext: ExplorationContext = {
+    mode: rawMode === 'objective' ? 'situation' : rawMode === 'product' || rawMode === 'situation' || rawMode === 'rubro' ? rawMode : undefined,
     businessTypeSlug: searchParams.get('rubro') || undefined,
     situationSlug: searchParams.get('situacion') || undefined,
     needSlug: searchParams.get('necesidad') || undefined,
