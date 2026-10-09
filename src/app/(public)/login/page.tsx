@@ -15,16 +15,18 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden">
-        <div className="p-8 pb-6 bg-gradient-to-br from-gray-900 via-gray-800 to-[#C2103F]/30 text-white text-center">
-          <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#ED164F] shadow-lg shadow-[#ED164F]/20 mb-4 transition-transform hover:scale-105">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#FAF8F8] px-4 py-10 sm:px-6">
+      <div className="pointer-events-none absolute -right-24 -top-24 -z-10 h-80 w-80 rounded-full bg-[#ED164F]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -left-20 -z-10 h-80 w-80 rounded-full bg-[#4576B9]/10 blur-3xl" />
+      <div className="w-full max-w-md overflow-hidden rounded-[28px] border border-black/[0.06] bg-white shadow-[0_24px_80px_-32px_rgba(15,23,42,0.22)]">
+        <div className="border-b border-gray-100 bg-white px-8 pb-7 pt-9 text-center">
+          <Link href="/" className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ED164F] to-[#4576B9] text-white shadow-lg shadow-[#ED164F]/20 transition-transform hover:scale-105">
             <Zap size={32} />
           </Link>
-          <h1 className="text-2xl font-bold">ZAP</h1>
-          <p className="text-gray-400 text-sm mt-1">Ingresá a tu cuenta</p>
+          <h1 className="text-2xl font-black tracking-tight text-gray-950">ZAP <span className="text-[#ED164F]">Tienda</span></h1>
+          <p className="mt-2 text-sm text-gray-500">Qué bueno tenerte de vuelta.</p>
         </div>
-        <Suspense fallback={<div className="p-8 text-center text-gray-400">Cargando...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-sm text-gray-400">Cargando...</div>}>
           <LoginForm />
         </Suspense>
       </div>
