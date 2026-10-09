@@ -71,7 +71,9 @@ export async function getPublicSituationBySlug(slug?: string, businessTypeSlug?:
       },
     },
   })
-  return situation ? mapSituation(situation) : null
+  if (!situation) return null
+  if (situation.offerEntries.length === 0) return null
+  return mapSituation(situation)
 }
 
 export async function getPublicSituations(businessTypeSlug?: string) {
