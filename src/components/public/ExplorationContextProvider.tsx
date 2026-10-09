@@ -23,7 +23,7 @@ function validateContext(
   }
 
   const availableSituations = next.businessTypeSlug
-    ? situationsByBusinessType[next.businessTypeSlug] || allSituations
+    ? situationsByBusinessType[next.businessTypeSlug] || []
     : allSituations
   const selectedSituation = availableSituations.find((item) => item.slug === next.situationSlug)
 
