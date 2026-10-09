@@ -70,7 +70,6 @@ export default function HomeHero({
 
   useEffect(() => {
     if (!ready) return
-    if (context.businessTypeSlug && context.businessTypeSlug !== selectedRubro) onSelectedRubroChange(context.businessTypeSlug)
     if (context.situationSlug) setSelectedSituacion(context.situationSlug)
   }, [ready])
 
