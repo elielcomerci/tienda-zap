@@ -335,6 +335,7 @@ export default function PublicHeader({
             <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)}>Explorar soluciones →</Link>
             <Link href={buildProductsUrl({ ...explorationContext, mode: 'product' }, { tipo: undefined, cat: undefined })} onClick={() => setMenuOpen(false)}>Ver todo</Link>
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos por WhatsApp ↗</a>
+            <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="text-sm font-semibold text-white/80">Conocé ZAP ↗</a>
           </nav>
           {contextReady && (explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && <section className="border-t border-white/20 pt-5">
             <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">Tu negocio</p><p className="mt-1 text-sm font-semibold text-white/90">Ajustá el contexto cuando quieras.</p></div><button type="button" onClick={() => { clearContext(); setMenuOpen(false) }} className="text-xs font-semibold underline underline-offset-2">Empezar de nuevo</button></div>
