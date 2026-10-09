@@ -117,7 +117,7 @@ export function ExplorationContextProvider({
     setContextState({})
     try { window.localStorage.removeItem(STORAGE_KEY) } catch {}
     const params = new URLSearchParams(query)
-    for (const key of ['rubro', 'situacion', 'necesidad']) params.delete(key)
+    for (const key of ['rubro', 'situacion', 'necesidad', 'mode']) params.delete(key)
     const suffix = params.toString()
     router.replace(suffix ? pathname + '?' + suffix : pathname, { scroll: false })
   }, [pathname, query, router])
