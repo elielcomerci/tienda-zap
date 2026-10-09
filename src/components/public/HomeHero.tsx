@@ -200,7 +200,7 @@ export default function HomeHero({
                 {isRubroOpen && (
                   <div className="absolute top-[calc(100%+8px)] left-0 w-72 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-sm font-normal tracking-normal leading-normal" style={{ fontSize: '14px', fontWeight: 400, letterSpacing: 'normal', lineHeight: 1.5 }}>
                     <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Elegí tu rubro</p>
-                    <div className="max-h-64 overflow-y-auto space-y-1">
+                    <div className="flex max-h-64 flex-col items-stretch gap-1 overflow-y-auto">
                       {businessTypes.map((bt) => (
                         <button
                           key={bt.id}
@@ -240,7 +240,7 @@ export default function HomeHero({
                 {isSituacionOpen && (
                   <div className="absolute top-[calc(100%+8px)] left-0 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-sm font-normal tracking-normal leading-normal" style={{ fontSize: '14px', fontWeight: 400, letterSpacing: 'normal', lineHeight: 1.5 }}>
                     <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">¿Qué está pasando?</p>
-                    <div className="max-h-64 overflow-y-auto space-y-1">
+                    <div className="flex max-h-64 flex-col items-stretch gap-1 overflow-y-auto">
                       {filteredSituations.map((sit) => (
                         <button
                           key={sit.id}
