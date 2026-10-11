@@ -101,7 +101,7 @@ export default async function CustomerCreditsPage() {
             return (
               <Link
                 key={plan.id}
-                href={`/perfil/créditos/${plan.id}`}
+                href={`/perfil/creditos/${plan.id}`}
                 className="group card flex items-center gap-4 p-4 transition-all hover:border-[#F7638B]/25 hover:shadow-sm"
               >
                 <div className="min-w-0 flex-1">
