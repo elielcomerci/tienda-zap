@@ -72,6 +72,25 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
     finally { setBusy(null) }
   }
 
+  async function uploadToInbox(files: FileList | File[]) {
+    const selected = Array.from(files)
+    if (!selected.length) return
+    setBusy('inbox'); setError(''); setMessage('')
+    try {
+      const response = await fetch('/api/client-works/inbox', { method: 'POST' })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No pudimos preparar el espacio para tus archivos.')
+      for (const file of selected) {
+        await uploadFile(data.work.id, file)
+      }
+      setNote('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pudimos preparar la carga de archivos.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
   async function uploadFile(workId: string, file: File, replaceFileId?: string) {
     if (file.size <= 0 || file.size > MAX_FILE_BYTES) {
       setError('El archivo debe pesar entre 1 byte y 150 MB.'); return
@@ -164,7 +183,23 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
     {message && <p role="status" className="rounded-xl bg-green-50 p-3 text-sm text-green-800">{message}</p>}
     {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     {loading ? <p className="py-6 text-sm text-gray-500">Cargando trabajos…</p> :
-      works.length === 0 ? <div className="card p-8 text-center text-sm text-gray-500">{admin ? 'Todavía no hay trabajos. Creá uno arriba.' : 'Todavía no hay trabajos compartidos con tu cuenta.'}</div> :
+      works.length === 0 ? <div className="card p-6 text-center">
+        <FolderOpen size={30} className="mx-auto mb-3 text-gray-300" />
+        <p className="font-medium text-gray-700">{admin ? 'Todavía no hay trabajos.' : 'Todavía no hay trabajos compartidos con tu cuenta.'}</p>
+        {!admin && <div className="mt-4">
+          <p className="mb-3 text-sm text-gray-500">Podés enviarnos material ahora. Lo recibiremos en tu espacio de trabajo.</p>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d81245]">
+            <Upload size={16} /> {busy === 'inbox' ? 'Preparando…' : 'Subir archivos para ZAP'}
+            <input type="file" multiple className="sr-only" disabled={busy !== null} onChange={e => {
+              const selected = e.target.files
+              e.target.value = ''
+              if (selected?.length) void uploadToInbox(selected)
+            }} />
+          </label>
+          <p className="mt-3 text-xs text-gray-400">PDF, imágenes, audio, video y archivos fuente · hasta 150 MB por archivo</p>
+        </div>}
+        {admin && <p className="mt-2 text-sm text-gray-500">Creá un trabajo arriba para compartir archivos con un cliente.</p>}
+      </div> :
       <div className="space-y-4">{works.map(work => <article key={work.id} className="card overflow-hidden">
         <div className="border-b border-gray-100 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2"><div>
