@@ -238,6 +238,8 @@ export async function resolveCheckoutOrderItems(
       productId: product.id,
       quantity: item.quantity,
       unitPrice,
+      fiscalTaxTreatment: product.fiscalTaxTreatment,
+      fiscalVatRate: product.fiscalVatRate,
       creditDownPaymentPercent: product.creditDownPaymentPercent,
       notes: item.notes,
       briefType: item.briefType && item.briefType !== 'NONE' ? item.briefType : product.briefType || 'NONE',

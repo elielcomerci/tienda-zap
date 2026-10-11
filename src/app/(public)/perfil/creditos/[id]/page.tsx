@@ -19,6 +19,7 @@ import {
 import { getCustomerCreditPlan } from '@/lib/credits'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
+import AccountSectionNav from '@/components/public/AccountSectionNav'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {

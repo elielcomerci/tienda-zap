@@ -173,7 +173,7 @@ export async function updateProfile(formData: FormData): Promise<void> {
 
   const parsed = updateProfileSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
-    redirect('/perfil?error=Datos+inválidos')
+    redirect('/perfil/datos?error=Datos+inválidos')
   }
 
   const { name, phone, currentPassword, newPassword } = parsed.data
@@ -182,7 +182,7 @@ export async function updateProfile(formData: FormData): Promise<void> {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } })
     if (!user) redirect('/login')
     const valid = await bcrypt.compare(currentPassword, user.password)
-    if (!valid) redirect('/perfil?error=Contraseña+actual+incorrecta')
+    if (!valid) redirect('/perfil/datos?error=Contraseña+actual+incorrecta')
   }
 
   await prisma.user.update({
@@ -195,7 +195,8 @@ export async function updateProfile(formData: FormData): Promise<void> {
   })
 
   revalidatePath('/perfil')
-  redirect('/perfil?saved=1')
+  revalidatePath('/perfil/datos')
+  redirect('/perfil/datos?saved=1')
 }
 
 export async function updateClientNote(clientId: string, note: string | null) {

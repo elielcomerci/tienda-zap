@@ -46,11 +46,14 @@ export async function POST(
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true },
+      select: { id: true, invoiceSource: true, invoiceCae: true },
     })
 
     if (!order) {
       return Response.json({ error: 'Orden no encontrada.' }, { status: 404 })
+    }
+    if (order.invoiceSource === 'ARCA' || order.invoiceCae) {
+      return Response.json({ error: 'La factura ARCA está separada de la carga manual y no puede reemplazarse por esta vía.' }, { status: 409 })
     }
 
     const safeFileName = sanitizeFileName(file.name)
@@ -62,6 +65,7 @@ export async function POST(
       where: { id: orderId },
       data: {
         invoiceUrl: blob.url,
+        invoiceSource: 'MANUAL',
         invoiceFileName: safeFileName,
         invoiceUploadedAt: new Date(),
       },

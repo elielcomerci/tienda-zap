@@ -33,6 +33,16 @@ export function getR2PrivateBucketName() {
   return getR2BucketName()
 }
 
+// Las facturas fiscales contienen datos personales y solo pueden vivir en un bucket
+// que no esté expuesto por el dominio público de medios.
+export function getR2SensitiveBucketName() {
+  const privateBucket = getRequiredEnv('R2_PRIVATE_BUCKET_NAME')
+  if (privateBucket === getR2BucketName()) {
+    throw new Error('R2_PRIVATE_BUCKET_NAME debe ser un bucket distinto del bucket público de medios.')
+  }
+  return privateBucket
+}
+
 export function getR2Client() {
   if (cachedR2Client) return cachedR2Client
 
