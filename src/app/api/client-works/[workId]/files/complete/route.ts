@@ -25,10 +25,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'No tenés acceso a este trabajo.' }, { status: 403 })
     }
 
+    const sizeBytes = Number(body.sizeBytes)
     const validation = validateClientFile({
       fileName: String(body.fileName || ''),
       contentType: String(body.contentType || 'application/octet-stream'),
-      sizeBytes: Number(body.sizeBytes),
+      sizeBytes,
     })
     if (!validation.ok) return NextResponse.json({ error: validation.error }, { status: 400 })
 
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (existing?.previousObjectKey) return NextResponse.json({ error: 'Primero hay que resolver la limpieza del archivo anterior.' }, { status: 409 })
 
     const metadata = await getR2ObjectMetadata(stagingKey, bucketName)
-    if (!metadata.ContentLength || metadata.ContentLength !== validation.sizeBytes || metadata.ContentLength > MAX_CLIENT_FILE_SIZE_BYTES) {
+    if (!metadata.ContentLength || metadata.ContentLength !== sizeBytes || metadata.ContentLength > MAX_CLIENT_FILE_SIZE_BYTES) {
       try { await deleteR2Object(stagingKey, bucketName) } catch (cleanupError) { console.error('No se pudo limpiar una subida inválida:', stagingKey, cleanupError) }
       return NextResponse.json({ error: 'El archivo subido no coincide con el tamaño declarado.' }, { status: 400 })
     }
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     finalObjectKey = `client-files/${work.userId}/${work.id}/${crypto.randomUUID()}-${validation.fileName}`
     await copyR2Object(stagingKey, finalObjectKey, bucketName)
     const finalMetadata = await getR2ObjectMetadata(finalObjectKey, bucketName)
-    if (finalMetadata.ContentLength !== validation.sizeBytes || finalMetadata.ContentType?.split(';')[0].trim().toLowerCase() !== validation.contentType) {
+    if (finalMetadata.ContentLength !== sizeBytes || finalMetadata.ContentType?.split(';')[0].trim().toLowerCase() !== validation.contentType) {
       try { await deleteR2Object(finalObjectKey, bucketName) } catch (cleanupError) { console.error('No se pudo limpiar el objeto final inválido:', finalObjectKey, cleanupError) }
       try { await deleteR2Object(stagingKey, bucketName) } catch (cleanupError) { console.error('No se pudo limpiar la subida inválida:', stagingKey, cleanupError) }
       return NextResponse.json({ error: 'No pudimos verificar el archivo copiado al almacenamiento privado.' }, { status: 502 })
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         where: { id: existing.id },
         data: {
           fileName: validation.fileName, contentType: validation.contentType,
-          sizeBytes: validation.sizeBytes, objectKey: finalObjectKey,
+          sizeBytes: sizeBytes, objectKey: finalObjectKey,
           previousObjectKey: existing.objectKey, cleanupError: null, note, uploadedById: actorId,
         },
         select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, uploadedById: true },
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       file = await prisma.clientWorkFile.create({
         data: {
           workId, uploadedById: actorId, fileName: validation.fileName,
-          contentType: validation.contentType, sizeBytes: validation.sizeBytes, objectKey: finalObjectKey, note,
+          contentType: validation.contentType, sizeBytes: sizeBytes, objectKey: finalObjectKey, note,
         },
         select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, uploadedById: true },
       })
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       cleanupWarning = cleanupWarning || 'El archivo está guardado, pero la subida temporal quedó pendiente de limpieza automática.'
       console.error('No se pudo limpiar el objeto temporal de R2:', stagingKey, cleanupError)
     }
-    await recordClientWorkActivity({ actorId, actorEmail: session.user.email, action: existing ? 'clientWorkFile.replace' : 'clientWorkFile.upload', entityType: 'ClientWorkFile', entityId: file.id, description: (existing ? 'Archivo reemplazado: ' : 'Archivo cargado: ') + validation.fileName, metadata: { workId, fileName: validation.fileName, contentType: validation.contentType, sizeBytes: validation.sizeBytes } })
+    await recordClientWorkActivity({ actorId, actorEmail: session.user.email, action: existing ? 'clientWorkFile.replace' : 'clientWorkFile.upload', entityType: 'ClientWorkFile', entityId: file.id, description: (existing ? 'Archivo reemplazado: ' : 'Archivo cargado: ') + validation.fileName, metadata: { workId, fileName: validation.fileName, contentType: validation.contentType, sizeBytes: sizeBytes } })
     return NextResponse.json({ file, cleanupWarning })
   } catch (error) {
     if (uploadedKey) {
