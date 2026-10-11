@@ -61,7 +61,7 @@ export default async function CustomerCreditDetailPage({
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
       <Link
-        href="/perfil/créditos"
+        href="/perfil/creditos"
         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
       >
         <ArrowLeft size={16} /> Volver a mis créditos
