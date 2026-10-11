@@ -129,7 +129,7 @@ export default async function PerfilPage({
         {/* Orders */}
         <div className="md:col-span-3">
           <Link
-            href="/perfil/créditos"
+            href="/perfil/creditos"
             className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-[#F7638B]/25 hover:shadow-sm group"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F5] text-[#ED164F]">
