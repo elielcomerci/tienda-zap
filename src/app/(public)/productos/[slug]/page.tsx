@@ -24,8 +24,24 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const product = await getProduct(slug)
-  if (!product) return { title: 'Producto no encontrado' }
-  return { title: product.name, description: product.description || '' }
+  if (!product || !product.active) {
+    return { title: 'Producto no encontrado', robots: { index: false, follow: false } }
+  }
+
+  const description = product.description || `Conocé ${product.name} en Tienda ZAP.`
+  const canonical = `/productos/${product.slug}`
+
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: product.name,
+      description,
+      url: canonical,
+      type: 'website',
+    },
+  }
 }
 
 export default async function ProductDetailPage({
