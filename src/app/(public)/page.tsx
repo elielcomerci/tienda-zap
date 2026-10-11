@@ -7,9 +7,22 @@ import { getPublicBusinessTypes } from '@/lib/business-types'
 import HomeLandingSections from '@/components/public/HomeLandingSections'
 
 export const metadata = {
-  title: 'Tienda ZAP — Soluciones concretas para tu marca',
+  // absolute evita que la plantilla global repita el nombre de la tienda.
+  title: {
+    absolute: 'Tienda ZAP — Soluciones concretas para tu marca',
+  },
   description:
     'Soluciones concretas para tu marca, tu local, tus ventas y cada punto de contacto.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Tienda ZAP — Soluciones concretas para tu marca',
+    description:
+      'Soluciones concretas para tu marca, tu local, tus ventas y cada punto de contacto.',
+    url: '/',
+    type: 'website',
+  },
 }
 
 export default async function HomePage() {

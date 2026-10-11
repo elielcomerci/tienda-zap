@@ -5,10 +5,15 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
+const PUBLIC_SITE_URL = 'https://tienda.zap.com.ar'
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
-  const baseUrl = settings.canonicalUrl || process.env.NEXTAUTH_URL || 'http://localhost:3000'
-  const keywords = settings.metaKeywords
+  // NEXTAUTH_URL puede apuntar a una URL interna o de preview; la URL pública
+  // de la tienda es el fallback estable para metadatos absolutos.
+  const configuredBaseUrl = settings.canonicalUrl.trim()
+  const baseUrl = configuredBaseUrl || PUBLIC_SITE_URL
+  const keywords = (settings.metaKeywords || '')
     .split(',')
     .map((keyword) => keyword.trim())
     .filter(Boolean)
@@ -21,11 +26,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description: settings.siteDescription,
     keywords: keywords.length > 0 ? keywords : undefined,
     metadataBase: new URL(baseUrl),
-    alternates: settings.canonicalUrl ? { canonical: settings.canonicalUrl } : undefined,
+    // No declarar canonical en el layout raíz: heredarlo haría que las
+    // fichas y páginas internas pudieran canonicalizarse todas a la home.
     openGraph: {
       title: settings.siteTitle,
       description: settings.siteDescription,
-      url: settings.canonicalUrl || undefined,
       images: settings.ogImageUrl ? [{ url: settings.ogImageUrl }] : undefined,
       type: 'website',
     },
