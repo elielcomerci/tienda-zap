@@ -27,8 +27,10 @@ export function getR2BucketName() {
   return getRequiredEnv('R2_BUCKET_NAME')
 }
 
+// Los archivos de clientes comparten el bucket R2 existente, pero usan prefijos
+// separados y solo se entregan mediante URLs firmadas tras validar permisos.
 export function getR2PrivateBucketName() {
-  return getRequiredEnv('R2_PRIVATE_BUCKET_NAME')
+  return getR2BucketName()
 }
 
 export function getR2Client() {

@@ -1,5 +1,5 @@
 -- Aplicar una sola vez en la base de datos de Tienda ZAP antes de habilitar Trabajos y archivos.
--- El bucket R2 usado por estos objetos debe ser privado y no tener un dominio público asociado.
+-- Los objetos usan el bucket R2 existente. Antes de habilitar el módulo, bloquear los prefijos client-files/ y client-file-uploads/ en la capa pública de medios.
 CREATE TABLE "ClientWork" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
