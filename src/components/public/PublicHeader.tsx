@@ -226,12 +226,10 @@ export default function PublicHeader({
                     )}
                   </>
                 ) : (
-                  <Link
-                    href="/login"
-                    className="text-sm font-semibold text-gray-900 hover:text-[#ED164F] transition-colors"
-                  >
-                    Ingresar
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link href="/login" className="text-sm font-semibold text-gray-700 transition-colors hover:text-[#ED164F]">Ingresar</Link>
+                    <Link href="/registro" className="rounded-full bg-gradient-to-r from-[#ED164F] to-[#4576B9] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:brightness-105">Crear cuenta</Link>
+                  </div>
                 )}
               </li>
 
@@ -356,7 +354,7 @@ export default function PublicHeader({
               </>}
             </>}
           </section>}
-          {!user ? <Link href="/login" onClick={() => setMenuOpen(false)} className="border-t border-white/20 pt-4 text-sm font-semibold md:hidden">Ingresar a mi cuenta →</Link> : <div className="border-t border-white/20 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-white/80">Cerrar sesión</button></div>}
+          {!user ? <div className="border-t border-white/20 pt-4 flex flex-col gap-3 text-sm font-semibold md:hidden"><Link href="/login" onClick={() => setMenuOpen(false)}>Ingresar a mi cuenta →</Link><Link href="/registro" onClick={() => setMenuOpen(false)} className="inline-flex w-fit rounded-full bg-white px-4 py-2.5 font-bold text-[#ED164F]">Crear cuenta</Link></div> : <div className="border-t border-white/20 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-white/80">Cerrar sesión</button></div>}
         </div></div>
       </div>
       {leadOpen && referralSeller && (
