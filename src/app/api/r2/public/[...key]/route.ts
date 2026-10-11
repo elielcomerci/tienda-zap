@@ -9,19 +9,19 @@ export async function GET(
   try {
     const { key } = await params
     const objectKey = key.join('/')
-    
-    const command = new GetObjectCommand({
-      Bucket: getR2BucketName(),
-      Key: objectKey,
-    })
 
+    // Client-work files are private and only served through authorized signed URLs.
+    if (objectKey.startsWith('client-files/') || objectKey.startsWith('client-file-uploads/')) {
+      return new NextResponse('Not found', { status: 404 })
+    }
+
+    const command = new GetObjectCommand({ Bucket: getR2BucketName(), Key: objectKey })
     const response = await getR2Client().send(command)
-    
-    // Convert Web ReadableStream/Node stream
     return new NextResponse(response.Body as any, {
       headers: {
         'Content-Type': response.ContentType || 'application/octet-stream',
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
       },
     })
   } catch (error: any) {

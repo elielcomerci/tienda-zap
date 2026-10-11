@@ -1,4 +1,5 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
@@ -26,6 +27,10 @@ export function getR2BucketName() {
   return getRequiredEnv('R2_BUCKET_NAME')
 }
 
+export function getR2PrivateBucketName() {
+  return getRequiredEnv('R2_PRIVATE_BUCKET_NAME')
+}
+
 export function getR2Client() {
   if (cachedR2Client) return cachedR2Client
 
@@ -44,9 +49,10 @@ export function getR2Client() {
 export async function createPresignedR2UploadUrl(params: {
   objectKey: string
   contentType: string
+  bucketName?: string
 }) {
   const command = new PutObjectCommand({
-    Bucket: getR2BucketName(),
+    Bucket: params.bucketName || getR2BucketName(),
     Key: params.objectKey,
     ContentType: params.contentType,
   })
@@ -72,9 +78,10 @@ export function buildR2PublicMediaUrl(objectKey: string) {
 export async function createPresignedR2DownloadUrl(params: {
   objectKey: string
   fileName?: string | null
+  bucketName?: string
 }) {
   const command = new GetObjectCommand({
-    Bucket: getR2BucketName(),
+    Bucket: params.bucketName || getR2BucketName(),
     Key: params.objectKey,
     ResponseContentDisposition: params.fileName
       ? `attachment; filename="${sanitizeFileName(params.fileName)}"`
@@ -86,20 +93,46 @@ export async function createPresignedR2DownloadUrl(params: {
   })
 }
 
-export async function deleteR2Object(objectKey: string) {
+export async function deleteR2Object(objectKey: string, bucketName?: string) {
   await getR2Client().send(
     new DeleteObjectCommand({
-      Bucket: getR2BucketName(),
+      Bucket: bucketName || getR2BucketName(),
       Key: objectKey,
     })
   )
 }
 
-export async function getR2ObjectMetadata(objectKey: string) {
+export async function getR2ObjectMetadata(objectKey: string, bucketName?: string) {
   return getR2Client().send(
     new HeadObjectCommand({
-      Bucket: getR2BucketName(),
+      Bucket: bucketName || getR2BucketName(),
       Key: objectKey,
     })
   )
+}
+
+export async function createPresignedR2InlineUrl(params: {
+  objectKey: string
+  contentType: string
+  bucketName?: string
+}) {
+  const command = new GetObjectCommand({
+    Bucket: params.bucketName || getR2BucketName(),
+    Key: params.objectKey,
+    ResponseContentDisposition: 'inline',
+    ResponseContentType: params.contentType,
+  })
+  return getSignedUrl(getR2Client(), command, {
+    expiresIn: R2_DOWNLOAD_URL_TTL_SECONDS,
+  })
+}
+
+export async function copyR2Object(sourceKey: string, destinationKey: string, bucketName: string) {
+  const encodedSource = sourceKey.split('/').map(encodeURIComponent).join('/')
+  await getR2Client().send(new CopyObjectCommand({
+    Bucket: bucketName,
+    Key: destinationKey,
+    CopySource: `${bucketName}/${encodedSource}`,
+    MetadataDirective: 'COPY',
+  }))
 }

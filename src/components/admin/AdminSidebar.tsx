@@ -27,6 +27,7 @@ import {
   Repeat,
   Scissors,
   Search,
+  FolderOpen,
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -37,6 +38,7 @@ const navSections = [
     items: [
       { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
       { href: '/admin/ordenes', label: 'Órdenes', icon: ShoppingCart },
+      { href: '/admin/trabajos', label: 'Trabajos y archivos', icon: FolderOpen },
       { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
       { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
       { href: '/admin/financiacion', label: 'Financiación', icon: Percent },

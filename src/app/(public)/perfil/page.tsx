@@ -5,6 +5,7 @@ import { updateProfile } from '@/lib/actions/auth'
 import { signOut } from '@/auth'
 import Link from 'next/link'
 import { User, Package, LogOut, ChevronRight, Wallet, AlertTriangle } from 'lucide-react'
+import ClientWorkPortal from '@/components/client-work/ClientWorkPortal'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mi perfil — ZAP Tienda' }
@@ -127,7 +128,9 @@ export default async function PerfilPage({
         </div>
 
         {/* Orders */}
-        <div className="md:col-span-3">
+        <div className="md:col-span-3 space-y-8">
+          {process.env.CLIENT_WORK_FILES_ENABLED === 'true' && <ClientWorkPortal />}
+          <div>
           <Link
             href="/perfil/creditos"
             className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-[#F7638B]/25 hover:shadow-sm group"
@@ -194,6 +197,7 @@ export default async function PerfilPage({
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,63 @@
+name: Client work files checks
+
+on:
+  push:
+    branches: [main, feat/client-work-files]
+    paths:
+      - 'src/app/api/client-works/**'
+      - 'src/components/client-work/**'
+      - 'src/lib/client-work-files.ts'
+      - 'src/lib/client-work-audit.ts'
+      - 'src/lib/r2.ts'
+      - 'src/app/(public)/perfil/page.tsx'
+      - 'src/app/api/r2/public/**'
+      - 'src/components/admin/AdminSidebar.tsx'
+      - 'prisma/schema.prisma'
+      - 'tests/configurator-contract.test.ts'
+      - 'prisma/manual-sql/client-work-files.sql'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/client-work-files.yml'
+  pull_request:
+    paths:
+      - 'src/app/api/client-works/**'
+      - 'src/components/client-work/**'
+      - 'src/lib/client-work-files.ts'
+      - 'src/lib/r2.ts'
+      - 'src/app/(public)/perfil/page.tsx'
+      - 'src/app/api/r2/public/**'
+      - 'src/components/admin/AdminSidebar.tsx'
+      - 'prisma/schema.prisma'
+      - 'tests/configurator-contract.test.ts'
+      - 'prisma/manual-sql/client-work-files.sql'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/client-work-files.yml'
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://zap:zap@127.0.0.1:5432/zap?schema=public
+      NEXTAUTH_SECRET: ci-only-secret-not-for-production
+      NEXTAUTH_URL: http://localhost:3000
+      R2_ACCOUNT_ID: ci
+      R2_ACCESS_KEY_ID: ci
+      R2_SECRET_ACCESS_KEY: ci
+      R2_BUCKET_NAME: zap-public-ci
+      R2_PRIVATE_BUCKET_NAME: zap-private-ci
+      MP_ACCESS_TOKEN: ci
+      NEXT_PUBLIC_MP_PUBLIC_KEY: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma validate
+      - run: npx prisma generate
+      - run: npm test
+      - run: npx tsc --noEmit
+      - run: npm run build

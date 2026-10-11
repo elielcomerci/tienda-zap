@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { validateClientFile, isSafeInlineClientFile, isClientWorkFilesEnabled } from '../src/lib/client-work-files';
 import {
   adhesivosStickersConfigurator,
   carpetasFoldersConfigurator,
@@ -204,6 +205,35 @@ test('flyers y tags llegan al motor físico con materiales, medidas y procesos r
     const quote = quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config));
     assert.ok(quote.totalPrice > 0, config.productSlug);
   }
+});
+
+
+test('archivos de trabajo acepta formatos habituales y limita tamaño/formato', () => {
+  assert.equal(validateClientFile({ fileName: 'marca.pdf', contentType: 'application/pdf', sizeBytes: 1024 }).ok, true);
+  assert.equal(validateClientFile({ fileName: 'fuente.cdr', contentType: 'application/octet-stream', sizeBytes: 1024 }).ok, true);
+  assert.equal(validateClientFile({ fileName: 'malware.exe', contentType: 'application/octet-stream', sizeBytes: 1024 }).ok, false);
+  assert.equal(validateClientFile({ fileName: 'video.mp4', contentType: 'video/mp4', sizeBytes: 150 * 1024 * 1024 + 1 }).ok, false);
+  assert.equal(validateClientFile({ fileName: 'sin-extension', contentType: 'application/octet-stream', sizeBytes: 100 }).ok, false);
+});
+
+test('la vista previa en línea se limita a formatos con soporte seguro conocido', () => {
+  assert.equal(isSafeInlineClientFile({ fileName: 'presentacion.pdf', contentType: 'application/pdf' }), true);
+  assert.equal(isSafeInlineClientFile({ fileName: 'foto.png', contentType: 'image/png' }), true);
+  assert.equal(isSafeInlineClientFile({ fileName: 'audio.mp3', contentType: 'audio/mpeg' }), true);
+  assert.equal(isSafeInlineClientFile({ fileName: 'video.mp4', contentType: 'video/mp4' }), true);
+  assert.equal(isSafeInlineClientFile({ fileName: 'diseno.ai', contentType: 'application/postscript' }), false);
+  assert.equal(isSafeInlineClientFile({ fileName: 'imagen.svg', contentType: 'image/svg+xml' }), false);
+});
+
+
+test('el módulo de archivos permanece desactivado por defecto y requiere habilitación explícita', () => {
+  const original = process.env.CLIENT_WORK_FILES_ENABLED;
+  delete process.env.CLIENT_WORK_FILES_ENABLED;
+  assert.equal(isClientWorkFilesEnabled(), false);
+  process.env.CLIENT_WORK_FILES_ENABLED = 'true';
+  assert.equal(isClientWorkFilesEnabled(), true);
+  if (original === undefined) delete process.env.CLIENT_WORK_FILES_ENABLED;
+  else process.env.CLIENT_WORK_FILES_ENABLED = original;
 });
 
 console.log(`\\nResultado: ${passed} pruebas superadas.`);
