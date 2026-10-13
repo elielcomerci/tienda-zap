@@ -216,12 +216,10 @@ export async function publishPricingDraft(versionId: string) {
     })
     if (stillDraft.count !== 1) throw new Error('El borrador ya no está disponible para publicar.')
 
-    if (active) {
-      await tx.configuratorVersion.update({
-        where: { id: active.id },
-        data: { status: 'ARCHIVED' },
-      })
-    }
+    await tx.configuratorVersion.updateMany({
+      where: { productId: draft.productId, status: 'ACTIVE' },
+      data: { status: 'ARCHIVED' },
+    })
     await tx.configuratorVersion.update({
       where: { id: versionId },
       data: { status: 'ACTIVE' },
@@ -254,15 +252,22 @@ export async function restorePricingVersion(versionId: string) {
     throw new Error('La versión no contiene una matriz de costos compatible.')
   }
 
+  const pendingDraft = await prisma.configuratorVersion.findFirst({
+    where: { productId: selected.productId, status: 'DRAFT' },
+    select: { id: true },
+  })
+  if (pendingDraft) throw new Error('Publicá o descartá el borrador antes de restaurar una versión anterior.')
+
   await prisma.$transaction(async (tx) => {
     const active = await tx.configuratorVersion.findFirst({
       where: { productId: selected.productId, status: 'ACTIVE' },
       orderBy: { createdAt: 'desc' },
       select: { id: true, schemaVersion: true },
     })
-    if (active) {
-      await tx.configuratorVersion.update({ where: { id: active.id }, data: { status: 'ARCHIVED' } })
-    }
+    await tx.configuratorVersion.updateMany({
+      where: { productId: selected.productId, status: 'ACTIVE' },
+      data: { status: 'ARCHIVED' },
+    })
     const restored = await tx.configuratorVersion.updateMany({
       where: { id: versionId, status: 'ARCHIVED' },
       data: { status: 'ACTIVE' },
