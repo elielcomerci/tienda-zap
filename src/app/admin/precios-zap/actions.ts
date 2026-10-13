@@ -38,7 +38,14 @@ function getProviderFinishedCostMatrix(pricing: unknown): Record<string, any> | 
 function getAtPath(root: unknown, path: string[]): unknown {
   let current: any = root
   for (const segment of path) {
-    if (!isRecord(current) || !(segment in current)) return undefined
+    if (Array.isArray(current)) {
+      if (!/^(0|[1-9]\\d*)$/.test(segment)) return undefined
+      const index = Number(segment)
+      if (!Number.isSafeInteger(index) || index >= current.length) return undefined
+      current = current[index]
+      continue
+    }
+    if (!isRecord(current) || !Object.hasOwn(current, segment)) return undefined
     current = current[segment]
   }
   return current
@@ -47,11 +54,27 @@ function getAtPath(root: unknown, path: string[]): unknown {
 function setAtPath(root: Record<string, any>, path: string[], value: number) {
   let current: any = root
   for (const segment of path.slice(0, -1)) {
-    if (!isRecord(current) || !(segment in current)) throw new Error('La celda ya no existe en esta matriz.')
+    if (Array.isArray(current)) {
+      if (!/^(0|[1-9]\\d*)$/.test(segment)) throw new Error('La celda ya no existe en esta matriz.')
+      const index = Number(segment)
+      if (!Number.isSafeInteger(index) || index >= current.length) throw new Error('La celda ya no existe en esta matriz.')
+      current = current[index]
+      continue
+    }
+    if (!isRecord(current) || !Object.hasOwn(current, segment)) throw new Error('La celda ya no existe en esta matriz.')
     current = current[segment]
   }
   const leaf = path[path.length - 1]
-  if (!isRecord(current) || typeof current[leaf] !== 'number') {
+  if (Array.isArray(current)) {
+    if (!/^(0|[1-9]\\d*)$/.test(leaf)) throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
+    const index = Number(leaf)
+    if (!Number.isSafeInteger(index) || index >= current.length || typeof current[index] !== 'number') {
+      throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
+    }
+    current[index] = value
+    return
+  }
+  if (!isRecord(current) || !Object.hasOwn(current, leaf) || typeof current[leaf] !== 'number') {
     throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
   }
   current[leaf] = value
