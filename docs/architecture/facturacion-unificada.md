@@ -236,3 +236,28 @@ Se encontró una implementación anterior en la rama `feat/customer-invoice-flow
 ### Resultado de la auditoría
 
 La rama previa aporta ideas reutilizables (cálculo fiscal aislado, snapshots, recuperación de PDF y pruebas iniciales), pero **no se considera base integrable ni lista para producción**. El siguiente paso es definir el modelo canónico independiente de `Order`, localizar y fijar la única fuente de verdad y diseñar el contrato exacto entre Tienda y Worker. Recién después se podrá rescatar selectivamente el cálculo fiscal y la generación de PDF, corregir rutas/contratos y ampliar las pruebas. No se modificó código funcional ni se ejecutó SQL.
+
+
+## Decisión de fuente de verdad y modelo conceptual (13-10-2026)
+
+La auditoría confirma que las ventas, el checkout, el modelo `Order` y la pantalla de detalle de pedido viven en `tienda-zap`. `zap-nextjs` contiene gestión general de archivos de clientes (`ClientFile`), pero en esta revisión no se encontró un circuito de facturación asociado a esas ventas. Por tanto, para la facturación de ventas de Tienda:
+
+- **Fuente de verdad comercial y de facturación: `tienda-zap`**. La solicitud, el vínculo con ventas, el registro fiscal canónico, el estado visible y las referencias a archivos viven aquí.
+- **`zap-fiscal-core`: autoridad de ejecución fiscal**. Recibe solicitudes autenticadas, gestiona idempotencia/concurrencia y devuelve el resultado confirmado de ARCA. No reemplaza el registro canónico comercial de Tienda.
+- **`zap-nextjs`: fuera del circuito de facturación de pedidos de Tienda por ahora**. No replicar allí estados ni usar `ClientFile` como fuente de verdad. Si en el futuro se facturan ventas originadas en ese sistema, deberá definirse una integración explícita contra el registro canónico, no un segundo circuito independiente.
+
+### Modelo conceptual a diseñar antes de migrar
+
+No usar columnas `invoice*` en `Order` como modelo definitivo. Crear entidades independientes con identificadores estables:
+
+- **InvoiceRequest**: solicitud persistida, estado, cliente, snapshot del receptor, clave idempotente, `externalId`, `jobId`, datos de configuración fiscal congelados para el intento, timestamps, motivo de revisión y vínculo con una o varias ventas mediante una relación explícita.
+- **FiscalInvoice**: una sola factura canónica con identidad fiscal única (emisor/CUIT, ambiente, punto de venta, tipo y número), CAE y vencimiento, fecha de emisión, snapshot fiscal de receptor/ítems/importes, procedencia, datos de reconciliación y estados separados de autorización y representación documental.
+- **FiscalInvoiceOrder** (o entidad puente equivalente): relación muchos-a-muchos entre factura y venta, con restricciones que impidan asociar ventas de distintos clientes y que permitan una factura para varias ventas del mismo cliente.
+- **InvoiceDocument** (o campos versionados dentro de `FiscalInvoice` si el alcance se mantiene simple): formato, clave R2, nombre de descarga, hash, fecha/versión de generación y procedencia del archivo. El PDF/HTML no constituye una emisión fiscal separada.
+- **FiscalEvent / InvoiceAttempt**: registro durable de callbacks, reintentos y reconciliaciones, deduplicado por ID de evento y asociado a la solicitud/job. Si se opta por polling en vez de webhook, debe quedar definido un mecanismo de reconciliación durable equivalente.
+
+Las restricciones únicas deben estar en el nivel correcto: una clave idempotente por intento/solicitud y una identidad fiscal única por comprobante, no un supuesto de una factura por orden. Las transiciones de estado deben ejecutarse en servidor con transacciones y control de concurrencia.
+
+### Siguiente corte de trabajo
+
+Antes de diseñar migraciones o tocar código, cerrar el contrato real del Worker: ruta de consulta (`GET /v1/jobs/:jobId`), campos admitidos para el detalle de comprobante y datos que devuelve al confirmar. Después, diseñar el esquema Prisma y la estrategia de migración conservando los `invoiceUrl` históricos como comprobantes manuales legados hasta reconciliarlos; no borrarlos ni moverlos en esta fase de auditoría.
