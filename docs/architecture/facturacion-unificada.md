@@ -207,3 +207,32 @@ La representación gráfica de comprobantes electrónicos debe ajustarse a los r
 ### Criterio de aceptación específico
 
 Una factura confirmada debe poder abrirse como HTML y descargarse como PDF; ambas representaciones deben coincidir con el registro fiscal canónico, incluir los campos y elementos obligatorios que correspondan y no provocar una nueva solicitud de emisión. Un timeout o resultado incierto de ARCA no habilita la generación de un comprobante que se presente como factura emitida.
+
+
+## Auditoría de implementación previa: `feat/customer-invoice-flow` (13-10-2026)
+
+Se encontró una implementación anterior en la rama `feat/customer-invoice-flow`. No está integrada en `main`; la comparación de refs informa que esa rama está 1 commit por delante y 38 por detrás de `main`. No integrarla ni copiar archivos en bloque: primero reconciliarla con el código actual y revisar los siguientes bloqueos. La auditoría es estática; no se ejecutaron pruebas ni emisiones.
+
+### Piezas reutilizables
+
+- Vista de pedido en `src/app/(public)/perfil/ordenes/[id]/page.tsx` con un panel de solicitud de factura y datos del receptor.
+- Endpoints de solicitud y consulta/reconstrucción de PDF, cálculo fiscal aislado y pruebas unitarias de casos básicos de importes y redondeo.
+- Separación conceptual entre resultado de autorización ARCA y estado de generación del PDF; la ruta de recuperación intenta generar el PDF sin volver a emitir.
+- Reglas que bloquean pedidos no confirmados, artículos sin clasificación fiscal y condiciones de emisor que no tienen una regla habilitada.
+
+### Bloqueos para reutilizarla
+
+1. **Modelo acoplado a la orden:** los nuevos campos y snapshots se guardan directamente en `Order`, con índices únicos por `invoiceFiscalJobId`, `invoiceExternalId` e `invoiceIdempotencyKey`. Esto no permite una factura canónica que cubra varias ventas y contradice el requisito de facturas agrupadas. No aplicar su SQL manual tal cual.
+2. **Almacenamiento contradictorio con la decisión vigente:** la rama usa un bucket R2 privado, URLs firmadas y autenticación del propietario. La decisión acordada para este proyecto es R2 bajo `media.zap.com.ar` con URL pública opaca y no indexada. La elección final de exposición debe implementarse de forma consistente; no mezclar los dos modelos. La URL opaca no es control de acceso.
+3. **La vía manual no está migrada a R2:** `src/app/api/admin/orders/[orderId]/invoice/route.ts` continúa importando `@vercel/blob` y escribe un archivo público. Además, la validación se basa en el MIME declarado por el cliente; falta validar contenido real y resolver reemplazo/limpieza de objetos.
+4. **Ruta de consulta del Worker incorrecta para el contrato actual:** `src/app/api/orders/[orderId]/invoice/sync/route.ts` llama a `/v1/invoices/jobs/:jobId`, pero `zap-fiscal-core` registra `GET /v1/jobs/:jobId`. La consulta de estado fallaría hasta alinear el endpoint.
+5. **Contrato de detalle de artículos sin confirmar:** la solicitud agrega `items`, pero el handler actual de `zap-fiscal-core` valida/consume `voucher`, `amounts` y `customer`, y construye el trabajo fiscal con esos campos; no se ha verificado un contrato desplegado que acepte y use `items`. No asumir que el detalle comercial se transmite a ARCA ni fusionar primero una modificación no auditada del Worker.
+6. **Sin factura agrupada ni reconciliación entre vía manual y Worker:** el flujo está centrado en una orden y usa `invoiceSource` en ella. La carga manual bloquea emisión automática en esa misma orden, pero no crea una identidad fiscal canónica que deduplique una factura manual con un resultado tardío del Worker.
+7. **Experiencia del cliente distinta de la decisión:** el CTA dice “Generar factura”, y la pantalla muestra CAE y estado de PDF. Debe adaptarse al contrato `SOLICITAR FACTURA` → `FACTURA PENDIENTE` → `VER FACTURA`, sin hacer depender el estado de React ni exigir al cliente reintentar la solicitud.
+8. **Consulta por polling, sin receptor durable de webhooks identificado en esta rama:** hay que diseñar y probar el registro durable/deduplicación de eventos del Worker o definir explícitamente un mecanismo de reconciliación periódico y operativo. No depender solo de que el cliente vuelva a abrir la pantalla.
+9. **La vista HTML acordada todavía no está implementada:** el generador encontrado produce PDF; la decisión vigente requiere vista HTML y PDF derivadas del mismo registro fiscal canónico.
+10. **La ruta de descarga está protegida por sesión y propietario:** eso es coherente con la alternativa privada de esa rama, pero no con el enlace directo opaco acordado. También se mantiene en el pedido el enlace manual antiguo `invoiceUrl`; hay que unificar ambos tipos de comprobante detrás del registro canónico.
+
+### Resultado de la auditoría
+
+La rama previa aporta ideas reutilizables (cálculo fiscal aislado, snapshots, recuperación de PDF y pruebas iniciales), pero **no se considera base integrable ni lista para producción**. El siguiente paso es definir el modelo canónico independiente de `Order`, localizar y fijar la única fuente de verdad y diseñar el contrato exacto entre Tienda y Worker. Recién después se podrá rescatar selectivamente el cálculo fiscal y la generación de PDF, corregir rutas/contratos y ampliar las pruebas. No se modificó código funcional ni se ejecutó SQL.
