@@ -202,3 +202,15 @@ Por eso no alcanza con inspeccionar una matriz aislada: cada caso de prueba debe
 4. Verificar IVA de forma consistente desde la cotización hasta carrito y checkout.
 5. Rechazar o enviar a consulta cualquier combinación sin costo vigente, con especificación no cubierta o con proceso obligatorio sin costo correcto.
 6. Ejecutar regresiones E2E de tarjetas, flyers y tags después de cualquier ajuste.
+
+
+### P0 — Flyers y Tags no incorporan costo de impresión en el motor que realmente calcula el precio
+
+El recorrido de `PRODUCT_QUOTER` llama a `calculateProductQuote`, que en modo `SHEET_NESTING` calcula el costo con pliegos de materia prima y las terminaciones seleccionadas. La función `calculateQuote` suma `materialCost + finishingsCost`; el desglose devuelve `printingCost: 0`, `processCost: 0` y `wasteCost: 0`. No consume automáticamente `providerFinishedCostMatrix` solo porque esa matriz esté presente en la versión del configurador.
+
+Esto afecta especialmente a:
+- **Flyers & Desplegables:** la configuración comercial contiene matrices de proveedor offset y digital, pero el motor activo `PRODUCT_QUOTER` deriva el precio del papel por pliego y, en los casos plegados, del costo de doblado. La matriz de costo de impresión no se incorpora en ese cálculo.
+- **Tags & Etiquetas:** el motor deriva costo del papel y terminaciones, pero no incorpora un costo de impresión de proveedor. Además, la perforación está subcosteada.
+
+Por tanto, los precios calculados por esos dos configuradores no deben considerarse vendibles ni usarse para calibrar margen hasta conectar una fuente de costo de impresión válida o cambiar el modelo de cálculo con pruebas. El costo del papel no equivale al costo del impreso terminado. No basta con cambiar `profitMargin`: primero hay que corregir el costo base.
+
