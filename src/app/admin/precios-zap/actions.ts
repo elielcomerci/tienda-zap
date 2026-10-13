@@ -187,8 +187,9 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
   return { success: true, value }
 }
 
-export async function publishPricingDraft(versionId: string) {
+export async function publishPricingDraft(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
+  if (formData.get('confirmReview') !== 'yes') throw new Error('Confirmá que revisaste los costos y las combinaciones antes de publicar.')
   const draft = await prisma.configuratorVersion.findUnique({
     where: { id: versionId },
     include: { product: { select: { id: true, name: true, slug: true } } },
@@ -239,8 +240,9 @@ export async function publishPricingDraft(versionId: string) {
   redirect(`/admin/precios-zap/${draft.productId}?published=1`)
 }
 
-export async function restorePricingVersion(versionId: string) {
+export async function restorePricingVersion(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
+  if (formData.get('confirmRestore') !== 'yes') throw new Error('Confirmá la reversión para continuar.')
   const selected = await prisma.configuratorVersion.findUnique({
     where: { id: versionId },
     include: { product: { select: { id: true, name: true, slug: true } } },
