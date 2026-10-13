@@ -28,6 +28,7 @@ import {
   Scissors,
   Search,
   FolderOpen,
+  CircleDollarSign,
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -78,6 +79,7 @@ const navSections = [
       { href: '/admin/cotizador/materiales', label: 'Materias Primas', icon: Layers },
       { href: '/admin/cotizador/terminaciones', label: 'Terminaciones', icon: Scissors },
       { href: '/admin/cotizador/brechas', label: 'Brechas de Costos', icon: ClipboardList },
+      { href: '/admin/precios-zap', label: 'Precios ZAP', icon: CircleDollarSign },
     ],
   },
   {
