@@ -34,7 +34,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 
 | Producto / configuración de referencia | Costo seed neto | Competencia pública comparable o más cercana | Precio ZAP tentativo final | Multiplicador neto | Margen bruto estimado | Decisión |
 |---|---:|---|---:|---:|---:|---|
-| Tarjetas: 500 u., ilustración 350 g, 4/4, sin laminar | $39.930 | Promo Directa lista: 500, 350 g, 4/4 sin laminar $60.270 **sin IVA** (PDF; vigencia actual a confirmar). Tecnoplotter: 500, 350 g, 4/4, laminado brillo frontal, incluye diseño, $61.250 publicado. No son exactamente la misma terminación. | **$74.900** | **1,55×** | **35,5%** | Provisional. Confirmar costo con proveedor y comparar con precio de Promo Directa vigente. Con el supuesto 21%, precio neto ZAP ≈ $61.901. |
+| Tarjetas: 500 u., ilustración 350 g, 4/4, sin laminar | $39.930 | Tecnoplotter: 500, 350 g, 4/4, laminado brillo frontal, incluye diseño, $61.250 publicado. Imprenta Lugones: 500 doble faz $47.800 final pero es láser 250 g sin laminar; no es equivalente. Imprimime: 500, 300 g, 4/4, laca UV frontal, $34.290 + IVA. | **No aprobar todavía** | — | — | El precio de $74.900 que daría 35,5% de margen supera al competidor de 350 g laminado y con diseño. El costo seed parece no competitivo o necesita explicación; validar proveedor/celda antes de fijar precio. |
 | Stickers circulares: 500 u., papel autoadhesivo 90 g, 5×5 cm | $19.231 | E-tiquetas publica 1.000 etiquetas 80×50 mm a $26.000, pero es otro formato/material/proceso: solo referencia de mercado, no comparación equivalente. | **$35.900** | **1,54×** | **35,2%** | Provisional matemático; no aprobar hasta conseguir al menos 2 precios comparables para stickers personalizados 5×5, 500 u., papel y corte equivalentes. |
 | Carpetas: 50 u., ilustración 300 g, A4, 4/0, sin laminar, solapa blanca | $82.350 (50 × $1.647) | Imprimime: carpetas 300 g, full color, 1 solapa, 50 u. $107.793 + IVA (≈ $130.430 con IVA 21%). Confirmar si incluye la misma solapa, formato, terminación, diseño y entrega. | **$139.900** | **1,40×** | **28,8%** | Provisional; está ~7,3% sobre la referencia final calculada. Validar especificación y costos adicionales. |
 | Flyers: 1.000 u., 10×15 cm, obra 80 g, offset | $23.000 en matriz | Gráfica Lugano publica 10×15 cm, 1.000 u. a $65.000; el resultado público no deja totalmente comparables papel, caras, IVA y entrega. | **No fijar todavía** | — | — | Bloqueado: la fuente del seed declara vigencia junio-julio 2026 y el motor activo no incorpora el costo de impresión de la matriz de proveedor. Actualizar costo y corregir el cálculo antes de cotizar. |
@@ -43,7 +43,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 
 ### Cómo leer los tentativos
 
-- **Tarjetas:** el precio final de $74.900 se alinea con la referencia de $60.270 netos por una especificación de 350 g, 4/4 y sin laminar (≈ $72.927 finales si corresponde IVA 21%). La otra referencia de $61.250 incluye laminado brillo frontal y diseño, por lo que no es idéntica. El costo seed de $39.930 no debe tomarse como validado solo porque esté cargado.
+- **Tarjetas:** el cálculo matemático para lograr 35% de margen sería aproximadamente $74.900 final, pero no lo recomiendo como precio competitivo sin validar el costo. Tecnoplotter publica 500 tarjetas 350 g 4/4 con laminado brillo frontal e incluye diseño por $61.250; cobrar más por la variante sin laminar requiere una justificación comercial. Si se vendiera a $61.250 final y el costo de $39.930 fuera neto correcto, el margen bruto sería solo ≈21,1% antes de otros gastos. Es una señal de que hay que validar costo/proveedor o asumir explícitamente una posición premium, no bajar el margen a ciegas.
 - **Stickers:** el precio se calcula con un multiplicador objetivo cercano a 1,54; aún no se demuestra que sea competitivo.
 - **Carpetas:** el precio propuesto sacrifica margen respecto del objetivo general de 35% para acercarse al mercado. Si hay que sumar flete, diseño, preparación o comisión de cobro, debe recalcularse.
 - Los márgenes se estiman contra el costo seed y no incluyen cargos no modelados. No publicar hasta completar la validación.
@@ -103,9 +103,9 @@ No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese mu
 
 1. **Tecnoplotter — tarjetas 500 u. 350 g, 4/4, laminado brillo frontal, diseño incluido: $61.250 publicado.**  
    https://tecnoplotter.com.ar/productos/500-tarjetas-doble-faz-brillo-350g/
-2. **Promo Directa — lista de impresión PDF:** tabla de tarjetas 500 u. 350 g 4/4 sin laminar $60.270, precios indicados sin IVA; la lista indexada no acredita vigencia al 13/10/2026.  
-   https://promodirecta.com.ar/listas/lista-print.pdf
-3. **Imprimime — lista de precios publicada como vigente al 10/10/2026, precios sin IVA:** carpetas impresas 1 solapa, 300 g, full color: 10 u. $32.338; 50 u. $107.793; 100 u. $191.632. También publica tarjetas 300 g y otras familias.  
+2. **Imprimime — tarjetas brillantes 500 u., 300 g, 4/4, laca UV frontal: $34.290 + IVA** (lista vigente al 10/10/2026). Es menor gramaje y otra terminación.  
+   https://www.imprimime.com.ar/tarjetas-personales/tarjetas-personales-brillantes
+3. **Imprimime — lista vigente al 10/10/2026, precios sin IVA:** carpetas impresas 1 solapa, 300 g, full color: 10 u. $32.338; 50 u. $107.793; 100 u. $191.632. También publica tarjetas 300 g y otras familias.  
    https://imprimime.com.ar/lista-de-precios
 4. **Gráfica Lugano:** referencia pública de volantes 10×15 cm, 1.000 u. $65.000; especificaciones e IVA deben confirmarse.  
    https://www.graficalugano.com.ar/
