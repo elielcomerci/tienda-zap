@@ -8,7 +8,7 @@
 
 Ya está creado el panel privado para listar las familias compatibles, abrir un borrador, editar importes reconocidos como costos, comparar cambios y auditar cada escritura. Las acciones exigen rol `ADMIN`. La edición excluye metadatos numéricos como límites de cantidad, dimensiones y porcentajes.
 
-**La publicación y restauración están bloqueadas por defecto** mediante `PRICING_ZAP_PUBLISH_ENABLED`. Solo deben habilitarse explícitamente en el servidor después de validar cobertura de combinaciones, vigencia de cada fuente, costos completos, IVA y margen para las familias habilitadas. El checkbox de confirmación no reemplaza esa barrera del servidor.
+**La publicación y restauración están bloqueadas por defecto** mediante `PRICING_ZAP_PUBLISH_ENABLED` y `PRICING_ZAP_COMMERCIAL_AUDIT_APPROVED` (ambas deben ser exactamente `true`). Solo deben configurarse después de validar cobertura de combinaciones, vigencia de cada fuente, costos completos, IVA y margen para las familias habilitadas. El checkbox de confirmación no reemplaza esa barrera del servidor.
 
 ## Decisión técnica
 
@@ -45,7 +45,7 @@ La primera entrega no debe recalcular ni publicar precios automáticamente al im
 - El cambio de estado debe ser transaccional; si falla, debe permanecer activa la versión anterior.
 - La publicación no debe alterar órdenes, presupuestos ya emitidos, variantes de catálogo ni snapshots históricos.
 - No aplicar IVA, recargos ni márgenes por inferencia. La semántica de costos, IVA y margen se debe resolver explícitamente por motor antes de habilitar el botón de publicación.
-- `PRICING_ZAP_PUBLISH_ENABLED` debe permanecer sin definir o distinto de `true` hasta que la auditoría comercial esté aprobada; la barrera se verifica también dentro de las acciones del servidor.
+- Ambas variables (`PRICING_ZAP_PUBLISH_ENABLED` y `PRICING_ZAP_COMMERCIAL_AUDIT_APPROVED`) deben permanecer sin definir o distintas de `true` hasta que la auditoría comercial esté aprobada; la barrera se verifica también dentro de las acciones del servidor.
 - Las combinaciones sin costo validado deben quedar bloqueadas o marcadas como consulta; nunca completar celdas con estimaciones silenciosas.
 - El seed no debe sobrescribir una matriz administrada/publicada durante una ejecución normal. Antes de cambiar el comportamiento del seed, revisar su idempotencia y definir cómo importar futuras actualizaciones de fuente.
 
