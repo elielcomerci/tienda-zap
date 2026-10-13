@@ -261,3 +261,74 @@ Las restricciones únicas deben estar en el nivel correcto: una clave idempotent
 ### Siguiente corte de trabajo
 
 Antes de diseñar migraciones o tocar código, cerrar el contrato real del Worker: ruta de consulta (`GET /v1/jobs/:jobId`), campos admitidos para el detalle de comprobante y datos que devuelve al confirmar. Después, diseñar el esquema Prisma y la estrategia de migración conservando los `invoiceUrl` históricos como comprobantes manuales legados hasta reconciliarlos; no borrarlos ni moverlos en esta fase de auditoría.
+
+
+## Auditoría de contrato y propuesta de migración (13-10-2026)
+
+### Matriz de contrato: Tienda ↔ Worker
+
+| Operación | Contrato actual verificado | Consecuencia para la integración |
+|---|---|---|
+| Crear emisión | `POST /v1/invoices/emit`; API key de tenant; respuesta asíncrona normal `202 { jobId, status: "PENDING", externalId }`. La misma clave idempotente puede devolver un job existente. | Persistir solicitud y clave antes de llamar al Worker; persistir `jobId` cuando llegue. Ante timeout de red, recuperar por la misma clave o `externalId`, nunca crear una clave nueva para “probar”. |
+| Consultar job | `GET /v1/jobs/:jobId`; requiere autenticación del tenant. El job debe pertenecer a ese tenant. | La ruta de la rama antigua `/v1/invoices/jobs/:jobId` es incorrecta. Alinear cliente backend con `/v1/jobs/:jobId`. |
+| Estado de job | El handler devuelve `PENDING`, `PROCESSING`, `DONE`, `FAILED` o `DEAD` según estado persistido; si hay comprobante, `voucher` incluye `voucherType`, `voucherNumber`, `cae`, `caeFchVto`, `issuedAt` y observaciones. | No traducir cualquier respuesta HTTP exitosa a factura emitida. Solo marcar autorizada con job terminal exitoso y metadatos fiscales completos. `FAILED/DEAD` exige revisión; no implica permiso para volver a emitir. |
+| Emisión síncrona | `?sync=true` espera como máximo 10 segundos; puede responder con job pendiente si no termina. | No depender del modo síncrono para completar UX. Una respuesta incompleta o timeout queda pendiente y se reconcilia contra el mismo job. |
+| Webhook | El sender emite `X-Fiscal-Signature: sha256=...`, `X-Fiscal-Event-Type`, `X-Fiscal-Event-Id` y `X-Fiscal-Timestamp`; firma el texto `${timestamp}.${rawBody}`. El destino y secreto efectivos salen de la configuración del tenant. | El receptor de Tienda debe verificar firma sobre el cuerpo crudo y tolerancia temporal, insertar el evento con ID único antes de responder 2xx, y procesarlo idempotentemente. La URL no se define libremente desde la solicitud de cliente. |
+| Detalle fiscal | El tipo TypeScript y la validación del Worker admiten `externalId`, `idempotencyKey`, `contributor`, `voucher`, `amounts`, `customer` y configuración opcional de webhook. El job inmutable se construye con `voucher`, `amounts`, `customer` y webhook. No existe campo `items` en el contrato declarado ni se incluye en el payload fiscal construido. | La rama antigua envía `items: lineItems`, pero eso no prueba que el Worker lo valide, persista o use. Los importes/desgloses llegan; el detalle comercial no. No presentar los ítems como “enviados a ARCA”. Definir y probar cómo se obtiene la descripción exigida para la representación del comprobante. |
+| Cuota | En el Worker actual, una emisión PROD puede reservar unidad de cuota y responder `402 FREE_QUOTA_EXHAUSTED` con referencia a 25 unidades gratuitas del período. | La auditoría anterior no tenía confirmada la regla comercial; ahora sí existe lógica de cuota en el código. Sigue pendiente confirmar condiciones comerciales/tenant antes de mostrarla o tratarla como promesa del producto. |
+
+**Nota de alcance:** esta verificación es estática sobre el código consultado en GitHub; no demuestra que el deployment activo corresponda a ese commit ni que el tenant, CUIT, ambiente, punto de venta y callback estén configurados y probados de punta a punta.
+
+### Reglas de mapeo del resultado fiscal
+
+1. Persistir la solicitud local antes de llamar al Worker, con un `externalId` y una `idempotencyKey` estables. No derivar una clave nueva de cada reintento.
+2. Guardar `jobId` con unicidad local cuando se reciba. Si la respuesta se pierde antes de guardar el identificador, reintentar la misma petición con la misma clave idempotente y validar que el Worker devuelve el mismo trabajo.
+3. La consulta `GET /v1/jobs/:jobId` no devuelve PDF ni URL de documento. La emisión autorizada y la disponibilidad de su representación son estados distintos.
+4. El job status consultado no ofrece `lastError` en el formato documentado aquí; para `FAILED/DEAD` expone un mensaje genérico. No basar la UI administrativa en un campo `lastError` inexistente; obtener el detalle seguro por un mecanismo explícito de diagnóstico/operación.
+5. Los eventos webhook pueden repetirse o llegar tarde. Guardar el evento bruto verificado y su ID antes del ACK; procesar el evento y la actualización de solicitud/factura en una transacción o mediante una cola durable. Si no se puede persistir, responder error para permitir reintento.
+6. Tanto webhook como polling deben converger en la misma función de reconciliación y en la misma identidad fiscal canónica. No permitir que dos canales creen dos facturas.
+7. La identidad fiscal de un comprobante autorizado debe normalizarse al menos por CUIT emisor, ambiente, punto de venta, tipo y número. CAE, fecha e importes se validan y conservan como atributos confirmados; no sustituyen por sí solos la clave única del comprobante.
+8. El Worker devuelve códigos numéricos ARCA de tipo de comprobante, mientras la solicitud de Tienda usa letras. Mantener un mapper explícito y testeado; no confundir los códigos de facturas con los de notas de crédito u otros tipos.
+
+### Modelo Prisma propuesto: responsabilidades y restricciones
+
+Es un diseño lógico previo a la migración, no un esquema ya aplicado. Los nombres finales y tipos deben alinearse con los enums, convenciones y relaciones existentes.
+
+- **`InvoiceRequest`**: una solicitud del cliente. Campos lógicos: `id`, `customerId`, `status`, snapshot inmutable del receptor, snapshot de configuración del emisor, `voucherType`, `concept`, `amountsSnapshot`, `externalId`, `idempotencyKey`, `fiscalJobId`, timestamps, `reviewReason` y relaciones a ventas/factura. Índices únicos para `externalId`, `idempotencyKey` y `fiscalJobId` cuando no sean nulos. Una solicitud agrupa una o varias ventas del mismo cliente.
+- **`FiscalInvoice`**: el comprobante canónico, sin depender de una orden concreta. Campos lógicos: CUIT emisor, ambiente, punto de venta, tipo y número, CAE/vencimiento, fecha, datos de receptor, moneda, importes, desglose impositivo, snapshot de conceptos, procedencia (`WORKER` o `MANUAL`), fecha de confirmación y datos de reconciliación. Restricción única por identidad fiscal normalizada: CUIT emisor + ambiente + punto de venta + tipo + número. Los metadatos que no puedan verificarse al cargar un comprobante manual deben quedar marcados como pendientes de completar/verificar, no inventarse.
+- **`InvoiceRequestOrder`** (o relación explícita equivalente): puente entre solicitud y orden. Validar en servidor que todas las órdenes pertenecen al mismo cliente y son elegibles; bloquear duplicación accidental de una misma venta en solicitudes activas incompatibles. La posibilidad de varias ventas por factura requiere una decisión explícita sobre si cada orden puede estar vinculada a más de una factura en casos parciales/rectificativos; no imponer una unicidad más restrictiva sin definir ese caso.
+- **`FiscalInvoiceOrder`**: puente entre factura canónica y órdenes cubiertas. Mantiene la relación muchos-a-muchos y permite que una factura manual o del Worker se vincule a varias ventas. El mismo comprobante no debe duplicarse por orden.
+- **`InvoiceDocument`**: cada representación/archivo de una factura. Campos lógicos: factura, formato (`HTML`/`PDF`/`UPLOAD`), clave de objeto R2, nombre, MIME validado por contenido, tamaño, SHA-256, fecha de alta/generación, versión y origen. La clave R2 usa aleatoriedad criptográfica; la URL pública se construye con `media.zap.com.ar`. No guardar datos personales en la ruta.
+- **`FiscalEvent`** y/o **`InvoiceAttempt`**: evento webhook con ID único, timestamp, tipo, job/externalId, hash/cuerpo verificado, estado de procesamiento y error seguro; intentos con tipo, resultado, fechas y contadores. Separar el historial durable de eventos de la solicitud actual. La retención del cuerpo bruto debe limitarse a lo necesario y proteger secretos/datos personales.
+
+**Separación de estados obligatoria:**
+- Solicitud: no solicitada (implícita), pendiente, procesando, requiere revisión, resuelta/cancelada según reglas aprobadas.
+- Autorización fiscal: pendiente, autorizada, rechazada/no concluyente; no inferir “rechazada” de un timeout de red.
+- Representación: pendiente, lista, fallida; un error al generar PDF no debe revertir una autorización confirmada.
+- Reconciliación: sin conciliar, conciliada, conflicto; los conflictos entre factura manual y resultado Worker deben quedar en cola de revisión, nunca resolverse por sobrescritura silenciosa.
+
+### Estrategia de migración sin pérdida de historial
+
+**Fase 0 — solo auditoría (estado actual):** no ejecutar SQL, no modificar Prisma funcional, no desplegar ni emitir. Inventariar registros existentes de `Order.invoiceUrl`, `invoiceFileName` y `invoiceUploadedAt`, incluyendo URL/host, nombre, fecha, orden, cliente y estado de pago; no asumir que cada archivo es fiscalmente válido.
+
+**Fase 1 — expansión compatible:** cuando se apruebe la implementación, añadir las tablas y relaciones nuevas en una migración aditiva. Conservar las tres columnas legacy y no cambiar el tipo ni la obligatoriedad de `OrderItem.productId`. Crear índices y restricciones con cuidado ante nulos y duplicados existentes; verificar conteos y rollback antes de ejecutar en producción.
+
+**Fase 2 — backfill controlado:** por cada orden con `invoiceUrl`, crear un documento/registro legado con origen `LEGACY_MANUAL` o `MANUAL_UNVERIFIED`, conservar la URL original como referencia y enlazarlo a la venta. No inventar CUIT, CAE, tipo/número ni estado de autorización. El archivo debe permanecer accesible mientras se decide su copia a R2; verificar hash/descarga antes de cambiar referencias. Resolver duplicados por identidad fiscal cuando los datos disponibles lo permitan; los casos ambiguos van a revisión.
+
+**Fase 3 — lectura dual temporal:** las vistas nuevas priorizan el registro canónico, pero mantienen fallback explícito a `Order.invoiceUrl` si el backfill no está conciliado. Medir casos pendientes y probar que ningún comprobante histórico desaparezca. Evitar que ambos caminos permitan subir/emitir por separado.
+
+**Fase 4 — escritura canónica:** la nueva carga manual y la integración Worker escriben únicamente en entidades canónicas. Las columnas legacy quedan en solo lectura para compatibilidad; no se borran durante el primer despliegue.
+
+**Fase 5 — cierre posterior:** retirar el fallback y columnas antiguas solo después de conciliación completa, revisión de los casos manuales y un período de estabilidad aprobado. Es un cambio posterior separado, no parte de la migración inicial.
+
+### Condiciones para dar la auditoría por cerrada
+
+- [ ] Confirmar el contrato del deployment Worker que realmente está configurado en producción y la configuración del tenant/webhook.
+- [ ] Decidir si el Worker necesita admitir snapshot de conceptos/ítems como contrato versionado; definirlo sin asumir que el campo `items` actual funciona.
+- [ ] Validar tipos de comprobante y representación HTML/PDF contra régimen fiscal real de ZAP.
+- [ ] Revisar elegibilidad, pagos, cancelaciones, notas de crédito, factura parcial y agrupación de órdenes.
+- [ ] Definir política para facturas manuales con metadatos incompletos y para resultados Worker tardíos que colisionen con una factura ya cargada.
+- [ ] Preparar un inventario de datos legacy y estrategia de rollback antes de escribir una migración.
+- [ ] Diseñar pruebas de concurrencia, timeout tras emisión, repetición de webhook, clave idempotente reutilizada, factura agrupada y fallo de PDF después de autorización.
+
+**Estado después de esta pasada:** contrato del código fuente y propuesta lógica de migración documentados. Sigue siendo una auditoría estática: no se modificó código funcional, no se ejecutó SQL, no se tocaron datos ni se hizo ningún despliegue.
