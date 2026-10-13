@@ -371,3 +371,31 @@ Se revisó el repositorio privado `elielcomerci/zap-fiscal-core` y la PR abierta
 ### Criterio de entrada al sprint
 
 La PR #1 es la candidata de trabajo correcta para cerrar el contrato del detalle fiscal, pero el Worker no se considera listo para integrar con Tienda hasta que: (a) la rama esté actualizada y el diff sea revisado, (b) las pruebas nuevas y existentes pasen, (c) se cierre el diseño de recuperación de Queue/DLQ, (d) quede fijado el contrato de consulta y webhook, y (e) se valide el circuito en homologación. Esta revisión no fusionó la PR, no modificó código funcional y no desplegó nada.
+
+
+### Revisión de código de PR #1: hallazgos que bloquean la aprobación
+
+Revisión estática adicional de `feat/fiscal-invoice-items` comparada con `main`; no se ejecutó código ni pruebas.
+
+1. **Los scripts de calidad están ausentes en la rama de la PR.** `main` tiene `typecheck`, `typecheck:test` y `test:all`; la rama de la PR no los incluye. La descripción de la PR debe corregirse después de actualizarla. Antes de fusionar hay que recuperar scripts/archivos de test desde la base actual y ejecutar la suite sobre el resultado reconciliado.
+2. **La validación sigue siendo parcial cuando no se envían artículos.** `items` es opcional por compatibilidad. En ese camino, el validador acepta importes totales sin validar completamente que `net + vat + exempt + nonTaxable = total` cuando no hay `vatBreakdown`. Definir el contrato: compatibilidad legacy explícita y acotada, o exigir el detalle para el nuevo cliente de Tienda; no confundir ambos perfiles.
+3. **La fecha puede volver a ser implícita.** La validación permite que `voucher.date` esté ausente, y el constructor de detalle usa la fecha del día como fallback. Para una solicitud comercial durable, la fecha fiscal debe quedar definida en el payload persistido antes de encolar, con regla explícita para fechas permitidas; no sustituir una fecha ausente silenciosamente durante la emisión.
+4. **Riesgo de redondeo al agrupar IVA.** El detalle suma IVA redondeado por línea y luego agrupa las bases por alícuota. La validación compara la suma de importes de línea con el IVA recalculado sobre la base agrupada y puede rechazar casos legítimos donde los redondeos por línea difieran de los redondeos por alícuota. Acordar una única regla fiscal/comercial de redondeo y probarla con casos de centavos antes de aprobar.
+5. **El contrato del endpoint no está unificado.** La rama agrega `GET /v1/invoices/jobs/:jobId` y el handler expone `lastError` y `emitterSnapshot`; `main` usa `GET /v1/jobs/:jobId` y un esquema de respuesta distinto. El nuevo endpoint debe limitarse al tenant y se ve que lo hace, pero falta decidir compatibilidad y fijar el contrato con pruebas de estados y forma JSON. No actualizar Tienda contra un endpoint de una PR todavía abierta.
+6. **No hay pruebas específicas del nuevo validador ni del detalle fiscal en la rama de la PR.** El directorio de pruebas consultado solo muestra el POC WSAA; no hay suite nueva para `invoice-detail`, conciliación de artículos o nuevo handler. Esto es bloqueo de calidad, no una recomendación opcional.
+7. **La Queue requiere recuperación operativa demostrable.** La configuración actual define `max_retries = 5` sin `dead_letter_queue`. Añadir una DLQ requiere crear/configurar la cola destino y definir cómo se inspeccionan y reencolan los mensajes; no alcanza con agregar una línea al TOML. Confirmar además que la recuperación de jobs huérfanos no duplica emisiones.
+8. **El handler de emisión no debe ser la única fuente de verdad del resultado.** En modo asíncrono responde `202`; un reintento idempotente de un job existente devuelve una forma distinta y, si está `DONE`, omite el objeto `voucher`. La integración debe consultar el endpoint de estado acordado o procesar el webhook verificado, sin asumir que el POST repetido contiene CAE.
+9. **El código de certificados merece una prueba específica de seguridad y configuración.** La rama selecciona certificado activo/vigente por contribuyente y ambiente, verifica `keyVersion` y descifra con `CERT_ENCRYPTION_KEY_V1`; el fallback a PEM por variables queda restringido a TEST. Probar certificado vencido/inactivo, versión de clave no soportada, error de descifrado, falta de secreto, aislamiento TEST/PROD y que ningún PEM o clave llegue a logs/respuestas. La revisión estática no demuestra que los certificados configurados en producción sean válidos.
+10. **El alcance fiscal no se valida solo con aritmética.** Confirmar con casos de homologación el mapeo de Factura C, conceptos gravados/exentos/no gravados, códigos de alícuota WSFEv1, tipos de comprobante admitidos y notas de crédito. La representación visual de los ítems es una responsabilidad separada: WSFEv1 no recibe las descripciones comerciales como detalle fiscal.
+
+### Orden de trabajo inmediato para cerrar la PR
+
+1. Mantener `main` intacta y reconciliar `feat/fiscal-invoice-items` contra el último `main`.
+2. Resolver primero las decisiones de contrato (ruta de estado, fecha fiscal obligatoria o normalizada, perfil legacy sin ítems y redondeo).
+3. Incorporar pruebas unitarias de `invoice-detail`, pruebas de handler e integración de Queue/estado/webhook; recuperar los scripts de test del `main` actual.
+4. Añadir y documentar DLQ o recuperación durable equivalente; verificar reconciliación de jobs antes de reencolar.
+5. Ejecutar typecheck, typecheck de tests y suite completa en la rama actualizada; guardar resultados verificables en la PR.
+6. Hacer prueba de homologación con payload controlado y sin emitir en PROD; verificar configuración real de tenant, CUIT, ambiente, punto de venta y certificados.
+7. Solo entonces solicitar revisión final y fusionar. La integración de Tienda se inicia después de cerrar este contrato.
+
+**Límite de esta pasada:** los hallazgos son revisión estática de GitHub. No se actualizó la rama de la PR, no se modificó código del Worker, no se ejecutaron comandos ni pruebas, no se tocó configuración, base de datos o despliegue. Se documentaron los bloqueos para su resolución ordenada.
