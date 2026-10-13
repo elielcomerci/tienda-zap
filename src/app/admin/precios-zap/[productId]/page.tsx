@@ -38,6 +38,7 @@ export default async function PricingProductPage({
   const draft = versions.find((version) => version.status === 'DRAFT')
   const archived = versions.filter((version) => version.status === 'ARCHIVED')
   const pricingActivationEnabled = process.env.PRICING_ZAP_PUBLISH_ENABLED === 'true'
+    && process.env.PRICING_ZAP_COMMERCIAL_AUDIT_APPROVED === 'true'
   if (!active || !hasCostMatrix(active.pricing)) notFound()
 
   const displayVersion = draft ?? active
@@ -109,7 +110,7 @@ export default async function PricingProductPage({
             </p>
             {!pricingActivationEnabled ? (
               <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
-                Publicación bloqueada por seguridad. Se habilitará mediante configuración de servidor cuando la auditoría comercial esté aprobada.
+                Publicación bloqueada por seguridad. Requiere dos habilitaciones explícitas del servidor después de aprobar la auditoría comercial.
               </p>
             ) : (
               <form action={publishPricingDraft.bind(null, draft.id)} className="mt-4 space-y-4">
@@ -160,7 +161,7 @@ export default async function PricingProductPage({
                     <button className="btn-secondary !py-2 !text-xs">Restaurar versión</button>
                   </form>
                 ) : (
-                  <span className="text-xs text-amber-700">Restauración bloqueada hasta aprobar la auditoría comercial.</span>
+                  <span className="text-xs text-amber-700">Restauración bloqueada hasta aprobar la auditoría comercial y habilitar el servidor.</span>
                 )}
               </div>
             ))}
