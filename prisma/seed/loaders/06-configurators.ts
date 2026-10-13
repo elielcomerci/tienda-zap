@@ -13,6 +13,18 @@ import { campanasConfigurators } from '../data/06-configurators/campanas';
  * existentes: así una futura ejecución no pisa borradores, publicaciones ni
  * versiones históricas creadas desde Precios ZAP.
  */
+const MANAGED_PRICING_SLUGS = new Set([
+  'tarjetas-vouchers',
+  'flyers-desplegables',
+  'tags-etiquetas',
+  'adhesivos-stickers',
+  'carpetas-folders',
+]);
+
+/**
+ * Conserva las versiones de las familias gestionadas por Precios ZAP.
+ * Para los demás productos mantiene el comportamiento histórico del seed.
+ */
 export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   const allConfigs = [
     ...impresosPackagingConfigurators,
@@ -44,26 +56,38 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     return { cfg, productId };
   });
 
-  let created = 0;
+  let persisted = 0;
   let preserved = 0;
 
   await prisma.$transaction(async (tx) => {
     for (const { cfg, productId } of resolvedConfigs) {
-      // Any existing version means this product is now managed through the admin.
-      // Do not update the matching version or archive versions unknown to the seed.
-      const existingVersions = await tx.configuratorVersion.findMany({
-        where: { productId },
-        select: { id: true },
-        take: 1,
-      });
+      if (MANAGED_PRICING_SLUGS.has(cfg.productSlug)) {
+        const existingVersions = await tx.configuratorVersion.findMany({
+          where: { productId },
+          select: { id: true },
+          take: 1,
+        });
 
-      if (existingVersions.length > 0) {
-        preserved += 1;
-        continue;
+        if (existingVersions.length > 0) {
+          preserved += 1;
+          continue;
+        }
       }
 
-      await tx.configuratorVersion.create({
-        data: {
+      await tx.configuratorVersion.upsert({
+        where: {
+          productId_schemaVersion: {
+            productId,
+            schemaVersion: cfg.schemaVersion,
+          },
+        },
+        update: {
+          status: cfg.status,
+          schema: cfg.schema,
+          compatibility: cfg.compatibility || undefined,
+          pricing: cfg.pricing || undefined,
+        },
+        create: {
           productId,
           schemaVersion: cfg.schemaVersion,
           status: cfg.status,
@@ -72,11 +96,36 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
           pricing: cfg.pricing || undefined,
         },
       });
-      created += 1;
+      persisted += 1;
+    }
+
+    const activeProducts = await tx.product.findMany({
+      where: { active: true },
+      select: { id: true, slug: true },
+    });
+    const activeProductSlugs = new Map(activeProducts.map((product) => [product.id, product.slug]));
+    const staleVersions = await tx.configuratorVersion.findMany({
+      where: { productId: { in: activeProducts.map((product) => product.id) } },
+      select: { id: true, productId: true, schemaVersion: true },
+    });
+
+    const staleIds = staleVersions
+      .filter((version) => {
+        const slug = activeProductSlugs.get(version.productId);
+        if (slug && MANAGED_PRICING_SLUGS.has(slug)) return false;
+        return !slug || !new Set(configKeys).has(slug + '|' + version.schemaVersion);
+      })
+      .map((version) => version.id);
+
+    if (staleIds.length > 0) {
+      await tx.configuratorVersion.updateMany({
+        where: { id: { in: staleIds } },
+        data: { status: 'ARCHIVED' },
+      });
     }
   }, { maxWait: 10000, timeout: 15000 });
 
   console.log(
-    `[SEED] Configuradores: ${created} importados por primera vez; ${preserved} productos preservados (administración activa).`
+    `[SEED] Configuradores: ${persisted} persistidos; ${preserved} productos de Precios ZAP preservados; versiones obsoletas de otras familias archivadas.`
   );
 }
