@@ -186,3 +186,24 @@ Debe definirse una única fuente de verdad para la solicitud y el registro del c
 8. Revisar el diff y las migraciones antes de cualquier despliegue.
 
 **No incluido en esta especificación:** cambios funcionales, migraciones de base de datos, despliegues o emisión fiscal automática al crear una venta.
+
+
+## Decisión cerrada: representación y archivo del comprobante (13-10-2026)
+
+**Decisión de arquitectura:** la vista HTML será la representación inmediata para consultar en la experiencia de cliente; además, se generará en servidor un PDF reproducible y se conservará en R2 como copia documental estable. Ambos deben derivarse del mismo registro fiscal canónico y de los datos confirmados de la emisión. No son dos facturas diferentes.
+
+La representación gráfica de comprobantes electrónicos debe ajustarse a los requisitos aplicables al tipo de comprobante. La RG ARCA 4291, artículo 15, establece requisitos para la representación gráfica en imagen y/o impresión, incluidos el modelo aplicable y la consignación del CAE/CAEA; también pueden corresponder datos de Transparencia Fiscal al Consumidor y QR según el régimen y comprobante aplicables. Referencia normativa: https://www.argentina.gob.ar/normativa/nacional/resoluci%C3%B3n-4291-2018-313088/actualizacion y texto vigente publicado en la Biblioteca Electrónica de ARCA.
+
+### Reglas de implementación
+
+- La confirmación fiscal de ARCA es la fuente para el estado `INVOICED`; generar HTML o PDF no emite ni autoriza un comprobante.
+- La vista HTML y el PDF deben presentar los mismos datos fiscales congelados: emisor, receptor, tipo y número de comprobante, punto de venta, fecha, moneda/importes, impuestos y desgloses que correspondan, CAE y vencimiento, más los restantes datos obligatorios según tipo y régimen.
+- Incluir el QR y las leyendas/datos exigidos cuando correspondan. No considerar esta lista como sustituto de una validación formal por tipo de comprobante y condición fiscal del emisor.
+- El PDF se genera en backend a partir de los datos fiscales canónicos y se almacena en R2 bajo una clave aleatoria criptográficamente segura; guardar la clave y metadatos en el registro canónico. No aceptar como “emitido” un PDF generado desde datos no confirmados.
+- La carga manual solo registra un comprobante ya emitido. Debe conservar el archivo proporcionado por el administrador y sus metadatos, sin generar una nueva emisión ni sobrescribir el original sin trazabilidad.
+- Si se re-genera una representación por corrección de formato, no cambiar los datos fiscales históricos. Registrar versión/hash y fecha de generación si se necesita trazabilidad de las representaciones.
+- La validez fiscal no deriva del formato HTML/PDF ni del almacenamiento en R2. Antes de habilitar producción se debe verificar el diseño final frente a la normativa vigente para cada tipo de comprobante usado por ZAP y sus condiciones tributarias.
+
+### Criterio de aceptación específico
+
+Una factura confirmada debe poder abrirse como HTML y descargarse como PDF; ambas representaciones deben coincidir con el registro fiscal canónico, incluir los campos y elementos obligatorios que correspondan y no provocar una nueva solicitud de emisión. Un timeout o resultado incierto de ARCA no habilita la generación de un comprobante que se presente como factura emitida.
