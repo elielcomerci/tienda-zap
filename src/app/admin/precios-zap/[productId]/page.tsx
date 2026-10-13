@@ -67,6 +67,15 @@ export default async function PricingProductPage({
   const displayVersion = draft ?? active
   const matrix = (displayVersion.pricing as any)?.providerFinishedCostMatrix
   const rows = flattenCostMatrix(matrix, ['providerFinishedCostMatrix'])
+  const activeMatrix = (active.pricing as any)?.providerFinishedCostMatrix
+  const activeRows = flattenCostMatrix(activeMatrix, ['providerFinishedCostMatrix'])
+  const activeByPath = new Map(activeRows.map((row) => [row.path.join('.'), row]))
+  const changes = draft ? rows.flatMap((row) => {
+    const previous = activeByPath.get(row.path.join('.'))
+    return previous && previous.value !== row.value
+      ? [{ label: row.label, before: previous.value, after: row.value }]
+      : []
+  }) : []
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -94,6 +103,30 @@ export default async function PricingProductPage({
           <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm leading-6 text-orange-950">
             Estás editando un borrador. Los cambios guardados acá no afectan el cotizador público. Al publicar, la versión activa anterior se conserva como histórica para poder revertir.
           </div>
+          <section className="rounded-2xl border border-gray-200 bg-white p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-black text-gray-950">Cambios respecto de la versión activa</h2>
+                <p className="mt-1 text-sm text-gray-500">Comparación de costos antes de publicar.</p>
+              </div>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">{changes.length} cambios</span>
+            </div>
+            {changes.length === 0 ? (
+              <p className="mt-4 text-sm text-gray-500">Todavía no hay diferencias guardadas frente a la versión activa.</p>
+            ) : (
+              <div className="mt-4 max-h-80 overflow-auto rounded-xl border border-gray-100">
+                <div className="grid grid-cols-[minmax(0,1fr)_90px_90px] gap-3 bg-gray-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-gray-500"><span>Celda</span><span>Antes</span><span>Después</span></div>
+                {changes.slice(0, 100).map((change) => (
+                  <div key={change.label} className="grid grid-cols-[minmax(0,1fr)_90px_90px] gap-3 border-t border-gray-100 px-3 py-2 text-xs">
+                    <span className="break-words text-gray-700">{change.label}</span>
+                    <span className="tabular-nums text-gray-500">{change.before.toLocaleString('es-AR')}</span>
+                    <span className="font-bold tabular-nums text-gray-950">{change.after.toLocaleString('es-AR')}</span>
+                  </div>
+                ))}
+                {changes.length > 100 && <p className="border-t border-gray-100 p-3 text-xs text-gray-500">Mostrando 100 de {changes.length} cambios. La matriz completa sigue guardada en el borrador.</p>}
+              </div>
+            )}
+          </section>
           <PricingMatrixEditor versionId={draft.id} rows={rows} />
           <div className="rounded-2xl border border-gray-200 bg-white p-5">
             <h2 className="font-black text-gray-950">Antes de publicar</h2>
