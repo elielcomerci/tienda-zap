@@ -332,3 +332,10 @@ Es un diseño lógico previo a la migración, no un esquema ya aplicado. Los nom
 - [ ] Diseñar pruebas de concurrencia, timeout tras emisión, repetición de webhook, clave idempotente reutilizada, factura agrupada y fallo de PDF después de autorización.
 
 **Estado después de esta pasada:** contrato del código fuente y propuesta lógica de migración documentados. Sigue siendo una auditoría estática: no se modificó código funcional, no se ejecutó SQL, no se tocaron datos ni se hizo ningún despliegue.
+
+
+### Precisión adicional: validación y respuestas no equivalentes
+
+- La validación runtime de `handlers/emit.ts` comprueba que `amounts.total` sea numérico y positivo, pero no valida de forma equivalente todos los campos de `net`, `vat`, `exempt`, cada elemento de `vatBreakdown`, ni el formato/consistencia de `voucher.date` y `voucher.concept`. El tipo TypeScript no sustituye la validación runtime. La integración debe validar y cuadrar importes antes de invocar el Worker; también hay que reforzar o formalizar el contrato del Worker antes de considerarlo una frontera de validación fiscal completa.
+- No todas las respuestas del endpoint de emisión tienen la misma forma: una creación asíncrona responde con `jobId/status/externalId`; un reintento idempotente de un job ya existente puede responder `200` con estado y `lastError` en estados no exitosos, pero el formato de respuesta de job `DONE` no incluye el objeto `voucher`. Por eso la tienda no debe intentar reconstruir los datos fiscales únicamente desde la respuesta de `POST /v1/invoices/emit`; debe consultar `GET /v1/jobs/:jobId` o procesar el webhook verificado para recuperar el resultado fiscal completo.
+- El endpoint `GET /v1/jobs/:jobId` devuelve mensaje genérico para `FAILED/DEAD`, no el detalle interno de `lastError`. Mantener separado el diagnóstico operativo y no exponer errores internos al cliente.
