@@ -339,3 +339,35 @@ Es un diseño lógico previo a la migración, no un esquema ya aplicado. Los nom
 - La validación runtime de `handlers/emit.ts` comprueba que `amounts.total` sea numérico y positivo, pero no valida de forma equivalente todos los campos de `net`, `vat`, `exempt`, cada elemento de `vatBreakdown`, ni el formato/consistencia de `voucher.date` y `voucher.concept`. El tipo TypeScript no sustituye la validación runtime. La integración debe validar y cuadrar importes antes de invocar el Worker; también hay que reforzar o formalizar el contrato del Worker antes de considerarlo una frontera de validación fiscal completa.
 - No todas las respuestas del endpoint de emisión tienen la misma forma: una creación asíncrona responde con `jobId/status/externalId`; un reintento idempotente de un job ya existente puede responder `200` con estado y `lastError` en estados no exitosos, pero el formato de respuesta de job `DONE` no incluye el objeto `voucher`. Por eso la tienda no debe intentar reconstruir los datos fiscales únicamente desde la respuesta de `POST /v1/invoices/emit`; debe consultar `GET /v1/jobs/:jobId` o procesar el webhook verificado para recuperar el resultado fiscal completo.
 - El endpoint `GET /v1/jobs/:jobId` devuelve mensaje genérico para `FAILED/DEAD`, no el detalle interno de `lastError`. Mantener separado el diagnóstico operativo y no exponer errores internos al cliente.
+
+
+## Estado de preparación del Worker para el sprint (13-10-2026)
+
+Se revisó el repositorio privado `elielcomerci/zap-fiscal-core` y la PR abierta [#1 — Add validated invoice line details to fiscal jobs](https://github.com/elielcomerci/zap-fiscal-core/pull/1).
+
+### Estado observado en GitHub
+
+- `main` es la rama predeterminada.
+- La PR #1 está abierta, no fusionada, no es draft y GitHub informa `mergeable: false`.
+- Su rama `feat/fiscal-invoice-items` parte de un SHA base anterior al estado actual de `main`; la PR requiere actualizarse/reconciliarse antes de poder considerarla integrable.
+- La PR agrega `items` opcional con validación de importes, persistencia del detalle, cálculo de alícuotas, correcciones de importes exentos/no gravados, validación de fecha, carga de certificados activos cifrados y una ruta `GET /v1/invoices/jobs/:jobId`.
+- Esos cambios son relevantes para Tienda, pero **todavía no forman parte del contrato disponible en `main`**. La integración no debe depender de ellos hasta que la PR se revise, se actualice, pase validaciones y se fusione.
+- El cuerpo de la PR afirma que no existe script de test/build, pero el `package.json` actual de `main` sí define `typecheck`, `typecheck:test` y scripts de pruebas. Esa descripción debe actualizarse después de reconciliar la rama. En la rama de la PR consultada no se encontraron pruebas nuevas específicas para el detalle de factura.
+- El estado de checks consultado para el último commit de la PR muestra un check CodeRabbit exitoso; eso no equivale a typecheck, suite de pruebas, homologación ni validación de producción. No se ejecutaron pruebas desde esta auditoría.
+
+### Lista de revisión antes de fusionar la PR #1
+
+1. Actualizar la rama contra `main` y resolver el estado no integrable; revisar el diff resultante, no asumir que el diff actual sigue siendo el diff final.
+2. Añadir pruebas unitarias para líneas mixtas, IVA 0/2,5/5/10,5/21/27, descuentos, exentos/no gravados, cantidades decimales, redondeos por línea versus por alícuota, totales inconsistentes, importes no finitos y límites de cantidad/descripción.
+3. Añadir pruebas del handler para idempotencia, conflicto de clave, `dryRun`, fecha inválida, ausencia/presencia de `items`, tipos de comprobante y respuesta repetida de un job ya completado.
+4. Revisar formalmente el mapeo de tipos de comprobante y la aplicación de reglas de IVA de WSFEv1, incluyendo Factura C y notas de crédito. La corrección fiscal no debe aprobarse solo por coherencia aritmética del código.
+5. Alinear la ruta de consulta. La PR introduce `/v1/invoices/jobs/:jobId`, mientras `main` ya tiene `/v1/jobs/:jobId`. Decidir si mantener un alias retrocompatible o unificar la integración en una sola ruta; documentar y probar la forma exacta de las respuestas para `PENDING/PROCESSING/DONE/FAILED/DEAD`.
+6. Verificar que el snapshot del emisor sea estable y contenga solo los campos requeridos para la representación; evitar guardar/retornar datos personales o sensibles innecesarios.
+7. Verificar el uso del certificado: vigencia, estado activo, versión de clave, errores de descifrado y aislamiento TEST/PROD. No considerar un typecheck como prueba del circuito real de certificados.
+8. Definir manejo durable de fallos de Queue. El `wrangler.toml` revisado configura `max_retries = 5` pero no declara una Dead Letter Queue. Cloudflare documenta que, sin DLQ, los mensajes que agotan los reintentos se eliminan; esto puede dejar un job persistido sin procesamiento de Queue si el fallo ocurre antes de que el estado fiscal quede resuelto. Debe configurarse/operarse una DLQ o demostrarse una recuperación durable equivalente. Referencia: https://developers.cloudflare.com/queues/configuration/dead-letter-queues/
+9. Ejecutar `npm run typecheck`, `npm run typecheck:test` y `npm run test:all` sobre la rama reconciliada; registrar resultados reales y corregir cualquier fallo. Después, probar con payloads de homologación sin emitir en producción.
+10. Verificar el deployment activo, las variables/secrets, el tenant, el CUIT autorizado, ambiente, punto de venta y callback webhook. La configuración de `wrangler.toml` por sí sola no prueba que producción esté bien configurada.
+
+### Criterio de entrada al sprint
+
+La PR #1 es la candidata de trabajo correcta para cerrar el contrato del detalle fiscal, pero el Worker no se considera listo para integrar con Tienda hasta que: (a) la rama esté actualizada y el diff sea revisado, (b) las pruebas nuevas y existentes pasen, (c) se cierre el diseño de recuperación de Queue/DLQ, (d) quede fijado el contrato de consulta y webhook, y (e) se valide el circuito en homologación. Esta revisión no fusionó la PR, no modificó código funcional y no desplegó nada.
