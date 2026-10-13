@@ -90,9 +90,7 @@ export default async function PricingProductPage({
           <p className="mt-1 text-sm text-gray-500">Versión activa: {active.schemaVersion}{draft ? ` · Borrador: ${draft.schemaVersion}` : ''}</p>
         </div>
         {draft ? (
-          <form action={publishPricingDraft.bind(null, draft.id)}>
-            <button className="btn-primary !px-5 !py-3">Publicar versión completa</button>
-          </form>
+          <Link href="#publish-checklist" className="btn-primary !px-5 !py-3">Revisar para publicar</Link>
         ) : (
           <span className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-600">Vista de solo lectura</span>
         )}
@@ -128,13 +126,17 @@ export default async function PricingProductPage({
             )}
           </section>
           <PricingMatrixEditor versionId={draft.id} rows={rows} />
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
+          <div id="publish-checklist" className="rounded-2xl border border-gray-200 bg-white p-5">
             <h2 className="font-black text-gray-950">Antes de publicar</h2>
             <p className="mt-2 text-sm leading-6 text-gray-600">
               La publicación valida que la matriz tenga estructura y valores numéricos no negativos. La cobertura comercial de cada combinación y el tratamiento de IVA/margen siguen siendo puntos de auditoría; no publiques esta versión hasta confirmar que sus costos son correctos.
             </p>
-            <form action={publishPricingDraft.bind(null, draft.id)} className="mt-4">
-              <button className="btn-primary" >Publicar versión completa</button>
+            <form action={publishPricingDraft.bind(null, draft.id)} className="mt-4 space-y-4">
+              <label className="flex items-start gap-3 text-sm leading-6 text-gray-700">
+                <input type="checkbox" name="confirmReview" value="yes" required className="mt-1 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                <span>Confirmo que revisé los costos de proveedor, la cobertura de las combinaciones y el tratamiento de IVA/margen de esta matriz.</span>
+              </label>
+              <button className="btn-primary">Publicar versión completa</button>
             </form>
           </div>
         </>
@@ -167,7 +169,11 @@ export default async function PricingProductPage({
                   <p className="font-semibold text-gray-900">Versión {version.schemaVersion}</p>
                   <p className="text-xs text-gray-500">Creada {version.createdAt.toLocaleDateString('es-AR')}</p>
                 </div>
-                <form action={restorePricingVersion.bind(null, version.id)}>
+                <form action={restorePricingVersion.bind(null, version.id)} className="flex flex-wrap items-center gap-2">
+                  <label className="flex items-center gap-2 text-xs text-gray-600">
+                    <input type="checkbox" name="confirmRestore" value="yes" required className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                    Confirmo reversión
+                  </label>
                   <button className="btn-secondary !py-2 !text-xs">Restaurar versión</button>
                 </form>
               </div>
