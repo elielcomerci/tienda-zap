@@ -46,7 +46,7 @@ export default async function PricingProductPage({
   const rows: ProviderCostRow[] = flattenProviderCostMatrix(matrix)
   const activeMatrix = (active.pricing as any)?.providerFinishedCostMatrix
   const activeRows = flattenProviderCostMatrix(activeMatrix)
-  const activeByPath = new Map<string, CostRow>(activeRows.map((row) => [row.path.join('.'), row] as const))
+  const activeByPath = new Map<string, ProviderCostRow>(activeRows.map((row) => [row.path.join('.'), row] as const))
   const changes = draft ? rows.flatMap((row) => {
     const previous = activeByPath.get(row.path.join('.'))
     return previous && previous.value !== row.value
