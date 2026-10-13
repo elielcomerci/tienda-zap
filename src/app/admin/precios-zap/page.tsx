@@ -32,7 +32,7 @@ export default async function PricingAdminPage() {
       },
     },
   })
-  const bySlug = new Map(products.map((product) => [product.slug, product]))
+  const bySlug = new Map<string, (typeof products)[number]>(products.map((product) => [product.slug, product] as const))
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
