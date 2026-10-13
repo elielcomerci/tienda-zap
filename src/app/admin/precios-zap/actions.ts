@@ -28,6 +28,12 @@ function isRecord(value: unknown): value is Record<string, any> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
 
+function getProviderFinishedCostMatrix(pricing: unknown): Record<string, any> | null {
+  if (!isRecord(pricing)) return null
+  const matrix = pricing['providerFinishedCostMatrix']
+  return isRecord(matrix) ? matrix : null
+}
+
 function getAtPath(root: unknown, path: string[]): unknown {
   let current: any = root
   for (const segment of path) {
@@ -107,7 +113,8 @@ export async function createPricingDraft(productId: string) {
     redirect(`/admin/precios-zap/${productId}`)
   }
   const active = versions.find((version) => version.status === 'ACTIVE')
-  if (!active || !isRecord(active.pricing) || !isRecord(active.pricing.providerFinishedCostMatrix)) {
+  const activeCostMatrix = getProviderFinishedCostMatrix(active?.pricing)
+  if (!active || !activeCostMatrix) {
     throw new Error('El producto no tiene una matriz de costos activa compatible con esta primera versión.')
   }
 
@@ -197,10 +204,11 @@ export async function publishPricingDraft(versionId: string, formData: FormData)
   if (!draft || draft.status !== 'DRAFT' || !isManagedSlug(draft.product.slug)) {
     throw new Error('No encontramos un borrador publicable.')
   }
-  if (!isRecord(draft.pricing) || !isRecord(draft.pricing.providerFinishedCostMatrix)) {
+  const draftCostMatrix = getProviderFinishedCostMatrix(draft.pricing)
+  if (!draftCostMatrix) {
     throw new Error('La matriz de costos no tiene la estructura esperada.')
   }
-  const values = collectNumericCosts(draft.pricing.providerFinishedCostMatrix)
+  const values = collectNumericCosts(draftCostMatrix)
   if (values.length === 0 || values.some((value) => value < 0 || !Number.isFinite(value))) {
     throw new Error('La matriz no contiene costos válidos. No se publicó ningún cambio.')
   }
@@ -250,7 +258,8 @@ export async function restorePricingVersion(versionId: string, formData: FormDat
   if (!selected || selected.status !== 'ARCHIVED' || !isManagedSlug(selected.product.slug)) {
     throw new Error('Solo se puede restaurar una versión archivada de las familias habilitadas.')
   }
-  if (!isRecord(selected.pricing) || !isRecord(selected.pricing.providerFinishedCostMatrix)) {
+  const selectedCostMatrix = getProviderFinishedCostMatrix(selected.pricing)
+  if (!selectedCostMatrix) {
     throw new Error('La versión no contiene una matriz de costos compatible.')
   }
 
