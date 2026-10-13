@@ -170,7 +170,7 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
 
   await prisma.$transaction(async (tx) => {
     const updated = await tx.configuratorVersion.updateMany({
-      where: { id: versionId, status: 'DRAFT' },
+      where: { id: versionId, status: 'DRAFT', updatedAt: version.updatedAt },
       data: { pricing: nextPricing as Prisma.InputJsonValue },
     })
     if (updated.count !== 1) throw new Error('El borrador cambió de estado. Recargá la página antes de continuar.')
