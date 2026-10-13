@@ -214,3 +214,13 @@ Esto afecta especialmente a:
 
 Por tanto, los precios calculados por esos dos configuradores no deben considerarse vendibles ni usarse para calibrar margen hasta conectar una fuente de costo de impresión válida o cambiar el modelo de cálculo con pruebas. El costo del papel no equivale al costo del impreso terminado. No basta con cambiar `profitMargin`: primero hay que corregir el costo base.
 
+
+
+### P0 — Stickers y Carpetas están ACTIVE, pero no tienen margen maestro sembrado
+
+La lista `initialQuoterConfigs` de `prisma/seed/data/09-quoter-config.ts` define solo `tarjetas-vouchers`, `flyers-desplegables` y `tags-etiquetas`. Sin embargo, `adhesivos-stickers` y `carpetas-folders` también están en estado `ACTIVE` y usan el motor `PROVIDER_FINISHED_COST`.
+
+Ese motor requiere `quoterConfig.profitMargin`; si falta, devuelve `CONSULT_REQUIRED: Falta el margen maestro del producto.`. Con el seed revisado, stickers y carpetas no tienen margen maestro declarado en esa lista. Confirmar en una base sembrada que no exista configuración residual, pero el repositorio no declara la configuración necesaria.
+
+Acción: definir explícitamente el modelo de margen para ambos productos y agregar una prueba que confirme que la cotización responde con precio para una combinación válida. Hasta entonces, el estado comercial `ACTIVE` puede crear una experiencia de configuración que termina en consulta en vez de precio automático.
+
