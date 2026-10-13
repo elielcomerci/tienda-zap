@@ -2,7 +2,13 @@
 
 **Fecha:** 2026-10-13  
 **Rama:** `feat/precios-zap-versionados`  
-**Estado:** plan de implementación; no cambia precios, seed, checkout ni producción.
+**Estado:** MVP interno en rama de revisión. No cambia precios de venta automáticamente, checkout ni producción. El seed ahora preserva las versiones existentes.
+
+## Estado de implementación
+
+Ya está creado el panel privado para listar las cinco familias, abrir un borrador, editar celdas numéricas de costo, comparar cambios, publicar y restaurar versiones con auditoría. Las acciones exigen rol `ADMIN`.
+
+La publicación implementada valida la estructura y los valores numéricos; todavía no certifica por sí sola la cobertura de cada combinación, la vigencia de la fuente, ni el tratamiento de IVA/margen. Por eso, esta entrega requiere revisión de esos puntos antes de publicar cambios comerciales reales. La compilación y las verificaciones automáticas deben quedar en verde antes de integrar la rama.
 
 ## Decisión técnica
 
@@ -55,13 +61,13 @@ No usar una regla global para todos los productos. El recargo porcentual y el ma
 
 ## Secuencia para reducir riesgo
 
-### Fase 0 — verificación (antes de habilitar escritura)
+### Fase 0 — verificación (antes de integrar y usar precios reales)
 - Confirmar qué productos tienen versión activa y la forma exacta de `pricing`.
 - Confirmar que todas las rutas públicas seleccionan una sola versión activa y que los snapshots guardan la configuración/precio cotizados.
 - Revisar caché, concurrencia y restricciones actuales del modelo.
 - Verificar controles de acceso del admin y el mecanismo de auditoría.
 
-### Fase 1 — MVP interno
+### Fase 1 — MVP interno (implementado en esta rama; validación pendiente)
 - Listado y detalle de las cinco familias.
 - Borrador versionado, comparación y validación.
 - Publicar/revertir atómicamente.
