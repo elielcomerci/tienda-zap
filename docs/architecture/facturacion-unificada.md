@@ -34,6 +34,33 @@ Estos hallazgos son de lectura del código en la rama por defecto; no representa
 - Un timeout en modo síncrono deja el trabajo procesándose en segundo plano; por tanto, la tienda no debe derivar inmediatamente a emisión manual por timeout. Debe conservar `FACTURA PENDIENTE` y consultar/reconciliar el job antes de habilitar una nueva emisión.
 - El Worker opera con tenant, CUIT representada, ambiente y punto de venta autorizados. El mapeo de configuración fiscal de ZAP y el contrato exacto de callback/webhook todavía deben documentarse y verificarse; no se deben enviar solicitudes desde el frontend directamente al Worker.
 
+
+## Contrato del Worker verificado en código (13-10-2026)
+
+Esta sección recoge detalles observados en `fiscal-worker/src/index.ts`, `handlers/emit.ts`, `handlers/job-status.ts` y `webhooks/sender.ts`. Es una auditoría estática; no constituye una prueba de emisión de extremo a extremo.
+
+### Solicitud de emisión
+
+- La ruta autenticada es `POST /v1/invoices/emit`; se autentica mediante API key de un tenant, nunca desde el navegador con un secreto interno.
+- El body exige `externalId`, `idempotencyKey`, `contributor` (CUIT, punto de venta y ambiente `TEST|PROD`), `voucher` (tipo, concepto y fecha), `amounts` (total, neto, IVA y opcionalmente exento/desglose IVA) y `customer` (tipo/número de documento y datos opcionales).
+- La clave idempotente aplica dentro del tenant. Si se reutiliza con otra CUIT, ambiente o `externalId`, el Worker responde conflicto; si coincide, devuelve el trabajo existente. La tienda debe crear una clave estable por solicitud y conservarla en todos los reintentos.
+- `GET /v1/jobs/:jobId` devuelve el estado y, cuando existe, metadatos fiscales: tipo/número, CAE, vencimiento del CAE, fecha de emisión y observaciones.
+- El endpoint de estado **no devuelve un PDF ni una URL de archivo**. El registro canónico debe separar el resultado fiscal confirmado del archivo ofrecido al cliente. Antes de cerrar la implementación hay que decidir y probar cómo se genera o incorpora el PDF de la factura emitida.
+
+### Webhook y recuperación
+
+- El destino efectivo se obtiene de `Tenant.webhookUrl` y el secreto de `Tenant.webhookSecret`. Aunque el body de emisión acepte `webhook`, el envío usa la configuración del tenant. Esto debe resolverse al aprovisionarlo; no aceptar un callback arbitrario por solicitud.
+- El Worker envía `X-Fiscal-Signature: sha256=...`, `X-Fiscal-Event-Type`, `X-Fiscal-Event-Id` y `X-Fiscal-Timestamp`. La firma HMAC-SHA256 se calcula sobre `timestamp.rawBody`. El receptor debe verificar firma y tolerancia temporal usando el cuerpo crudo.
+- Las entregas se persisten y reintentan con backoff. El receptor debe ser idempotente por `eventId`, responder 2xx solo después de registrar el evento de forma durable y tolerar entregas repetidas o tardías.
+- `invoice.result` y `invoice.failed` incluyen `jobId`, `externalId`, estado y, si está disponible, datos fiscales. Antes de cambiar estados, el receptor debe comprobar que `externalId` corresponde a una solicitud local.
+- El modo síncrono espera hasta 10 segundos y puede devolver un trabajo asíncrono si no termina a tiempo. Eso no prueba que la emisión haya fallado: conservar la solicitud pendiente y consultar el mismo `jobId` antes de considerar otra emisión o gestión manual.
+
+### Configuración y bloqueos
+
+- Antes de habilitar el circuito hay que confirmar el tenant de ZAP, el vínculo autorizado con CUIT, ambiente, punto de venta y permisos de emisión. Que el Worker esté desplegado no significa que la emisión productiva esté habilitada o validada.
+- La cuota de 25 facturas figura como propuesta no habilitada comercialmente; no debe prometerse ni incorporarse como regla del producto sin aprobación explícita.
+- Las rutas de health/status no sustituyen las pruebas del flujo fiscal, del webhook receptor ni del aislamiento entre tenants.
+
 ### Decisiones que requieren cerrarse antes de migrar
 
 1. Fuente única de verdad para solicitudes y comprobantes: elegirla tras verificar los límites reales de Tienda y ZAP Agencia, evitando un estado duplicado sin sincronización.
