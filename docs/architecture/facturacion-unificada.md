@@ -4,6 +4,45 @@
 **Issue central:** https://github.com/elielcomerci/tienda-zap/issues/12  
 **Alcance de repositorios:** `elielcomerci/tienda-zap`, `elielcomerci/zap-nextjs` y `elielcomerci/zap-fiscal-core`.
 
+
+## Hallazgos de auditoría del estado actual (13-10-2026)
+
+Estos hallazgos son de lectura del código en la rama por defecto; no representan cambios aplicados.
+
+### `tienda-zap`
+
+- El modelo `Order` almacena actualmente `invoiceUrl`, `invoiceFileName` e `invoiceUploadedAt` directamente en la venta. Esto representa un solo comprobante por venta y no modela de forma natural una factura que cubre varias ventas.
+- La ruta `src/app/api/admin/orders/[orderId]/invoice/route.ts` permite al administrador cargar un PDF/imagen de hasta 10 MB, pero lo sube a Vercel Blob con acceso público. Actualiza la referencia de la orden y no emite factura ni modifica el estado fiscal. Debe migrarse a R2 como parte del circuito acordado.
+- La validación de tipo de archivo se basa en el MIME declarado por el cliente; hay que validar también el contenido real.
+- El componente `OrderInvoiceUploader` permite subir/reemplazar el archivo y abrir la URL actual directamente. La carga está ubicada en el detalle administrativo de una orden.
+- `src/lib/order-access.ts` ya proporciona una regla reutilizable de acceso a una orden para admin, cliente autenticado y token público aleatorio (almacenado como hash). Existe una ruta de descarga de archivos de ítems que valida el acceso a la orden antes de generar una URL firmada de R2. Para facturas, el criterio acordado es distinto: URL directa y opaca desde `media.zap.com.ar`.
+- `OrderItem.productId` es obligatorio y el detalle administrativo muestra `item.product.name`. Aunque hay snapshots parciales como `productName` y `productSlug`, la creación de conceptos ad hoc debe auditarse antes de decidir el modelo y la migración. No conviene resolverlo solo permitiendo cualquier `productId` nulo sin revisar los usos.
+- `src/lib/orders.ts` incluye la venta, sus ítems, usuario, recibos, eventos y archivos de prueba para las vistas de administración/cliente. La pantalla cliente exacta que renderiza el campo de factura todavía debe localizarse y verificarse; no se afirma que ya muestre el comprobante.
+
+### `zap-nextjs`
+
+- `lib/r2.ts` implementa carga directa a R2 y devuelve una URL pública construida con `R2_PUBLIC_URL` (por defecto `https://media.zap.com.ar`). El nombre único actual combina timestamp y un fragmento aleatorio de `Math.random`; para comprobantes conviene usar un identificador aleatorio criptográficamente seguro.
+- `app/api/admin/files/route.ts` gestiona archivos generales de clientes y guarda la URL pública en `ClientFile`. No se ha encontrado en esta revisión una integración de facturas con ese modelo; no debe reutilizarse automáticamente como modelo de comprobantes.
+- El uso de `media.zap.com.ar` en `zap-nextjs` está confirmado como base de medios públicos. El circuito de facturas debe usar claves opacas y evitar listados/indexación, sin confundir esto con un control de acceso.
+- Falta determinar si `zap-nextjs` participa en la vista de cuenta o solo comparte archivos y administración; la fuente de verdad de las solicitudes no debe duplicarse entre ambos proyectos.
+
+### `zap-fiscal-core`
+
+- El Worker ya expone `POST /v1/invoices/emit` con trabajo asíncrono, `jobId`, `externalId` y `idempotencyKey`; también existe `GET /v1/jobs/:jobId` para consultar el estado/resultados del trabajo.
+- El Worker persiste trabajos y resultados fiscales, serializa operaciones por CUIT con Durable Object y hace una consulta previa a ARCA para ayudar a evitar duplicados. La cola reintenta fallos de despacho y los webhooks firmados tienen reintentos persistidos.
+- Los webhooks contemplan eventos `invoice.result` y `invoice.failed`. La integración de Tienda debe validar firma, deduplicar eventos por ID, guardar el resultado y tolerar entregas repetidas o tardías.
+- Un timeout en modo síncrono deja el trabajo procesándose en segundo plano; por tanto, la tienda no debe derivar inmediatamente a emisión manual por timeout. Debe conservar `FACTURA PENDIENTE` y consultar/reconciliar el job antes de habilitar una nueva emisión.
+- El Worker opera con tenant, CUIT representada, ambiente y punto de venta autorizados. El mapeo de configuración fiscal de ZAP y el contrato exacto de callback/webhook todavía deben documentarse y verificarse; no se deben enviar solicitudes desde el frontend directamente al Worker.
+
+### Decisiones que requieren cerrarse antes de migrar
+
+1. Fuente única de verdad para solicitudes y comprobantes: elegirla tras verificar los límites reales de Tienda y ZAP Agencia, evitando un estado duplicado sin sincronización.
+2. Modelo canónico de factura con relación muchos-a-muchos o entidad puente para facturas agrupadas.
+3. Identidad fiscal para reconciliar una factura cargada manualmente con el resultado posterior del Worker.
+4. Modelo de solicitud persistente, intentos, eventos, reintentos y estados de revisión.
+5. Pantalla exacta del cliente donde se mostrará `SOLICITAR FACTURA` / `FACTURA PENDIENTE` / `VER FACTURA`.
+6. Contrato de configuración, autenticación de backend y webhook con el Worker.
+
 ## Objetivo
 
 Permitir que un cliente solicite una factura desde una venta y que la solicitud se resuelva por Worker fiscal o por intervención administrativa, con un único registro de factura, una experiencia de cliente uniforme y recuperación ante errores sin duplicar emisiones.
