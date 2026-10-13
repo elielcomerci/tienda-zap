@@ -5,6 +5,14 @@ import { textilConfigurators } from '../data/06-configurators/textil';
 import { digitalConfigurators } from '../data/06-configurators/digital';
 import { campanasConfigurators } from '../data/06-configurators/campanas';
 
+/**
+ * Seed de importación inicial, no editor de precios.
+ *
+ * Una vez que un producto tiene versiones de configurador, sus datos quedan
+ * bajo administración del panel. El seed no actualiza ni archiva versiones
+ * existentes: así una futura ejecución no pisa borradores, publicaciones ni
+ * versiones históricas creadas desde Precios ZAP.
+ */
 export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   const allConfigs = [
     ...impresosPackagingConfigurators,
@@ -20,7 +28,14 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   });
   const productMap = new Map(products.map((p) => [p.slug, p.id]));
 
-  // Resolver todas las referencias antes de escribir; después persistir en una sola transacción.
+  const configKeys = allConfigs.map((cfg) => cfg.productSlug + '|' + cfg.schemaVersion);
+  if (new Set(configKeys).size !== configKeys.length) {
+    const duplicateKeys = [...new Set(
+      configKeys.filter((key, index) => configKeys.indexOf(key) !== index)
+    )];
+    throw new Error(`[SEED ERROR] ConfiguratorVersion duplicada: ${duplicateKeys.join(', ')}.`);
+  }
+
   const resolvedConfigs = allConfigs.map((cfg) => {
     const productId = productMap.get(cfg.productSlug);
     if (!productId) {
@@ -29,33 +44,26 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
     return { cfg, productId };
   });
 
-  const configKeys = resolvedConfigs.map(
-    ({ cfg }) => cfg.productSlug + '|' + cfg.schemaVersion
-  );
-  const resolvedKeys = new Set(configKeys);
-  if (resolvedKeys.size !== configKeys.length) {
-    const duplicateKeys = [...new Set(
-      configKeys.filter((key, index) => configKeys.indexOf(key) !== index)
-    )];
-    throw new Error(`[SEED ERROR] ConfiguratorVersion duplicada: ${duplicateKeys.join(', ')}.`);
-  }
+  let created = 0;
+  let preserved = 0;
 
   await prisma.$transaction(async (tx) => {
     for (const { cfg, productId } of resolvedConfigs) {
-      await tx.configuratorVersion.upsert({
-        where: {
-          productId_schemaVersion: {
-            productId,
-            schemaVersion: cfg.schemaVersion,
-          },
-        },
-        update: {
-          status: cfg.status,
-          schema: cfg.schema,
-          compatibility: cfg.compatibility || undefined,
-          pricing: cfg.pricing || undefined,
-        },
-        create: {
+      // Any existing version means this product is now managed through the admin.
+      // Do not update the matching version or archive versions unknown to the seed.
+      const existingVersions = await tx.configuratorVersion.findMany({
+        where: { productId },
+        select: { id: true },
+        take: 1,
+      });
+
+      if (existingVersions.length > 0) {
+        preserved += 1;
+        continue;
+      }
+
+      await tx.configuratorVersion.create({
+        data: {
           productId,
           schemaVersion: cfg.schemaVersion,
           status: cfg.status,
@@ -64,33 +72,11 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
           pricing: cfg.pricing || undefined,
         },
       });
-    }
-
-    const activeProducts = await tx.product.findMany({
-      where: { active: true },
-      select: { id: true, slug: true },
-    });
-
-    const activeProductSlugs = new Map(activeProducts.map((product) => [product.id, product.slug]));
-    const staleVersions = await tx.configuratorVersion.findMany({
-      where: { productId: { in: activeProducts.map((product) => product.id) } },
-      select: { id: true, productId: true, schemaVersion: true },
-    });
-
-    const staleIds = staleVersions
-      .filter((version) => {
-        const slug = activeProductSlugs.get(version.productId);
-        return !slug || !resolvedKeys.has(slug + '|' + version.schemaVersion);
-      })
-      .map((version) => version.id);
-
-    if (staleIds.length > 0) {
-      await tx.configuratorVersion.updateMany({
-        where: { id: { in: staleIds } },
-        data: { status: 'ARCHIVED' },
-      });
+      created += 1;
     }
   }, { maxWait: 10000, timeout: 15000 });
 
-  console.log(`[SEED] ${allConfigs.length} ConfiguratorVersions (schema 1.0) persistidas; versiones obsoletas archivadas.`);
+  console.log(
+    `[SEED] Configuradores: ${created} importados por primera vez; ${preserved} productos preservados (administración activa).`
+  );
 }
