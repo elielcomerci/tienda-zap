@@ -25,6 +25,11 @@ function isManagedSlug(slug: string) {
   return (MANAGED_SLUGS as readonly string[]).includes(slug)
 }
 
+function isPricingActivationEnabled() {
+  return process.env.PRICING_ZAP_PUBLISH_ENABLED === 'true'
+    && process.env.PRICING_ZAP_COMMERCIAL_AUDIT_APPROVED === 'true'
+}
+
 function isRecord(value: unknown): value is Record<string, any> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
@@ -202,8 +207,8 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
 
 export async function publishPricingDraft(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
-  if (process.env.PRICING_ZAP_PUBLISH_ENABLED !== 'true') {
-    throw new Error('La publicación está bloqueada hasta completar y aprobar la auditoría comercial de esta matriz.')
+  if (!isPricingActivationEnabled()) {
+    throw new Error('La publicación está bloqueada: faltan las dos habilitaciones explícitas posteriores a la auditoría comercial.')
   }
   if (formData.get('confirmReview') !== 'yes') throw new Error('Confirmá que revisaste los costos y las combinaciones antes de publicar.')
   const draft = await prisma.configuratorVersion.findUnique({
@@ -260,7 +265,7 @@ export async function publishPricingDraft(versionId: string, formData: FormData)
 export async function restorePricingVersion(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
   if (process.env.PRICING_ZAP_PUBLISH_ENABLED !== 'true') {
-    throw new Error('La restauración está bloqueada hasta completar y aprobar la auditoría comercial de esta matriz.')
+    throw new Error('La restauración está bloqueada: faltan las dos habilitaciones explícitas posteriores a la auditoría comercial.')
   }
   if (formData.get('confirmRestore') !== 'yes') throw new Error('Confirmá la reversión para continuar.')
   const selected = await prisma.configuratorVersion.findUnique({
