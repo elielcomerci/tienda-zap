@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import PricingMatrixEditor from '../PricingMatrixEditor'
 import { publishPricingDraft, restorePricingVersion } from '../actions'
+import { flattenProviderCostMatrix, type ProviderCostRow } from '@/lib/pricing/pricing-matrix-admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,32 +13,6 @@ const FAMILIES: Record<string, string> = {
   'tags-etiquetas': 'Tags & Etiquetas',
   'adhesivos-stickers': 'Adhesivos & Stickers',
   'carpetas-folders': 'Carpetas & Folders',
-}
-
-type CostRow = { path: string[]; label: string; value: number }
-
-function flattenCostMatrix(value: unknown, path: string[] = [], rows: CostRow[] = []): CostRow[] {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    if (path.length && !path.includes('paperSurcharges') && !path.includes('surchargePercent')) {
-      rows.push({
-        path,
-        label: path.map((part) => part.replace(/_/g, ' ')).join(' · '),
-        value,
-      })
-    }
-    return rows
-  }
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => flattenCostMatrix(item, [...path, String(index)], rows))
-    return rows
-  }
-  if (value && typeof value === 'object') {
-    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-      if (key === 'paperSurcharges' || key === 'surchargePercent') continue
-      flattenCostMatrix(child, [...path, key], rows)
-    }
-  }
-  return rows
 }
 
 function hasCostMatrix(pricing: unknown) {
@@ -62,13 +37,14 @@ export default async function PricingProductPage({
   const active = versions.find((version) => version.status === 'ACTIVE')
   const draft = versions.find((version) => version.status === 'DRAFT')
   const archived = versions.filter((version) => version.status === 'ARCHIVED')
+  const pricingActivationEnabled = process.env.PRICING_ZAP_PUBLISH_ENABLED === 'true'
   if (!active || !hasCostMatrix(active.pricing)) notFound()
 
   const displayVersion = draft ?? active
   const matrix = (displayVersion.pricing as any)?.providerFinishedCostMatrix
-  const rows = flattenCostMatrix(matrix, ['providerFinishedCostMatrix'])
+  const rows: ProviderCostRow[] = flattenProviderCostMatrix(matrix)
   const activeMatrix = (active.pricing as any)?.providerFinishedCostMatrix
-  const activeRows = flattenCostMatrix(activeMatrix, ['providerFinishedCostMatrix'])
+  const activeRows = flattenProviderCostMatrix(activeMatrix)
   const activeByPath = new Map<string, CostRow>(activeRows.map((row) => [row.path.join('.'), row] as const))
   const changes = draft ? rows.flatMap((row) => {
     const previous = activeByPath.get(row.path.join('.'))
@@ -129,15 +105,21 @@ export default async function PricingProductPage({
           <div id="publish-checklist" className="rounded-2xl border border-gray-200 bg-white p-5">
             <h2 className="font-black text-gray-950">Antes de publicar</h2>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              La publicación valida que la matriz tenga estructura y valores numéricos no negativos. La cobertura comercial de cada combinación y el tratamiento de IVA/margen siguen siendo puntos de auditoría; no publiques esta versión hasta confirmar que sus costos son correctos.
+              La publicación y restauración cambian la matriz que consume el cotizador público. La cobertura comercial, la fuente de costos y el tratamiento de IVA/margen todavía requieren aprobación.
             </p>
-            <form action={publishPricingDraft.bind(null, draft.id)} className="mt-4 space-y-4">
-              <label className="flex items-start gap-3 text-sm leading-6 text-gray-700">
-                <input type="checkbox" name="confirmReview" value="yes" required className="mt-1 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                <span>Confirmo que revisé los costos de proveedor, la cobertura de las combinaciones y el tratamiento de IVA/margen de esta matriz.</span>
-              </label>
-              <button className="btn-primary">Publicar versión completa</button>
-            </form>
+            {!pricingActivationEnabled ? (
+              <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
+                Publicación bloqueada por seguridad. Se habilitará mediante configuración de servidor cuando la auditoría comercial esté aprobada.
+              </p>
+            ) : (
+              <form action={publishPricingDraft.bind(null, draft.id)} className="mt-4 space-y-4">
+                <label className="flex items-start gap-3 text-sm leading-6 text-gray-700">
+                  <input type="checkbox" name="confirmReview" value="yes" required className="mt-1 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                  <span>Confirmo que revisé los costos de proveedor, la cobertura de las combinaciones y el tratamiento de IVA/margen de esta matriz.</span>
+                </label>
+                <button className="btn-primary">Publicar versión completa</button>
+              </form>
+            )}
           </div>
         </>
       ) : (
@@ -169,13 +151,17 @@ export default async function PricingProductPage({
                   <p className="font-semibold text-gray-900">Versión {version.schemaVersion}</p>
                   <p className="text-xs text-gray-500">Creada {version.createdAt.toLocaleDateString('es-AR')}</p>
                 </div>
-                <form action={restorePricingVersion.bind(null, version.id)} className="flex flex-wrap items-center gap-2">
-                  <label className="flex items-center gap-2 text-xs text-gray-600">
-                    <input type="checkbox" name="confirmRestore" value="yes" required className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                    Confirmo reversión
-                  </label>
-                  <button className="btn-secondary !py-2 !text-xs">Restaurar versión</button>
-                </form>
+                {pricingActivationEnabled ? (
+                  <form action={restorePricingVersion.bind(null, version.id)} className="flex flex-wrap items-center gap-2">
+                    <label className="flex items-center gap-2 text-xs text-gray-600">
+                      <input type="checkbox" name="confirmRestore" value="yes" required className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                      Confirmo reversión
+                    </label>
+                    <button className="btn-secondary !py-2 !text-xs">Restaurar versión</button>
+                  </form>
+                ) : (
+                  <span className="text-xs text-amber-700">Restauración bloqueada hasta aprobar la auditoría comercial.</span>
+                )}
               </div>
             ))}
           </div>
