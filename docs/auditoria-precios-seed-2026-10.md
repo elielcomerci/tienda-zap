@@ -156,3 +156,49 @@ Ninguna combinación se declara lista para venta hasta que tenga:
 - prueba del precio que realmente calcula el configurador.
 
 **Decisión por ahora:** no se modifican precios de venta ni porcentajes del seed. La evidencia actual muestra que hacerlo globalmente puede tanto sobrepreciar productos como esconder configuraciones subcosteadas.
+
+
+## 8. Hallazgos de la implementación real del cotizador
+
+Revisión del código en `src/lib/pricing/product-quoter.ts`, `src/lib/pricing/nesting.ts`, `src/lib/pricing/configurator-adapter.ts`, `src/app/api/product-quote/route.ts` y `src/components/public/SemanticProductConfigurator.tsx`. Se inspeccionó la rama `main`; esta sección documenta hallazgos, no modifica la lógica de producción.
+
+### P0 — `profitMargin` es un recargo sobre costo, no margen bruto
+
+La implementación calcula `costo × (1 + profitMargin / 100)`. Con `profitMargin: 150`, el precio es 2,5 veces el costo y el margen bruto teórico sobre el precio neto es 60%, antes de costos omitidos. En cambio, el campo devuelto como `breakdown.marginPercent` conserva el valor 150, por lo que su nombre puede inducir a interpretar erróneamente el recargo como margen efectivo.
+
+Recomendación: separar explícitamente `markupPercent` de `targetGrossMarginPercent` o renombrar el campo con una migración compatible. El precio por margen objetivo debe calcularse como `costoCompleto / (1 - margenObjetivo)`; no cambiar la semántica existente sin pruebas de regresión.
+
+### P0 — El cotizador etiqueta el importe como final, pero no suma IVA
+
+La API devuelve `totalPrice` calculado por el motor. La interfaz semántica muestra ese valor bajo la etiqueta “Precio final” y lo pasa al carrito; en el recorrido revisado no aparece un cálculo explícito de IVA entre cotización, interfaz y carrito. Las matrices de proveedor declaran costos sin IVA en varios casos.
+
+Antes de publicar, hay que definir y probar una única convención fiscal: costos económicos netos cuando el IVA de compra sea computable, precio neto de venta y precio final con la alícuota aplicable. La interfaz debe indicar inequívocamente qué importe muestra y el carrito/checkout debe conservar la misma convención. La alícuota y el tratamiento concreto requieren validación contable; no aplicar 21% indiscriminadamente a cualquier prestación.
+
+### P0 — Ejemplo reproducible de la brecha de tarjetas
+
+Para 500 tarjetas 350 g, 4/4, sin laminar, la matriz `digitalOndemand.cards` registra costo de $39.930 sin IVA. Con el recargo de 150%, la fórmula produce $99.825 y el redondeo psicológico lo lleva aproximadamente a $99.890 antes de impuestos. Si correspondiera IVA del 21%, el total sería aproximadamente $120.867.
+
+El precio de referencia publicado por Imprimime para tarjetas brillantes 300 g, 4/4, laca UV frontal es $34.290 + IVA / 500; no es una comparación idéntica, pero evidencia que primero hay que auditar la celda de costo y el proveedor. El importe de $39.930 ya supera la referencia minorista antes de aplicar el recargo. No resolverlo bajando el margen: confirmar origen, unidad, gramaje, terminación y cotización vigente.
+
+### P1 — La fecha de vigencia de flyers ya venció
+
+La matriz offset de flyers identifica la fuente `PROMO_DIRECTA_OFFSET` y vigencia `JUNIO_JULIO_2026`. A la fecha de esta auditoría (13/10/2026), no se debe tratar como tarifa vigente sin confirmación. La matriz digital on-demand es otra fuente y canal, y no debe mezclarse con la offset.
+
+### P1 — Las fuentes comerciales conviven con motores y bases diferentes
+
+- Tarjetas: `PROVIDER_FINISHED_COST`, costo de producto terminado y margen maestro.
+- Flyers: `PRODUCT_QUOTER`, cálculo por pliego, nesting y terminaciones; la matriz de proveedor de la versión no es por sí sola el precio calculado por ese motor.
+- Tags: `PRODUCT_QUOTER`; el costo de perforación del cotizador no coincide con la tarifa de proveedor documentada.
+- Stickers: `PROVIDER_FINISHED_COST`, la matriz cargada resuelve solo forma circular, material y terminación definidos.
+- Carpetas: `PROVIDER_FINISHED_COST` para la matriz digital de 300 g; el motor toma el costo unitario de la escala y lo multiplica por la cantidad.
+
+Por eso no alcanza con inspeccionar una matriz aislada: cada caso de prueba debe recorrer la selección comercial, el adapter, el costo resuelto, el redondeo, el importe presentado y el importe que llega al carrito.
+
+### Pruebas mínimas antes de aprobar precios
+
+1. Probar una combinación representativa por producto y luego todas las combinaciones vendibles.
+2. Comparar costo y precio calculado contra una planilla independiente.
+3. Verificar que el margen reportado sea el margen bruto efectivo después del redondeo, no el recargo configurado.
+4. Verificar IVA de forma consistente desde la cotización hasta carrito y checkout.
+5. Rechazar o enviar a consulta cualquier combinación sin costo vigente, con especificación no cubierta o con proceso obligatorio sin costo correcto.
+6. Ejecutar regresiones E2E de tarjetas, flyers y tags después de cualquier ajuste.
