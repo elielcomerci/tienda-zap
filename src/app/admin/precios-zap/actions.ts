@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Prisma } from '@prisma/client'
+import { collectEditableProviderCostValues, isEditableProviderCostPath } from '@/lib/pricing/pricing-matrix-admin'
 
 const MANAGED_SLUGS = [
   'tarjetas-vouchers',
@@ -54,24 +55,6 @@ function setAtPath(root: Record<string, any>, path: string[], value: number) {
     throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
   }
   current[leaf] = value
-}
-
-function collectNumericCosts(value: unknown, path: string[] = [], out: number[] = []): number[] {
-  if (typeof value === 'number') {
-    if (path.length && Number.isFinite(value)) out.push(value)
-    return out
-  }
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => collectNumericCosts(item, [...path, String(index)], out))
-    return out
-  }
-  if (isRecord(value)) {
-    for (const [key, child] of Object.entries(value)) {
-      if (key === 'paperSurcharges' || key === 'surchargePercent') continue
-      collectNumericCosts(child, [...path, key], out)
-    }
-  }
-  return out
 }
 
 async function writeAudit(tx: Prisma.TransactionClient, actor: { id?: string; email?: string | null }, data: {
@@ -158,8 +141,8 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
     throw new Error('Ruta de matriz no válida.')
   }
   if (!Number.isFinite(value) || value < 0) throw new Error('El costo debe ser un número válido igual o mayor que cero.')
-  if (path.includes('paperSurcharges') || path.includes('surchargePercent')) {
-    throw new Error('Este campo es una regla porcentual, no un costo editable en esta pantalla.')
+  if (!isEditableProviderCostPath(path)) {
+    throw new Error('Esta ruta no corresponde a un importe de costo editable.')
   }
 
   const version = await prisma.configuratorVersion.findUnique({
@@ -196,6 +179,9 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
 
 export async function publishPricingDraft(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
+  if (process.env.PRICING_ZAP_PUBLISH_ENABLED !== 'true') {
+    throw new Error('La publicación está bloqueada hasta completar y aprobar la auditoría comercial de esta matriz.')
+  }
   if (formData.get('confirmReview') !== 'yes') throw new Error('Confirmá que revisaste los costos y las combinaciones antes de publicar.')
   const draft = await prisma.configuratorVersion.findUnique({
     where: { id: versionId },
@@ -208,7 +194,7 @@ export async function publishPricingDraft(versionId: string, formData: FormData)
   if (!draftCostMatrix) {
     throw new Error('La matriz de costos no tiene la estructura esperada.')
   }
-  const values = collectNumericCosts(draftCostMatrix)
+  const values = collectEditableProviderCostValues(draftCostMatrix)
   if (values.length === 0 || values.some((value) => value < 0 || !Number.isFinite(value))) {
     throw new Error('La matriz no contiene costos válidos. No se publicó ningún cambio.')
   }
@@ -250,6 +236,9 @@ export async function publishPricingDraft(versionId: string, formData: FormData)
 
 export async function restorePricingVersion(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
+  if (process.env.PRICING_ZAP_PUBLISH_ENABLED !== 'true') {
+    throw new Error('La restauración está bloqueada hasta completar y aprobar la auditoría comercial de esta matriz.')
+  }
   if (formData.get('confirmRestore') !== 'yes') throw new Error('Confirmá la reversión para continuar.')
   const selected = await prisma.configuratorVersion.findUnique({
     where: { id: versionId },
