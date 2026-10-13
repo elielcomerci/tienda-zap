@@ -12,6 +12,11 @@ import {
   quoteConfiguratorSelection,
   validateCommercialSelection,
 } from '../src/lib/pricing/configurator-adapter';
+import {
+  collectEditableProviderCostValues,
+  flattenProviderCostMatrix,
+  isEditableProviderCostPath,
+} from '../src/lib/pricing/pricing-matrix-admin';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -207,6 +212,28 @@ test('flyers y tags llegan al motor físico con materiales, medidas y procesos r
   }
 });
 
+
+test('el editor de Precios ZAP solo expone importes y excluye metadatos de la matriz', () => {
+  const matrix = {
+    tiers: [{
+      minQty: 100,
+      maxQty: 500,
+      prices: { '4_0': 12500, '4_4': 17800 },
+      flapSurcharge: 450,
+    }],
+    paperSurcharges: { ilustracion_350g: 10 },
+    surchargePercent: 30,
+    deliverySurcharges: { express_48h: 15 },
+    metadata: { width: 21, height: 29.7 },
+  };
+
+  const rows = flattenProviderCostMatrix(matrix);
+  assert.deepEqual(rows.map((row) => row.value), [12500, 17800, 450]);
+  assert.deepEqual(collectEditableProviderCostValues(matrix), [12500, 17800, 450]);
+  assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'tiers', '0', 'minQty']), false);
+  assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'paperSurcharges', 'ilustracion_350g']), false);
+  assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'tiers', '0', 'prices', '4_0']), true);
+});
 
 test('archivos de trabajo acepta formatos habituales y limita tamaño/formato', () => {
   assert.equal(validateClientFile({ fileName: 'marca.pdf', contentType: 'application/pdf', sizeBytes: 1024 }).ok, true);
