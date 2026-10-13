@@ -39,7 +39,7 @@ function getAtPath(root: unknown, path: string[]): unknown {
   let current: any = root
   for (const segment of path) {
     if (Array.isArray(current)) {
-      if (!/^(0|[1-9]\\d*)$/.test(segment)) return undefined
+      if (!/^(0|[1-9]\d*)$/.test(segment)) return undefined
       const index = Number(segment)
       if (!Number.isSafeInteger(index) || index >= current.length) return undefined
       current = current[index]
@@ -55,7 +55,7 @@ function setAtPath(root: Record<string, any>, path: string[], value: number) {
   let current: any = root
   for (const segment of path.slice(0, -1)) {
     if (Array.isArray(current)) {
-      if (!/^(0|[1-9]\\d*)$/.test(segment)) throw new Error('La celda ya no existe en esta matriz.')
+      if (!/^(0|[1-9]\d*)$/.test(segment)) throw new Error('La celda ya no existe en esta matriz.')
       const index = Number(segment)
       if (!Number.isSafeInteger(index) || index >= current.length) throw new Error('La celda ya no existe en esta matriz.')
       current = current[index]
@@ -66,7 +66,7 @@ function setAtPath(root: Record<string, any>, path: string[], value: number) {
   }
   const leaf = path[path.length - 1]
   if (Array.isArray(current)) {
-    if (!/^(0|[1-9]\\d*)$/.test(leaf)) throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
+    if (!/^(0|[1-9]\d*)$/.test(leaf)) throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
     const index = Number(leaf)
     if (!Number.isSafeInteger(index) || index >= current.length || typeof current[index] !== 'number') {
       throw new Error('Solo se pueden editar importes numéricos de una matriz de costos.')
