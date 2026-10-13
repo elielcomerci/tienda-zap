@@ -6,12 +6,8 @@ import { digitalConfigurators } from '../data/06-configurators/digital';
 import { campanasConfigurators } from '../data/06-configurators/campanas';
 
 /**
- * Seed de importación inicial, no editor de precios.
- *
- * Una vez que un producto tiene versiones de configurador, sus datos quedan
- * bajo administración del panel. El seed no actualiza ni archiva versiones
- * existentes: así una futura ejecución no pisa borradores, publicaciones ni
- * versiones históricas creadas desde Precios ZAP.
+ * Seed de configuradores. Las cinco familias gestionadas por Precios ZAP
+ * preservan sus versiones existentes; las demás conservan el flujo histórico.
  */
 const MANAGED_PRICING_SLUGS = new Set([
   'tarjetas-vouchers',
@@ -41,7 +37,8 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   const productMap = new Map(products.map((p) => [p.slug, p.id]));
 
   const configKeys = allConfigs.map((cfg) => cfg.productSlug + '|' + cfg.schemaVersion);
-  if (new Set(configKeys).size !== configKeys.length) {
+  const resolvedKeys = new Set(configKeys);
+  if (resolvedKeys.size !== configKeys.length) {
     const duplicateKeys = [...new Set(
       configKeys.filter((key, index) => configKeys.indexOf(key) !== index)
     )];
@@ -113,7 +110,7 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
       .filter((version) => {
         const slug = activeProductSlugs.get(version.productId);
         if (slug && MANAGED_PRICING_SLUGS.has(slug)) return false;
-        return !slug || !new Set(configKeys).has(slug + '|' + version.schemaVersion);
+        return !slug || !resolvedKeys.has(slug + '|' + version.schemaVersion);
       })
       .map((version) => version.id);
 
