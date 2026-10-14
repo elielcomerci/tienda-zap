@@ -86,15 +86,47 @@ Tienda, Clikit, Revex, WooCommerce y otros clientes convierten sus datos de nego
 - El acceso a soporte no debe dar por sí mismo permiso fiscal; debe existir autorización ARCA válida.
 - El tutorial se mantiene con enlaces oficiales y una fecha de última verificación, para evitar instrucciones obsoletas.
 
-## Secuencia sugerida de entrega
+## Secuencia de implementación y checklist
 
-1. Auditar el esquema y las rutas actuales de la plataforma para reutilizar autenticación, cuenta y pagos existentes.
-2. Implementar el modelo de cuenta fiscal y la vista de estado, sin emisión automática.
-3. Integrar API Keys y lectura de plan/saldo desde el Worker.
-4. Construir el asistente ARCA primero en modo guiado, con validaciones por paso y sin acceso de soporte a secretos.
-5. Implementar el camino “Que ZAP lo gestione” con consentimiento, seguimiento y controles de acceso.
-6. Añadir la activación de producción después de pruebas de homologación.
-7. Conectar los demás adaptadores usando el mismo contrato central.
+La vista inicial se integra en la cuenta autenticada existente de Tienda ZAP, bajo `/perfil/fiscal`. No se crea una autenticación paralela ni se usa el `documentId` del perfil como CUIT sin una confirmación explícita del cliente.
+
+### Fase A — Modelo de cuenta y vínculo seguro
+
+- [ ] Reutilizar `auth()` y `session.user.id` para identificar al usuario autenticado.
+- [ ] Agregar una relación explícita entre el usuario de Tienda ZAP y el tenant del Worker; no inferirla por email, CUIT o slug.
+- [ ] Definir creación idempotente de tenant desde una acción server-side explícita, no desde un GET de página.
+- [ ] Guardar la clave de servicio que usa la tienda cifrada server-side o diseñar un endpoint interno de lectura de cuenta; nunca guardar una clave en texto plano ni enviarla al navegador.
+- [ ] Separar la clave de servicio de Tienda ZAP de las claves que el cliente genera para Clikit, Revex, WooCommerce u otros consumidores.
+- [ ] Añadir auditoría y pruebas de acceso cruzado entre usuarios.
+
+### Fase B — Panel de cuenta fiscal y pruebas de homologación
+
+- [ ] Añadir una sección `Cuenta fiscal` en `/perfil` con acceso a `/perfil/fiscal`.
+- [ ] Mostrar estado real de vinculación, CUIT autorizadas, entorno, plan/derechos, consumo, reservas y última actualización; nunca usar datos ficticios como si fueran reales.
+- [ ] Implementar API routes server-side con sesión obligatoria y comprobación de propiedad de cuenta en cada operación.
+- [ ] Administrar claves: creación con visualización una sola vez, metadatos, rotación y revocación; no recuperar ni volver a mostrar secretos ya emitidos.
+- [ ] Mostrar la respuesta de consumo del Worker y su versión/ETag cuando el contrato de cuenta esté implementado.
+- [ ] Permitir probar únicamente homologación con consultas inocuas; no emitir en producción por cargar o pagar una orden de tienda.
+
+### Fase C — Autorización ARCA guiada
+
+- [ ] Implementar el tutorial por pasos con estados verificados, enlaces oficiales y distinción inequívoca TEST/PROD.
+- [ ] Registrar estado del certificado y autorización sin mostrar material privado.
+- [ ] Implementar “Que ZAP lo gestione” con consentimiento, alcance, identidad/autoridad, auditoría y seguimiento.
+
+### Fase D — Validación de extremo a extremo
+
+- [ ] Probar alta/vínculo de cuenta, recarga de página, sesión vencida y acceso cruzado.
+- [ ] Probar creación/rotación/revocación de claves y confirmar que el consumo no se reinicia.
+- [ ] Probar lectura de consumo y revalidación condicional una vez disponible el contrato del Worker.
+- [ ] Validar el circuito completo en homologación con CUIT y certificado autorizados para ese ambiente.
+- [ ] Mantener fuera de alcance la emisión real, la migración de producción y el despliegue hasta autorización explícita.
+
+## Dependencias entre repositorios
+
+- El contrato de consumo y la versión autoritativa se definen en [la fuente de verdad del Worker](https://github.com/elielcomerci/zap-fiscal-core/blob/docs/worker-implementation-source-of-truth/fiscal-worker/docs/IMPLEMENTATION-SOURCE-OF-TRUTH.md).
+- La tienda puede preparar autenticación, vínculo de cuenta y gestión de claves en paralelo, pero no inventará un saldo ni replicará las reglas comerciales.
+- Para mostrar consumo real agregado, el Worker debe exponer el contrato de cuenta; el endpoint actual que requiere `?cuit=` no alcanza para una vista agregada ni para onboarding sin permiso de emisión PROD.
 
 ## Fuera de alcance de esta especificación
 
