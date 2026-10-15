@@ -18,7 +18,7 @@ type Block = {
   reason: string
   retryCount: number
   updatedAt: string
-  status: 'BLOCKED_UNTIL' | 'EXPIRY_UNKNOWN' | 'RETRY_WINDOW_ELAPSED' | 'BLOCK_STATE_INCOMPLETE' | string
+  status: 'SUPERSEDED_BY_VALID_TICKET' | 'BLOCKED_UNTIL' | 'EXPIRY_UNKNOWN' | 'RETRY_WINDOW_ELAPSED' | 'BLOCK_STATE_INCOMPLETE' | string
 }
 
 type StatusPayload = {
@@ -48,6 +48,7 @@ function ticketLabel(status: string) {
 
 function blockLabel(block: Block) {
   switch (block.status) {
+    case 'SUPERSEDED_BY_VALID_TICKET': return 'Bloqueo residual; existe un ticket vigente que tiene prioridad'
     case 'BLOCKED_UNTIL': return `Bloqueado hasta ${dateTime(block.blockedUntil)}`
     case 'EXPIRY_UNKNOWN': return 'Bloqueado · vencimiento desconocido'
     case 'RETRY_WINDOW_ELAPSED': return 'Ventana de espera cumplida; requiere nuevo intento controlado'
