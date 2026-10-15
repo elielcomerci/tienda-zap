@@ -47,6 +47,19 @@ function productData(formData: FormData) {
   if (modality === 'CONFIGURABLE' && !engine) throw new Error('Un Product Base configurable necesita un motor.')
   if (modality !== 'CONFIGURABLE' && engine) throw new Error('Sólo un Product Base configurable puede tener motor.')
 
+  const fiscalTaxTreatmentValue = String(formData.get('fiscalTaxTreatment') || '').trim()
+  const validFiscalTreatments = new Set(['VAT', 'EXEMPT', 'NON_TAXABLE'])
+  const fiscalTaxTreatment = validFiscalTreatments.has(fiscalTaxTreatmentValue) ? fiscalTaxTreatmentValue : null
+  const rawVatRate = String(formData.get('fiscalVatRate') || '').trim()
+  const fiscalVatRate = rawVatRate === '' ? null : Number(rawVatRate)
+  const supportedVatRates = new Set([0, 2.5, 5, 10.5, 21, 27])
+  if (fiscalTaxTreatment === 'VAT' && (fiscalVatRate === null || !supportedVatRates.has(fiscalVatRate))) {
+    throw new Error('Un producto gravado necesita una alícuota de IVA válida.')
+  }
+  if (fiscalTaxTreatment !== 'VAT' && fiscalVatRate !== null) {
+    throw new Error('La alícuota sólo se define para productos gravados con IVA.')
+  }
+
   return {
     name: String(formData.get('name') || '').trim(),
     description: String(formData.get('description') || '').trim() || null,
@@ -65,6 +78,8 @@ function productData(formData: FormData) {
     includes: lineList(formData, 'includes'),
     configurable: lineList(formData, 'configurable'),
     consultationNote: String(formData.get('consultationNote') || '').trim() || null,
+    fiscalTaxTreatment,
+    fiscalVatRate,
   }
 }
 
@@ -134,6 +149,8 @@ export async function duplicateProduct(id: string) {
       configurable: original.configurable,
       consultationNote: original.consultationNote,
       creditDownPaymentPercent: original.creditDownPaymentPercent,
+      fiscalTaxTreatment: original.fiscalTaxTreatment,
+      fiscalVatRate: original.fiscalVatRate,
     },
   })
   revalidateProductPaths(duplicate.slug)

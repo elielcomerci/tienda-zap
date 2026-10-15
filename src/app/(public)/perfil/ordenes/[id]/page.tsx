@@ -13,6 +13,9 @@ import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
 import OrderItemConfigurationSummary from '@/components/orders/OrderItemConfigurationSummary'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
+import InvoiceRequestPanel from '@/components/public/InvoiceRequestPanel'
+import { buildInvoiceDetails } from '@/lib/fiscal-invoices'
+import AccountSectionNav from '@/components/public/AccountSectionNav'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,6 +67,16 @@ export default async function MiOrdenPage({
     `Hola! Te envio los archivos de mi orden #${orderCode}.`
   )
   const hasUploadableItems = order.items.some((item) => !item.isService && !item.designRequested)
+  const fiscalClassificationReady = order.items.length > 0 && order.items.every((item) =>
+    ['VAT', 'EXEMPT', 'NON_TAXABLE'].includes(item.fiscalTaxTreatment || '') &&
+    (item.fiscalTaxTreatment !== 'VAT' || [0, 2.5, 5, 10.5, 21, 27].includes(Number(item.fiscalVatRate)))
+  )
+  let invoicePreview: ReturnType<typeof buildInvoiceDetails> | null = null
+  let invoicePreviewError: string | null = null
+  if (fiscalClassificationReady) {
+    try { invoicePreview = buildInvoiceDetails(order) }
+    catch (error) { invoicePreviewError = error instanceof Error ? error.message : 'El detalle fiscal necesita revisión.' }
+  }
 
   const isMpPending = order.paymentType === 'MERCADOPAGO' && order.status === 'PENDING'
   const hasDiscount = (order.discountTotal ?? 0) > 0
@@ -73,6 +86,7 @@ export default async function MiOrdenPage({
       <Link href="/perfil" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
         <ArrowLeft size={16} /> Volver a mi perfil
       </Link>
+      <AccountSectionNav active="orders" />
 
       <div className="flex items-center justify-between">
         <div>
@@ -256,6 +270,31 @@ export default async function MiOrdenPage({
           </div>
         </div>
       </div>
+
+
+      <InvoiceRequestPanel
+        orderId={order.id}
+        canRequest={['PAID', 'PROOF_SENT', 'IN_PRODUCTION', 'PROCESSING', 'READY', 'DELIVERED'].includes(order.status)}
+        fiscalClassificationReady={fiscalClassificationReady}
+        fiscalPreviewError={invoicePreviewError}
+        previewItems={invoicePreview?.items || []}
+        previewAmounts={invoicePreview?.amounts || null}
+        invoiceSource={order.invoiceSource || (order.invoiceUrl ? 'MANUAL' : null)}
+        invoiceStatus={order.invoiceStatus}
+        invoicePdfStatus={order.invoicePdfStatus}
+        invoiceFiscalJobId={order.invoiceFiscalJobId}
+        invoiceCae={order.invoiceCae}
+        invoiceVoucherType={order.invoiceVoucherType}
+        invoiceObjectKey={order.invoiceObjectKey}
+        invoiceUrl={order.invoiceUrl}
+        invoiceError={order.invoiceError}
+        defaultName={order.user?.name || order.guestName || ''}
+        defaultDocumentId={order.documentId || ''}
+        defaultAddress={order.billingAddress || ''}
+        defaultCity={order.billingCity || ''}
+        defaultProvince={order.billingProvince || ''}
+        issuerVatCondition={process.env.ARCA_ISSUER_VAT_CONDITION || null}
+      />
 
       {hasUploadableItems && (
         <OrderFileUploader orderId={order.id} whatsappUrl={filesWhatsappUrl} items={order.items as any} />

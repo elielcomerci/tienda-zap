@@ -10,6 +10,7 @@ import {
 import { getCustomerCreditPlans, getCurrentUserCreditEligibility } from '@/lib/credits'
 import { getFinancingSnapshot } from '@/lib/financing'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
+import AccountSectionNav from '@/components/public/AccountSectionNav'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -34,6 +35,7 @@ export default async function CustomerCreditsPage() {
       >
         <ArrowLeft size={16} /> Volver a mi perfil
       </Link>
+      <AccountSectionNav active="credits" />
 
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F5] text-[#ED164F]">

@@ -270,6 +270,8 @@ model Product {
   configurable             String[]            @default([])
   consultationNote         String?
   creditDownPaymentPercent Int                 @default(30)
+  fiscalTaxTreatment       String?
+  fiscalVatRate            Float?
   createdAt                DateTime            @default(now())
   updatedAt                DateTime            @updatedAt
 
@@ -403,6 +405,28 @@ model Order {
   invoiceUrl            String?
   invoiceFileName       String?
   invoiceUploadedAt     DateTime?
+  invoiceSource         String?
+  invoiceStatus         String?
+  invoicePdfStatus      String?
+  invoiceFiscalJobId    String?                  @unique
+  invoiceExternalId     String?                  @unique
+  invoiceIdempotencyKey String?                  @unique
+  invoiceRecipientSnapshot Json?
+  invoiceLineItemsSnapshot Json?
+  invoiceAmountsSnapshot Json?
+  invoiceVoucherType    String?
+  invoiceEmitterCuit    String?
+  invoiceEmitterIibb    String?
+  invoiceEmitterPointOfSale Int?
+  invoiceEmitterEnvironment String?
+  invoicePointOfSale    Int?
+  invoiceVoucherNumber  Int?
+  invoiceCae            String?
+  invoiceCaeExpiresAt   DateTime?
+  invoiceIssuedAt       DateTime?
+  invoiceObjectKey      String?
+  invoicePdfGeneratedAt DateTime?
+  invoiceError          String?                  @db.Text
   notes                 String?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
@@ -427,6 +451,8 @@ model Order {
   events                OrderEvent[]
   proofs                ProofFile[]
   commissionLedgers     SellerCommissionLedger[]
+
+  @@index([userId, invoiceStatus])
 }
 
 model OrderItem {
@@ -450,6 +476,8 @@ model OrderItem {
   fileUploadedAt           DateTime?
   isService                Boolean                  @default(false)
   creditDownPaymentPercent Int                      @default(30)
+  fiscalTaxTreatment       String?
+  fiscalVatRate            Float?
   configurationSnapshot    Json?
   productName              String                   @default("")
   productSlug              String                   @default("")
