@@ -123,7 +123,7 @@ export default function WsaaStatusPanel() {
         <>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-gray-200 bg-white p-5">
-              <p className="text-sm text-gray-500">Tickets registrados</p>
+              <p className="text-sm text-gray-500">Tickets mostrados</p>
               <p className="mt-2 text-3xl font-bold text-gray-900">{data.total}</p>
             </div>
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
