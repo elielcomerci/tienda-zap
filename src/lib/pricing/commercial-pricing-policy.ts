@@ -47,6 +47,30 @@ export function roundCommercialPrice(price: number): number {
   return rounded < price ? rounded + 100 : rounded
 }
 
+export function calculatePriceAtNetAmount(
+  cost: number,
+  requestedNetPrice: number,
+  vatRatePercent: number,
+): CommercialPriceCalculation {
+  if (!Number.isFinite(cost) || cost < 0) throw new Error('El costo debe ser un número válido igual o mayor que cero.')
+  if (!Number.isFinite(requestedNetPrice) || requestedNetPrice < 0) throw new Error('El precio neto debe ser un número válido igual o mayor que cero.')
+  if (!Number.isFinite(vatRatePercent) || vatRatePercent < 0 || vatRatePercent > 100) throw new Error('La tasa de IVA debe estar entre 0 y 100%.')
+
+  const finalPrice = roundCommercialPrice(requestedNetPrice * (1 + vatRatePercent / 100))
+  const netPrice = finalPrice / (1 + vatRatePercent / 100)
+  const vatAmount = finalPrice - netPrice
+  const grossProfit = netPrice - cost
+  return {
+    cost,
+    netPrice,
+    vatAmount,
+    finalPrice,
+    grossProfit,
+    grossMarginPercent: netPrice > 0 ? (grossProfit / netPrice) * 100 : 0,
+    markupPercent: cost > 0 ? (grossProfit / cost) * 100 : 0,
+  }
+}
+
 export function calculateCommercialPrice(
   cost: number,
   policyInput: CommercialPricingPolicy,
