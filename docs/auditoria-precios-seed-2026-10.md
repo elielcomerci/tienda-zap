@@ -521,15 +521,15 @@ La próxima pasada debe terminar con un estado explícito por producto: **ACTIVA
 
 No hace falta que el universo completo esté terminado para lanzar. La decisión es cerrar primero el núcleo A y, en paralelo, obtener costos para un banner y un roll-up. Los demás productos permanecen fuera del lanzamiento inicial hasta contar con evidencia suficiente.
 
-## 13. Auditoría del motor real de flyers 10×15 — hallazgo bloqueante y siguiente corrección (16/10/2026)
+## 13. Auditoría y corrección acotada del motor de flyers 10×15 (16/10/2026)
 
 ### 13.1 El costo vigente no es el problema
 
 Se confirma por instrucción del negocio que los costos de proveedor de $32.000 / 1.000 y $85.000 / 5.000 siguen vigentes. No se solicita nueva cotización. La brecha encontrada es técnica: el dato de costo terminado existe en `pricing.providerFinishedCostMatrix.matrix` de `06-configurators/impresos-packaging.ts`, pero el configurador declara `pricing.engine: 'PRODUCT_QUOTER'` y el recorrido de `quoteConfiguratorSelection` termina usando `ProductQuoterConfig` y `calculateProductQuote`. Por eso no consume esa matriz de costo terminado para estas selecciones.
 
-### 13.2 Precio que arroja el código actual de la rama
+### 13.2 Precio que arrojaba el motor antes de la corrección
 
-Para un flyer plano de 10×15 cm, ilustración 150 g, 4/4, sin terminaciones y con los datos del seed:
+Antes del cambio, para un flyer plano de 10×15 cm, ilustración 150 g, 4/4, sin terminaciones y con los datos del seed:
 
 | Cantidad | Costo terminado proveedor registrado | Cálculo del motor actual | Precio que devolvería el motor |
 |---:|---:|---|---:|
@@ -554,12 +554,12 @@ El segundo precio queda por debajo del objetivo del 40%, pero supera el piso com
 
 Se implementó una resolución acotada para estas dos configuraciones: `commercialPriceOverrides` consulta el costo terminado de `providerFinishedCostMatrix.matrix`, conserva los precios públicos explícitos de $72.000 y $166.500, calcula margen bruto sobre venta neta de IVA y bloquea si queda por debajo del 35%. Las demás configuraciones no coincidentes continúan por el flujo anterior.
 
-No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron pruebas contractuales para ambas cantidades y para el bloqueo por margen insuficiente. Falta ejecutar `npm test` y la prueba de integración con `DATABASE_URL` antes de considerar validada la corrección. La implementación debe:
+No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron pruebas contractuales para ambas cantidades y para el bloqueo por margen insuficiente. Falta ejecutar `npm test` y la prueba de integración con `DATABASE_URL` antes de considerar validada la corrección. Antes de aprobar la activación, verificar:
 
-1. Resolver explícitamente estas configuraciones de flyers offset contra la matriz de **producto terminado** vigente ($32.000 / $85.000), no contra el costo de papel por pliego.
-2. Permitir precios comerciales de venta definidos por configuración/cantidad —$72.000 y $166.500 para estas dos combinaciones— sin convertirlos en un multiplicador genérico del costo.
-3. Validar automáticamente el margen bruto real a partir del costo de proveedor sin IVA y del precio público final con IVA; bloquear si cae por debajo del 35%.
-4. Mantener separadas las demás modalidades (otros papeles, impresión digital bajo demanda, dípticos y trípticos) hasta tener su propia equivalencia de costo y precio. No redirigir todo el configurador a un único proveedor si la selección no está cubierta.
-5. Añadir pruebas unitarias del cálculo y un caso de integración que compruebe el recorrido API → cotizador → carrito con los mismos importes y tratamiento de IVA.
+1. Que las pruebas contractuales nuevas pasan y el precio no se desvía en redondeos ni por caché.
+2. Que la API devuelve $72.000 y $166.500 con costos de $32.000 y $85.000 y márgenes calculados sobre venta neta de IVA.
+3. Que la integración con la base de datos y el recorrido API → cotizador → carrito conservan esos importes y el mismo tratamiento de IVA.
+4. Que las demás modalidades (otros papeles, impresión digital bajo demanda, dípticos y trípticos) siguen por su flujo previo y no reciben accidentalmente estos precios.
+5. Que el producto no se activa ni se despliega hasta completar las verificaciones anteriores.
 
 **Estado actual de esta combinación: CORRECCIÓN IMPLEMENTADA EN LA RAMA, PENDIENTE DE PRUEBAS.** No activar en producción hasta ejecutar las pruebas de contrato, verificar el recorrido real API → cotizador → carrito y confirmar que el tratamiento de IVA sea consistente en pantalla y checkout. El bloqueo nunca fue por vigencia del costo.
