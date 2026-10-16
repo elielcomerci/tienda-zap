@@ -70,7 +70,7 @@ export async function getPublicCatalogTypes() {
 export async function getProducts(
   familySlug?: string,
   search?: string,
-  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO' }
+  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO'; rankContext?: { situationSlug?: string; needSlug?: string; businessTypeSlug?: string } }
 ) {
   const engine = engineForCatalogFamily(familySlug)
   const offerFilter: Prisma.OfferMatrixEntryWhereInput = {
@@ -110,11 +110,36 @@ export async function getProducts(
       variants: { select: { price: true }, orderBy: { price: 'asc' } },
       quoterConfig: { include: quoterConfigInclude },
       configuratorVersions: { where: { status: 'ACTIVE' }, select: { id: true, schemaVersion: true, status: true } },
+      offerEntries: {
+        select: {
+          businessType: { select: { slug: true } },
+          situation: { select: { slug: true } },
+          need: { select: { slug: true } },
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
   })
 
   const orderedProducts = products.sort((a, b) => {
+    if (options?.rankContext) {
+      const contextRank = (product: (typeof products)[number]) => {
+        const entries = product.offerEntries
+        const context = options.rankContext!
+        const matches = (entry: (typeof entries)[number], includeNeed: boolean) =>
+          (!context.businessTypeSlug || entry.businessType.slug === context.businessTypeSlug) &&
+          (!context.situationSlug || entry.situation.slug === context.situationSlug) &&
+          (!includeNeed || !context.needSlug || entry.need.slug === context.needSlug)
+
+        if (entries.some((entry) => matches(entry, true))) return 0
+        if (context.needSlug && entries.some((entry) => matches(entry, false))) return 1
+        if (context.businessTypeSlug && entries.some((entry) => entry.businessType.slug === context.businessTypeSlug)) return 2
+        return 3
+      }
+      const contextDifference = contextRank(a) - contextRank(b)
+      if (contextDifference !== 0) return contextDifference
+    }
+
     const rankA = PRODUCT_EDITORIAL_RANK.get(a.slug) ?? Number.MAX_SAFE_INTEGER
     const rankB = PRODUCT_EDITORIAL_RANK.get(b.slug) ?? Number.MAX_SAFE_INTEGER
     return rankA - rankB
