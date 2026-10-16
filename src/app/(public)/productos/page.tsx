@@ -18,13 +18,13 @@ import { getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
-  gastronomia: 'Sabemos que un negocio gastronómico puede necesitar vender más, hacerse encontrar, mostrar mejor lo que ofrece y hacer que sus clientes vuelvan.',
-  'moda-showrooms': 'Sabemos que una marca de moda necesita que producto, espacio, comunicación y experiencia se sientan parte de lo mismo.',
-  inmobiliarias: 'Sabemos que una inmobiliaria puede necesitar captar propiedades, generar consultas, transmitir confianza y hacer que sus propiedades se vean mejor.',
-  'belleza-salud': 'Sabemos que un negocio de belleza o salud necesita que marca, espacio, agenda y comunicación acompañen la experiencia que quiere construir.',
-  'comercios-retail': 'Sabemos que un comercio puede necesitar atraer gente, vender mejor en el local, ordenar su presencia y hacer que su marca se reconozca.',
-  'eventos-experiencias': 'Sabemos que un evento necesita atraer personas, generar contactos y convertir cada punto de contacto en parte de la experiencia.',
-  wellness: 'Sabemos que un espacio de wellness puede necesitar conseguir alumnos, llenar la agenda, hacerse reconocer y ordenar cómo se presenta.',
+  gastronomia: 'Más pedidos, una propuesta que se destaque y una experiencia que invite a volver.',
+  'moda-showrooms': 'Una marca sólida conecta producto, espacio, comunicación y experiencia.',
+  inmobiliarias: 'Más propiedades, mejores consultas y una presencia que transmita confianza.',
+  'belleza-salud': 'Una marca, un espacio y una agenda alineados con la experiencia que querés ofrecer.',
+  'comercios-retail': 'Una propuesta clara, un local que invite a entrar y una marca fácil de reconocer.',
+  'eventos-experiencias': 'Convocatoria, contactos y una experiencia coherente en cada punto de encuentro.',
+  wellness: 'Una propuesta visible, más alumnos y una agenda que puedas sostener.',
 }
 
 const BUSINESS_SITUATION_PRIORITY: Record<string, string[]> = {
