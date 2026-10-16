@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Prisma } from '@prisma/client'
 import { collectEditableProviderCostValues, isEditableProviderCostPath } from '@/lib/pricing/pricing-matrix-admin'
+import { validateCommercialPricingPolicy, type CommercialPricingPolicy } from '@/lib/pricing/commercial-pricing-policy'
 
 const MANAGED_SLUGS = [
   'tarjetas-vouchers',
@@ -289,6 +290,49 @@ export async function importDraftCostRows(
     unchangedCount,
     message: `Se guardaron ${changed.length} cambios; ${unchangedCount} importes ya estaban actualizados.`,
   }
+}
+
+export async function saveDraftPricingPolicy(versionId: string, input: CommercialPricingPolicy) {
+  const actor = await requirePricingAdmin()
+  const policy = validateCommercialPricingPolicy(input)
+  const version = await prisma.configuratorVersion.findUnique({
+    where: { id: versionId },
+    include: { product: { select: { id: true, name: true, slug: true } } },
+  })
+  if (!version || version.status !== 'DRAFT' || !isManagedSlug(version.product.slug)) {
+    throw new Error('Solo se puede cambiar la política de precios de un borrador habilitado.')
+  }
+  if (!isRecord(version.pricing) || !getProviderFinishedCostMatrix(version.pricing)) {
+    throw new Error('El borrador no contiene una matriz de costos compatible.')
+  }
+
+  const previousPricing = structuredClone(version.pricing) as Record<string, any>
+  const previousPolicy = previousPricing.commercialPricingPolicy ?? null
+  const nextPricing = { ...previousPricing, commercialPricingPolicy: policy }
+
+  if (JSON.stringify(previousPolicy) === JSON.stringify(policy)) {
+    return { success: true, unchanged: true, policy }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.configuratorVersion.updateMany({
+      where: { id: versionId, status: 'DRAFT', updatedAt: version.updatedAt },
+      data: { pricing: nextPricing as Prisma.InputJsonValue },
+    })
+    if (updated.count !== 1) throw new Error('El borrador cambió durante la actualización. Recargá la página e intentá nuevamente.')
+    await writeAudit(tx, actor, {
+      action: 'PRICING_POLICY_UPDATED',
+      productId: version.productId,
+      description: `Regla comercial de precios actualizada en ${version.product.name}.`,
+      before: { versionId, commercialPricingPolicy: previousPolicy } as Prisma.InputJsonValue,
+      after: { versionId, commercialPricingPolicy: policy } as Prisma.InputJsonValue,
+      metadata: { changedAt: new Date().toISOString() } as Prisma.InputJsonValue,
+    })
+  })
+
+  revalidatePath(`/admin/precios-zap/${version.productId}`)
+  revalidatePath('/admin/precios-zap')
+  return { success: true, unchanged: false, policy }
 }
 
 export async function publishPricingDraft(versionId: string, formData: FormData) {
