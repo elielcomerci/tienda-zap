@@ -5,6 +5,7 @@ import {
   type ProductQuoteResult,
   getQuoterMaterials,
 } from './product-quoter';
+import { calculateCommercialPrice } from './commercial-pricing-policy';
 
 export interface CommercialSelection {
   format?: string;
@@ -441,12 +442,28 @@ function quoteProviderFinishedCostSelection(
     throw new Error('CONSULT_REQUIRED: Resolver de costo de proveedor no configurado.');
   }
 
-  const margin = quoterConfig?.profitMargin;
-  if (margin === undefined || margin === null) {
-    throw new Error('CONSULT_REQUIRED: Falta el margen maestro del producto.');
-  }
+  let totalPrice: number;
+  let marginAmount: number;
+  let marginPercent: number;
+  const commercialPolicy = pricing?.commercialPricingPolicy;
 
-  const totalPrice = roundProviderPrice(totalCost * (1 + Number(margin) / 100));
+  if (commercialPolicy) {
+    // Una política guardada en la versión activa prevalece sobre el recargo heredado.
+    // El cálculo separa venta neta, IVA y precio final; el IVA no se cuenta como ganancia.
+    const calculated = calculateCommercialPrice(totalCost, commercialPolicy);
+    totalPrice = calculated.finalPrice;
+    marginAmount = calculated.grossProfit;
+    marginPercent = calculated.grossMarginPercent;
+  } else {
+    // Compatibilidad: las versiones anteriores conservan el recargo maestro histórico.
+    const margin = quoterConfig?.profitMargin;
+    if (margin === undefined || margin === null) {
+      throw new Error('CONSULT_REQUIRED: Falta el margen maestro del producto.');
+    }
+    totalPrice = roundProviderPrice(totalCost * (1 + Number(margin) / 100));
+    marginAmount = totalPrice - totalCost;
+    marginPercent = Number(margin);
+  }
 
   const selectedOptions: Array<{ name: string; value: string }> = [];
   for (const [key, val] of Object.entries(selection)) {
@@ -475,7 +492,7 @@ function quoteProviderFinishedCostSelection(
       finishingCost: 0,
       wasteCost: 0,
       productionCost: totalCost,
-      marginAmount: totalPrice - totalCost,
+      marginAmount,
       marginPercent,
     },
   };
