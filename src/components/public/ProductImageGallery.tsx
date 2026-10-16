@@ -23,6 +23,8 @@ export default function ProductImageGallery({
   const [activeIndex, setActiveIndex] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
   const thumbnailsRef = useRef<HTMLDivElement>(null)
+  const touchStartXRef = useRef<number | null>(null)
+  const didSwipeRef = useRef(false)
 
   const goToImage = (index: number) => {
     if (safeImages.length === 0) return
@@ -94,7 +96,25 @@ export default function ProductImageGallery({
         <button
           type="button"
           className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
-          onClick={() => setZoomOpen(true)}
+          onTouchStart={(event) => {
+            touchStartXRef.current = event.changedTouches[0]?.clientX ?? null
+            didSwipeRef.current = false
+          }}
+          onTouchEnd={(event) => {
+            const startX = touchStartXRef.current
+            const endX = event.changedTouches[0]?.clientX
+            touchStartXRef.current = null
+            if (startX === null || typeof endX !== 'number' || Math.abs(endX - startX) < 45) return
+            didSwipeRef.current = true
+            goToImage(activeIndex + (endX < startX ? 1 : -1))
+          }}
+          onClick={() => {
+            if (didSwipeRef.current) {
+              didSwipeRef.current = false
+              return
+            }
+            setZoomOpen(true)
+          }}
           aria-label={'Ampliar imagen ' + (activeIndex + 1) + ' de ' + productName}
         >
           <img
