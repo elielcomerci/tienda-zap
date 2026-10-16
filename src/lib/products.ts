@@ -54,7 +54,7 @@ const PRODUCT_EDITORIAL_ORDER = [
   'sistema-captacion-eventos',
 ] as const
 
-const PRODUCT_EDITORIAL_RANK = new Map(
+const PRODUCT_EDITORIAL_RANK = new Map<string, number>(
   PRODUCT_EDITORIAL_ORDER.map((slug, index) => [slug, index])
 )
 
