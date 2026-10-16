@@ -49,16 +49,16 @@ function getBusinessSituations<T extends { slug: string }>(businessTypeSlug: str
 
 
 export const metadata = {
-  title: 'Cosas y desarrollos para tu negocio',
+  title: 'Productos y desarrollos para tu negocio',
   description:
-    'Explorá cosas y desarrollos de ZAP según tu rubro y lo que está pasando en tu negocio.',
+    'Productos para elegir o configurar y desarrollos a medida de ZAP.',
   alternates: {
     canonical: '/productos',
   },
   openGraph: {
-    title: 'Cosas y desarrollos para tu negocio | Tienda ZAP',
+    title: 'Productos y desarrollos para tu negocio | Tienda ZAP',
     description:
-      'Explorá cosas y desarrollos de ZAP según tu rubro y lo que está pasando en tu negocio.',
+      'Productos para elegir o configurar y desarrollos a medida de ZAP.',
     url: '/productos',
     type: 'website',
   },
