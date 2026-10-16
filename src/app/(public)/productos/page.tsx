@@ -296,7 +296,7 @@ export default async function ProductsPage({
                   <ShareModal />
                 </div>
                 <IntentionHero intention={selectedSituation} />
-                <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} selectedNeedSlug={necesidad} />
+                <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} businessTypeName={selectedBusinessType?.name} selectedNeedSlug={necesidad} />
                 {selectedNeed && (
                   <>
                     <DiscoveryOfferSection
