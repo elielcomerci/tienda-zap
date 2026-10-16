@@ -478,8 +478,6 @@ function quoteProviderFinishedCostSelection(
     selectedOptions.push({ name: fieldLabel, value: optionLabel });
   }
 
-  const marginPercent = Number(margin);
-
   return {
     unitPrice: totalPrice / quantity,
     totalPrice,
