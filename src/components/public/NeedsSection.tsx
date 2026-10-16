@@ -26,10 +26,14 @@ export default function NeedsSection({
   const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
   return (
-    <section id="necesidades" className="px-1 sm:px-2">
+    <section id="necesidades" className="px-0.5 sm:px-1">
       <div className="mb-6 max-w-2xl">
-        <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">¿Qué necesitás resolver primero{businessTypeName ? ` en ${businessTypeName.toLowerCase()}` : ''}?</h2>
-        <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">Elegí una necesidad. A partir de ahí vemos qué puede tener sentido para ese caso.</p>
+        <h2 className="text-2xl font-bold leading-tight tracking-[-0.025em] text-gray-950 sm:text-3xl">
+          ¿Qué necesitás resolver primero?
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
+          Elegí una necesidad. A partir de ahí vemos qué puede tener sentido para ese caso.
+        </p>
       </div>
       <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
         {situation.needs.map((need: DiscoveryNeed) => {
@@ -45,12 +49,12 @@ export default function NeedsSection({
             >
               <div className="flex items-start gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="text-base font-black tracking-tight text-gray-950">{need.name}</p>
+                  <p className="text-base font-semibold tracking-tight text-gray-950">{need.name}</p>
                   {need.description && <p className="mt-2 text-sm leading-6 text-gray-600">{need.description}</p>}
                 </div>
                 <ArrowRight size={18} className="mt-0.5 shrink-0 text-[#ED164F]" />
               </div>
-              <p className="mt-auto pt-5 text-xs font-bold text-[#C2103F] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 max-sm:hidden" aria-hidden="true">
+              <p className="mt-auto pt-5 text-xs font-semibold text-[#C2103F] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 max-sm:hidden" aria-hidden="true">
                 {hasOffers ? 'Ver qué puede servirte' : 'Explorar esta necesidad'}
               </p>
             </Link>
@@ -63,7 +67,7 @@ export default function NeedsSection({
         </p>
         <Link
           href={whatsappUrl || '/'}
-          className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
         >
           Contanos qué necesitás <ArrowRight size={15} />
         </Link>
