@@ -22,7 +22,7 @@ export default function NeedsSection({
     `Hola, estoy explorando: ${situation.name}.`,
     businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
     'No encuentro una necesidad que describa bien mi caso. ¿Lo podemos conversar?',
-  ].filter(Boolean).join('\\n')
+  ].filter(Boolean).join('\n')
   const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
   return (
