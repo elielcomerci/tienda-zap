@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Props = {
   initialImages?: string[]
@@ -14,6 +14,17 @@ export default function ProductImagesManager({ initialImages = [] }: Props) {
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    const form = inputRef.current?.form
+    if (!form || !uploading) return
+    const preventWhileUploading = (event: SubmitEvent) => {
+      event.preventDefault()
+      setError('Esperá a que termine la carga antes de guardar el producto.')
+    }
+    form.addEventListener('submit', preventWhileUploading)
+    return () => form.removeEventListener('submit', preventWhileUploading)
+  }, [uploading])
+
   async function uploadFiles(files: FileList | null) {
     if (!files?.length) return
     setError('')
@@ -25,7 +36,6 @@ export default function ProductImagesManager({ initialImages = [] }: Props) {
     }
 
     setUploading(true)
-    const uploaded: string[] = []
     try {
       for (const file of selected) {
         const body = new FormData()
@@ -35,7 +45,6 @@ export default function ProductImagesManager({ initialImages = [] }: Props) {
         if (!response.ok || typeof result.url !== 'string') {
           throw new Error(result.error || `No se pudo cargar ${file.name}.`)
         }
-        uploaded.push(result.url)
         setImages((current) => [...current, result.url])
       }
     } catch (uploadError) {
@@ -60,7 +69,7 @@ export default function ProductImagesManager({ initialImages = [] }: Props) {
     <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5">
       <div>
         <h2 className="text-base font-semibold text-gray-950">Imágenes del producto</h2>
-        <p className="mt-1 text-sm text-gray-600">Subí imágenes desde tu computadora. La primera será la principal. JPG, PNG, WebP, AVIF o GIF · hasta 10 MB por imagen.</p>
+        <p className="mt-1 text-sm text-gray-600">Subí imágenes desde tu computadora. La primera será la principal. JPG, PNG, WebP, AVIF o GIF · hasta 4 MB por imagen.</p>
       </div>
 
       <input type="hidden" name="imagesJson" value={JSON.stringify(images)} />
