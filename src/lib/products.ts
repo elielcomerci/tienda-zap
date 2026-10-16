@@ -55,7 +55,7 @@ const PRODUCT_EDITORIAL_ORDER = [
 ] as const
 
 const PRODUCT_EDITORIAL_RANK = new Map<string, number>(
-  PRODUCT_EDITORIAL_ORDER.map((slug, index) => [slug, index])
+  PRODUCT_EDITORIAL_ORDER.map((slug, index): [string, number] => [slug, index])
 )
 
 /** Minimal public catalog metadata for homepage entry points. */
