@@ -195,7 +195,8 @@ export default function PricingProfitabilityEditor({
               <th className="px-3 py-3 text-right font-bold">IVA estimado</th>
               <th className="px-3 py-3 text-right font-bold">Precio final</th>
               <th className="px-3 py-3 text-right font-bold">Resultado bruto</th>
-              <th className="px-3 py-3 text-right font-bold">Margen real</th>
+              <th className="px-3 py-3 text-right font-bold">Margen s/ venta neta</th>
+              <th className="px-3 py-3 text-right font-bold">Margen s/ total con IVA</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -220,6 +221,7 @@ export default function PricingProfitabilityEditor({
                 <td className="whitespace-nowrap px-3 py-2.5 text-right font-bold tabular-nums text-gray-950">{ars(calculation.finalPrice)}</td>
                 <td className={`whitespace-nowrap px-3 py-2.5 text-right font-semibold tabular-nums ${calculation.grossProfit < 0 ? 'text-red-700' : 'text-gray-800'}`}>{ars(calculation.grossProfit)}</td>
                 <td className={`whitespace-nowrap px-3 py-2.5 text-right font-semibold tabular-nums ${calculation.grossMarginPercent < 0 ? 'text-red-700' : 'text-gray-800'}`}>{calculation.grossMarginPercent.toLocaleString('es-AR', { maximumFractionDigits: 2 })}%</td>
+                <td className={`whitespace-nowrap px-3 py-2.5 text-right font-semibold tabular-nums ${calculation.finalPrice > 0 && calculation.grossProfit / calculation.finalPrice < 0 ? 'text-red-700' : 'text-gray-800'}`}>{(calculation.finalPrice > 0 ? calculation.grossProfit / calculation.finalPrice * 100 : 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })}%</td>
               </tr>
             ))}
           </tbody>
@@ -228,7 +230,7 @@ export default function PricingProfitabilityEditor({
         {previews.length > 500 && <p className="border-t border-gray-100 p-3 text-xs text-gray-500">Mostrando 500 de {previews.length} referencias. El cálculo usa la política actual del borrador.</p>}
       </div>
       <p className="text-xs leading-5 text-gray-500">
-        El precio sugerido responde a la regla guardada. Si escribís un precio neto manual, el resultado y el IVA se recalculan para esa simulación; ese importe manual no se guarda ni cambia el cotizador. El resultado bruto no descuenta comisiones, logística, retenciones, Ingresos Brutos ni gastos operativos.
+        El precio sugerido responde a la regla guardada. Si escribís un precio neto manual, el resultado y el IVA se recalculan para esa simulación; ese importe manual no se guarda ni cambia el cotizador. El margen sobre venta neta excluye IVA; el margen sobre total con IVA usa el importe final como denominador y se muestra solo como comparación. El resultado bruto no descuenta comisiones, logística, retenciones, Ingresos Brutos ni gastos operativos.
       </p>
     </section>
   )
