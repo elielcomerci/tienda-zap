@@ -243,3 +243,89 @@ La lista vigente confirmada por ZAP expresa los importes de 3.000 y 5.000 unidad
 | 4/4 | $60.500 | $175.500 | $282.500 |
 
 **Importante:** esta tabla es una propuesta calculada a partir de la promoción vigente que informó ZAP. No está publicada en el cotizador. La integración pública sigue bloqueada hasta que el motor permita distinguir producción offset de digital y asocie cada precio con su terminación exacta. No mezclar estos valores con los costos de la matriz digital ni mostrar cantidades que el resolver no pueda cotizar.
+
+
+## 8. Revisión de otros costos y contraste con mercado (16/10/2026)
+
+### Criterio común
+
+Para comparar los productos con el mismo criterio comercial usado en tarjetas se calcula:
+
+`precio final objetivo = costo proveedor validado / 0,60 × 1,21`
+
+El resultado busca 40% de margen bruto sobre la venta neta, agrega 21% de IVA de venta y se redondea hacia arriba a múltiplos de $500. Es una simulación, no una activación automática. Supone que el costo informado es el costo completo del producto terminado y que corresponde aplicar IVA del 21%; antes de publicar deben validarse flete, preparación, diseño, comisiones de cobro y tratamiento fiscal.
+
+### A. Stickers circulares en papel autoadhesivo 90g
+
+La matriz vigente en el seed marca costo proveedor terminado sin IVA. Para 5×5 cm, la celda es $19.231 por 500 y $36.859 por 1.000 unidades.
+
+| Cantidad | Costo proveedor | Precio final objetivo (40% margen bruto + IVA) |
+|---|---:|---:|
+| 100 | $4.968 | $10.500 |
+| 500 | $19.231 | $39.000 |
+| 1.000 | $36.859 | $74.500 |
+
+**Contraste público:**
+- Imprimime publica stickers de papel autoadhesivo, corte recto y medio corte, a $30.590 + IVA por 1.000 ($37.014 final). La medida concreta depende de la selección del cotizador, por lo que sirve como referencia de entrada, no como comparación exacta con 5×5 circular.
+- Dokan publica stickers circulares de 5 cm a $95.000 por 1.000, en autoadhesivo Avery Fasson y entregados en planchas.
+- Gráfica B377 informa como referencia $110.000 por 1.000 stickers circulares de 5 cm.
+
+Las dos referencias de 5 cm circulares promedian $102.500. El objetivo ZAP de $74.500 queda aproximadamente 27% por debajo de ese promedio, pero casi duplica la referencia básica de Imprimime, que no especifica en el resultado la misma medida y forma. **Conclusión:** puede posicionarse en un rango medio/medio-alto para sticker circular de 5 cm, pero hay que confirmar que la matriz ZAP realmente incluye la laca UV y el mismo tipo de corte/entrega. No comparar con etiquetas rectangulares de corte recto como si fueran equivalentes.
+
+Fuentes: https://imprimime.com.ar/stickers/stickers · https://dokan.com.ar/product/stickers-redondos/ · https://graficab377.com/blog/cuanto-cuesta-imprimir-en-buenos-aires
+
+### B. Flyers / volantes offset
+
+La matriz de proveedor está identificada como `PROMO_DIRECTA_OFFSET` y su vigencia declara junio-julio de 2026. A fecha de esta revisión está vencida: los importes siguientes sirven para evaluar la estructura y el posicionamiento, **no para publicar sin recotizar**.
+
+| Especificación de la matriz | Costo proveedor | Precio final objetivo |
+|---|---:|---:|
+| 10×15 cm, ilustración 150g, 4/4, 1.000 u. | $32.000 | $64.500 |
+| 10×15 cm, ilustración 150g, 4/4, 5.000 u. | $85.000 | $171.500 |
+| 15×20 cm, ilustración 150g, 4/4, 1.000 u. | $64.000 | $129.000 |
+
+**Contraste público:**
+- Gráfica Lugano publica 10×15 cm, ilustración 115g, doble faz, a $65.000 por 1.000 y $150.000 por 5.000.
+- Imprimime publica flyers offset full color frente y dorso desde $64.050 + IVA por 1.000 (unos $77.501 finales). La página permite elegir medida y gramaje, por lo que el valor “desde” no garantiza la misma especificación.
+
+Para 1.000 unidades, el precio objetivo de $64.500 queda alrededor de 9% debajo del promedio simple de esas dos referencias (aprox. $71.250 finales). Para 5.000 unidades, $171.500 queda aproximadamente 14% por encima de los $150.000 publicados por Lugano para 115g; la diferencia de gramaje y la tarifa vencida impiden cerrar una conclusión definitiva.
+
+**Conclusión:** el precio teórico de 1.000 unidades parece competitivo; el de 5.000 puede quedar alto. No tocar margen para compensarlo: primero renovar la cotización de proveedor y confirmar formato, gramaje y tirada exactos.
+
+Fuentes: https://www.graficalugano.com.ar/ · https://imprimime.com.ar/folletos/folletos-flyers
+
+### C. Carpetas corporativas A4 con solapa
+
+Esta categoría presenta la alerta económica más fuerte. La matriz digital de 300g contiene precios unitarios por tramo. Aplicando la misma fórmula a 500 unidades:
+
+| Configuración del seed | Costo unitario | Costo total a 500 | Precio final objetivo |
+|---|---:|---:|---:|
+| 4/0, sin laminar, solapa blanca | $1.186 | $593.000 | $1.196.000 |
+| 4/0, OPP brillo, solapa blanca | $1.271 | $635.500 | $1.282.000 |
+| 4/4, OPP brillo, solapa blanca | $1.649 | $824.500 | $1.663.000 |
+| 4/4, OPP mate, solapa blanca | $1.662 | $831.000 | $1.676.000 |
+
+**Contraste público a 500 unidades:**
+- Imprenta Lugones publica $541.900 para carpeta económica sin laminar, $681.900 para carpeta laminada de 300g con solapa blanca, y $1.076.300 para carpeta premium impresa frente y dorso con solapa impresa.
+- Soluciones Gráficas muestra un precio final de $786.566 para 500 carpetas A4 con solapa; la selección de terminaciones asociada al precio mostrado no queda totalmente clara en el resultado público.
+
+La referencia de $681.900 para carpeta laminada básica y la de $786.566 sitúan un promedio de referencia de alrededor de $734.000, aunque no son dos configuraciones idénticas. El objetivo ZAP de $1.282.000 para 4/0 laminada queda aproximadamente 75% por encima de ese promedio. Para 4/4, el objetivo de $1.663.000 también supera en alrededor de 55% la referencia premium de $1.076.300, aun cuando las especificaciones no coinciden exactamente.
+
+**Conclusión: no publicar estos precios.** El costo de proveedor cargado ya está en niveles cercanos o superiores al precio minorista de otros talleres antes de agregar margen e IVA. Hay que confirmar que los importes de `carpetasDigital300gTiers` sean realmente costos de compra y no precios de venta de una lista anterior, validar la unidad y pedir cotización comparable. No se resuelve reduciendo el margen: el costo base necesita auditoría.
+
+Fuentes: https://www.imprentalugones.com.ar/productos/carpetas/ · https://shop.solucionesgraficas.com.ar/storefront/nuestros-productos/carpetas-a4-con-solapa/prod08778E5D_82C5_B72C_5FDD_3ACD67BC7BE5.html
+
+### D. Tags y etiquetas colgantes
+
+No se fija precio final todavía. El configurador de tags usa `PRODUCT_QUOTER` y el cálculo físico por pliegos; la auditoría anterior detectó que ese recorrido no incorpora el costo de impresión de proveedor terminado y que el costo de perforación no coincide con la tarifa documentada. Aplicar el 40% de margen a ese costo incompleto produciría un precio ficticio. **Bloqueo:** corregir primero el costo completo de impresión y perforación, luego contrastar con precios publicados para el mismo tamaño, gramaje, impresión y perforación.
+
+### E. Resultado de esta revisión
+
+| Producto | Resultado preliminar | Decisión |
+|---|---|---|
+| Stickers circulares 5×5 | $74.500 / 1.000; por debajo del promedio de dos referencias circulares de 5 cm, pero por encima de la referencia básica de corte recto | Validar material, laca UV y corte; después cotizar |
+| Flyers 10×15 150g | $64.500 / 1.000; competitivo frente a dos referencias, pero la lista fuente venció | Pedir costo vigente antes de publicar |
+| Carpetas A4 300g | Objetivos de $1,28 M a $1,68 M / 500, claramente altos frente a referencias minoristas | No publicar; auditar la fuente y la unidad de costo |
+| Tags | No se puede obtener un precio confiable con el costo actual del motor | Corregir impresión y perforación antes de fijar precio |
+
+Los precios de competencia son precios publicados consultados el 16/10/2026; pueden cambiar y no todos incluyen las mismas terminaciones, envío o diseño. Se usa el promedio sólo cuando las referencias son suficientemente comparables, y se explicitan las diferencias cuando no lo son.
