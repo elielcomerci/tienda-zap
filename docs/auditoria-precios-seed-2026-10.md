@@ -492,8 +492,8 @@ Estos productos tienen datos suficientes para ser los primeros en cerrar, pero *
 | A | Stickers circulares 5 cm, papel autoadhesivo, 1.000 u | $108.000 | Costo de referencia $36.859; dos referencias de mercado ($95.000 y $110.000); margen teórico documentado cercano al 58,7% si el precio es final con IVA | Confirmar proveedor/costo vigente, soporte, corte/troquel, laca y cantidad; incluir embalaje/flete/comisiones absorbidos; verificar que la cotización real arroje ese precio y que la interfaz/checkout use la misma convención de IVA |
 | A | Tarjetas 9×5 cm, 350 g, 4/0, 1.000 u | $52.500 | Costo de referencia $24.000; margen teórico cercano al 44,7% sobre precio final con IVA | Confirmar costo terminado vigente y laminado exacto; verificar que el cotizador actual no sustituya este costo por otra matriz ni produzca un precio distinto |
 | A | Tarjetas 9×5 cm, 350 g, 4/4, 1.000 u | $67.000 | Costo de referencia $30.000; margen teórico cercano al 45,8% | Confirmar especificación, terminación y proveedor; probar cotización end-to-end |
-| B | Flyers 10×15 cm, 150 g, 4/4, 1.000 u | $72.000 | Referencia de costo $32.000; margen teórico cercano al 46,2%; referencias públicas próximas | Recotizar obligatoriamente: la fuente del costo venció. Confirmar si el precio público comparado incluye IVA y que el pliego/merma/plegado se modelen bien |
-| B | Flyers 10×15 cm, 150 g, 4/4, 5.000 u | $166.500 | Margen teórico cercano al 38,2%, antes de costos omitidos | Recotizar; recalcular costo completo y verificar que no caiga por debajo del piso de 35% |
+| B | Flyers 10×15 cm, 150 g, 4/4, 1.000 u | $72.000 | Costo vigente confirmado por ZAP: $32.000; margen bruto estimado 46,2% si el precio final incluye IVA | Verificar la nueva resolución contra costo terminado y probar API/carrito; no recotizar |
+| B | Flyers 10×15 cm, 150 g, 4/4, 5.000 u | $166.500 | Costo vigente confirmado por ZAP: $85.000; margen bruto estimado 38,2% si el precio final incluye IVA | Verificar la nueva resolución contra costo terminado y probar API/carrito; no recotizar |
 | C | Banner tensor simple 190×90 cm, full color y estructura | Objetivo inicial: precio de mercado comparable, sin fijar importe ZAP todavía | Imprimime publica $54.601 + IVA; B377 publica $60.000 para banner + tensor 90×190 cm; las diferencias de especificación deben verificarse | Obtener costo ZAP terminado o reconstruir materiales + impresión + confección/terminación + estructura + mano de obra + logística; comparar el costo completo contra vender a precio final de mercado. Si el margen no alcanza, cotizar otra estructura/proveedor o ofrecer una mejora real de calidad al precio mediano |
 | C | Roll-up 200×85 cm, full color, estructura y bolso | Objetivo inicial: precio de mercado comparable, sin fijar importe ZAP todavía | Imprimime publica $97.248 + IVA, incluye portabanner metálico y bolso | Confirmar costo terminado o componentes completos; no usar costos de lona sola como si fueran el roll-up completo |
 
@@ -550,9 +550,11 @@ Se mantienen como objetivos comerciales sujetos a aprobación técnica:
 
 El segundo precio queda por debajo del objetivo del 40%, pero supera el piso comercial acordado del 35%, siempre que no falten costos directos absorbidos por ZAP.
 
-### 13.4 Corrección requerida antes de activar
+### 13.4 Corrección implementada en la rama; validación pendiente
 
-No se debe corregir esto cambiando el costo de proveedor ni aumentando/disminuyendo a ciegas `profitMargin`. La implementación debe:
+Se implementó una resolución acotada para estas dos configuraciones: `commercialPriceOverrides` consulta el costo terminado de `providerFinishedCostMatrix.matrix`, conserva los precios públicos explícitos de $72.000 y $166.500, calcula margen bruto sobre venta neta de IVA y bloquea si queda por debajo del 35%. Las demás configuraciones no coincidentes continúan por el flujo anterior.
+
+No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron pruebas contractuales para ambas cantidades y para el bloqueo por margen insuficiente. Falta ejecutar `npm test` y la prueba de integración con `DATABASE_URL` antes de considerar validada la corrección. La implementación debe:
 
 1. Resolver explícitamente estas configuraciones de flyers offset contra la matriz de **producto terminado** vigente ($32.000 / $85.000), no contra el costo de papel por pliego.
 2. Permitir precios comerciales de venta definidos por configuración/cantidad —$72.000 y $166.500 para estas dos combinaciones— sin convertirlos en un multiplicador genérico del costo.
@@ -560,4 +562,4 @@ No se debe corregir esto cambiando el costo de proveedor ni aumentando/disminuye
 4. Mantener separadas las demás modalidades (otros papeles, impresión digital bajo demanda, dípticos y trípticos) hasta tener su propia equivalencia de costo y precio. No redirigir todo el configurador a un único proveedor si la selección no está cubierta.
 5. Añadir pruebas unitarias del cálculo y un caso de integración que compruebe el recorrido API → cotizador → carrito con los mismos importes y tratamiento de IVA.
 
-**Estado actual de esta combinación: BLOQUEADA PARA ACTIVACIÓN por desacople entre la matriz de costo terminado y el motor ejecutado; no por vigencia del costo.** La siguiente tarea de código es corregir el resolver/pricing de forma acotada y probarla antes de cambiar el estado comercial o desplegar.
+**Estado actual de esta combinación: CORRECCIÓN IMPLEMENTADA EN LA RAMA, PENDIENTE DE PRUEBAS.** No activar en producción hasta ejecutar las pruebas de contrato, verificar el recorrido real API → cotizador → carrito y confirmar que el tratamiento de IVA sea consistente en pantalla y checkout. El bloqueo nunca fue por vigencia del costo.
