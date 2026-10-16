@@ -248,7 +248,7 @@ test('payload real de la tienda para flyers aplica precio comercial aprobado en 
     const quote = quoteConfiguratorSelection(config, {
       rawMaterialId: 'raw_mat_ilustracion_150g_4_4',
       sizeLabel: '10x15 cm',
-      quantity: String(quantity),
+      quantity,
       finishingIds: [],
     }, quoter);
     assert.equal(quote.totalPrice, expectedPrice);
@@ -261,7 +261,7 @@ test('payload genérico de flyers no cubierto conserva el cotizador existente', 
   const quote = quoteConfiguratorSelection(config, {
     rawMaterialId: 'raw_mat_ilustracion_150g_4_0',
     sizeLabel: '10x15 cm',
-    quantity: '1000',
+    quantity: 1000,
     finishingIds: [],
   }, makeQuoterConfig(config));
   assert.ok(quote.totalPrice > 0);
@@ -274,7 +274,7 @@ test('payload de flyers 10x15 150g 4/4 sin precio aprobado exige consulta', () =
     () => quoteConfiguratorSelection(config, {
       rawMaterialId: 'raw_mat_ilustracion_150g_4_4',
       sizeLabel: '10x15 cm',
-      quantity: '2500',
+      quantity: 2500,
       finishingIds: [],
     }, makeQuoterConfig(config)),
     /requiere cotización para la cantidad seleccionada/
