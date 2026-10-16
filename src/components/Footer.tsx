@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="container mx-auto px-4">
           <p className="mb-2 flex items-center justify-center gap-2 text-xs font-medium text-gray-300">
             <span>Hecho con</span>
-            <Heart className="h-4 w-4 fill-[#ED164F] text-[#ED164F]" />
+            <Heart aria-hidden="true" className="h-4 w-4 shrink-0 fill-[#ED164F] text-[#ED164F]" />
             <span>en Parque Leloir</span>
           </p>
           <p>© {new Date().getFullYear()} ZAP Tienda · Todos los derechos reservados.</p>
@@ -26,9 +26,9 @@ export default function Footer() {
   return (
     <footer className="relative bg-white py-8 border-t border-gray-100">
       <div className="container mx-auto px-4 text-center">
-        <p className="flex items-center justify-center space-x-2 text-sm md:text-base font-medium text-gray-800">
+        <p className="flex items-center justify-center gap-2 text-sm md:text-base font-medium text-gray-800">
           <span>Hecho con</span>
-          <Heart className="w-5 h-5 text-[#ED164F] fill-[#ED164F]" />
+          <Heart aria-hidden="true" className="h-5 w-5 shrink-0 fill-[#ED164F] text-[#ED164F]" />
           <span>en Parque Leloir</span>
         </p>
         <p className="mt-2 text-xs md:text-sm text-gray-400">
