@@ -643,10 +643,7 @@ export default function ProductConfigurator({
     return (
       <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
         <div className="border-b border-gray-100 pb-5">
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-            Cotización automática
-          </span>
-          <h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">
+          <h2 className="text-2xl font-black text-gray-950 sm:text-3xl">
             Configurá tu pedido
           </h2>
         </div>
