@@ -54,6 +54,40 @@ export function isEditableProviderCostPath(path: string[]): boolean {
     && !path.slice(1).some((segment) => NON_COST_SEGMENTS.has(segment.toLowerCase()));
 }
 
+const HIDDEN_LABEL_SEGMENTS = new Set([
+  'providerFinishedCostMatrix',
+  'tiers',
+  'finishes',
+]);
+
+const SEGMENT_LABELS: Record<string, string> = {
+  opp: 'OPP',
+  uv: 'UV',
+  sectorizedSides: 'Laterales sectorizados',
+  front: 'Frente',
+  back: 'Dorso',
+  printing: 'Impresión',
+  deluxe: 'Deluxe',
+  matte: 'Mate',
+};
+
+function formatCostPathLabel(path: string[]) {
+  return path
+    .filter((part) => !HIDDEN_LABEL_SEGMENTS.has(part))
+    .map((part) => {
+      if (SEGMENT_LABELS[part]) return SEGMENT_LABELS[part];
+      if (/^\\d+x\\d+$/i.test(part)) return part.replace(/x/i, ' × ');
+      return part
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/_/g, ' ')
+        .replace(/\\s+/g, ' ')
+        .trim()
+        .replace(/^\\w/, (letter) => letter.toUpperCase());
+    })
+    .filter(Boolean)
+    .join(' · ');
+}
+
 export function flattenProviderCostMatrix(
   value: unknown,
   path: string[] = ['providerFinishedCostMatrix'],
@@ -63,7 +97,7 @@ export function flattenProviderCostMatrix(
     if (isEditableProviderCostPath(path)) {
       rows.push({
         path,
-        label: path.map((part) => part.replace(/_/g, ' ')).join(' · '),
+        label: formatCostPathLabel(path),
         value,
       });
     }
