@@ -4,7 +4,7 @@ import { buildR2PublicMediaUrl, getR2BucketName, getR2Client } from '@/lib/r2'
 
 export const runtime = 'nodejs'
 
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
+const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Formato no permitido. Usá JPG, PNG, WebP, AVIF o GIF.' }, { status: 415 })
     }
     if (file.size <= 0 || file.size > MAX_IMAGE_SIZE_BYTES) {
-      return Response.json({ error: 'La imagen debe pesar menos de 10 MB.' }, { status: 413 })
+      return Response.json({ error: 'La imagen debe pesar menos de 4 MB.' }, { status: 413 })
     }
 
     const objectKey = `productos/${crypto.randomUUID()}.${extension}`
