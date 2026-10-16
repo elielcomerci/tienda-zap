@@ -17,6 +17,7 @@ import {
   flattenProviderCostMatrix,
   isEditableProviderCostPath,
 } from '../src/lib/pricing/pricing-matrix-admin';
+import { calculateCommercialPrice, marginFromMarkup, validateCommercialPricingPolicy } from '../src/lib/pricing/commercial-pricing-policy';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -233,6 +234,37 @@ test('el editor de Precios ZAP solo expone importes y excluye metadatos de la ma
   assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'tiers', '0', 'minQty']), false);
   assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'paperSurcharges', 'ilustracion_350g']), false);
   assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'tiers', '0', 'prices', '4_0']), true);
+});
+
+test('la política comercial distingue margen sobre venta y recargo sobre costo', () => {
+  assert.equal(marginFromMarkup(150), 60);
+  const marginPolicy = validateCommercialPricingPolicy({ version: 1, mode: 'MARGIN', percentage: 50, vatRatePercent: 21 });
+  const calculation = calculateCommercialPrice(1000, marginPolicy);
+  assert.ok(calculation.finalPrice >= 2420);
+  assert.equal(Math.round(calculation.vatAmount * 100), Math.round((calculation.finalPrice - calculation.netPrice) * 100));
+  assert.ok(Math.abs(calculation.grossProfit - (calculation.netPrice - 1000)) < 0.000001);
+  assert.ok(Math.abs(calculation.grossMarginPercent - ((calculation.netPrice - 1000) / calculation.netPrice) * 100) < 0.000001);
+  assert.throws(() => validateCommercialPricingPolicy({ version: 1, mode: 'MARGIN', percentage: 100, vatRatePercent: 21 }), /menor que 100/);
+});
+
+test('el cotizador de proveedor prioriza la política de la versión activa', () => {
+  const base = tarjetasVouchersConfigurator;
+  const config = {
+    ...base,
+    pricing: {
+      ...(base.pricing as any),
+      commercialPricingPolicy: { version: 1, mode: 'MARGIN', percentage: 50, vatRatePercent: 21 },
+    },
+  };
+  const selection = defaultSelection(base);
+  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 150 } as any);
+  const expected = calculateCommercialPrice(8213, {
+    version: 1, mode: 'MARGIN', percentage: 50, vatRatePercent: 21,
+  });
+  assert.equal(quote.totalCost, 8213);
+  assert.equal(quote.totalPrice, expected.finalPrice);
+  assert.ok(Math.abs((quote.breakdown?.marginAmount ?? 0) - expected.grossProfit) < 0.000001);
+  assert.ok(Math.abs((quote.breakdown?.marginPercent ?? 0) - expected.grossMarginPercent) < 0.000001);
 });
 
 test('archivos de trabajo acepta formatos habituales y limita tamaño/formato', () => {
