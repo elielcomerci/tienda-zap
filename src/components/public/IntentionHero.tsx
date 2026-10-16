@@ -1,52 +1,32 @@
 import type { DiscoverySituation } from '@/lib/discovery'
 
-const SITUATION_LEADS: Record<string, string> = {
-  'estoy-por-abrir': 'Cada apertura tiene sus propios desafíos.',
-  'quiero-conseguir-mas-pedidos':
-    'Conseguir más pedidos empieza por darles más motivos para elegirte.',
-  'quiero-vender-mas-en-el-local':
-    'Vender más en el local también depende de cómo presentás tu propuesta.',
-  'quiero-que-mis-clientes-vuelvan':
-    'Para que tus clientes vuelvan, la experiencia tiene que darles un motivo.',
-  'quiero-que-mi-comida-se-vea-mejor': 'Tu comida merece verse tan bien como sabe.',
-  'quiero-que-mi-marca-se-vea-mejor':
-    'Una marca se reconoce cuando todo lo que muestra habla el mismo idioma.',
-  'quiero-vender-o-alquilar-mas':
-    'Cada propiedad tiene algo que destacar. Hagamos que llegue a quien la busca.',
-  'quiero-ordenar-mi-negocio':
-    'Ordenar el negocio empieza por distinguir lo urgente de lo importante.',
-  'quiero-vender-online':
-    'Vender online necesita una experiencia clara, confiable y fácil de recorrer.',
-  'quiero-renovar-la-marca-o-el-espacio':
-    'Renovar es una oportunidad para alinear lo que sos con lo que mostrás.',
-  'estoy-abriendo-o-renovando-la-inmobiliaria':
-    'La forma en que se presenta tu inmobiliaria también construye confianza.',
-  'quiero-captar-propiedades':
-    'Captar propiedades empieza por mostrar por qué confiar en vos.',
-  'quiero-conseguir-mas-consultas':
-    'Más consultas empiezan cuando tu propuesta llega a las personas indicadas.',
-  'quiero-transmitir-mas-confianza':
-    'La confianza se construye en cada detalle de tu marca y de la experiencia.',
-  'quiero-llenar-la-agenda':
-    'Una agenda más completa empieza por hacer visible tu propuesta.',
-  'quiero-que-me-encuentren':
-    'Tus clientes tienen que encontrarte donde empiezan a buscar.',
-  'quiero-vender-mas':
-    'Vender más empieza por conectar mejor tu propuesta con quienes la necesitan.',
-  'quiero-renovar-el-local':
-    'Tu local puede contar mejor lo que hace especial a tu negocio.',
-  'tengo-un-evento': 'Un evento empieza mucho antes de que llegue la gente.',
-  'quiero-atraer-gente-al-evento-o-stand':
-    'Atraer gente es el primer paso; la experiencia invita a quedarse.',
-  'quiero-generar-contactos':
-    'Los buenos contactos empiezan con una propuesta que invita a acercarse.',
-  'quiero-conseguir-alumnos':
-    'Conseguir alumnos empieza por mostrar qué hace valiosa tu propuesta.',
-  'quiero-mejorar-mi-espacio':
-    'Un espacio bien pensado mejora la experiencia desde que alguien entra.',
+const SITUATION_CONTEXTS: Record<string, string> = {
+  'estoy-por-abrir': 'Estás por abrir',
+  'quiero-conseguir-mas-pedidos': 'Más pedidos',
+  'quiero-vender-mas-en-el-local': 'Ventas en el local',
+  'quiero-que-mis-clientes-vuelvan': 'Clientes que vuelven',
+  'quiero-que-mi-comida-se-vea-mejor': 'Tu propuesta gastronómica',
+  'quiero-que-mi-marca-se-vea-mejor': 'Tu marca',
+  'quiero-vender-o-alquilar-mas': 'Ventas y alquileres',
+  'quiero-ordenar-mi-negocio': 'Ordenar el negocio',
+  'quiero-vender-online': 'Venta online',
+  'quiero-renovar-la-marca-o-el-espacio': 'Renovar tu marca o espacio',
+  'estoy-abriendo-o-renovando-la-inmobiliaria': 'Tu inmobiliaria',
+  'quiero-captar-propiedades': 'Captación de propiedades',
+  'quiero-conseguir-mas-consultas': 'Más consultas',
+  'quiero-transmitir-mas-confianza': 'Transmitir confianza',
+  'quiero-llenar-la-agenda': 'Llenar la agenda',
+  'quiero-que-me-encuentren': 'Que te encuentren',
+  'quiero-vender-mas': 'Vender más',
+  'quiero-renovar-el-local': 'Renovar tu local',
+  'tengo-un-evento': 'Tu evento',
+  'quiero-atraer-gente-al-evento-o-stand': 'Convocatoria para tu evento',
+  'quiero-generar-contactos': 'Generar contactos',
+  'quiero-conseguir-alumnos': 'Conseguir alumnos',
+  'quiero-mejorar-mi-espacio': 'Mejorar tu espacio',
 }
 
-const DEFAULT_LEAD = 'Cada negocio tiene su propio punto de partida.'
+const DEFAULT_CONTEXT = 'Tu negocio'
 const DISCOVERY_QUESTION = '¿Qué necesitás resolver primero?'
 
 export default function IntentionHero({
@@ -55,19 +35,16 @@ export default function IntentionHero({
   intention: DiscoverySituation
   businessTypeName?: string
 }) {
-  const lead =
-    SITUATION_LEADS[intention.slug] ||
-    intention.description ||
-    DEFAULT_LEAD
+  const context = SITUATION_CONTEXTS[intention.slug] || DEFAULT_CONTEXT
 
   return (
-    <section className="border-b border-gray-200/80 pb-8 sm:pb-10">
+    <section className="border-b border-gray-200/80 pb-7 sm:pb-9">
       <div className="max-w-3xl">
-        <h1 className="text-3xl leading-[1.12] tracking-[-0.035em] text-gray-950 sm:text-5xl sm:leading-[1.08]">
-          <span className="block font-medium">{lead}</span>
-          <span className="mt-1 block font-semibold sm:mt-1.5">
-            {DISCOVERY_QUESTION}
-          </span>
+        <p className="mb-2 text-sm font-medium leading-5 tracking-[-0.01em] text-gray-500 sm:mb-3 sm:text-base">
+          {context}
+        </p>
+        <h1 className="text-3xl font-semibold leading-[1.08] tracking-[-0.035em] text-gray-950 sm:text-5xl sm:leading-[1.06]">
+          {DISCOVERY_QUESTION}
         </h1>
       </div>
     </section>
