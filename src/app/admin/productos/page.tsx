@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Image as ImageIcon } from 'lucide-react'
 import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { getAllProductsAdmin } from '@/lib/products'
 import { getProductFamilyLabel, getProductModalityLabel } from '@/lib/catalog-domain'
@@ -23,7 +24,22 @@ export default async function AdminProductsPage() {
           <tbody className="divide-y divide-gray-100">
             {products.map((product) => (
               <tr key={product.id}>
-                <td className="px-4 py-3"><p className="font-semibold text-gray-900">{product.name}</p><p className="font-mono text-xs text-gray-500">/{product.slug}</p></td>
+                <td className="px-4 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                      {product.images[0] ? (
+                        <img src={product.images[0]} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon aria-hidden="true" size={20} className="text-gray-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900">{product.name}</p>
+                      <p className="font-mono text-xs text-gray-500">/{product.slug}</p>
+                      {product.images.length > 1 && <p className="mt-1 text-xs text-gray-500">{product.images.length} imágenes</p>}
+                    </div>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-gray-700">{getProductFamilyLabel(product)}</td>
                 <td className="px-4 py-3 text-gray-700">{getProductModalityLabel(product.modality)}</td>
                 <td className="px-4 py-3 text-gray-700">{product.configuratorVersions.map((version) => `${version.schemaVersion} · ${version.status}`).join(', ') || '—'}</td>
