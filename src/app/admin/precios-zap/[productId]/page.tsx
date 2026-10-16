@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import PricingMatrixEditor from '../PricingMatrixEditor'
+import PricingProfitabilityEditor from '../PricingProfitabilityEditor'
+import { marginFromMarkup, validateCommercialPricingPolicy } from '@/lib/pricing/commercial-pricing-policy'
 import { publishPricingDraft, restorePricingVersion } from '../actions'
 import { flattenProviderCostMatrix, type ProviderCostRow } from '@/lib/pricing/pricing-matrix-admin'
 
@@ -29,7 +31,10 @@ export default async function PricingProductPage({
   const { productId } = await params
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    include: { configuratorVersions: { orderBy: { createdAt: 'desc' } } },
+    include: {
+      configuratorVersions: { orderBy: { createdAt: 'desc' } },
+      quoterConfig: { select: { profitMargin: true } },
+    },
   })
   if (!product || !FAMILIES[product.slug]) notFound()
 
@@ -42,6 +47,16 @@ export default async function PricingProductPage({
   if (!active || !hasCostMatrix(active.pricing)) notFound()
 
   const displayVersion = draft ?? active
+  const storedPolicy = (displayVersion.pricing as any)?.commercialPricingPolicy
+  const legacyMarkupPercent = Number(product.quoterConfig?.profitMargin ?? 150)
+  const initialPolicy = storedPolicy
+    ? validateCommercialPricingPolicy(storedPolicy)
+    : {
+        version: 1 as const,
+        mode: 'MARGIN' as const,
+        percentage: marginFromMarkup(legacyMarkupPercent),
+        vatRatePercent: 0,
+      }
   const matrix = (displayVersion.pricing as any)?.providerFinishedCostMatrix
   const rows: ProviderCostRow[] = flattenProviderCostMatrix(matrix)
   const activeMatrix = (active.pricing as any)?.providerFinishedCostMatrix
@@ -102,6 +117,7 @@ export default async function PricingProductPage({
               </div>
             )}
           </section>
+          <PricingProfitabilityEditor versionId={draft.id} rows={rows} initialPolicy={initialPolicy} />
           <PricingMatrixEditor versionId={draft.id} rows={rows} />
           <div id="publish-checklist" className="rounded-2xl border border-gray-200 bg-white p-5">
             <h2 className="font-black text-gray-950">Antes de publicar</h2>
