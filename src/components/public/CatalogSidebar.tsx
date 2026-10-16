@@ -27,7 +27,6 @@ export default function CatalogSidebar({
   const currentMode = mode || 'product'
   const isSituationMode = currentMode === 'objective' || currentMode === 'situation'
   const currentSituation = situation || intent
-  const isCatalogTypeMode = currentMode === 'product' && Boolean(catalogType)
   const isCosas = currentMode === 'product' && catalogType === 'cosa'
   const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
   const isRubro = currentMode === 'rubro'
@@ -55,6 +54,7 @@ export default function CatalogSidebar({
         </div>
       </div>
 
+      {!isDesarrollos && (
       <div>
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
           {currentMode === 'product' ? (
@@ -151,6 +151,7 @@ export default function CatalogSidebar({
           </div>
         )}
       </div>
+      )}
     </aside>
   )
 }
