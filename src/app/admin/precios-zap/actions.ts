@@ -352,6 +352,8 @@ export async function publishPricingDraft(versionId: string, formData: FormData)
   if (!draftCostMatrix) {
     throw new Error('La matriz de costos no tiene la estructura esperada.')
   }
+  const storedPolicy = (draft.pricing as any)?.commercialPricingPolicy
+  if (storedPolicy !== undefined) validateCommercialPricingPolicy(storedPolicy)
   const values = collectEditableProviderCostValues(draftCostMatrix)
   if (values.length === 0 || values.some((value) => value < 0 || !Number.isFinite(value))) {
     throw new Error('La matriz no contiene costos válidos. No se publicó ningún cambio.')
@@ -394,7 +396,7 @@ export async function publishPricingDraft(versionId: string, formData: FormData)
 
 export async function restorePricingVersion(versionId: string, formData: FormData) {
   const actor = await requirePricingAdmin()
-  if (process.env.PRICING_ZAP_PUBLISH_ENABLED !== 'true') {
+  if (!isPricingActivationEnabled()) {
     throw new Error('La restauración está bloqueada: faltan las dos habilitaciones explícitas posteriores a la auditoría comercial.')
   }
   if (formData.get('confirmRestore') !== 'yes') throw new Error('Confirmá la reversión para continuar.')
