@@ -204,6 +204,41 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
   );
 });
 
+test('flyers offset 10x15 150g 4/4 usa costo terminado y precio comercial aprobado para 1000 y 5000', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  const base = {
+    foldingType: 'plano',
+    format: '10x15',
+    material: 'ilustracion_150g',
+    printing: '4_4',
+  };
+
+  const quote1000 = quoteConfiguratorSelection(config, { ...base, quantity: 1000 }, makeQuoterConfig(config));
+  assert.equal(quote1000.totalCost, 32000);
+  assert.equal(quote1000.totalPrice, 72000);
+  assert.ok(Math.abs((quote1000.breakdown!.marginPercent) - 46.2) < 0.1);
+
+  const quote5000 = quoteConfiguratorSelection(config, { ...base, quantity: 5000 }, makeQuoterConfig(config));
+  assert.equal(quote5000.totalCost, 85000);
+  assert.equal(quote5000.totalPrice, 166500);
+  assert.ok(Math.abs((quote5000.breakdown!.marginPercent) - 38.2) < 0.1);
+});
+
+test('flyers offset bloquea el precio configurado si cae debajo del margen bruto mínimo', () => {
+  const config = structuredClone(flyersDesplegablesConfigurator) as any;
+  config.pricing.commercialPriceOverrides.minimumGrossMarginPercent = 50;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      foldingType: 'plano',
+      format: '10x15',
+      material: 'ilustracion_150g',
+      printing: '4_4',
+      quantity: 1000,
+    }, makeQuoterConfig(config)),
+    /no alcanza el margen bruto mínimo/
+  );
+});
+
 test('flyers y tags llegan al motor físico con materiales, medidas y procesos resueltos', () => {
   for (const config of [flyersDesplegablesConfigurator, tagsEtiquetasConfigurator]) {
     const selection = defaultSelection(config);
