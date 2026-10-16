@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { importDraftCostRows, saveDraftCostCell } from './actions'
 
 type CostRow = { path: string[]; label: string; value: number }
@@ -67,6 +68,7 @@ function parseCost(raw: string, delimiter: ',' | ';'): number {
 }
 
 export default function PricingMatrixEditor({ versionId, rows }: { versionId: string; rows: CostRow[] }) {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [edits, setEdits] = useState<Record<string, string>>({})
   const [savingPath, setSavingPath] = useState<string | null>(null)
@@ -161,7 +163,8 @@ export default function PricingMatrixEditor({ versionId, rows }: { versionId: st
       )
       setImportMessage(result.message)
       setImportPreview(null)
-      window.location.reload()
+      setEdits({})
+      router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pudimos guardar la importación.')
     } finally {
