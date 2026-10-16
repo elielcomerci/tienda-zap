@@ -41,13 +41,10 @@ export default function CatalogSidebar({
   return (
     <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start min-w-0">
       <div>
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
-          Navegación
-        </p>
-        
+
         <div className="grid grid-cols-3 gap-1 bg-gray-200/60 p-1 rounded-xl">
           <Link href={catalogUrl({ mode: 'product', tipo: 'cosa' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isCosas ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
-            Cosas
+            Productos
           </Link>
           <Link href={catalogUrl({ mode: 'rubro' })} scroll={false} className={"flex justify-center items-center py-2 text-xs font-semibold rounded-lg transition-all " + (isRubro ? "bg-[#ED164F] text-white shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50")}>
             Rubro
@@ -60,7 +57,7 @@ export default function CatalogSidebar({
 
       <div>
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
-          {currentMode === 'product' ? (catalogType === 'desarrollo' ? 'Desarrollos' : catalogType === 'cosa' ? 'Cosas' : 'Todo') : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
+          {currentMode === 'product' ? (catalogType === 'desarrollo' ? 'Desarrollos' : 'Categorías') : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
         </p>
 
         {currentMode === 'product' ? (
@@ -96,7 +93,7 @@ export default function CatalogSidebar({
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900"
               >
                 <LayoutGrid size={18} className="text-gray-400" />
-                <span className="leading-tight">Todo</span>
+                <span className="leading-tight">Todas</span>
               </Link>
             </div>
           ) : (
