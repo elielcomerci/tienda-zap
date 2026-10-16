@@ -438,3 +438,32 @@ No se deben completar estas celdas copiando un multiplicador genérico. Las regl
 - **Producción:** esta auditoría documental no ejecuta seeds ni cambia precios en vivo.
 
 El criterio para declarar un producto “validado” es tener simultáneamente costo vigente y completo, especificación cerrada, contraste de mercado comparable, margen comprobado y prueba del recorrido de compra. Un precio cargado en base de datos o una fórmula que devuelve un número no alcanza ese criterio.
+
+
+## 11. Primera ampliación de referencias de mercado por familias aún sin precio aprobado (16/10/2026)
+
+Esta pasada amplía el contraste fuera de tarjetas/flyers/stickers. Las referencias sirven para construir comparables; **no son precios ZAP recomendados ni prueban margen**, porque todavía falta emparejar cada ficha con un costo de proveedor completo y la misma especificación.
+
+| Familia / referencia pública | Precio publicado observado | Qué permite comparar | Límite / decisión |
+|---|---:|---|---|
+| Banner tensor simple, 190×90 cm, full color y estructura metálica — Imprimime | $54.601 + IVA / unidad | Referencia de producto terminado con estructura | No comparar con lona sola ni con roll-up. Confirmar soporte, impresión, estructura y envío. https://imprimime.com.ar/ |
+| Banner Roll Up, 200×85 cm, full color y portabanner — Imprimime | $97.248 + IVA / unidad | Referencia de roll-up completo | Mantener separado de banners tensores y lona impresa. https://imprimime.com.ar/ |
+| Imanes publicitarios full color — Imprimime | Desde $18.611 + IVA / 250 unidades | Referencia inicial para familia de imanes | El resultado no detalla tamaño/espesor; no fijar precio hasta abrir ficha y verificar equivalencia. https://imprimime.com.ar/ |
+| Calendario CD, 12×14 cm, una hoja por mes y caja acrílica — Imprimime | Desde $55.238 + IVA / 10 unidades | Referencia para calendario de escritorio con caja | No es comparable con calendario de pared; identificar formato exacto del producto ZAP. https://imprimime.com.ar/ |
+| Bolsa de papel 26×12×36 cm, manija, impresión 1 color en una cara — Paperland | Precio de lista visible $92.600 / pack de 100; precio rebajado visible $85.934 y transferencia $77.340,60 | Referencia de bolsa terminada, formato y cantidad definidos | Diferenciar precio de lista, descuento y transferencia; confirmar gramaje, IVA, entrega y vigencia. https://www.paperland.ar/productos/bolsas-de-papel-kraft-c-manija-26x12x36-impresas/ |
+| Bolsa de papel 30×41 cm, impresión a 1 color configurable — Ecoingenio | $115.865 / 100 unidades; el sitio indica IVA incluido | Referencia de bolsa personalizada y escala por cantidad | El tamaño y la construcción pueden diferir; verificar fuelle, manijas y soporte. https://ecoingenio.com.ar/producto/bolsas-kraft-personalizadas/ |
+| Caja rígida blanca, tapa y base, 18×12×7,5 cm — Indubox | $224.512 + IVA / 100 unidades para full color en tapa | Referencia para caja personalizada de estructura concreta | No equivale a caja de envío, microcorrugado ni packaging impreso integral. La cotización consultada indicaba validez por 5 días desde 17/09/2026; pedir actualización. https://www.indubox.com.ar/estructura/secciones/s_producto.php?mIdProducto=2185&presup=1 |
+| Remera personalizada, DTF frente y espalda, algodón peinado 24/1 — Imprenet | Desde $20.696 por unidad; $18.626 por unidad llevando más de 10, según ficha | Referencia para prenda terminada con dos ubicaciones impresas | Verificar talles, gramaje, colores, cantidad mínima, envío e IVA en la cotización. https://www.imprenet.ar/productos/ |
+| Remera estampada, 30 unidades, algodón peinado 24/1, una estampa DTF — Remanija | Desde $19.500 por unidad | Referencia para tirada mayorista de 30 unidades | Una estampa, no frente+dorso; pedir cotización con misma prenda y ubicaciones. https://remanija.com.ar/blog/cuanto-cuesta-estampar-remeras-buzos.html |
+| Menú A4, ilustración mate 300 g, 4/4, laminado OPP mate — Agite | $32.100 con efectivo, según ficha | Referencia de carta terminada para gastronomía | La ficha consultada no deja clara la cantidad asociada al precio observado; no usar como precio unitario confirmado sin abrir la selección. https://www.agite.com.ar/productos/carta_a4_laminada/ |
+| Stickers: rangos publicados por material/corte — Imprimime | Papel autoadhesivo corte recto desde $9.778 + IVA / 100; vinilo desde $17.551 + IVA / 100; holográfico desde $33.034 + IVA / 100 | Ayuda a separar familias por material y proceso | No comparar directamente con sticker circular 5 cm con UV/troquel. https://imprimime.com.ar/ |
+
+### Conclusión de esta ampliación
+
+- **Gran formato:** hay precios de venta de producto terminado para banner tensor y roll-up, pero el costo fuente de gran formato está descompuesto por materiales y procesos. El siguiente cálculo debe construir cada combinación sin sumar dos veces líneas que ya incluyen material+proceso, agregar mano de obra/terminación/estructura y comparar contra el producto terminado equivalente.
+- **Bolsas y cajas:** ya existen referencias concretas para algunos formatos, pero no se encontró una matriz de costo proveedor terminada equivalente en el seed. Quedan en SIN COSTO/BLOQUEADO hasta cotización.
+- **Textil:** existen referencias mayoristas con especificación parcial. El configurador actual sigue DRAFT y sin matriz de precios; no activar hasta obtener costos por prenda, técnica, ubicaciones, talles y mínimos.
+- **Imanes y calendarios:** hay referencias de mercado, pero no son comparables a todas las variantes del catálogo. Identificar el SKU y especificación antes de calcular.
+- **Menús:** no comparar una ficha sin cantidad confirmada con una tirada de imprenta. Mantener el precio sin aprobar hasta cerrar unidad, formato, protección y cantidad.
+
+Los valores publicados son observaciones web del 16/10/2026 o de fichas recientes consultadas en esa fecha. Promociones, medios de pago, IVA, entrega y disponibilidad pueden modificar el total final; deben confirmarse al pedir cotización.
