@@ -636,6 +636,75 @@ export function quoteTieredUnitTableSelection(
 }
 
 /**
+ * Overrides comerciales explícitos respaldados por un costo de producto terminado.
+ * El precio override es precio público final; el costo proveedor se conserva sin IVA.
+ * Si la selección no coincide exactamente, el flujo normal del configurador continúa.
+ */
+function quoteCommercialPriceOverride(
+  configurator: ConfiguratorVersionPayload,
+  selection: CommercialSelection
+): ProductQuoteResult | null {
+  const pricing: any = configurator.pricing;
+  const overrideConfig = pricing?.commercialPriceOverrides;
+  if (overrideConfig?.resolver !== 'PROVIDER_FINISHED_COST') return null;
+
+  const productOverride = (overrideConfig.products || []).find((entry: any) =>
+    Object.entries(entry.match || {}).every(([key, value]) => selection[key] === value)
+  );
+  if (!productOverride) return null;
+
+  const quantity = Number(selection.quantity || 0);
+  const totalPrice = Number(productOverride.prices?.[String(quantity)]);
+  if (!quantity || !Number.isFinite(totalPrice) || totalPrice <= 0) return null;
+
+  const costMatrix = pricing?.providerFinishedCostMatrix?.matrix;
+  const costValue = costMatrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
+  if (costValue === undefined || !Number.isFinite(Number(costValue)) || Number(costValue) <= 0) {
+    throw new Error('CONSULT_REQUIRED: Falta el costo de producto terminado para el precio comercial configurado.');
+  }
+
+  const totalCost = Number(costValue);
+  const vatRate = Number(overrideConfig.vatRate ?? 0.21);
+  const publicPriceIncludesTax = overrideConfig.publicPriceIncludesTax !== false;
+  const netSales = publicPriceIncludesTax ? totalPrice / (1 + vatRate) : totalPrice;
+  const grossMarginPercent = ((netSales - totalCost) / netSales) * 100;
+  const minimumGrossMarginPercent = Number(overrideConfig.minimumGrossMarginPercent ?? 35);
+
+  if (grossMarginPercent + 1e-9 < minimumGrossMarginPercent) {
+    throw new Error('CONSULT_REQUIRED: El precio comercial configurado no alcanza el margen bruto mínimo.');
+  }
+
+  const fields = configurator.schema?.fields || {};
+  const selectedOptions = Object.entries(selection)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => {
+      const fieldDef = fields[key];
+      const option = fieldDef?.options?.find((entry: any) => (entry.id ?? entry.value) === value);
+      return {
+        name: fieldDef?.label || key,
+        value: option?.label || String(value),
+      };
+    });
+
+  return {
+    unitPrice: totalPrice / quantity,
+    totalPrice,
+    totalCost,
+    selectedOptions,
+    breakdown: {
+      materialCost: 0,
+      printingCost: 0,
+      processCost: 0,
+      finishingCost: 0,
+      wasteCost: 0,
+      productionCost: totalCost,
+      marginAmount: netSales - totalCost,
+      marginPercent: grossMarginPercent,
+    },
+  };
+}
+
+/**
  * Pipeline completo de cotización a través de ConfiguratorVersion:
  * 1. Validación UI y compatibilidad.
  * 2. Si el motor es STICKER_TABLE: cotiza directo contra matriz comercial versionada.
@@ -651,7 +720,11 @@ export function quoteConfiguratorSelection(
   // 1. Validación UI y reglas de compatibilidad
   const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, selection);
 
-  // 2. Despacho por motor comercial
+  // 2. Precio comercial explícito para configuraciones respaldadas por costo terminado.
+  const commercialOverride = quoteCommercialPriceOverride(configurator, sanitizedSelection);
+  if (commercialOverride) return commercialOverride;
+
+  // 3. Despacho por motor comercial
   if (configurator.pricing?.engine === 'STICKER_TABLE') {
     return quoteStickerTableSelection(configurator, sanitizedSelection);
   }
@@ -670,10 +743,10 @@ export function quoteConfiguratorSelection(
     );
   }
 
-  // 3. Resolución contra registros reales mediante pricing.adapter
+  // 4. Resolución contra registros reales mediante pricing.adapter
   const quoteSelection = resolveQuoterSelection(configurator, sanitizedSelection, requiredProcesses, quoterConfig);
 
-  // 4. Ejecución en el motor existente de nesting y cálculo
+  // 5. Ejecución en el motor existente de nesting y cálculo
   return calculateProductQuote(quoterConfig, quoteSelection);
 }
 
