@@ -76,13 +76,13 @@ function formatCostPathLabel(path: string[]) {
     .filter((part) => !HIDDEN_LABEL_SEGMENTS.has(part))
     .map((part) => {
       if (SEGMENT_LABELS[part]) return SEGMENT_LABELS[part];
-      if (/^\\d+x\\d+$/i.test(part)) return part.replace(/x/i, ' × ');
+      if (/^\d+x\d+$/i.test(part)) return part.replace(/x/i, ' × ');
       return part
         .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
         .replace(/_/g, ' ')
-        .replace(/\\s+/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim()
-        .replace(/^\\w/, (letter) => letter.toUpperCase());
+        .replace(/^\w/, (letter) => letter.toUpperCase());
     })
     .filter(Boolean)
     .join(' · ');
