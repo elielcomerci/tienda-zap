@@ -224,3 +224,22 @@ Ese motor requiere `quoterConfig.profitMargin`; si falta, devuelve `CONSULT_REQU
 
 Acción: definir explícitamente el modelo de margen para ambos productos y agregar una prueba que confirme que la cotización responde con precio para una combinación válida. Hasta entonces, el estado comercial `ACTIVE` puede crear una experiencia de configuración que termina en consulta en vez de precio automático.
 
+## 7. Tarjetas offset — costos normalizados y propuesta de precio final
+
+La lista vigente confirmada por ZAP expresa los importes de 3.000 y 5.000 unidades **por millar**. Para el seed, esos importes se convierten en costo total de la tirada. Los importes de 1.000 unidades ya representan el costo de un millar.
+
+| Impresión | Costo proveedor por millar (1.000) | Costo total (3.000) | Costo por millar (3.000) | Costo total (5.000) | Costo por millar (5.000) |
+|---|---:|---:|---:|---:|---:|
+| 4/0 | $24.000 | $70.500 | $23.500 | $115.000 | $23.000 |
+| 4/1 | $29.000 | $84.000 | $28.000 | $135.000 | $27.000 |
+| 4/4 | $30.000 | $87.000 | $29.000 | $140.000 | $28.000 |
+
+**Propuesta comercial para contrastar:** 40% de margen bruto sobre venta neta, IVA de venta del 21% y redondeo hacia arriba a múltiplos de $500. Fórmula: costo operativo validado / 0,60 × 1,21. En esta primera simulación se usa el costo de proveedor como base; todavía no se han sumado costos operativos no informados, por lo que los importes son pisos comerciales provisionales, no una promesa de rentabilidad neta final.
+
+| Impresión | 1.000 unidades — precio final propuesto | 3.000 unidades — precio final propuesto | 5.000 unidades — precio final propuesto |
+|---|---:|---:|---:|
+| 4/0 | $48.500 | $142.500 | $232.000 |
+| 4/1 | $58.500 | $169.500 | $272.500 |
+| 4/4 | $60.500 | $175.500 | $282.500 |
+
+**Importante:** esta tabla es una propuesta calculada a partir de la promoción vigente que informó ZAP. No está publicada en el cotizador. La integración pública sigue bloqueada hasta que el motor permita distinguir producción offset de digital y asocie cada precio con su terminación exacta. No mezclar estos valores con los costos de la matriz digital ni mostrar cantidades que el resolver no pueda cotizar.
