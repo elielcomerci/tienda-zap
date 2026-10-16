@@ -325,13 +325,10 @@ export default function PublicHeader({
 
       <div className={'fixed inset-0 z-[60] flex flex-col w-full h-full text-white transition-all duration-300 md:inset-auto md:right-4 md:top-[78px] md:w-[420px] md:h-auto md:max-h-[calc(100vh-96px)] md:rounded-2xl md:shadow-2xl ' + (menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none')}
         style={{ background: 'linear-gradient(135deg, #ED164F 0%, #4576B9 100%)' }} role="dialog" aria-modal="true" aria-label="Menú ZAP Tienda">
-        <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0"><span className="text-lg font-bold">ZAP Tienda</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
+        <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0"><span className="text-lg font-bold">Explorá según tu negocio</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-8 md:max-h-[calc(100vh-170px)]"><div className="mx-auto flex max-w-sm flex-col gap-6">
-          <nav aria-label="Navegación principal" className="grid gap-4 text-lg font-bold">
-            <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)}>Explorar soluciones →</Link>
-            <Link href={buildProductsUrl({ ...explorationContext, mode: 'product' }, { tipo: undefined, cat: undefined })} onClick={() => setMenuOpen(false)}>Ver todo</Link>
-            <a href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos por WhatsApp ↗</a>
-            <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="text-sm font-semibold text-white/80">Conocé ZAP ↗</a>
+          <nav aria-label="Más sobre ZAP" className="border-b border-white/20 pb-5 text-sm font-semibold text-white/80">
+            <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Conocé ZAP ↗</a>
           </nav>
           {contextReady && <section className="border-t border-white/20 pt-5">
             {!(explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && !contextEditorOpen ? (
