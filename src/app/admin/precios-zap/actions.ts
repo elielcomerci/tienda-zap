@@ -411,6 +411,8 @@ export async function restorePricingVersion(versionId: string, formData: FormDat
   if (!selectedCostMatrix) {
     throw new Error('La versión no contiene una matriz de costos compatible.')
   }
+  const selectedPolicy = (selected.pricing as any)?.commercialPricingPolicy
+  if (selectedPolicy !== undefined) validateCommercialPricingPolicy(selectedPolicy)
 
   const pendingDraft = await prisma.configuratorVersion.findFirst({
     where: { productId: selected.productId, status: 'DRAFT' },
