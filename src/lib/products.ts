@@ -12,10 +12,51 @@ async function requireAdmin() {
 const quoterConfigInclude = {
   rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } },
   allowedMaterials: { include: { rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } } },
-  finishings: { include: { finishing: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } } },
+  finishings: { include: { finishing: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } } },
   quantityPresets: { orderBy: { sortOrder: 'asc' as const } },
   sizePresets: { orderBy: { sortOrder: 'asc' as const } },
 }
+
+// Editorial order: concrete, easy-to-evaluate design services first; then
+// tangible products; then developments, ordered from familiar to specialized.
+// This is presentation only: it does not alter availability, prices or filters.
+const PRODUCT_EDITORIAL_ORDER = [
+  'diseno-flyer-volante',
+  'diseno-pack-graficos-redes',
+  'diseno-menu-gastronomico',
+  'diseno-etiquetas',
+  'diseno-cartel-afiche',
+  'diseno-carteleria-rotulos',
+  'diseno-vidriera',
+  'diseno-papeleria-corporativa',
+  'flyers-desplegables',
+  'adhesivos-stickers',
+  'menus-cartas',
+  'tarjetas-vouchers',
+  'tags-etiquetas',
+  'bolsas-contenedores',
+  'fajas-envoltorios',
+  'cajas-personalizadas',
+  'carpetas-folders',
+  'carteleria-ploteo',
+  'corporeos-marquesinas',
+  'senaletica-placas',
+  'indumentaria-textil',
+  'individuales-posavasos',
+  'expositores-stands',
+  'objetos-regaleria',
+  'activos-web-sitios',
+  'anuncios-campanas',
+  'sistema-identidad',
+  'produccion-audiovisual',
+  'asistentes-bots',
+  'operaciones-consultoria',
+  'sistema-captacion-eventos',
+] as const
+
+const PRODUCT_EDITORIAL_RANK = new Map(
+  PRODUCT_EDITORIAL_ORDER.map((slug, index) => [slug, index])
+)
 
 /** Minimal public catalog metadata for homepage entry points. */
 export async function getPublicCatalogTypes() {
@@ -55,15 +96,15 @@ export async function getProducts(
             { description: { contains: search, mode: 'insensitive' } },
             { whatIs: { contains: search, mode: 'insensitive' } },
             { purpose: { contains: search, mode: 'insensitive' } },
-            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } } },
-            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } } },
-            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } } },
+            { offerEntries: { some: { need: { name: { contains: search, mode: 'insensitive' } } } },
+            { offerEntries: { some: { situation: { name: { contains: search, mode: 'insensitive' } } } },
+            { offerEntries: { some: { businessType: { name: { contains: search, mode: 'insensitive' } } } },
           ],
         }
       : {}),
   }
 
-  return prisma.product.findMany({
+  const products = await prisma.product.findMany({
     where,
     include: {
       variants: { select: { price: true }, orderBy: { price: 'asc' } },
@@ -71,8 +112,15 @@ export async function getProducts(
       configuratorVersions: { where: { status: 'ACTIVE' }, select: { id: true, schemaVersion: true, status: true } },
     },
     orderBy: { createdAt: 'desc' },
-    take: options?.take,
   })
+
+  const orderedProducts = products.sort((a, b) => {
+    const rankA = PRODUCT_EDITORIAL_RANK.get(a.slug) ?? Number.MAX_SAFE_INTEGER
+    const rankB = PRODUCT_EDITORIAL_RANK.get(b.slug) ?? Number.MAX_SAFE_INTEGER
+    return rankA - rankB
+  })
+
+  return options?.take === undefined ? orderedProducts : orderedProducts.slice(0, options.take)
 }
 
 export const getProduct = cache(async function getProduct(slug: string) {
@@ -84,7 +132,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
         orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       },
       variants: {
-        include: { options: { include: { optionValue: { include: { option: true } } } } },
+        include: { options: { include: { optionValue: { include: { option: true } } } },
       },
       quoterConfig: { include: quoterConfigInclude },
       configuratorVersions: {
@@ -96,7 +144,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
           relatedProduct: {
             include: {
               options: { include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } } },
-              variants: { include: { options: { include: { optionValue: { include: { option: true } } } } } },
+              variants: { include: { options: { include: { optionValue: { include: { option: true } } } } },
               quoterConfig: { include: quoterConfigInclude },
             },
           },
