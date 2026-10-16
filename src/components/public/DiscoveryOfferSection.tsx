@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { isDevelopment } from '@/lib/catalog-domain'
-import { buildProductUrl } from '@/lib/exploration-context'
+import { buildProductUrl, buildProductsUrl } from '@/lib/exploration-context'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getDiscoveryOfferReason } from '@/lib/discovery-offer-reasons'
 
@@ -150,7 +150,13 @@ export default function DiscoveryOfferSection({
         })}
       </div>
 
-      <div className="mt-7 flex justify-start border-t border-gray-100 pt-5 sm:justify-end">
+      <div className="mt-7 flex flex-col gap-4 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          href={buildProductsUrl({ mode: 'product', businessTypeSlug, situationSlug, needSlug })}
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+        >
+          Ver todos los productos y desarrollos <ArrowRight size={15} />
+        </Link>
         <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
           {needsZAPReview ? '¿Querés evaluar cómo combinarlas? Hablemos' : '¿No sabés cuál elegir? Hablemos'} <ArrowRight size={15} />
         </Link>

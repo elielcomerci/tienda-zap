@@ -53,13 +53,21 @@ export default function NeedsSection({
           )
         })}
       </div>
-      <div className="mt-5 border-t border-gray-200 pt-4">
-        <p className="text-sm leading-6 text-gray-600">¿Tu prioridad es otra?</p>
+      <div className="mt-5 flex flex-col gap-4 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm leading-6 text-gray-600">¿Tu prioridad es otra?</p>
+          <Link
+            href={whatsappUrl || '/'}
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
+          >
+            Contanos qué tenés en mente <ArrowRight size={15} />
+          </Link>
+        </div>
         <Link
-          href={whatsappUrl || '/'}
-          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
+          href={`/productos?mode=product${businessTypeSlug ? `&rubro=${encodeURIComponent(businessTypeSlug)}` : ''}&situacion=${encodeURIComponent(situation.slug)}`}
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
         >
-          Contanos qué tenés en mente <ArrowRight size={15} />
+          Explorar todos los productos <ArrowRight size={15} />
         </Link>
       </div>
     </section>

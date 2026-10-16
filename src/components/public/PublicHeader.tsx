@@ -156,6 +156,7 @@ export default function PublicHeader({
             <ul className="flex items-center space-x-8 h-full">
               
               <li className="h-full flex items-center"><Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Explorar</Link></li>
+              <li className="h-full flex items-center"><Link href={buildProductsUrl({ mode: 'product', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: explorationContext.situationSlug, needSlug: explorationContext.needSlug })} className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Todos los productos</Link></li>
               <li className="h-full flex items-center"><a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-gray-900 hover:text-[#ED164F]">Hablemos</a></li>
               {/* User area */}
               <li className="relative h-full flex items-center">
@@ -327,7 +328,8 @@ export default function PublicHeader({
         style={{ background: 'linear-gradient(135deg, #ED164F 0%, #4576B9 100%)' }} role="dialog" aria-modal="true" aria-label="Menú ZAP Tienda">
         <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0"><span className="text-lg font-bold">Explorá según tu negocio</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-8 md:max-h-[calc(100vh-170px)]"><div className="mx-auto flex max-w-sm flex-col gap-6">
-          <nav aria-label="Más sobre ZAP" className="border-b border-white/20 pb-5 text-sm font-semibold text-white/80">
+          <nav aria-label="Más sobre ZAP" className="flex flex-wrap gap-x-5 gap-y-3 border-b border-white/20 pb-5 text-sm font-semibold text-white/80">
+            <Link href={buildProductsUrl({ mode: 'product', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: explorationContext.situationSlug, needSlug: explorationContext.needSlug })} onClick={() => setMenuOpen(false)}>Todos los productos →</Link>
             <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Conocé ZAP ↗</a>
           </nav>
           {contextReady && <section className="border-t border-white/20 pt-5">

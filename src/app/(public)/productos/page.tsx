@@ -236,16 +236,22 @@ export default async function ProductsPage({
                     </Link>
                   ))}
                 </div>
-                {rubro && (
-                  <div className="mt-5 border-t border-gray-200 pt-4">
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4">
+                  {rubro ? (
                     <Link
                       href={buildProductsUrl({ mode: 'rubro', businessTypeSlug: rubro })}
                       className="text-sm font-semibold text-gray-600 hover:text-[#ED164F]"
                     >
                       ← Volver al rubro
                     </Link>
-                  </div>
-                )}
+                  ) : <span />}
+                  <Link
+                    href={buildProductsUrl({ mode: 'product', businessTypeSlug: rubro })}
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+                  >
+                    Prefiero explorar todos los productos <ArrowRight size={15} />
+                  </Link>
+                </div>
               </section>
             )}
 
@@ -273,12 +279,17 @@ export default async function ProductsPage({
                     </Link>
                   ))}
                 </div>
-                <div className="mt-5 flex flex-col gap-2 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <Link href={`/productos?mode=situation&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-600 hover:text-[#ED164F]">
-                    Ver todas las situaciones →
-                  </Link>
-                  <Link href={`/productos?mode=rubro&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-700 hover:text-[#ED164F]">
-                    Ver todo lo que hacemos para {selectedBusinessType.name} →
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4">
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
+                    <Link href={`/productos?mode=situation&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-600 hover:text-[#ED164F]">
+                      Ver todas las situaciones →
+                    </Link>
+                    <Link href={`/productos?mode=rubro&rubro=${encodeURIComponent(rubro || '')}`} className="text-sm font-semibold text-gray-700 hover:text-[#ED164F]">
+                      Ver todo lo que hacemos para {selectedBusinessType.name} →
+                    </Link>
+                  </div>
+                  <Link href={`/productos?mode=product&rubro=${encodeURIComponent(rubro || '')}`} className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
+                    Explorar todos los productos <ArrowRight size={15} />
                   </Link>
                 </div>
               </section>
@@ -286,14 +297,22 @@ export default async function ProductsPage({
 
             {selectedSituation && isSituationMode && (
               <>
-                <div className="flex items-center justify-between gap-4 px-0.5 sm:px-1">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-0.5 sm:px-1">
                   <Link
                     href={rubro ? `/productos?mode=rubro&rubro=${encodeURIComponent(rubro)}` : '/productos'}
                     className="text-sm font-semibold text-gray-500 hover:text-[#C2103F]"
                   >
                     ← Cambiar contexto
                   </Link>
-                  <ShareModal />
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link
+                      href={buildProductsUrl({ mode: 'product', businessTypeSlug: rubro, situationSlug: selectedSituation.slug, needSlug: selectedNeed?.slug })}
+                      className="text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+                    >
+                      Explorar todos los productos →
+                    </Link>
+                    <ShareModal />
+                  </div>
                 </div>
                 <IntentionHero intention={selectedSituation} businessTypeName={selectedBusinessType?.name} />
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} businessTypeName={selectedBusinessType?.name} selectedNeedSlug={necesidad} />
