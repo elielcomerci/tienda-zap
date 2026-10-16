@@ -433,6 +433,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       delivery: 'NORMAL_5_7_DIAS',
       includes: ['IMPRESION_OFFSET_4_4', 'TERMINACION', 'EMPAQUETADO', 'CAJA'],
       validity: 'JUNIO_JULIO_2026',
+      ownerConfirmedCurrentAt: '2026-10-16',
+      validityNote: 'La referencia conserva su fecha original; ZAP confirmó que los costos cargados siguen vigentes el 16/10/2026.',
       matrix: {
         obra_80g: {
           '10x15': { '1000': 23000, '2500': 46000, '5000': 50000 },
