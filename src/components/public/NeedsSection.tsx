@@ -27,14 +27,6 @@ export default function NeedsSection({
 
   return (
     <section id="necesidades" className="px-0.5 sm:px-1">
-      <div className="mb-6 max-w-2xl">
-        <h2 className="text-2xl font-bold leading-tight tracking-[-0.025em] text-gray-950 sm:text-3xl">
-          Podés empezar por acá
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
-          Elegí la opción que más se acerca a lo que tenés en mente. Si todavía no lo tenés claro, lo conversamos.
-        </p>
-      </div>
       <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
         {situation.needs.map((need: DiscoveryNeed) => {
           const href = new URLSearchParams(query)
@@ -62,9 +54,7 @@ export default function NeedsSection({
         })}
       </div>
       <div className="mt-5 border-t border-gray-200 pt-4">
-        <p className="text-sm leading-6 text-gray-600">
-          ¿Tu prioridad es otra?
-        </p>
+        <p className="text-sm leading-6 text-gray-600">¿Tu prioridad es otra?</p>
         <Link
           href={whatsappUrl || '/'}
           className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
