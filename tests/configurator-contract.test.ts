@@ -234,6 +234,28 @@ test('el editor de Precios ZAP solo expone importes y excluye metadatos de la ma
   assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'tiers', '0', 'minQty']), false);
   assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'paperSurcharges', 'ilustracion_350g']), false);
   assert.equal(isEditableProviderCostPath(['providerFinishedCostMatrix', 'tiers', '0', 'prices', '4_0']), true);
+
+  const readableRows = flattenProviderCostMatrix({
+    tiers: {
+      deluxe: {
+        finishes: {
+          opp_mate_laca_uv_sectorizada: {
+            printing: {
+              '4_4': {
+                sectorizedSides: {
+                  frente: { '9x5': { '500': 31000 } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  assert.equal(
+    readableRows[0]?.label,
+    'Deluxe · OPP mate + laca UV sectorizada · Impresión · 4/4 · Laterales sectorizados · Frente · 9 × 5 · 500 unidades',
+  );
 });
 
 test('la política comercial distingue margen sobre venta y recargo sobre costo', () => {
