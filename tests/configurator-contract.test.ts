@@ -170,13 +170,48 @@ test('los procesos obligatorios están resueltos a terminaciones reales del adap
   assert.deepEqual(result.requiredProcesses, ['PERFORACION']);
 });
 
-test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', () => {
-  const config = tarjetasVouchersConfigurator;
-  const selection = defaultSelection(config);
-  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
-  assert.equal(quote.totalCost, 8213);
-  assert.ok(quote.totalPrice > 0);
-  assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
+test('tarjetas offset 9x5 OPP brillo devuelve los precios aprobados para 1000 unidades', () => {
+  const config = tarjetasVouchersConfigurator as any;
+  const common = {
+    format: '9x5',
+    material: 'ilustracion_350g',
+    lamination: 'brillo',
+    quantity: 1000,
+  };
+
+  const frontOnly = quoteConfiguratorSelection(config, { ...common, printing: '4_0' }, { profitMargin: 0 } as any);
+  assert.equal(frontOnly.totalCost, 24000);
+  assert.equal(frontOnly.totalPrice, 52500);
+  assert.ok(Math.abs(frontOnly.breakdown!.marginPercent - 44.7) < 0.1);
+
+  const frontAndBack = quoteConfiguratorSelection(config, { ...common, printing: '4_4' }, { profitMargin: 0 } as any);
+  assert.equal(frontAndBack.totalCost, 30000);
+  assert.equal(frontAndBack.totalPrice, 67000);
+  assert.ok(Math.abs(frontAndBack.breakdown!.marginPercent - 45.8) < 0.1);
+});
+
+test('tarjetas bloquea combinaciones sin precio comercial aprobado', () => {
+  const config = tarjetasVouchersConfigurator as any;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      format: '9x5',
+      material: 'ilustracion_350g',
+      printing: '4_4',
+      lamination: 'sin_laminar',
+      quantity: 1000,
+    }, { profitMargin: 0 } as any),
+    /no tiene un precio comercial aprobado/
+  );
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      format: '9x5',
+      material: 'ilustracion_350g',
+      printing: '4_4',
+      lamination: 'brillo',
+      quantity: 500,
+    }, { profitMargin: 0 } as any),
+    /requiere cotización para la cantidad seleccionada/
+  );
 });
 
 test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta cantidades inventadas', () => {
