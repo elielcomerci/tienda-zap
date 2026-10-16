@@ -158,7 +158,7 @@ export default function PricingProfitabilityEditor({
       </div>
 
       <p className="rounded-xl bg-gray-50 p-3 text-xs leading-5 text-gray-600">
-        El costo de proveedor está tratado como neto según la fuente cargada. El IVA se simula por separado y no se interpreta como ganancia. La tasa inicial es 0% hasta que se configure la tasa aplicable a esta familia y se apruebe su tratamiento fiscal.
+        La simulación interpreta el costo cargado como neto. Verificá que la fuente esté expresada sin IVA antes de fijar la tasa o publicar. El IVA se simula por separado y no se interpreta como ganancia. La tasa inicial es 0% hasta validar el tratamiento fiscal de esta familia.
       </p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
