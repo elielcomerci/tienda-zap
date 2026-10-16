@@ -520,3 +520,44 @@ La próxima pasada debe terminar con un estado explícito por producto: **ACTIVA
 - [ ] Texto comercial comunica la especificación y la mejora de calidad sin promesas no demostradas.
 
 No hace falta que el universo completo esté terminado para lanzar. La decisión es cerrar primero el núcleo A y, en paralelo, obtener costos para un banner y un roll-up. Los demás productos permanecen fuera del lanzamiento inicial hasta contar con evidencia suficiente.
+
+## 13. Auditoría del motor real de flyers 10×15 — hallazgo bloqueante y siguiente corrección (16/10/2026)
+
+### 13.1 El costo vigente no es el problema
+
+Se confirma por instrucción del negocio que los costos de proveedor de $32.000 / 1.000 y $85.000 / 5.000 siguen vigentes. No se solicita nueva cotización. La brecha encontrada es técnica: el dato de costo terminado existe en `pricing.providerFinishedCostMatrix.matrix` de `06-configurators/impresos-packaging.ts`, pero el configurador declara `pricing.engine: 'PRODUCT_QUOTER'` y el recorrido de `quoteConfiguratorSelection` termina usando `ProductQuoterConfig` y `calculateProductQuote`. Por eso no consume esa matriz de costo terminado para estas selecciones.
+
+### 13.2 Precio que arroja el código actual de la rama
+
+Para un flyer plano de 10×15 cm, ilustración 150 g, 4/4, sin terminaciones y con los datos del seed:
+
+| Cantidad | Costo terminado proveedor registrado | Cálculo del motor actual | Precio que devolvería el motor |
+|---:|---:|---|---:|
+| 1.000 | $32.000 | Anidado en pliego 32×47; 9 piezas/pliego; 112 pliegos × $195 = $21.840 de costo de papel; aplica recargo de 150% | $54.690 |
+| 5.000 | $85.000 | 556 pliegos × $175 = $97.300 de costo de papel; aplica recargo de 150% | $243.290 |
+
+Los resultados se derivan del código fuente y los tiers versionados; no son una llamada a producción ni una prueba contra la base de datos actual. El script `scripts/test-flyers-configurator-e2e.ts` requiere `DATABASE_URL` y una base con los registros correspondientes para confirmar el resultado en ejecución.
+
+La comparación revela dos problemas:
+- El motor calcula papel + terminaciones de la matriz de pliegos, aunque el costo terminado de proveedor ya contempla impresión, terminación, empaquetado y caja. Para 5.000 unidades, además, el costo teórico de papel ($97.300) supera el costo terminado registrado ($85.000), señal clara de que no se deben mezclar estas dos fuentes.
+- `profitMargin: 150` significa recargo sobre costo (×2,5), no margen bruto de 40% ni margen mínimo de 35%. El campo `marginPercent` que devuelve el motor representa ese recargo y no debe interpretarse como margen bruto comercial.
+
+### 13.3 Precio objetivo vs. costo vigente
+
+Se mantienen como objetivos comerciales sujetos a aprobación técnica:
+- 1.000 unidades: $72.000 final, suponiendo IVA incluido; costo $32.000 → margen bruto estimado 46,2% sobre venta neta de IVA.
+- 5.000 unidades: $166.500 final, suponiendo IVA incluido; costo $85.000 → margen bruto estimado 38,2% sobre venta neta de IVA.
+
+El segundo precio queda por debajo del objetivo del 40%, pero supera el piso comercial acordado del 35%, siempre que no falten costos directos absorbidos por ZAP.
+
+### 13.4 Corrección requerida antes de activar
+
+No se debe corregir esto cambiando el costo de proveedor ni aumentando/disminuyendo a ciegas `profitMargin`. La implementación debe:
+
+1. Resolver explícitamente estas configuraciones de flyers offset contra la matriz de **producto terminado** vigente ($32.000 / $85.000), no contra el costo de papel por pliego.
+2. Permitir precios comerciales de venta definidos por configuración/cantidad —$72.000 y $166.500 para estas dos combinaciones— sin convertirlos en un multiplicador genérico del costo.
+3. Validar automáticamente el margen bruto real a partir del costo de proveedor sin IVA y del precio público final con IVA; bloquear si cae por debajo del 35%.
+4. Mantener separadas las demás modalidades (otros papeles, impresión digital bajo demanda, dípticos y trípticos) hasta tener su propia equivalencia de costo y precio. No redirigir todo el configurador a un único proveedor si la selección no está cubierta.
+5. Añadir pruebas unitarias del cálculo y un caso de integración que compruebe el recorrido API → cotizador → carrito con los mismos importes y tratamiento de IVA.
+
+**Estado actual de esta combinación: BLOQUEADA PARA ACTIVACIÓN por desacople entre la matriz de costo terminado y el motor ejecutado; no por vigencia del costo.** La siguiente tarea de código es corregir el resolver/pricing de forma acotada y probarla antes de cambiar el estado comercial o desplegar.
