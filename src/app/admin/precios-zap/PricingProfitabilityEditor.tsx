@@ -186,7 +186,7 @@ export default function PricingProfitabilityEditor({
       {!valid && <p role="alert" className="text-sm text-red-700">El margen debe ser menor que 100%; el recargo no puede superar 1.000% y el IVA debe estar entre 0 y 100%.</p>}
 
       <div className="overflow-auto rounded-xl border border-gray-200">
-        <table className="min-w-[980px] w-full text-left text-xs">
+        <table className="min-w-[1120px] w-full text-left text-xs">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
               <th className="px-3 py-3 font-bold">Referencia</th>
