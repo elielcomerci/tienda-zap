@@ -191,6 +191,9 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           express_24h: { surchargePercent: 50 },
         },
       },
+      // IMPORTANTE: los importes de 3.000 y 5.000 unidades de la fuente del proveedor
+      // estaban expresados por millar; aquí se normalizan a costo total de la tirada.
+      // Los importes de 500 y 1.000 unidades ya son costos totales.
       tiers: {
         clasicas: {
           delivery: '7_8_DIAS',
@@ -201,7 +204,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
                   '9x5': { '500': 21000, '1000': 35211 },
                 },
                 '4_4': {
-                  '9x5': { '500': 27264, '1000': 45477, '3000': 35000, '5000': 34000 },
+                  '9x5': { '500': 27264, '1000': 45477, '3000': 105000, '5000': 170000 },
                 },
               },
             },
@@ -251,7 +254,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
               printing: {
                 '4_4': {
                   '9x3': { '500': 21176, '1000': 30014 },
-                  '9x5': { '500': 31000, '1000': 53000, '3000': 38000, '5000': 37000 },
+                  '9x5': { '500': 31000, '1000': 53000, '3000': 114000, '5000': 185000 },
                   '9x10': { '500': 47900, '1000': 69033 },
                   '5x18': { '500': 47900, '1000': 69033 },
                   '9x15': { '500': 70353, '1000': 101350 },
@@ -276,10 +279,10 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
                 '4_4': {
                   sectorizedSides: {
                     frente: {
-                      '9x5': { '500': 31000, '1000': 39000, '3000': 38000, '5000': 37000 },
+                      '9x5': { '500': 31000, '1000': 39000, '3000': 114000, '5000': 185000 },
                     },
                     frente_y_dorso: {
-                      '9x5': { '500': 35000, '1000': 44000, '3000': 43000, '5000': 42000 },
+                      '9x5': { '500': 35000, '1000': 44000, '3000': 129000, '5000': 210000 },
                     },
                   },
                 },
