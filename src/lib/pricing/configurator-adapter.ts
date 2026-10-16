@@ -709,6 +709,34 @@ function quoteCommercialPriceOverride(
 }
 
 /**
+ * Adapta el payload del cotizador genérico de la tienda a la selección semántica
+ * de flyers solo para la combinación offset plana explícitamente reconocida.
+ * Las demás combinaciones conservan el payload y su motor habitual.
+ */
+function normalizeLegacyFlyerSelection(
+  configurator: ConfiguratorVersionPayload,
+  selection: CommercialSelection
+): CommercialSelection {
+  if (configurator.schema?.productSlug !== 'flyers-desplegables') return selection;
+
+  const hasNoFinishings = !Array.isArray(selection.finishingIds) || selection.finishingIds.length === 0;
+  const isExactOffsetCombination =
+    selection.rawMaterialId === 'raw_mat_ilustracion_150g_4_4' &&
+    selection.sizeLabel === '10x15 cm' &&
+    hasNoFinishings;
+
+  if (!isExactOffsetCombination) return selection;
+
+  return {
+    foldingType: 'plano',
+    format: '10x15',
+    material: 'ilustracion_150g',
+    printing: '4_4',
+    quantity: Number(selection.quantity),
+  };
+}
+
+/**
  * Pipeline completo de cotización a través de ConfiguratorVersion:
  * 1. Validación UI y compatibilidad.
  * 2. Si el motor es STICKER_TABLE: cotiza directo contra matriz comercial versionada.
@@ -721,14 +749,17 @@ export function quoteConfiguratorSelection(
   selection: CommercialSelection,
   quoterConfig?: ProductQuoterConfigInput
 ): ProductQuoteResult {
-  // 1. Validación UI y reglas de compatibilidad
-  const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, selection);
+  // 1. Adaptar solo la selección genérica exacta cubierta por tarifa aprobada.
+  const normalizedSelection = normalizeLegacyFlyerSelection(configurator, selection);
 
-  // 2. Precio comercial explícito para configuraciones respaldadas por costo terminado.
+  // 2. Validación UI y reglas de compatibilidad
+  const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, normalizedSelection);
+
+  // 3. Precio comercial explícito para configuraciones respaldadas por costo terminado.
   const commercialOverride = quoteCommercialPriceOverride(configurator, sanitizedSelection);
   if (commercialOverride) return commercialOverride;
 
-  // 3. Despacho por motor comercial
+  // 4. Despacho por motor comercial
   if (configurator.pricing?.engine === 'STICKER_TABLE') {
     return quoteStickerTableSelection(configurator, sanitizedSelection);
   }
@@ -747,10 +778,10 @@ export function quoteConfiguratorSelection(
     );
   }
 
-  // 4. Resolución contra registros reales mediante pricing.adapter
+  // 5. Resolución contra registros reales mediante pricing.adapter
   const quoteSelection = resolveQuoterSelection(configurator, sanitizedSelection, requiredProcesses, quoterConfig);
 
-  // 5. Ejecución en el motor existente de nesting y cálculo
+  // 6. Ejecución en el motor existente de nesting y cálculo
   return calculateProductQuote(quoterConfig, quoteSelection);
 }
 
