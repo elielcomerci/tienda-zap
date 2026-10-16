@@ -78,7 +78,7 @@ La política comercial se guarda dentro de `ConfiguratorVersion.pricing.commerci
 - **Recargo sobre costo:** precio neto objetivo = costo × (1 + recargo).
 - **IVA estimado:** se muestra separado del resultado bruto y se agrega al precio final simulado.
 
-El editor convierte el porcentaje al cambiar de modo para conservar, en lo posible, el mismo precio objetivo. La vista previa muestra costo, venta neta estimada, IVA, precio final, resultado bruto y margen real después del redondeo comercial. El resultado bruto todavía no descuenta comisiones, logística, retenciones, Ingresos Brutos ni gastos operativos.
+El editor convierte el porcentaje al cambiar de modo para conservar, en lo posible, el mismo precio objetivo. La vista previa muestra costo, venta neta estimada, IVA, precio final, resultado bruto y margen real después del redondeo comercial. También admite ingresar un precio neto manual por referencia para simular ganancias o pérdidas exactas; ese precio manual es temporal y no se guarda ni altera el cotizador. El resultado bruto todavía no descuenta comisiones, logística, retenciones, Ingresos Brutos ni gastos operativos.
 
 La política guardada en una versión activa tiene prioridad en el motor `PROVIDER_FINISHED_COST`. Las versiones antiguas que no tengan esa política conservan el recargo histórico de `ProductQuoterConfig.profitMargin`. La tasa de IVA inicial es 0% intencionalmente: no se debe inferir el tratamiento fiscal de una familia sin validarlo. Configurar una tasa en el borrador y publicarlo modifica el precio final del cotizador; por eso la publicación continúa bloqueada por las dos habilitaciones explícitas.
 
