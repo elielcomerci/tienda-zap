@@ -52,7 +52,7 @@ export default function ContextBridgeBanner({ businessTypeName, businessTypeSlug
               ¿Querés ver todo lo que podemos hacer por tu negocio?
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">
-              Conocé todo lo que podemos hacer por él.
+              Conocé cómo trabajamos.
             </p>
           </>
         )}
