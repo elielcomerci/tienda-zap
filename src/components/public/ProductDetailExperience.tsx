@@ -112,9 +112,11 @@ export default function ProductDetailExperience({
             <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
               {getProductFamilyLabel(product)}
             </span>
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-              {getProductModalityLabel(product.modality)}
-            </span>
+            {product.modality !== 'CONFIGURABLE' && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
+                {getProductModalityLabel(product.modality)}
+              </span>
+            )}
           </div>
 
           <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-gray-950 sm:text-5xl">
