@@ -69,6 +69,10 @@ const SEGMENT_LABELS: Record<string, string> = {
   printing: 'Impresión',
   deluxe: 'Deluxe',
   matte: 'Mate',
+  opp_mate_laca_uv_sectorizada: 'OPP mate + laca UV sectorizada',
+  '4_4': '4/4',
+  '4_0': '4/0',
+  frente_y_dorso: 'Frente y dorso',
 };
 
 function formatCostPathLabel(path: string[]) {
@@ -77,11 +81,14 @@ function formatCostPathLabel(path: string[]) {
     .map((part) => {
       if (SEGMENT_LABELS[part]) return SEGMENT_LABELS[part];
       if (/^\d+x\d+$/i.test(part)) return part.replace(/x/i, ' × ');
+      if (/^\d+$/.test(part) && /^\d+x\d+$/i.test(path[path.indexOf(part) - 1] || '')) return `${part} unidades`;
       return part
         .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
         .replace(/_/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
+        .replace(/\bopp\b/gi, 'OPP')
+        .replace(/\buv\b/gi, 'UV')
         .replace(/^\w/, (letter) => letter.toUpperCase());
     })
     .filter(Boolean)
