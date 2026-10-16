@@ -50,7 +50,7 @@ El archivo `prisma/seed/data/05-products.ts` de `main` contiene **31 productos**
 | Familia | Fuente/capa que aparece en el seed | Vigencia conocida | Riesgo |
 |---|---|---|---|
 | Tarjetas | Matriz de proveedor terminado y listas digitales/clásicas | Parte de la fuente no tiene fecha explícita | Hay que validar resolución efectiva y equivalencia de especificaciones |
-| Flyers | `PROMO_DIRECTA_OFFSET` y matriz digital Ricoh Pro C9200 | Offset declara junio-julio 2026; digital sin fecha explícita en el bloque revisado | La matriz offset ya necesita revalidación de proveedor |
+| Flyers | `PROMO_DIRECTA_OFFSET` y matriz digital Ricoh Pro C9200 | Offset conserva su fecha original de referencia; ZAP confirmó que los costos cargados siguen vigentes el 16/10/2026 | Registrar la confirmación del negocio y mantener separada la matriz offset de la digital |
 | Tags | Materiales, laminado y terminaciones del cotizador | Varias tarifas sin fecha visible | Deuda documentada en perforación |
 | Stickers | Matriz de proveedor circular | Fuente referenciada como lista de proveedor; verificar fecha y alcance | Confirmar soporte, corte, laminado y cantidad exactos |
 | Carpetas | Matriz de producto terminado | Referencia a lista de abril 2026 | Revalidar antes de publicar |
@@ -180,9 +180,9 @@ Para 500 tarjetas 350 g, 4/4, sin laminar, la matriz `digitalOndemand.cards` reg
 
 El precio de referencia publicado por Imprimime para tarjetas brillantes 300 g, 4/4, laca UV frontal es $34.290 + IVA / 500; no es una comparación idéntica, pero evidencia que primero hay que auditar la celda de costo y el proveedor. El importe de $39.930 ya supera la referencia minorista antes de aplicar el recargo. No resolverlo bajando el margen: confirmar origen, unidad, gramaje, terminación y cotización vigente.
 
-### P1 — La fecha de vigencia de flyers ya venció
+### P1 — La fecha original de la fuente de flyers es histórica; costo confirmado vigente por ZAP
 
-La matriz offset de flyers identifica la fuente `PROMO_DIRECTA_OFFSET` y vigencia `JUNIO_JULIO_2026`. A la fecha de esta auditoría (13/10/2026), no se debe tratar como tarifa vigente sin confirmación. La matriz digital on-demand es otra fuente y canal, y no debe mezclarse con la offset.
+La matriz offset de flyers identifica la fuente `PROMO_DIRECTA_OFFSET` y conserva la etiqueta histórica `JUNIO_JULIO_2026`. El 16/10/2026, ZAP confirmó que los costos cargados de $32.000 / 1.000 y $85.000 / 5.000 siguen vigentes; no corresponde pedir otra cotización por antigüedad. La matriz digital on-demand es otra fuente y canal, y no debe mezclarse con la offset.
 
 ### P1 — Las fuentes comerciales conviven con motores y bases diferentes
 
@@ -276,7 +276,7 @@ Fuentes: https://imprimime.com.ar/stickers/stickers · https://dokan.com.ar/prod
 
 ### B. Flyers / volantes offset
 
-La matriz de proveedor está identificada como `PROMO_DIRECTA_OFFSET` y su vigencia declara junio-julio de 2026. A fecha de esta revisión está vencida: los importes siguientes sirven para evaluar la estructura y el posicionamiento, **no para publicar sin recotizar**.
+La matriz de proveedor está identificada como `PROMO_DIRECTA_OFFSET` y conserva la fecha histórica junio-julio de 2026. ZAP confirmó el 16/10/2026 que los costos $32.000 / 1.000 y $85.000 / 5.000 siguen vigentes. El bloqueo actual es la conexión al motor y la validación de precio, no la vigencia del costo.
 
 | Especificación de la matriz | Costo proveedor | Precio final objetivo |
 |---|---:|---:|
@@ -288,7 +288,7 @@ La matriz de proveedor está identificada como `PROMO_DIRECTA_OFFSET` y su vigen
 - Gráfica Lugano publica 10×15 cm, ilustración 115g, doble faz, a $65.000 por 1.000 y $150.000 por 5.000.
 - Imprimime publica flyers offset full color frente y dorso desde $64.050 + IVA por 1.000 (unos $77.501 finales). La página permite elegir medida y gramaje, por lo que el valor “desde” no garantiza la misma especificación.
 
-Para 1.000 unidades, el precio objetivo de $65.000 queda alrededor de 9% debajo del promedio simple de esas dos referencias (aprox. $71.250 finales). Para 5.000 unidades, $171.500 queda aproximadamente 14% por encima de los $150.000 publicados por Lugano para 115g; la diferencia de gramaje y la tarifa vencida impiden cerrar una conclusión definitiva.
+Para 1.000 unidades, el precio objetivo de $65.000 queda alrededor de 9% debajo del promedio simple de esas dos referencias (aprox. $71.250 finales). Para 5.000 unidades, $171.500 queda aproximadamente 14% por encima de los $150.000 publicados por Lugano para 115g; la diferencia de gramaje impide cerrar una conclusión definitiva sobre equivalencia exacta.
 
 **Conclusión:** el precio teórico de 1.000 unidades parece competitivo; el de 5.000 puede quedar alto. No tocar margen para compensarlo: primero renovar la cotización de proveedor y confirmar formato, gramaje y tirada exactos.
 
@@ -324,7 +324,7 @@ No se fija precio final todavía. El configurador de tags usa `PRODUCT_QUOTER` y
 | Producto | Resultado preliminar | Decisión |
 |---|---|---|
 | Stickers circulares 5×5 | $74.500 / 1.000; por debajo del promedio de dos referencias circulares de 5 cm, pero por encima de la referencia básica de corte recto | Validar material, laca UV y corte; después cotizar |
-| Flyers 10×15 150g | $65.000 / 1.000; competitivo frente a dos referencias, pero la lista fuente venció | Pedir costo vigente antes de publicar |
+| Flyers 10×15 150g | Precio histórico de trabajo sustituido por los objetivos actuales de $72.000 / 1.000 y $166.500 / 5.000; costo confirmado por ZAP | Corregir y probar el motor antes de activar |
 | Carpetas A4 300g | Objetivos de $1,28 M a $1,68 M / 500, claramente altos frente a referencias minoristas | No publicar; auditar la fuente y la unidad de costo |
 | Tags | No se puede obtener un precio confiable con el costo actual del motor | Corregir impresión y perforación antes de fijar precio |
 
@@ -368,7 +368,7 @@ Valores de trabajo, redondeados hacia arriba a $500, sujetos a confirmar equival
 
 - **Tarjetas:** los objetivos de $52.500, $60.000 y $67.000 evitan ubicarse como la opción barata y mantienen, sobre el costo de proveedor cargado, un margen bruto teórico superior al 40%. Antes de publicar, confirmar si el OPP brillo de la lista vigente es laminado de frente o frente y dorso, y obtener al menos una referencia pública exacta para 4/1.
 - **Stickers:** $108.000 se acerca al rango alto del centro de las dos referencias circulares de 5 cm ($95.000 y $110.000); el margen teórico queda alto porque el costo proveedor cargado es relativamente bajo. Verificar que la laca, el troquel y la presentación sean equivalentes.
-- **Flyers:** $72.000 por 1.000 queda ligeramente por encima del centro de las dos referencias finales consultadas. Para 5.000, $166.500 queda por encima del centro y deja un margen teórico de 38,2% antes de otros costos; la lista de proveedor del seed está vencida, por lo que **no aprobar ni publicar sin recotizar**.
+- **Flyers:** $72.000 por 1.000 queda ligeramente por encima del centro de las dos referencias finales consultadas. Para 5.000, $166.500 queda por encima del centro y deja un margen teórico de 38,2% antes de otros costos; ZAP confirmó que el costo de proveedor sigue vigente. No recotizar: validar el costo completo y el recorrido técnico antes de activar.
 - **Carpetas:** la estructura actual no soporta un precio de mercado con el piso de margen acordado. No forzar un precio público ni rebajar el margen: revisar primero si los costos son costos de compra reales y si la unidad/tirada está bien interpretada.
 - **Tags:** sigue bloqueado hasta que el costo de impresión y perforación quede completo.
 
