@@ -5,7 +5,7 @@ import { importDraftCostRows, saveDraftCostCell } from './actions'
 
 type CostRow = { path: string[]; label: string; value: number }
 type ImportRow = { path: string[]; label: string; before: number; value: number }
-type ImportPreview = { fileName: string; rows: ImportRow[]; unchangedCount: number }
+type ImportPreview = { fileName: string; rows: ImportRow[]; updates: Array<{ path: string[]; value: number }>; unchangedCount: number }
 
 function csvEscape(value: string | number) {
   const text = String(value)
@@ -121,6 +121,7 @@ export default function PricingMatrixEditor({ versionId, rows }: { versionId: st
       }
       const seen = new Set<string>()
       const preview: ImportRow[] = []
+      const updates: Array<{ path: string[]; value: number }> = []
       let unchangedCount = 0
       for (let i = 1; i < records.length; i += 1) {
         const record = records[i]
@@ -132,6 +133,7 @@ export default function PricingMatrixEditor({ versionId, rows }: { versionId: st
         if (seen.has(pathValue)) throw new Error(`Fila ${i + 1}: la referencia "${pathValue}" está duplicada.`)
         seen.add(pathValue)
         const value = parseCost(rawValue, delimiter)
+        updates.push({ path: existing.path, value })
         if (value === existing.value) {
           unchangedCount += 1
         } else {
@@ -140,7 +142,7 @@ export default function PricingMatrixEditor({ versionId, rows }: { versionId: st
         if (preview.length + unchangedCount > 5000) throw new Error('La importación supera el límite de 5.000 filas.')
       }
       if (preview.length === 0 && unchangedCount === 0) throw new Error('No hay importes en la columna new_cost para importar.')
-      setImportPreview({ fileName: file.name, rows: preview, unchangedCount })
+      setImportPreview({ fileName: file.name, rows: preview, updates, unchangedCount })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pudimos leer el CSV.')
     }
@@ -154,7 +156,7 @@ export default function PricingMatrixEditor({ versionId, rows }: { versionId: st
     try {
       const result = await importDraftCostRows(
         versionId,
-        importPreview.rows.map((row) => ({ path: row.path, value: row.value })),
+        importPreview.updates,
         importPreview.fileName,
       )
       setImportMessage(result.message)
