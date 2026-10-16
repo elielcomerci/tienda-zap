@@ -1,20 +1,29 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { DiscoveryNeed, DiscoverySituation } from '@/lib/discovery'
+import { buildWhatsappUrl } from '@/lib/whatsapp'
 
 export default function NeedsSection({
   situation,
   businessTypeSlug,
+  businessTypeName,
   selectedNeedSlug,
 }: {
   situation: DiscoverySituation
   businessTypeSlug?: string
+  businessTypeName?: string
   selectedNeedSlug?: string
 }) {
   if (situation.needs.length === 0) return null
 
   const query = new URLSearchParams({ mode: 'situation', situacion: situation.slug })
   if (businessTypeSlug) query.set('rubro', businessTypeSlug)
+  const whatsappMessage = [
+    `Hola, estoy explorando: ${situation.name}.`,
+    businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
+    'No encuentro una necesidad que describa bien mi caso. ¿Lo podemos revisar?',
+  ].filter(Boolean).join('\\n')
+  const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
   return (
     <section id="necesidades" className="px-1 sm:px-2">
@@ -47,6 +56,17 @@ export default function NeedsSection({
             </Link>
           )
         })}
+      </div>
+      <div className="mt-5 border-t border-gray-200 pt-4">
+        <p className="text-sm leading-6 text-gray-600">
+          ¿No encontrás lo que necesitás? No hace falta elegir algo que no encaja.
+        </p>
+        <Link
+          href={whatsappUrl || '/'}
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
+        >
+          Contanos qué necesitás <ArrowRight size={15} />
+        </Link>
       </div>
     </section>
   )
