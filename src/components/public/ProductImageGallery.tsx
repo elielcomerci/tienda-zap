@@ -25,11 +25,37 @@ export default function ProductImageGallery({
   const thumbnailsRef = useRef<HTMLDivElement>(null)
   const touchStartXRef = useRef<number | null>(null)
   const didSwipeRef = useRef(false)
+  const galleryRef = useRef<HTMLDivElement>(null)
+  const [keyboardReady, setKeyboardReady] = useState(false)
 
   const goToImage = (index: number) => {
     if (safeImages.length === 0) return
     setActiveIndex(Math.max(0, Math.min(index, safeImages.length - 1)))
   }
+
+  useEffect(() => {
+    if (!keyboardReady || zoomOpen || safeImages.length < 2) return
+    const handleGalleryKeys = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return
+      const target = event.target as HTMLElement | null
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        goToImage(activeIndex - 1)
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        goToImage(activeIndex + 1)
+      } else if (event.key === 'Home') {
+        event.preventDefault()
+        goToImage(0)
+      } else if (event.key === 'End') {
+        event.preventDefault()
+        goToImage(safeImages.length - 1)
+      }
+    }
+    window.addEventListener('keydown', handleGalleryKeys)
+    return () => window.removeEventListener('keydown', handleGalleryKeys)
+  }, [keyboardReady, zoomOpen, safeImages.length, activeIndex])
 
   useEffect(() => {
     if (zoomOpen) {
@@ -78,24 +104,15 @@ export default function ProductImageGallery({
 
   return (
     <div
+      ref={galleryRef}
       role="group"
       aria-label={'Galería de imágenes de ' + productName}
       tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.altKey || event.ctrlKey || event.metaKey) return
-        if (event.key === 'ArrowLeft') {
-          event.preventDefault()
-          goToImage(activeIndex - 1)
-        } else if (event.key === 'ArrowRight') {
-          event.preventDefault()
-          goToImage(activeIndex + 1)
-        } else if (event.key === 'Home') {
-          event.preventDefault()
-          goToImage(0)
-        } else if (event.key === 'End') {
-          event.preventDefault()
-          goToImage(safeImages.length - 1)
-        }
+      onMouseEnter={() => setKeyboardReady(true)}
+      onMouseLeave={() => setKeyboardReady(false)}
+      onFocusCapture={() => setKeyboardReady(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setKeyboardReady(false)
       }}
       className="space-y-4 rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
     >
@@ -116,7 +133,7 @@ export default function ProductImageGallery({
       <div className="relative">
         <button
           type="button"
-          className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+          className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] px-11 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
           onTouchStart={(event) => {
             touchStartXRef.current = event.changedTouches[0]?.clientX ?? null
             didSwipeRef.current = false
@@ -146,7 +163,28 @@ export default function ProductImageGallery({
             draggable={false}
           />
         </button>
-
+        {safeImages.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); goToImage(activeIndex - 1) }}
+              disabled={activeIndex === 0}
+              aria-label="Imagen anterior"
+              className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/55 text-gray-800 shadow-sm backdrop-blur-md transition hover:bg-white/85 disabled:pointer-events-none disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F] sm:left-3"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); goToImage(activeIndex + 1) }}
+              disabled={activeIndex === safeImages.length - 1}
+              aria-label="Imagen siguiente"
+              className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/55 text-gray-800 shadow-sm backdrop-blur-md transition hover:bg-white/85 disabled:pointer-events-none disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F] sm:right-3"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </>
+        )}
       </div>
 
       {safeImages.length > 1 && (
@@ -211,12 +249,14 @@ export default function ProductImageGallery({
           onClick={() => setZoomOpen(false)}
           aria-label={'Cerrar imagen ampliada de ' + productName}
         >
-          <img
-            src={safeImages[activeIndex]}
-            alt={productName + ' ampliado'}
-            className="max-h-[92vh] max-w-[96vw] rounded-2xl object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
-            draggable={false}
-          />
+          <span className="flex h-[min(86vh,800px)] w-[min(92vw,1100px)] items-center justify-center rounded-2xl bg-black/10 p-3 sm:p-6">
+            <img
+              src={safeImages[activeIndex]}
+              alt={productName + ' ampliado'}
+              className="h-full w-full object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
+              draggable={false}
+            />
+          </span>
         </button>
       )}
     </div>
