@@ -238,6 +238,49 @@ test('flyers offset no usa el motor genérico para cantidades sin precio comerci
   );
 });
 
+test('payload real de la tienda para flyers aplica precio comercial aprobado en 1000 y 5000', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  const quoter = makeQuoterConfig(config);
+  for (const [quantity, expectedPrice, expectedCost] of [
+    [1000, 72000, 32000],
+    [5000, 166500, 85000],
+  ]) {
+    const quote = quoteConfiguratorSelection(config, {
+      rawMaterialId: 'raw_mat_ilustracion_150g_4_4',
+      sizeLabel: '10x15 cm',
+      quantity: String(quantity),
+      finishingIds: [],
+    }, quoter);
+    assert.equal(quote.totalPrice, expectedPrice);
+    assert.equal(quote.totalCost, expectedCost);
+  }
+});
+
+test('payload genérico de flyers no cubierto conserva el cotizador existente', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  const quote = quoteConfiguratorSelection(config, {
+    rawMaterialId: 'raw_mat_ilustracion_150g_4_0',
+    sizeLabel: '10x15 cm',
+    quantity: '1000',
+    finishingIds: [],
+  }, makeQuoterConfig(config));
+  assert.ok(quote.totalPrice > 0);
+  assert.notEqual(quote.totalPrice, 72000);
+});
+
+test('payload de flyers 10x15 150g 4/4 sin precio aprobado exige consulta', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      rawMaterialId: 'raw_mat_ilustracion_150g_4_4',
+      sizeLabel: '10x15 cm',
+      quantity: '2500',
+      finishingIds: [],
+    }, makeQuoterConfig(config)),
+    /requiere cotización para la cantidad seleccionada/
+  );
+});
+
 test('flyers offset bloquea el precio configurado si cae debajo del margen bruto mínimo', () => {
   const config = structuredClone(flyersDesplegablesConfigurator) as any;
   config.pricing.commercialPriceOverrides.minimumGrossMarginPercent = 50;
