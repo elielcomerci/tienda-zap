@@ -17,7 +17,7 @@ import {
   flattenProviderCostMatrix,
   isEditableProviderCostPath,
 } from '../src/lib/pricing/pricing-matrix-admin';
-import { calculateCommercialPrice, marginFromMarkup, validateCommercialPricingPolicy } from '../src/lib/pricing/commercial-pricing-policy';
+import { calculateCommercialPrice, calculatePriceAtNetAmount, marginFromMarkup, validateCommercialPricingPolicy } from '../src/lib/pricing/commercial-pricing-policy';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -244,6 +244,10 @@ test('la política comercial distingue margen sobre venta y recargo sobre costo'
   assert.equal(Math.round(calculation.vatAmount * 100), Math.round((calculation.finalPrice - calculation.netPrice) * 100));
   assert.ok(Math.abs(calculation.grossProfit - (calculation.netPrice - 1000)) < 0.000001);
   assert.ok(Math.abs(calculation.grossMarginPercent - ((calculation.netPrice - 1000) / calculation.netPrice) * 100) < 0.000001);
+  const loss = calculatePriceAtNetAmount(1000, 800, 21);
+  assert.equal(loss.grossProfit, -200);
+  assert.equal(loss.finalPrice, 968);
+  assert.ok(loss.grossMarginPercent < 0);
   assert.throws(() => validateCommercialPricingPolicy({ version: 1, mode: 'MARGIN', percentage: 100, vatRatePercent: 21 }), /menor que 100/);
 });
 
