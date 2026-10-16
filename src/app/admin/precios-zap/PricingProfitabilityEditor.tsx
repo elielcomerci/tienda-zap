@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { saveDraftPricingPolicy } from './actions'
 import {
   calculateCommercialPrice,
+  calculatePriceAtNetAmount,
   markupFromMargin,
   marginFromMarkup,
   type CommercialPricingPolicy,
@@ -32,6 +33,7 @@ export default function PricingProfitabilityEditor({
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [manualPrices, setManualPrices] = useState<Record<string, string>>({})
 
   const parsedPercentage = Number(percentage)
   const parsedVat = Number(vatRatePercent)
@@ -54,8 +56,24 @@ export default function PricingProfitabilityEditor({
     if (!policy) return []
     return rows
       .filter((row) => row.label.toLowerCase().includes(search.toLowerCase()))
-      .map((row) => ({ row, calculation: calculateCommercialPrice(row.value, policy) }))
-  }, [rows, policy, search])
+      .map((row) => {
+        const key = row.path.join('.')
+        const suggested = calculateCommercialPrice(row.value, policy)
+        const rawManual = manualPrices[key]
+        const hasInput = rawManual !== undefined && rawManual.trim() !== ''
+        const parsedManual = Number(rawManual)
+        const manualValid = hasInput && Number.isFinite(parsedManual) && parsedManual >= 0
+        return {
+          row,
+          suggested,
+          manualValue: rawManual ?? '',
+          manualInvalid: hasInput && !manualValid,
+          calculation: manualValid
+            ? calculatePriceAtNetAmount(row.value, parsedManual, policy.vatRatePercent)
+            : suggested,
+        }
+      })
+  }, [rows, policy, search, manualPrices])
 
   async function save() {
     if (!policy) {
@@ -173,7 +191,7 @@ export default function PricingProfitabilityEditor({
             <tr>
               <th className="px-3 py-3 font-bold">Referencia</th>
               <th className="px-3 py-3 text-right font-bold">Costo proveedor</th>
-              <th className="px-3 py-3 text-right font-bold">Venta neta estimada</th>
+              <th className="px-3 py-3 text-right font-bold">Precio neto manual / sugerido</th>
               <th className="px-3 py-3 text-right font-bold">IVA estimado</th>
               <th className="px-3 py-3 text-right font-bold">Precio final</th>
               <th className="px-3 py-3 text-right font-bold">Resultado bruto</th>
@@ -181,11 +199,23 @@ export default function PricingProfitabilityEditor({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {previews.slice(0, 500).map(({ row, calculation }) => (
+            {previews.slice(0, 500).map(({ row, calculation, suggested, manualValue, manualInvalid }) => (
               <tr key={row.path.join('.')}>
                 <td className="max-w-[340px] px-3 py-2.5 text-gray-700">{row.label}</td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums">{ars(calculation.cost)}</td>
-                <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums">{ars(calculation.netPrice)}</td>
+                <td className="min-w-[170px] px-3 py-2">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    aria-label={`Precio neto manual para ${row.label}`}
+                    value={manualValue}
+                    placeholder={suggested.netPrice.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 2 })}
+                    onChange={(event) => setManualPrices((current) => ({ ...current, [row.path.join('.')]: event.target.value }))}
+                    className={`w-36 rounded-lg border px-2 py-1.5 text-right tabular-nums ${manualInvalid ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {manualInvalid && <p className="mt-1 text-right text-[10px] text-red-700">Importe inválido</p>}
+                </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums">{ars(calculation.vatAmount)}</td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-right font-bold tabular-nums text-gray-950">{ars(calculation.finalPrice)}</td>
                 <td className={`whitespace-nowrap px-3 py-2.5 text-right font-semibold tabular-nums ${calculation.grossProfit < 0 ? 'text-red-700' : 'text-gray-800'}`}>{ars(calculation.grossProfit)}</td>
@@ -198,7 +228,7 @@ export default function PricingProfitabilityEditor({
         {previews.length > 500 && <p className="border-t border-gray-100 p-3 text-xs text-gray-500">Mostrando 500 de {previews.length} referencias. El cálculo usa la política actual del borrador.</p>}
       </div>
       <p className="text-xs leading-5 text-gray-500">
-        Vista previa calculada con redondeo comercial. El resultado bruto descuenta el costo del proveedor sobre la venta neta, antes de comisiones, logística, retenciones, Ingresos Brutos y gastos operativos.
+        El precio sugerido responde a la regla guardada. Si escribís un precio neto manual, el resultado y el IVA se recalculan para esa simulación; ese importe manual no se guarda ni cambia el cotizador. El resultado bruto no descuenta comisiones, logística, retenciones, Ingresos Brutos ni gastos operativos.
       </p>
     </section>
   )
