@@ -215,7 +215,7 @@ export async function importDraftCostRows(
   if (!Array.isArray(updates) || updates.length === 0 || updates.length > 5000) {
     throw new Error('La importación debe contener entre 1 y 5.000 filas.')
   }
-  const safeSourceName = String(sourceName || 'lista.csv').replace(/[\\\\/\\r\\n]/g, '_').slice(0, 160)
+  const safeSourceName = String(sourceName || 'lista.csv').replace(/[^a-zA-Z0-9._ -]/g, '_').slice(0, 160)
   const seen = new Set<string>()
   for (const update of updates) {
     if (!update || !Array.isArray(update.path) || update.path.length < 3
