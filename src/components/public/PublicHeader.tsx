@@ -331,6 +331,7 @@ export default function PublicHeader({
           <nav aria-label="Más sobre ZAP" className="flex flex-wrap gap-x-5 gap-y-3 border-b border-white/20 pb-5 text-sm font-semibold text-white/80">
             <Link href={buildProductsUrl({ mode: 'product', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: explorationContext.situationSlug, needSlug: explorationContext.needSlug })} onClick={() => setMenuOpen(false)}>Todos los productos →</Link>
             <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Conocé ZAP ↗</a>
+            <a href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos ↗</a>
           </nav>
           {contextReady && <section className="border-t border-white/20 pt-5">
             {!(explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && !contextEditorOpen ? (

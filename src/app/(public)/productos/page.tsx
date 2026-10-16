@@ -174,7 +174,13 @@ export default async function ProductsPage({
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm text-gray-500">
-              <span>{products.length} {products.length === 1 ? 'opción' : 'opciones'}</span>
+              <span>
+                {mode === 'rubro'
+                  ? selectedBusinessType
+                    ? `${businessSituations.length} ${businessSituations.length === 1 ? 'situación' : 'situaciones'}`
+                    : `${businessTypes.length} ${businessTypes.length === 1 ? 'rubro' : 'rubros'}`
+                  : `${products.length} ${products.length === 1 ? 'opción' : 'opciones'}`}
+              </span>
               {q?.trim() && (
                 <span className="rounded-full bg-white px-3 py-1.5 text-gray-700 ring-1 ring-gray-200">
                   Búsqueda: “{q.trim()}”
