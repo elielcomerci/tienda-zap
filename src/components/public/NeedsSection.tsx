@@ -21,7 +21,7 @@ export default function NeedsSection({
   const whatsappMessage = [
     `Hola, estoy explorando: ${situation.name}.`,
     businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
-    'No encuentro una necesidad que describa bien mi caso. ¿Lo podemos revisar?',
+    'No encuentro una necesidad que describa bien mi caso. ¿Lo podemos conversar?',
   ].filter(Boolean).join('\\n')
   const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
@@ -29,10 +29,10 @@ export default function NeedsSection({
     <section id="necesidades" className="px-0.5 sm:px-1">
       <div className="mb-6 max-w-2xl">
         <h2 className="text-2xl font-bold leading-tight tracking-[-0.025em] text-gray-950 sm:text-3xl">
-          ¿Qué necesitás resolver primero?
+          ¿Qué necesitás resolver?
         </h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
-          Elegí una necesidad. A partir de ahí vemos qué puede tener sentido para ese caso.
+          Elegí lo que más se acerca a lo que tenés en mente. Si todavía no lo tenés claro, lo podemos conversar.
         </p>
       </div>
       <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
@@ -63,13 +63,13 @@ export default function NeedsSection({
       </div>
       <div className="mt-5 border-t border-gray-200 pt-4">
         <p className="text-sm leading-6 text-gray-600">
-          ¿No encontrás lo que necesitás? No hace falta elegir algo que no encaja.
+          ¿Tu prioridad es otra?
         </p>
         <Link
           href={whatsappUrl || '/'}
           className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
         >
-          Contanos qué necesitás <ArrowRight size={15} />
+          Contanos qué tenés en mente <ArrowRight size={15} />
         </Link>
       </div>
     </section>
