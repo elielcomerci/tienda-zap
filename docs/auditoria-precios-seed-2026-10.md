@@ -552,9 +552,9 @@ El segundo precio queda por debajo del objetivo del 40%, pero supera el piso com
 
 ### 13.4 Corrección implementada en la rama; validación pendiente
 
-Se implementó una resolución acotada para estas dos configuraciones: `commercialPriceOverrides` consulta el costo terminado de `providerFinishedCostMatrix.matrix`, conserva los precios públicos explícitos de $72.000 y $166.500, calcula margen bruto sobre venta neta de IVA y bloquea si queda por debajo del 35%. Si la selección coincide con este flyer pero la cantidad no tiene precio aprobado, exige consulta en vez de caer al motor genérico. Las demás configuraciones no coincidentes continúan por el flujo anterior.
+Se implementó una resolución acotada para estas dos configuraciones: `commercialPriceOverrides` consulta el costo terminado de `providerFinishedCostMatrix.matrix`, conserva los precios públicos explícitos de $72.000 y $166.500, calcula margen bruto sobre venta neta de IVA y bloquea si queda por debajo del 35%. También se adaptó el payload que genera la pantalla actual (`rawMaterialId`, `sizeLabel`, `quantity`, `finishingIds`) para reconocer solo la combinación exacta de ilustración 150 g 4/4, 10×15 cm, sin terminaciones adicionales. Si esa combinación pide una cantidad sin precio aprobado, exige consulta; el resto conserva el cotizador genérico anterior.
 
-No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron pruebas contractuales para ambas cantidades y para el bloqueo por margen insuficiente. Falta ejecutar `npm test` y la prueba de integración con `DATABASE_URL` antes de considerar validada la corrección. Antes de aprobar la activación, verificar:
+No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron pruebas contractuales para ambas cantidades, el payload real de la tienda, la continuidad del motor genérico para otra combinación y el bloqueo de cantidades/precios fuera de lo aprobado. Falta ejecutar `npm test` y la prueba de integración con `DATABASE_URL` antes de considerar validada la corrección. Antes de aprobar la activación, verificar:
 
 1. Que las pruebas contractuales nuevas pasan y el precio no se desvía en redondeos ni por caché.
 2. Que la API devuelve $72.000 y $166.500 con costos de $32.000 y $85.000 y márgenes calculados sobre venta neta de IVA.
