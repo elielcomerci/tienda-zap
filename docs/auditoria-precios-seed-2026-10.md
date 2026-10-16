@@ -385,3 +385,56 @@ Valores de trabajo, redondeados hacia arriba a $500, sujetos a confirmar equival
 - Imprenta Cubo Digital: https://imprentacubodigital.com.ar/
 
 Los precios son los publicados al consultar y pueden cambiar. Las referencias “desde” y las ofertas promocionales se consideran aproximadas cuando la selección exacta no queda confirmada.
+
+
+## 10. Control de cobertura del universo completo (16/10/2026)
+
+### 10.1 No mezclar los dos catálogos
+
+La revisión del repositorio muestra dos universos distintos que deben reconciliarse, no sumarse como si fueran una sola lista:
+
+1. **31 Product Bases del seed estratégico** en `prisma/seed/data/05-products.ts`. Es el universo comercial de referencia conectado a rubros, situaciones, necesidades y relaciones.
+2. **Catálogo transaccional anterior de la tienda** documentado en `docs/auditoria-catalogo-productos.md` (foto fechada 20/05/2026): 30 productos cargados, 28 activos, 2 inactivos, incluidos productos con variantes y cotizadores. Esa foto no prueba por sí sola el estado actual de la base de datos; debe contrastarse con el estado vigente antes de publicar o migrar.
+
+Los 31 Product Bases son: Tarjetas & Vouchers; Flyers & Desplegables; Tags & Etiquetas; Adhesivos & Stickers; Fajas & Envoltorios; Bolsas & Contenedores; Cajas Personalizadas; Carpetas & Folders; Menús & Cartas; Individuales & Posavasos; Cartelería & Ploteo; Corpóreos & Marquesinas; Señalética & Placas; Expositores & Stands; Indumentaria & Textil; Objetos & Regalería; Activos Web & Sitios; Asistentes & Bots; Anuncios & Campañas; Producción Audiovisual; Sistema de Identidad; Operaciones & Consultoría; Sistema de Captación para Eventos; Diseño de Flyer / Volante; Diseño de Cartel / Afiche; Diseño Pack de piezas para redes (10); Diseño de Cartelería / Rótulos; Diseño de Menú Gastronómico; Diseño de Vidriera; Diseño de Etiquetas; Diseño de Papelería Corporativa.
+
+### 10.2 Resultado de la inspección de fuentes de costo
+
+| Familia / fuente | Qué existe en código | Resultado de auditoría |
+|---|---|---|
+| Tarjetas, flyers, tags, stickers, carpetas | `09-quoter-config.ts`, `09-quoter-options.ts`, `06-configurators/impresos-packaging.ts` | Costos parciales por matriz y proveedor; vigencia, equivalencia de terminaciones y conexión con el motor deben verificarse por producto y variante. |
+| Gran formato y vinilos | `06-configurators/gran-formato-costos.ts` | Catálogo de costos por componentes, fuentes fechadas 06/07/2026 y 23/07/2026, sin IVA. No equivale a costo final universal: hay mínimos, descuentos, materiales+proceso y productos terminados que no deben sumarse dos veces. |
+| Cartelería, corpóreos, señalética y stands | `06-configurators/presencia-fisica.ts` | Los contratos de configurador están en DRAFT con opciones vacías y `pricing: null`; no existe base suficiente para precio automático integral de producto terminado e instalación. |
+| Indumentaria y textil | `06-configurators/textil.ts` | Contrato en DRAFT, opciones vacías y `pricing: null`; falta una matriz vigente de prendas, técnicas, ubicaciones, talles, mermas y mínimos. |
+| Web, sitios y asistentes | `06-configurators/digital.ts` | Contratos en DRAFT, opciones vacías y `pricing: null`; el precio necesita costo interno por alcance, horas, QA, integraciones, puesta en marcha y soporte. |
+| Anuncios y campañas | `06-configurators/campanas.ts` | Contrato en DRAFT, opciones vacías y `pricing: null`; hay que separar honorarios de inversión en medios y costos de herramientas. |
+| Packaging: fajas, bolsas, cajas, menús, individuales y posavasos | No se encontró una matriz de producto terminado activa y suficiente en las fuentes revisadas | Sin costo completo y especificación cerrada; pedir cotización por medidas, material, impresión, terminación, cantidad, armado y entrega. |
+| Objetos y regalería | Producto base directo sin costo proveedor validado asociado en el seed | Sin costo validado; cotizar cada artículo y personalización, incluyendo mínimos y logística. |
+| Producción audiovisual, identidad, operaciones, captación de eventos y servicios a medida | Productos de consulta sin estructura de costos completa en seed | No usar margen de reventa gráfica. Costear horas, equipo, proveedores, herramientas, coordinación, rondas, derechos, traslados y entregables. |
+| Ocho productos de diseño directo | El seed registra precios directos, pero no horas/costos completos visibles | Precio existente no significa precio validado. Costear tiempo, revisiones, coordinación, preparación de originales y capacidad no facturable. |
+
+### 10.3 Brecha adicional: catálogo transaccional anterior
+
+La foto documentada del catálogo anterior identifica estas variantes incompletas o con precio cero: Banners (6 de 9 en cero), Calendario (3 de 3), Carpeta corporativa (4 de 4), Cartel Venta/Alquiler (2 de 9), Folleto (30 de 64), Imanes (2 de 3), Block/anotador (2 de 4) y Ploteo vehicular (2 de 2). También marca como pendiente de verificación los precios de variantes de otros productos, aunque algunas ya tienen un precio cargado.
+
+No se deben completar estas celdas copiando un multiplicador genérico. Las reglas anteriores de `costo × 2,5` solo sirven como hipótesis histórica cuando el costo base es confiable; no demuestran margen bruto, competencia ni cobertura de comisiones, desperdicio, armado, flete o instalación.
+
+### 10.4 Orden de trabajo para cerrar cobertura sin inventar datos
+
+1. **Reconciliar los universos:** extraer el estado actual del catálogo transaccional y cruzarlo por slug/ID con los 31 Product Bases; identificar duplicados, productos que existen en uno solo y variantes comprables sin precio.
+2. **Normalizar costos fuente:** para cada registro, conservar proveedor, fecha, moneda, IVA, unidad, mínimo, cantidad, terminación, vigencia y si el costo incluye material/proceso/producto terminado. No inferir equivalencias ambiguas.
+3. **Cerrar costos de producto terminado:** primero familias con datos existentes (impresos y gran formato); después pedir costos faltantes de packaging, textil y merchandising; en paralelo costear servicios propios por horas y capacidad.
+4. **Contrastar mercado por configuración comparable:** guardar URL, fecha, precio final/impuestos, especificación, cantidad, envío y si incluye diseño/instalación. No usar referencias que no informan cantidad o terminación como si fueran equivalentes.
+5. **Calcular y bloquear:** aplicar mediana + 5% solo con referencias comparables; verificar margen bruto objetivo del 40% y piso del 35% sobre costo completo. Si falla o falta evidencia, estado BLOQUEADO/SIN COSTO, no precio estimado publicable.
+6. **Probar el camino real:** validar configurador, vista de producto, cotización, carrito y checkout con las mismas selecciones. No activar precios ni ejecutar seeds productivos como parte de esta auditoría.
+
+### 10.5 Estado global
+
+- **Universo estratégico:** 31 Product Bases identificados.
+- **Configuradores contractuales:** 18 definidos históricamente, pero no equivalen a 18 cotizadores listos para producción.
+- **Costos fuente parciales:** impresos y gran formato.
+- **Costos de producto terminado insuficientes o no identificados:** varias familias de packaging, presencia física, textil, objetos y servicios propios.
+- **Precios listos para aprobación integral:** ninguno con la evidencia disponible en esta pasada.
+- **Producción:** esta auditoría documental no ejecuta seeds ni cambia precios en vivo.
+
+El criterio para declarar un producto “validado” es tener simultáneamente costo vigente y completo, especificación cerrada, contraste de mercado comparable, margen comprobado y prueba del recorrido de compra. Un precio cargado en base de datos o una fórmula que devuelve un número no alcanza ese criterio.
