@@ -467,3 +467,56 @@ Esta pasada amplía el contraste fuera de tarjetas/flyers/stickers. Las referenc
 - **Menús:** no comparar una ficha sin cantidad confirmada con una tirada de imprenta. Mantener el precio sin aprobar hasta cerrar unidad, formato, protección y cantidad.
 
 Los valores publicados son observaciones web del 16/10/2026 o de fichas recientes consultadas en esa fecha. Promociones, medios de pago, IVA, entrega y disponibilidad pueden modificar el total final; deben confirmarse al pedir cotización.
+
+## 12. Estrategia de cierre: activar un primer núcleo vendible sin esperar a todo el universo (16/10/2026)
+
+### 12.1 Regla comercial refinada
+
+El objetivo no es completar artificialmente los 31 productos: es llegar a la próxima pasada con un núcleo pequeño, confiable y realmente ofrecible, mientras el resto continúa en consulta/DRAFT.
+
+Para cada combinación se comparan, en este orden:
+
+1. **Equivalente directo:** mismo tamaño, material/gramaje, impresión, cantidad, terminación y alcance.
+2. **Equivalente funcional cercano:** cumple el mismo uso, pero se registran explícitamente las diferencias (por ejemplo, tensor simple frente a roll-up; bolsa kraft con otra medida o manija).
+3. **Alternativa de calidad superior:** si la alternativa mejora de manera comprobable el material, gramaje, terminación, estructura, protección o presentación, se puede ofrecer **al mismo precio de venta que el comparable de mercado**, sin sumar automáticamente la prima del 5%, siempre que el costo completo conserve al menos 35% de margen bruto y, de ser posible, el objetivo del 40%. La mejora debe describirse con precisión y no presentarse como superior si no hay evidencia.
+4. Si ninguna alternativa cumple margen y calidad, no se fuerza el precio: se negocia costo, se cambia la especificación o queda bloqueada.
+
+La prima de mercado de +5% pasa a ser una referencia inicial, no una obligación. Cuando una especificación superior puede sostenerse al precio mediano del mercado, priorizar valor percibido y conversión antes que cobrar una prima sin fundamento.
+
+### 12.2 Núcleo candidato para la primera activación
+
+Estos productos tienen datos suficientes para ser los primeros en cerrar, pero **todavía no están autorizados para activarse** hasta superar los controles indicados.
+
+| Prioridad | Producto/configuración | Precio público de trabajo | Evidencia actual | Qué falta para activar |
+|---|---|---:|---|---|
+| A | Stickers circulares 5 cm, papel autoadhesivo, 1.000 u | $108.000 | Costo de referencia $36.859; dos referencias de mercado ($95.000 y $110.000); margen teórico documentado cercano al 58,7% si el precio es final con IVA | Confirmar proveedor/costo vigente, soporte, corte/troquel, laca y cantidad; incluir embalaje/flete/comisiones absorbidos; verificar que la cotización real arroje ese precio y que la interfaz/checkout use la misma convención de IVA |
+| A | Tarjetas 9×5 cm, 350 g, 4/0, 1.000 u | $52.500 | Costo de referencia $24.000; margen teórico cercano al 44,7% sobre precio final con IVA | Confirmar costo terminado vigente y laminado exacto; verificar que el cotizador actual no sustituya este costo por otra matriz ni produzca un precio distinto |
+| A | Tarjetas 9×5 cm, 350 g, 4/4, 1.000 u | $67.000 | Costo de referencia $30.000; margen teórico cercano al 45,8% | Confirmar especificación, terminación y proveedor; probar cotización end-to-end |
+| B | Flyers 10×15 cm, 150 g, 4/4, 1.000 u | $72.000 | Referencia de costo $32.000; margen teórico cercano al 46,2%; referencias públicas próximas | Recotizar obligatoriamente: la fuente del costo venció. Confirmar si el precio público comparado incluye IVA y que el pliego/merma/plegado se modelen bien |
+| B | Flyers 10×15 cm, 150 g, 4/4, 5.000 u | $166.500 | Margen teórico cercano al 38,2%, antes de costos omitidos | Recotizar; recalcular costo completo y verificar que no caiga por debajo del piso de 35% |
+| C | Banner tensor simple 190×90 cm, full color y estructura | Objetivo inicial: precio de mercado comparable, sin fijar importe ZAP todavía | Imprimime publica $54.601 + IVA; B377 publica $60.000 para banner + tensor 90×190 cm; las diferencias de especificación deben verificarse | Obtener costo ZAP terminado o reconstruir materiales + impresión + confección/terminación + estructura + mano de obra + logística; comparar el costo completo contra vender a precio final de mercado. Si el margen no alcanza, cotizar otra estructura/proveedor o ofrecer una mejora real de calidad al precio mediano |
+| C | Roll-up 200×85 cm, full color, estructura y bolso | Objetivo inicial: precio de mercado comparable, sin fijar importe ZAP todavía | Imprimime publica $97.248 + IVA, incluye portabanner metálico y bolso | Confirmar costo terminado o componentes completos; no usar costos de lona sola como si fueran el roll-up completo |
+
+**Importante:** los márgenes de A/B son proyecciones hechas con los costos históricos documentados y suponiendo que el precio de trabajo es precio final con IVA del 21%. No demuestran todavía el margen completo real. La autorización exige los controles de la última columna; no se debe cambiar el precio real del cotizador para que coincida con la tabla sin verificar primero el costo que usa.
+
+### 12.3 Familias que no deben retrasar la primera activación
+
+- **Tags:** siguen bloqueados por discrepancia de perforación y costo terminado.
+- **Carpetas:** costo fuente y unidad/tirada sin resolver frente al mercado.
+- **Bolsas, fajas, cajas, menús e individuales:** buscar primero una cotización de producto terminado exactamente comparable; usar referencias de mercado para decidir especificación, no para inventar costo.
+- **Textil:** comenzar con una única ficha acotada (por ejemplo, remera de algodón peinado 24/1 con una ubicación DTF y mínimo definido), pero solo después de confirmar prenda, talles, impresión, cantidad, IVA y envío con proveedor. No activar un configurador genérico sin esos datos.
+- **Gran formato:** priorizar un único banner tensor y un único roll-up como productos de catálogo separados. La estructura, la impresión, el armado y el bolso deben estar dentro del costo; no mezclar ambas tipologías ni sumar componentes que ya incluyan material + proceso.
+- **Servicios de diseño:** pueden ofrecerse por consulta fuera del cotizador mientras se completa el costeo por horas, alcance y revisiones; no inventar un precio fijo ni presentar una estimación como tarifa aprobada.
+
+### 12.4 Gate mínimo para la próxima pasada
+
+La próxima pasada debe terminar con un estado explícito por producto: **ACTIVAR**, **OFRECER POR CONSULTA** o **BLOQUEAR**. Para declarar ACTIVAR, comprobar:
+
+- [ ] Costo vigente confirmado con fecha, proveedor, cantidad, especificación e impuestos.
+- [ ] Costo completo, incluyendo gastos directos que absorbe ZAP.
+- [ ] Precio público comparable y margen bruto calculado sobre venta neta de IVA; mínimo 35%.
+- [ ] Configurador, página, carrito y checkout muestran/conservan el mismo precio y tratamiento de IVA.
+- [ ] Prueba de una configuración real, sin depender de un seed de producción no verificado.
+- [ ] Texto comercial comunica la especificación y la mejora de calidad sin promesas no demostradas.
+
+No hace falta que el universo completo esté terminado para lanzar. La decisión es cerrar primero el núcleo A y, en paralelo, obtener costos para un banner y un roll-up. Los demás productos permanecen fuera del lanzamiento inicial hasta contar con evidencia suficiente.
