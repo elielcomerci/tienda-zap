@@ -749,8 +749,21 @@ export function quoteConfiguratorSelection(
   selection: CommercialSelection,
   quoterConfig?: ProductQuoterConfigInput
 ): ProductQuoteResult {
-  // 1. Adaptar solo la selección genérica exacta cubierta por tarifa aprobada.
+  // 1. La pantalla actual de flyers usa el payload del cotizador genérico.
+  // Solo la combinación exacta con precio aprobado pasa al motor comercial nuevo.
+  const isLegacyFlyerPayload =
+    configurator.schema?.productSlug === 'flyers-desplegables' &&
+    typeof selection.rawMaterialId === 'string' &&
+    !selection.format &&
+    !selection.material;
   const normalizedSelection = normalizeLegacyFlyerSelection(configurator, selection);
+
+  if (isLegacyFlyerPayload && normalizedSelection === selection) {
+    if (!quoterConfig) {
+      throw new Error('Error de configuración: Se requiere ProductQuoterConfig para la selección genérica de flyers.');
+    }
+    return calculateProductQuote(quoterConfig, selection as ProductQuoteSelection);
+  }
 
   // 2. Validación UI y reglas de compatibilidad
   const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, normalizedSelection);
