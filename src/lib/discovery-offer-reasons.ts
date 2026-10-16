@@ -104,12 +104,12 @@ const REASONS: Record<string, string> = {
     "Muestra la experiencia y ayuda a que alguien imagine cómo sería entrenar o participar.",
   "wellness|quiero-conseguir-alumnos|necesito-que-una-propuesta-se-vea|anuncios-campanas":
     "Lleva la propuesta a personas que todavía no conocen el espacio.",
-  "wellness|quiero-conseguir-alumnos|necesito-llegar-a-mas-gente|anuncios-campanas":
-    "Pone la propuesta frente a más personas con posibilidades reales de convertirse en alumnos.",
   "wellness|quiero-conseguir-alumnos|necesito-facilitar-el-contacto|activos-web-sitios":
     "Ordena la información y el camino para que consultar o inscribirse sea sencillo.",
   "wellness|quiero-conseguir-alumnos|necesito-facilitar-el-contacto|asistentes-bots":
     "Ayuda a atender consultas y derivarlas cuando responder manualmente empieza a quitar tiempo.",
+  "gastronomia|quiero-que-mis-clientes-vuelvan|necesito-mantener-la-marca-presente|objetos-regaleria":
+    "Un regalo útil con tu marca mantiene el vínculo después de la compra y ayuda a que te recuerden.",
 }
 
 export function getDiscoveryOfferReason({

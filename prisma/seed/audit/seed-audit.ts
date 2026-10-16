@@ -265,8 +265,13 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   });
 
   const matrixProductSlugs = new Set(offerMatrixData.map((entry) => entry.productSlug));
-  if (matrixProductSlugs.size !== 22) {
-    errors.push(`[MATRIX PRODUCT BASE COUNT] Esperadas 22 Product Bases distintas en la matriz, encontradas ${matrixProductSlugs.size}.`);
+  if (matrixProductSlugs.size !== 23) {
+    errors.push(`[MATRIX PRODUCT BASE COUNT] Esperadas 23 Product Bases distintas en la matriz, encontradas ${matrixProductSlugs.size}.`);
+  }
+  for (const slug of productBaseSlugs) {
+    if (!matrixProductSlugs.has(slug)) {
+      errors.push(`[MATRIX PRODUCT BASE MISSING] Product Base sin relación de descubrimiento: '${slug}'.`);
+    }
   }
   for (const slug of matrixProductSlugs) {
     if (!productBaseSlugs.has(slug)) {

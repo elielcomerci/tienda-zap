@@ -10,7 +10,7 @@ import type { DiscoverySituation } from '@/lib/discovery'
 const FEATURED_SITUATION_SLUGS: string[] = [
   'estoy-por-abrir',
   'quiero-vender-mas',
-  'quiero-que-vuelvan',
+  'quiero-que-mis-clientes-vuelvan',
   'quiero-que-me-encuentren',
   'quiero-renovar-la-marca-o-el-espacio',
   'tengo-un-evento',

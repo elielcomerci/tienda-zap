@@ -199,12 +199,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "tarjetas-vouchers"
   },
-  {
-    "businessTypeSlug": "gastronomia",
-    "situationSlug": "quiero-que-mis-clientes-vuelvan",
-    "needSlug": "necesito-mantener-la-marca-presente",
-    "productSlug": "flyers-desplegables"
-  },
+
   {
     "businessTypeSlug": "gastronomia",
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
@@ -216,6 +211,30 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-mantener-la-marca-presente",
+    "productSlug": "objetos-regaleria"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-comunicar-novedades",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-comunicar-novedades",
+    "productSlug": "flyers-desplegables"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-comunicar-novedades",
+    "productSlug": "tarjetas-vouchers"
   },
   {
     "businessTypeSlug": "moda-showrooms",
@@ -1323,6 +1342,24 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
   },
   {
     "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-mejorar-mi-espacio",
+    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
+    "productSlug": "senaletica-placas"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-mejorar-mi-espacio",
+    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
+    "productSlug": "carteleria-ploteo"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-mejorar-mi-espacio",
+    "needSlug": "necesito-que-el-espacio-se-vea-profesional",
+    "productSlug": "corporeos-marquesinas"
+  },
+  {
+    "businessTypeSlug": "wellness",
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
     "productSlug": "activos-web-sitios"
@@ -1338,6 +1375,18 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
     "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
+    "productSlug": "activos-web-sitios"
   },
   {
     "businessTypeSlug": "gastronomia",
