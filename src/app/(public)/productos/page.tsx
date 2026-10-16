@@ -123,6 +123,11 @@ export default async function ProductsPage({
         situationSlug: isSituationMode ? selectedSituation?.slug : undefined,
         needSlug: isSituationMode && selectedSituation ? necesidad : undefined,
         businessTypeSlug: mode === 'rubro' ? rubro : undefined,
+        rankContext: mode === 'product' && selectedSituation ? {
+          businessTypeSlug: rubro,
+          situationSlug: selectedSituation.slug,
+          needSlug: selectedSituation.needs.some((need) => need.slug === necesidad) ? necesidad : undefined,
+        } : undefined,
         catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
       }
     ), 
