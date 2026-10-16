@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   CircleHelp,
   CreditCard,
-
+  Image as ImageIcon,
   ScanLine,
   Smartphone,
   Tag,
@@ -1018,15 +1018,29 @@ function CheckoutContent() {
                       className="rounded-2xl border border-white/10 bg-white/5 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white">
-                            {item.name} x{item.quantity}
-                          </p>
-                          {item.selectedOptions && item.selectedOptions.length > 0 && (
-                            <p className="mt-1 text-xs text-gray-400">
-                              {item.selectedOptions.map((option) => option.value).join(' - ')}
+                        <div className="flex min-w-0 items-start gap-3">
+                          <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt=""
+                                loading="lazy"
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <ImageIcon aria-hidden="true" size={20} className="text-gray-500" />
+                            )}
+                          </div>
+                          <div className="min-w-0 pt-0.5">
+                            <p className="text-sm font-semibold text-white">
+                              {item.name} x{item.quantity}
                             </p>
-                          )}
+                            {item.selectedOptions && item.selectedOptions.length > 0 && (
+                              <p className="mt-1 text-xs text-gray-400">
+                                {item.selectedOptions.map((option) => option.value).join(' - ')}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <span className="shrink-0 text-sm font-semibold text-[#F7638B]">
                           ${(item.price * item.quantity).toLocaleString('es-AR')}
