@@ -28,7 +28,7 @@ export default function NeedsSection({
   return (
     <section id="necesidades" className="px-1 sm:px-2">
       <div className="mb-6 max-w-2xl">
-        <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">¿Qué necesitás resolver primero?</h2>
+        <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">¿Qué necesitás resolver primero{businessTypeName ? ` en ${businessTypeName.toLowerCase()}` : ''}?</h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">Elegí una necesidad. A partir de ahí vemos qué puede tener sentido para ese caso.</p>
       </div>
       <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
