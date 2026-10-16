@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-10-13  
 **Rama:** `feat/precios-zap-versionados`  
-**Estado:** MVP interno en rama de revisión. No cambia precios de venta automáticamente, checkout ni producción. El seed ahora preserva las versiones existentes.
+**Estado:** módulo interno en `main`, con edición de borradores e importación CSV por plantilla. No cambia precios públicos automáticamente ni altera pedidos/cotizaciones históricos.
 
 ## Estado de implementación
 
@@ -48,6 +48,16 @@ La primera entrega no debe recalcular ni publicar precios automáticamente al im
 - Ambas variables (`PRICING_ZAP_PUBLISH_ENABLED` y `PRICING_ZAP_COMMERCIAL_AUDIT_APPROVED`) deben permanecer sin definir o distintas de `true` hasta que la auditoría comercial esté aprobada; la barrera se verifica también dentro de las acciones del servidor.
 - Las combinaciones sin costo validado deben quedar bloqueadas o marcadas como consulta; nunca completar celdas con estimaciones silenciosas.
 - El seed no debe sobrescribir una matriz administrada/publicada durante una ejecución normal. Antes de cambiar el comportamiento del seed, revisar su idempotencia y definir cómo importar futuras actualizaciones de fuente.
+
+## Importación CSV y persistencia incremental
+
+El editor permite descargar una plantilla CSV de la matriz del borrador. Para importar, se completa la columna `new_cost` únicamente en las referencias que cambian; las filas vacías se ignoran. El importador admite coma o punto y coma como separador, valida referencias contra la matriz del borrador, rechaza duplicados, rutas desconocidas, valores negativos/no numéricos y archivos mayores de 1 MB. El límite de una importación es de 5.000 filas con importe.
+
+Antes de guardar se muestra una comparación de valores anteriores y nuevos. El servidor vuelve a validar cada ruta y valor, exige rol `ADMIN`, comprueba que la versión siga en estado `DRAFT` y usa control optimista de concurrencia. Toda la tanda se guarda en una sola transacción. Solo se persisten los importes que efectivamente cambian; los iguales se contabilizan como sin cambios. Si no hay diferencias, no se reescribe la matriz.
+
+La matriz se persiste en `ConfiguratorVersion.pricing`; cada importación con cambios genera una entrada de auditoría con archivo de origen, fecha, cantidades y detalle antes/después. La edición incremental no recalcula ni publica precios finales: solo actualiza los costos de proveedor en el borrador. El motor de cotización calcula el resultado cuando corresponde, usando la versión activa. La publicación sigue siendo un paso explícito y bloqueado por las dos variables de seguridad hasta completar la auditoría comercial.
+
+**Formato de plantilla:** columnas `path`, `label`, `current_cost`, `new_cost`. No modificar `path`; se usa como identificador exacto. Esta primera importación trabaja con la plantilla generada por Precios ZAP, no con cualquier CSV arbitrario del proveedor. Para importar archivos originales con columnas distintas hace falta definir y guardar un mapeo por proveedor/familia, evitando emparejar referencias solo por texto parecido.
 
 ## Experiencia de edición
 
