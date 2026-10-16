@@ -122,7 +122,8 @@ export default async function ProductsPage({
         // It becomes a filter only when its corresponding mode is active.
         situationSlug: isSituationMode ? selectedSituation?.slug : undefined,
         needSlug: isSituationMode && selectedSituation ? necesidad : undefined,
-        businessTypeSlug: mode === 'rubro' ? rubro : undefined,
+        // Keep recommendations inside the selected business context in guided discovery too.
+        businessTypeSlug: isSituationMode || mode === 'rubro' ? rubro : undefined,
         rankContext: mode === 'product' && selectedSituation ? {
           businessTypeSlug: rubro,
           situationSlug: selectedSituation.slug,
