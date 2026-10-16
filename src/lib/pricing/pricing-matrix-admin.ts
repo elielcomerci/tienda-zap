@@ -78,10 +78,10 @@ const SEGMENT_LABELS: Record<string, string> = {
 function formatCostPathLabel(path: string[]) {
   return path
     .filter((part) => !HIDDEN_LABEL_SEGMENTS.has(part))
-    .map((part) => {
+    .map((part, index) => {
       if (SEGMENT_LABELS[part]) return SEGMENT_LABELS[part];
       if (/^\d+x\d+$/i.test(part)) return part.replace(/x/i, ' × ');
-      if (/^\d+$/.test(part) && /^\d+x\d+$/i.test(path[path.indexOf(part) - 1] || '')) return `${part} unidades`;
+      if (/^\d+$/.test(part) && /^\d+x\d+$/i.test(path[index - 1] || '')) return `${part} unidades`;
       return part
         .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
         .replace(/_/g, ' ')
