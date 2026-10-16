@@ -591,6 +591,29 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       }
       },
     },
+    commercialPriceOverrides: {
+      resolver: 'PROVIDER_FINISHED_COST',
+      publicPriceIncludesTax: true,
+      vatRate: 0.21,
+      minimumGrossMarginPercent: 35,
+      // Precios públicos aprobados para estas dos configuraciones offset.
+      // El costo se toma de providerFinishedCostMatrix.matrix (sin IVA).
+      // El resto de las configuraciones conserva el flujo habitual hasta su validación.
+      products: [
+        {
+          match: {
+            foldingType: 'plano',
+            format: '10x15',
+            material: 'ilustracion_150g',
+            printing: '4_4',
+          },
+          prices: {
+            '1000': 72000,
+            '5000': 166500,
+          },
+        },
+      ],
+    },
     adapter: {
       matrixFormatMapping: {
         plano: {
