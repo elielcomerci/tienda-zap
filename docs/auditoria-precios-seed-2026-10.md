@@ -329,3 +329,59 @@ No se fija precio final todavía. El configurador de tags usa `PRODUCT_QUOTER` y
 | Tags | No se puede obtener un precio confiable con el costo actual del motor | Corregir impresión y perforación antes de fijar precio |
 
 Los precios de competencia son precios publicados consultados el 16/10/2026; pueden cambiar y no todos incluyen las mismas terminaciones, envío o diseño. Se usa el promedio sólo cuando las referencias son suficientemente comparables, y se explicitan las diferencias cuando no lo son.
+
+
+## 9. Política comercial acordada: centro del mercado + leve prima (16/10/2026)
+
+### Margen: definición y regla
+
+Se adopta como política de partida:
+
+- **Margen bruto objetivo: 40% de la venta neta de IVA.**
+- **Piso de margen bruto: 35%**, siempre que el costo incluya todos los costos directos atribuibles al pedido.
+- El porcentaje se calcula como `(venta neta de IVA - costo completo) / venta neta de IVA × 100`. No confundir margen con recargo sobre costo.
+- El precio final al consumidor incluye IVA del 21% cuando corresponde. Si el precio público se expresa con IVA, primero se divide por 1,21 para calcular el margen neto.
+- El precio de mercado se fija usando la mediana de varias ofertas comparables y una prima inicial de **5% por encima de esa mediana** (no del competidor más barato). Si sólo hay dos referencias comparables, se usa su punto medio como aproximación provisional.
+- La referencia de mercado no autoriza vender por debajo del piso. Si la mediana + 5% no deja al menos 35% de margen bruto, se revisa proveedor, costo, especificación o se deja el producto sin precio automático. No se baja el margen sin una decisión explícita.
+- Diseño, envío, urgencias, comisiones de cobro, preparación y otros cargos deben estar incluidos en el costo cuando los absorbe ZAP; si se cobran aparte, deben quedar explícitos.
+
+El 40% es **margen bruto**, no ganancia neta del negocio: todavía debe financiar estructura, comercialización, administración, impuestos no recuperables, mermas, garantías y costos generales. La rentabilidad neta real se conoce al medir esos gastos.
+
+### Precios objetivo revisados con la política de mercado
+
+Valores de trabajo, redondeados hacia arriba a $500, sujetos a confirmar equivalencia de terminaciones y costos vigentes. No publicar automáticamente hasta cerrar esas validaciones.
+
+| Producto / especificación | Costo de proveedor usado | Referencia de mercado | Precio ZAP objetivo | Margen bruto estimado |
+|---|---:|---|---:|---:|
+| Tarjetas 9×5, 350 g, 4/0 | $24.000 / 1.000 | Referencias de tarjetas full color 9×5: $55.000–$63.500 / 1.000; no es comparación exacta de impresión a una cara | $52.500 / 1.000 | 44,7% |
+| Tarjetas 9×5, 350 g, 4/1 | $29.000 / 1.000 | Sin suficientes referencias públicas exactas 4/1; precio intermedio provisional | $60.000 / 1.000 | 41,5% |
+| Tarjetas 9×5, 350 g, 4/4 | $30.000 / 1.000 | B377 $55.000 (300 g, 4/4, laminado frontal opcional); Cubo $72.000 (350 g, mate frente y dorso) | $67.000 / 1.000 | 45,8% |
+| Stickers circulares 5 cm, papel autoadhesivo | $36.859 / 1.000 | B377 $110.000; Dokan $95.000; punto medio de dos referencias $102.500 | $108.000 / 1.000 | 58,7% |
+| Flyers 10×15 cm, 150 g, 4/4 | $32.000 / 1.000 | Imprimime $77.501 final; Gráfica de la Plaza $58.806 final (promo + IVA); centro aproximado $68.153 | $72.000 / 1.000 | 46,2% |
+| Flyers 10×15 cm, 150 g, 4/4 | $85.000 / 5.000 | Imprimime $162.443 final; Gráfica de la Plaza $154.275 final; centro aproximado $158.359 | $166.500 / 5.000 | 38,2% |
+| Carpetas A4 300 g, 1 solapa, 4/0 laminadas | $635.500 / 500 | Imprenta Lugones $681.900 / 500; especificación cercana, no idéntica | No fijar aún | Negativo al precio de mercado |
+| Carpetas A4 300 g, 1 solapa, 4/4 laminadas | $824.500 / 500 | Lugones publica $777.200 solo frente premium y $1.076.300 frente y dorso premium | No fijar aún | No confiable hasta validar el costo de origen |
+
+**Cálculo del margen estimado:** se toma el precio público final, se divide por 1,21 para estimar la venta neta y se compara contra el costo del proveedor indicado. No incluye costos operativos faltantes; por eso es un margen provisional y puede ser menor al real cuando esos costos se incorporen.
+
+### Lectura y decisiones
+
+- **Tarjetas:** los objetivos de $52.500, $60.000 y $67.000 evitan ubicarse como la opción barata y mantienen, sobre el costo de proveedor cargado, un margen bruto teórico superior al 40%. Antes de publicar, confirmar si el OPP brillo de la lista vigente es laminado de frente o frente y dorso, y obtener al menos una referencia pública exacta para 4/1.
+- **Stickers:** $108.000 se acerca al rango alto del centro de las dos referencias circulares de 5 cm ($95.000 y $110.000); el margen teórico queda alto porque el costo proveedor cargado es relativamente bajo. Verificar que la laca, el troquel y la presentación sean equivalentes.
+- **Flyers:** $72.000 por 1.000 queda ligeramente por encima del centro de las dos referencias finales consultadas. Para 5.000, $166.500 queda por encima del centro y deja un margen teórico de 38,2% antes de otros costos; la lista de proveedor del seed está vencida, por lo que **no aprobar ni publicar sin recotizar**.
+- **Carpetas:** la estructura actual no soporta un precio de mercado con el piso de margen acordado. No forzar un precio público ni rebajar el margen: revisar primero si los costos son costos de compra reales y si la unidad/tirada está bien interpretada.
+- **Tags:** sigue bloqueado hasta que el costo de impresión y perforación quede completo.
+
+### Referencias de competencia revisadas el 16/10/2026
+
+- Gráfica B377: https://graficab377.com/blog/cuanto-cuesta-imprimir-en-buenos-aires
+- Gráfica B377 catálogo: https://graficab377.com/catalogo
+- Imprimime: https://imprimime.com.ar/lista-de-precios
+- Imprimime flyers: https://imprimime.com.ar/folletos/folletos-flyers
+- Imprimime carpetas: https://imprimime.com.ar/carpetas-impresas/carpetas-impresas-1-solapa
+- Gráfica de la Plaza: https://graficadelaplaza.com/impresion-folletos-color/
+- Imprenta Lugones: https://www.imprentalugones.com.ar/productos/carpetas/
+- Dokan: https://dokan.com.ar/product/stickers-redondos/
+- Imprenta Cubo Digital: https://imprentacubodigital.com.ar/
+
+Los precios son los publicados al consultar y pueden cambiar. Las referencias “desde” y las ofertas promocionales se consideran aproximadas cuando la selección exacta no queda confirmada.
