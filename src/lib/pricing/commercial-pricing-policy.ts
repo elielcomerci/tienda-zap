@@ -23,8 +23,11 @@ export function validateCommercialPricingPolicy(value: unknown): CommercialPrici
   if (input.version !== 1 || (input.mode !== 'MARGIN' && input.mode !== 'MARKUP')) {
     throw new Error('La política de precios tiene una versión o un modo desconocido.')
   }
-  const percentage = Number(input.percentage)
-  const vatRatePercent = Number(input.vatRatePercent)
+  if (typeof input.percentage !== 'number' || typeof input.vatRatePercent !== 'number') {
+    throw new Error('El porcentaje y la tasa de IVA deben ser valores numéricos.')
+  }
+  const percentage = input.percentage
+  const vatRatePercent = input.vatRatePercent
   if (!Number.isFinite(percentage) || percentage < 0 || percentage > 1000) {
     throw new Error('El porcentaje debe estar entre 0 y 1.000.')
   }
