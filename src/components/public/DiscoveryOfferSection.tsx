@@ -17,6 +17,19 @@ type OfferProduct = {
   catalogType: 'COSA' | 'DESARROLLO'
 }
 
+const EXPLORATION_PRODUCT_NAMES: Record<string, string> = {
+  'activos-web-sitios': 'Sitios web y catálogos digitales',
+  'sistema-identidad': 'Identidad de marca',
+  'asistentes-bots': 'Asistentes para consultas',
+  'operaciones-consultoria': 'Procesos y organización del negocio',
+  'sistema-captacion-eventos': 'Captación de contactos para eventos',
+  'diseno-pack-graficos-redes': 'Diseño de 10 piezas para redes',
+}
+
+function getExplorationProductName(product: OfferProduct) {
+  return EXPLORATION_PRODUCT_NAMES[product.slug] || product.name
+}
+
 function getOfferPriority(product: OfferProduct) {
   if (isDevelopment(product)) return 0
   if (product.modality === 'CONFIGURABLE') return 1
@@ -65,35 +78,30 @@ export default function DiscoveryOfferSection({
           Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, no queremos inventarte una oferta.
           Podemos mirar qué está pasando y decidir con vos dónde tiene sentido intervenir.
         </p>
-        <Link href={whatsappUrl || "/"} className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
-          Hablar con ZAP <ArrowRight size={16} />
-        </Link>
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
+            Hablar con ZAP <ArrowRight size={16} />
+          </Link>
+          <Link href="#necesidades" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
+            Elegir otra necesidad <ArrowRight size={15} />
+          </Link>
+        </div>
       </section>
     )
   }
 
-  if (needsZAPReview) {
-    return (
-      <section id="recomendacion" className="rounded-[30px] bg-[linear-gradient(135deg,#fff9fb_0%,#ffffff_75%)] px-5 py-8 sm:px-8 sm:py-10">
-        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto conviene mirarlo como un conjunto</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-          Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, hay varias formas de intervenir y probablemente tengan que trabajar juntas.
-          Antes de hacerte elegir una cosa, podemos mirar el contexto y decirte por dónde tiene más sentido empezar.
-        </p>
-        <Link href={whatsappUrl || "/" } className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
-          Hablar con ZAP <ArrowRight size={16} />
-        </Link>
-      </section>
-    )
-  }
 
   return (
     <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-7 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.28)] sm:px-8 sm:py-9">
       <div className="mb-7 max-w-2xl">
-        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">Esto puede servirte</h2>
+        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
+          {needsZAPReview ? 'Estas opciones pueden trabajar juntas' : 'Esto puede servirte'}
+        </h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
           Partimos de <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>.
-          Estas son algunas formas concretas de intervenir.
+          {needsZAPReview
+            ? ' Estas son alternativas concretas para que puedas conocerlas. Si necesitás combinarlas, también podemos ayudarte a definir por dónde empezar.'
+            : ' Estas son algunas formas concretas de intervenir.'}
         </p>
       </div>
 
@@ -123,7 +131,7 @@ export default function DiscoveryOfferSection({
 
           return (
             <article key={product.id} className="flex min-h-[178px] flex-col rounded-[22px] bg-gray-50/80 p-5 sm:p-6">
-              <h3 className="text-lg font-black tracking-tight text-gray-950 sm:text-xl">{product.name}</h3>
+              <h3 className="text-lg font-black tracking-tight text-gray-950 sm:text-xl">{getExplorationProductName(product)}</h3>
               <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
 
               <Link
@@ -144,7 +152,7 @@ export default function DiscoveryOfferSection({
 
       <div className="mt-7 flex justify-start border-t border-gray-100 pt-5 sm:justify-end">
         <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
-          ¿No sabés cuál elegir? Hablemos <ArrowRight size={15} />
+          {needsZAPReview ? '¿Querés evaluar cómo combinarlas? Hablemos' : '¿No sabés cuál elegir? Hablemos'} <ArrowRight size={15} />
         </Link>
       </div>
     </section>
