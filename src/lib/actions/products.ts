@@ -30,7 +30,37 @@ async function uniqueSlug(requested: string, excludeId?: string) {
   return slug
 }
 
-function productData(formData: FormData) {
+function productImages(formData: FormData, fallbackImages: string[] = []) {
+  const raw = formData.get('imagesJson')
+  if (raw === null) return fallbackImages
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(String(raw))
+  } catch {
+    throw new Error('No pudimos guardar las imágenes. Volvé a cargarlas e intentá de nuevo.')
+  }
+  if (!Array.isArray(parsed) || parsed.length > 12 || parsed.some((value) => typeof value !== 'string')) {
+    throw new Error('La lista de imágenes no es válida.')
+  }
+
+  const allowedHosts = ['media.zap.com.ar']
+  const urls = parsed.map((value) => {
+    let url: URL
+    try {
+      url = new URL(value)
+    } catch {
+      throw new Error('Una imagen tiene una dirección inválida.')
+    }
+    const isLegacyBlob = url.hostname.endsWith('.public.blob.vercel-storage.com')
+    if (url.protocol !== 'https:' || (!allowedHosts.includes(url.hostname) && !isLegacyBlob)) {
+      throw new Error('Las imágenes deben estar alojadas en los medios autorizados de ZAP.')
+    }
+    return url.toString()
+  })
+  return [...new Set(urls)]
+}
+
+function productData(formData: FormData, fallbackImages: string[] = []) {
   const catalogTypeValue = String(formData.get('catalogType') || 'COSA')
   const catalogType = Object.values(CatalogType).includes(catalogTypeValue as CatalogType)
     ? (catalogTypeValue as CatalogType)
@@ -56,7 +86,7 @@ function productData(formData: FormData) {
     price: Number(formData.get('price') || 0),
     priceFrom: null,
     active: formData.get('active') !== 'false',
-    images: [] as string[],
+    images: productImages(formData, fallbackImages),
     stock: 0,
     briefType: 'NONE',
     mediaType: 'NONE',
@@ -88,9 +118,10 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin()
-  const data = productData(formData)
+  const previous = await prisma.product.findUnique({ where: { id }, select: { slug: true, images: true } })
+  if (!previous) throw new Error('Product Base no encontrado.')
+  const data = productData(formData, previous.images)
   if (!data.name) throw new Error('Nombre requerido.')
-  const previous = await prisma.product.findUnique({ where: { id }, select: { slug: true } })
   const product = await prisma.product.update({
     where: { id },
     data: { ...data, slug: await uniqueSlug(String(formData.get('slug') || data.name), id) },
