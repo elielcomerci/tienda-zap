@@ -57,75 +57,37 @@ export default function CatalogSidebar({
 
       <div>
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 px-1">
-          {currentMode === 'product' ? (catalogType === 'desarrollo' ? 'Desarrollos' : 'Categorías') : currentMode === 'rubro' ? 'Rubros' : 'Situaciones'}
-        </p>
-
-        {currentMode === 'product' ? (
-          isCatalogTypeMode ? (
-            <div className="space-y-2">
+          {currentMode === 'product' ? (
+          !isDesarrollos && (
+            <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
               <Link
-                href={catalogUrl({ mode: 'product', tipo: 'cosa' })}
-                scroll={false}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
-                  catalogType === 'cosa'
-                    ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
-                    : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <PackageOpen size={18} className={catalogType === 'cosa' ? 'text-[#ED164F]' : 'text-gray-400'} />
-                <span className="leading-tight">Cosas</span>
-              </Link>
-              <Link
-                href={catalogUrl({ mode: 'product', tipo: 'desarrollo' })}
-                scroll={false}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
-                  catalogType === 'desarrollo'
-                    ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
-                    : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <BriefcaseBusiness size={18} className={catalogType === 'desarrollo' ? 'text-[#ED164F]' : 'text-gray-400'} />
-                <span className="leading-tight">Desarrollos</span>
-              </Link>
-              <Link
-                href={catalogUrl({ mode: 'product' })}
-                scroll={false}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900"
-              >
-                <LayoutGrid size={18} className="text-gray-400" />
-                <span className="leading-tight">Todas</span>
-              </Link>
-            </div>
-          ) : (
-          <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
-            <Link
-              href={catalogUrl({ mode: 'product', tipo: 'cosa' })}
-              scroll={false}
-              className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
-                !cat
-                  ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
-                  : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
-              }`}
-            >
-              <LayoutGrid size={18} className={!cat ? 'text-[#ED164F]' : 'text-gray-400'} />
-              <span className="leading-tight">Todo</span>
-            </Link>
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={catalogUrl({ mode: 'product', tipo: 'cosa', cat: category.slug })}
+                href={catalogUrl({ mode: 'product', tipo: isCosas ? 'cosa' : undefined, cat: undefined })}
                 scroll={false}
                 className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
-                  cat === category.slug
+                  !cat
                     ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
                     : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
-                <PackageOpen size={18} className={cat === category.slug ? 'text-[#ED164F]' : 'text-gray-400'} />
-                <span className="leading-tight">{category.name}</span>
+                <LayoutGrid size={18} className={!cat ? 'text-[#ED164F]' : 'text-gray-400'} />
+                <span className="leading-tight">Todas</span>
               </Link>
-            ))}
-          </div>
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={catalogUrl({ mode: 'product', tipo: 'cosa', cat: category.slug })}
+                  scroll={false}
+                  className={`flex items-center gap-3 whitespace-nowrap xl:whitespace-normal text-left rounded-xl px-3 py-2.5 text-sm transition-all ${
+                    cat === category.slug
+                      ? 'bg-[#FEF1F5] text-[#ED164F] font-bold'
+                      : 'text-gray-600 font-medium hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <PackageOpen size={18} className={cat === category.slug ? 'text-[#ED164F]' : 'text-gray-400'} />
+                  <span className="leading-tight">{category.name}</span>
+                </Link>
+              ))}
+            </div>
           )
         ) : currentMode === 'rubro' ? (
           <div className="flex flex-row gap-1 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible xl:pb-0">
