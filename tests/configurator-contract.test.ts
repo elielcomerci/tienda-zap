@@ -224,6 +224,20 @@ test('flyers offset 10x15 150g 4/4 usa costo terminado y precio comercial aproba
   assert.ok(Math.abs((quote5000.breakdown!.marginPercent) - 38.2) < 0.1);
 });
 
+test('flyers offset no usa el motor genérico para cantidades sin precio comercial aprobado', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      foldingType: 'plano',
+      format: '10x15',
+      material: 'ilustracion_150g',
+      printing: '4_4',
+      quantity: 2500,
+    }, makeQuoterConfig(config)),
+    /requiere cotización para la cantidad seleccionada/
+  );
+});
+
 test('flyers offset bloquea el precio configurado si cae debajo del margen bruto mínimo', () => {
   const config = structuredClone(flyersDesplegablesConfigurator) as any;
   config.pricing.commercialPriceOverrides.minimumGrossMarginPercent = 50;
