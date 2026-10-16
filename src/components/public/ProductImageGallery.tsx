@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 
 export default function ProductImageGallery({
@@ -77,7 +77,28 @@ export default function ProductImageGallery({
   }
 
   return (
-    <div className="space-y-4 rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-4">
+    <div
+      role="group"
+      aria-label={'Galería de imágenes de ' + productName}
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault()
+          goToImage(activeIndex - 1)
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault()
+          goToImage(activeIndex + 1)
+        } else if (event.key === 'Home') {
+          event.preventDefault()
+          goToImage(0)
+        } else if (event.key === 'End') {
+          event.preventDefault()
+          goToImage(safeImages.length - 1)
+        }
+      }}
+      className="space-y-4 rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
+    >
       <div className="flex items-center justify-between px-1">
         <div>
           <p className="text-sm font-semibold text-gray-900">Vista del producto</p>
@@ -124,33 +145,8 @@ export default function ProductImageGallery({
             loading="eager"
             draggable={false}
           />
-          <span className="pointer-events-none absolute right-4 top-4 rounded-2xl bg-white/90 p-2.5 text-gray-700 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-            <ZoomIn size={20} />
-          </span>
         </button>
 
-        {safeImages.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => goToImage(activeIndex - 1)}
-              disabled={activeIndex === 0}
-              aria-label="Ver imagen anterior"
-              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-gray-800 shadow-md backdrop-blur transition hover:bg-white disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
-            >
-              <ChevronLeft size={21} />
-            </button>
-            <button
-              type="button"
-              onClick={() => goToImage(activeIndex + 1)}
-              disabled={activeIndex === safeImages.length - 1}
-              aria-label="Ver imagen siguiente"
-              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-gray-800 shadow-md backdrop-blur transition hover:bg-white disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
-            >
-              <ChevronRight size={21} />
-            </button>
-          </>
-        )}
       </div>
 
       {safeImages.length > 1 && (
@@ -167,25 +163,8 @@ export default function ProductImageGallery({
 
           <div
             ref={thumbnailsRef}
-            role="group"
-            aria-label={'Imágenes de ' + productName}
-            tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === 'ArrowLeft') {
-                event.preventDefault()
-                goToImage(activeIndex - 1)
-              } else if (event.key === 'ArrowRight') {
-                event.preventDefault()
-                goToImage(activeIndex + 1)
-              } else if (event.key === 'Home') {
-                event.preventDefault()
-                goToImage(0)
-              } else if (event.key === 'End') {
-                event.preventDefault()
-                goToImage(safeImages.length - 1)
-              }
-            }}
-            className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain scroll-smooth py-1 [scrollbar-width:thin] focus-visible:rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40"
+            aria-label={'Miniaturas de ' + productName}
+            className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain scroll-smooth py-1 [scrollbar-width:thin]"
           >
             {safeImages.map((img, i) => (
               <button
