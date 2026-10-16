@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { ZoomIn } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 
 export default function ProductImageGallery({
@@ -22,6 +22,12 @@ export default function ProductImageGallery({
   }, [images, selectedImage])
   const [activeIndex, setActiveIndex] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
+  const thumbnailsRef = useRef<HTMLDivElement>(null)
+
+  const goToImage = (index: number) => {
+    if (safeImages.length === 0) return
+    setActiveIndex(Math.max(0, Math.min(index, safeImages.length - 1)))
+  }
 
   useEffect(() => {
     if (zoomOpen) {
@@ -30,7 +36,6 @@ export default function ProductImageGallery({
       const handleEscape = (event: KeyboardEvent) => {
         if (event.key === 'Escape') setZoomOpen(false)
       }
-
       window.addEventListener('keydown', handleEscape)
       return () => {
         window.removeEventListener('keydown', handleEscape)
@@ -39,30 +44,32 @@ export default function ProductImageGallery({
     } else {
       document.body.style.overflow = 'auto'
     }
-
     return () => {
       document.body.style.overflow = 'auto'
     }
   }, [zoomOpen])
 
   useEffect(() => {
-    if (activeIndex > safeImages.length - 1) {
-      setActiveIndex(0)
-    }
+    if (activeIndex > safeImages.length - 1) setActiveIndex(0)
   }, [activeIndex, safeImages.length])
 
   useEffect(() => {
     if (!selectedImage) return
     const selectedIndex = safeImages.indexOf(selectedImage)
-    if (selectedIndex >= 0) {
-      setActiveIndex(selectedIndex)
-    }
+    if (selectedIndex >= 0) setActiveIndex(selectedIndex)
   }, [safeImages, selectedImage])
+
+  useEffect(() => {
+    const activeThumbnail = thumbnailsRef.current?.querySelector<HTMLElement>(
+      '[data-gallery-index="' + activeIndex + '"]'
+    )
+    activeThumbnail?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, [activeIndex])
 
   if (safeImages.length === 0) {
     return (
       <div className="aspect-square overflow-hidden rounded-[32px] border border-gray-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
-        <ProductImagePlaceholder label={`Imagen de ${productName}`} />
+        <ProductImagePlaceholder label={'Imagen de ' + productName} />
       </div>
     )
   }
@@ -77,68 +84,139 @@ export default function ProductImageGallery({
           </p>
         </div>
         {safeImages.length > 1 && (
-          <p className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+          <p className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600" aria-live="polite">
             {activeIndex + 1} / {safeImages.length}
           </p>
         )}
       </div>
 
-      <button
-        type="button"
-        className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-gray-100"
-        onClick={() => setZoomOpen(true)}
-        aria-label={`Ampliar imagen principal de ${productName}`}
-      >
-        <img
-          src={safeImages[activeIndex]}
-          alt={`${productName} - Vista principal`}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          loading="eager"
-        />
-        <div className="pointer-events-none absolute right-4 top-4 rounded-2xl bg-white/88 p-2.5 text-gray-700 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
-          <ZoomIn size={20} />
-        </div>
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+          onClick={() => setZoomOpen(true)}
+          aria-label={'Ampliar imagen ' + (activeIndex + 1) + ' de ' + productName}
+        >
+          <img
+            src={safeImages[activeIndex]}
+            alt={productName + ' - Vista ' + (activeIndex + 1)}
+            className="h-full w-full object-contain p-2 transition-opacity duration-200 sm:p-4"
+            loading="eager"
+            draggable={false}
+          />
+          <span className="pointer-events-none absolute right-4 top-4 rounded-2xl bg-white/90 p-2.5 text-gray-700 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            <ZoomIn size={20} />
+          </span>
+        </button>
+
+        {safeImages.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => goToImage(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="Ver imagen anterior"
+              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-gray-800 shadow-md backdrop-blur transition hover:bg-white disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+            >
+              <ChevronLeft size={21} />
+            </button>
+            <button
+              type="button"
+              onClick={() => goToImage(activeIndex + 1)}
+              disabled={activeIndex === safeImages.length - 1}
+              aria-label="Ver imagen siguiente"
+              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-gray-800 shadow-md backdrop-blur transition hover:bg-white disabled:pointer-events-none disabled:opacity-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+            >
+              <ChevronRight size={21} />
+            </button>
+          </>
+        )}
+      </div>
 
       {safeImages.length > 1 && (
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-          {safeImages.map((img, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setActiveIndex(i)}
-              aria-label={`Ver imagen ${i + 1} de ${productName}`}
-              className={`
-                relative aspect-square overflow-hidden rounded-2xl border-2 transition-all
-                ${
-                  i === activeIndex
-                    ? 'border-[#ED164F] shadow-md shadow-[#ED164F]/10/70 ring-4 ring-[#FEF1F5]'
-                    : 'border-transparent opacity-70 hover:opacity-100'
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => goToImage(activeIndex - 1)}
+            disabled={activeIndex === 0}
+            aria-label="Desplazar imágenes hacia atrás"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+          >
+            <ChevronLeft size={18} />
+          </button>
+
+          <div
+            ref={thumbnailsRef}
+            role="group"
+            aria-label={'Imágenes de ' + productName}
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowLeft') {
+                event.preventDefault()
+                goToImage(activeIndex - 1)
+              } else if (event.key === 'ArrowRight') {
+                event.preventDefault()
+                goToImage(activeIndex + 1)
+              } else if (event.key === 'Home') {
+                event.preventDefault()
+                goToImage(0)
+              } else if (event.key === 'End') {
+                event.preventDefault()
+                goToImage(safeImages.length - 1)
+              }
+            }}
+            className="flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain scroll-smooth py-1 [scrollbar-width:thin] focus-visible:rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40"
+          >
+            {safeImages.map((img, i) => (
+              <button
+                key={img + i}
+                data-gallery-index={i}
+                type="button"
+                onClick={() => goToImage(i)}
+                aria-label={'Ver imagen ' + (i + 1) + ' de ' + safeImages.length}
+                aria-current={i === activeIndex ? 'true' : undefined}
+                className={
+                  'relative aspect-square w-[68px] shrink-0 snap-center overflow-hidden rounded-xl border-2 bg-[#F7F7F8] transition sm:w-[76px] ' +
+                  (i === activeIndex
+                    ? 'border-[#ED164F] shadow-sm ring-2 ring-[#FEF1F5]'
+                    : 'border-transparent opacity-75 hover:border-gray-300 hover:opacity-100')
                 }
-              `}
-            >
-              <img
-                src={img}
-                alt={`${productName} thumbnail ${i + 1}`}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </button>
-          ))}
+              >
+                <img
+                  src={img}
+                  alt=""
+                  className="h-full w-full object-contain p-1.5"
+                  loading="lazy"
+                  draggable={false}
+                />
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => goToImage(activeIndex + 1)}
+            disabled={activeIndex === safeImages.length - 1}
+            aria-label="Desplazar imágenes hacia adelante"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       )}
 
       {zoomOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/70 p-3 text-left backdrop-blur-md sm:p-8"
+          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/80 p-3 text-left backdrop-blur-md sm:p-8"
           onClick={() => setZoomOpen(false)}
-          aria-label={`Cerrar imagen ampliada de ${productName}`}
+          aria-label={'Cerrar imagen ampliada de ' + productName}
         >
           <img
             src={safeImages[activeIndex]}
-            alt={`${productName} ampliado`}
+            alt={productName + ' ampliado'}
             className="max-h-[92vh] max-w-[96vw] rounded-2xl object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
+            draggable={false}
           />
         </button>
       )}
