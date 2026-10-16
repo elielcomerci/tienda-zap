@@ -85,7 +85,7 @@ export default function SemanticProductConfigurator({ product, configurator, inq
   }
   return (
     <section className="rounded-[28px] border border-gray-200 bg-white p-5 sm:p-7">
-      <div className="border-b border-gray-100 pb-5"><span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">Configuración</span><h2 className="mt-4 text-2xl font-black text-gray-950 sm:text-3xl">Elegí cómo la querés</h2></div>
+      <div className="border-b border-gray-100 pb-5"><h2 className="text-2xl font-black text-gray-950 sm:text-3xl">Elegí cómo la querés</h2></div>
       <div className="mt-6 space-y-4">
         {Object.entries(fields).map(([key, field]: [string, any]) => {
           if (!visible(key, selected, configurator)) return null
