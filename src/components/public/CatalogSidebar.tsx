@@ -48,7 +48,7 @@ export default function CatalogSidebar({
           Productos
         </Link>
         <Link
-          href={catalogUrl({ mode: 'rubro' })}
+          href={catalogUrl({ mode: 'rubro', situacion: undefined, necesidad: undefined, cat: undefined, tipo: undefined })}
           scroll={false}
           className={`flex items-center justify-center rounded-lg py-2 text-xs font-semibold transition-all ${isRubro ? 'bg-[#ED164F] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'}`}
         >
