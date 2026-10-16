@@ -552,7 +552,7 @@ El segundo precio queda por debajo del objetivo del 40%, pero supera el piso com
 
 ### 13.4 Corrección implementada en la rama; validación pendiente
 
-Se implementó una resolución acotada para estas dos configuraciones: `commercialPriceOverrides` consulta el costo terminado de `providerFinishedCostMatrix.matrix`, conserva los precios públicos explícitos de $72.000 y $166.500, calcula margen bruto sobre venta neta de IVA y bloquea si queda por debajo del 35%. Las demás configuraciones no coincidentes continúan por el flujo anterior.
+Se implementó una resolución acotada para estas dos configuraciones: `commercialPriceOverrides` consulta el costo terminado de `providerFinishedCostMatrix.matrix`, conserva los precios públicos explícitos de $72.000 y $166.500, calcula margen bruto sobre venta neta de IVA y bloquea si queda por debajo del 35%. Si la selección coincide con este flyer pero la cantidad no tiene precio aprobado, exige consulta en vez de caer al motor genérico. Las demás configuraciones no coincidentes continúan por el flujo anterior.
 
 No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron pruebas contractuales para ambas cantidades y para el bloqueo por margen insuficiente. Falta ejecutar `npm test` y la prueba de integración con `DATABASE_URL` antes de considerar validada la corrección. Antes de aprobar la activación, verificar:
 
