@@ -651,7 +651,12 @@ function quoteCommercialPriceOverride(
   const productOverride = (overrideConfig.products || []).find((entry: any) =>
     Object.entries(entry.match || {}).every(([key, value]) => selection[key] === value)
   );
-  if (!productOverride) return null;
+  if (!productOverride) {
+    if (overrideConfig.requireApprovedMatch === true) {
+      throw new Error('CONSULT_REQUIRED: Esta combinación no tiene un precio comercial aprobado; requiere cotización.');
+    }
+    return null;
+  }
 
   const quantity = Number(selection.quantity || 0);
   if (!quantity) throw new Error('Debe especificar la cantidad.');
@@ -662,7 +667,19 @@ function quoteCommercialPriceOverride(
   const totalPrice = Number(configuredPrice);
 
   const costMatrix = pricing?.providerFinishedCostMatrix?.matrix;
-  const costValue = costMatrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
+  let costValue = costMatrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
+
+  // Tarjetas: solo el millar 9×5 OPP brillo tiene precio comercial aprobado.
+  // El costo terminado está en la matriz de tarifas clásicas, no en la matriz digital.
+  if (
+    costValue === undefined &&
+    configurator.schema?.productSlug === 'tarjetas-vouchers' &&
+    selection.lamination === 'brillo'
+  ) {
+    costValue = pricing?.providerFinishedCostMatrix?.tiers?.clasicas?.finishes?.opp_brillo
+      ?.printing?.[selection.printing || '']?.[selection.format || '']?.[String(quantity)];
+  }
+
   if (costValue === undefined || !Number.isFinite(Number(costValue)) || Number(costValue) <= 0) {
     throw new Error('CONSULT_REQUIRED: Falta el costo de producto terminado para el precio comercial configurado.');
   }
