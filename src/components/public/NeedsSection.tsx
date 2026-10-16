@@ -29,10 +29,10 @@ export default function NeedsSection({
     <section id="necesidades" className="px-0.5 sm:px-1">
       <div className="mb-6 max-w-2xl">
         <h2 className="text-2xl font-bold leading-tight tracking-[-0.025em] text-gray-950 sm:text-3xl">
-          ¿Qué necesitás resolver?
+          Podés empezar por acá
         </h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
-          Elegí lo que más se acerca a lo que tenés en mente. Si todavía no lo tenés claro, lo podemos conversar.
+          Elegí la opción que más se acerca a lo que tenés en mente. Si todavía no lo tenés claro, lo conversamos.
         </p>
       </div>
       <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
