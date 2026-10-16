@@ -6,7 +6,7 @@ const SITUATION_HEADLINES: Record<string, string> = {
   'quiero-conseguir-mas-pedidos':
     'Conseguir más pedidos empieza por entender qué puede hacer que te elijan.',
   'quiero-vender-mas-en-el-local':
-    'Vender más en el local también depende de cómo se ve, se entiende y se vive tu propuesta.',
+    'Vender más también depende de cómo se ve y se vive tu propuesta.',
   'quiero-que-mis-clientes-vuelvan':
     'Para que tus clientes vuelvan, cada experiencia tiene que darles un motivo.',
   'quiero-que-mi-comida-se-vea-mejor':
@@ -16,21 +16,21 @@ const SITUATION_HEADLINES: Record<string, string> = {
   'quiero-vender-o-alquilar-mas':
     'Cada propiedad tiene algo que destacar. Hagamos que llegue a más personas.',
   'quiero-ordenar-mi-negocio':
-    'Ordenar el negocio empieza por ver qué necesita atención y qué puede mejorar.',
+    'Ordenar el negocio empieza por reconocer qué necesita atención.',
   'quiero-vender-online':
-    'Vender online necesita más que publicar productos: necesita una experiencia clara y confiable.',
+    'Vender online necesita una experiencia clara y confiable, no solo productos publicados.',
   'quiero-renovar-la-marca-o-el-espacio':
     'Renovar es una oportunidad para alinear lo que sos con lo que mostrás.',
   'estoy-abriendo-o-renovando-la-inmobiliaria':
-    'Cada inmobiliaria tiene una forma propia de presentarse. Construyamos la que necesitás.',
+    'Cada inmobiliaria tiene una forma propia de presentarse. Mostremos la tuya.',
   'quiero-captar-propiedades':
     'Captar propiedades empieza por transmitir confianza y mostrar qué te diferencia.',
   'quiero-conseguir-mas-consultas':
-    'Más consultas empiezan cuando tu propuesta llega a las personas correctas y les da motivos para contactarte.',
+    'Más consultas empiezan cuando tu propuesta llega a las personas correctas.',
   'quiero-transmitir-mas-confianza':
     'La confianza se construye en cada detalle de tu marca y de la experiencia.',
   'quiero-llenar-la-agenda':
-    'Una agenda más completa empieza por hacer visible tu propuesta y facilitar el próximo paso.',
+    'Una agenda más completa empieza por hacer visible tu propuesta.',
   'quiero-que-me-encuentren':
     'Para que te encuentren, primero hay que estar donde tus clientes te buscan.',
   'quiero-vender-mas':
@@ -51,6 +51,7 @@ const SITUATION_HEADLINES: Record<string, string> = {
 
 export default function IntentionHero({
   intention,
+  businessTypeName,
 }: {
   intention: DiscoverySituation
   businessTypeName?: string
@@ -63,6 +64,11 @@ export default function IntentionHero({
   return (
     <section className="border-b border-gray-200/80 pb-8 sm:pb-10">
       <div className="max-w-4xl">
+        {businessTypeName && (
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F]">
+            {businessTypeName}
+          </p>
+        )}
         <h1 className="text-[clamp(2.15rem,5.1vw,4.5rem)] font-bold leading-[0.98] tracking-[-0.055em] text-gray-950 text-balance">
           {headline}
         </h1>
