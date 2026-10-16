@@ -294,6 +294,26 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         },
       },
     },
+    commercialPriceOverrides: {
+      resolver: 'PROVIDER_FINISHED_COST',
+      publicPriceIncludesTax: true,
+      vatRate: 0.21,
+      minimumGrossMarginPercent: 35,
+      // Solo millar 9×5, ilustración 350 g, OPP brillo: costos de proveedor
+      // normalizados en tiers.clasicas.finishes.opp_brillo; precio público final con IVA.
+      // Cualquier otra cantidad, terminación o especificación queda en consulta.
+      requireApprovedMatch: true,
+      products: [
+        {
+          match: { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo' },
+          prices: { '1000': 52500 },
+        },
+        {
+          match: { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo' },
+          prices: { '1000': 67000 },
+        },
+      ],
+    },
     adapter: {
       formatMapping: {
         '9x5': { sizeLabel: '9x5 cm', width: 9, height: 5 },
