@@ -654,8 +654,12 @@ function quoteCommercialPriceOverride(
   if (!productOverride) return null;
 
   const quantity = Number(selection.quantity || 0);
-  const totalPrice = Number(productOverride.prices?.[String(quantity)]);
-  if (!quantity || !Number.isFinite(totalPrice) || totalPrice <= 0) return null;
+  if (!quantity) throw new Error('Debe especificar la cantidad.');
+  const configuredPrice = productOverride.prices?.[String(quantity)];
+  if (configuredPrice === undefined || !Number.isFinite(Number(configuredPrice)) || Number(configuredPrice) <= 0) {
+    throw new Error('CONSULT_REQUIRED: Esta combinación de flyer requiere cotización para la cantidad seleccionada.');
+  }
+  const totalPrice = Number(configuredPrice);
 
   const costMatrix = pricing?.providerFinishedCostMatrix?.matrix;
   const costValue = costMatrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
