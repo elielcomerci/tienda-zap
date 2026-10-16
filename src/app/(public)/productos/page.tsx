@@ -128,8 +128,6 @@ export default async function ProductsPage({
     ), 
     getPublicCategories()
   ])
-  const selectedCategory = categories.find((category) => category.slug === cat)
-  const selectedCatalogTypeLabel = tipo === 'desarrollo' ? 'Desarrollos' : tipo === 'cosa' ? 'Cosas' : null
 
   // Guided discovery now follows a single path:
   // Situación → Necesidad → OfertaMatrix → next step.
@@ -146,67 +144,38 @@ export default async function ProductsPage({
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_20%,#f8fafc_100%)]">
       <div className="mx-auto max-w-[1380px] px-4 pb-16 pt-8 sm:pt-10 xl:px-8">
         {!isSituationMode && (
-        <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-7">
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.75fr)] lg:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                {mode === 'rubro' ? 'Rubro' : tipo === 'desarrollo' ? 'Desarrollos' : 'Cosas'}
-              </p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                {isSituationMode
-                    ? 'Opciones para esta situación'
-                    : mode === 'rubro'
-                      ? selectedBusinessType?.name || 'Elegí tu rubro'
-                      : tipo === 'desarrollo' ? 'Desarrollos ZAP' : tipo === 'cosa' ? 'Cosas ZAP' : 'Cosas y desarrollos ZAP'}
+          <section className="mb-8 flex flex-col gap-3 border-b border-gray-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-3xl">
+              <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
+                {mode === 'rubro'
+                  ? selectedBusinessType?.name || 'Elegí tu rubro'
+                  : tipo === 'desarrollo'
+                    ? 'Desarrollos ZAP'
+                    : tipo === 'cosa'
+                      ? 'Productos ZAP'
+                      : 'Productos y desarrollos para tu negocio'}
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                {isSituationMode
-                    ? 'Partimos de lo que está pasando o de lo que querés lograr. Elegí sólo lo que tenga sentido para avanzar.'
-                    : mode === 'rubro'
-                      ? selectedBusinessType
-                        ? BUSINESS_CONTEXT[selectedBusinessType.slug] || 'Conocemos el contexto de este rubro. Primero mirá qué está pasando en tu negocio y después decidimos dónde tiene sentido intervenir.'
-                        : 'Elegí tu rubro para empezar desde el contexto de tu negocio.'
-                      : tipo === 'desarrollo'
-                        ? 'Lo que construimos para resolver algo que necesita contexto, trabajo a medida o una intervención que no se compra como una cosa.'
-                        : tipo === 'cosa'
-                          ? 'Lo que producimos y podés elegir, configurar o comprar directamente para tu negocio.'
-                          : 'Para cuando ya sabés qué necesitás: cosas que podés elegir, configurar o comprar, o desarrollos que podés conocer.'}
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+                {mode === 'rubro'
+                  ? selectedBusinessType
+                    ? BUSINESS_CONTEXT[selectedBusinessType.slug] || 'Mirá qué necesita tu negocio y dónde tiene sentido intervenir.'
+                    : 'Elegí tu rubro para explorar desde el contexto de tu negocio.'
+                  : tipo === 'desarrollo'
+                    ? 'Soluciones a medida para resolver necesidades concretas de tu negocio.'
+                    : tipo === 'cosa'
+                      ? 'Productos que podés elegir, configurar o comprar.'
+                      : 'Productos para elegir o configurar y desarrollos pensados para resolver necesidades concretas.'}
               </p>
             </div>
-
-            <div className={`grid gap-3 sm:grid-cols-3 lg:grid-cols-1 ${q?.trim() ? 'xl:grid-cols-3' : 'xl:grid-cols-2'}`}>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Resultados
-                </p>
-                <p className="mt-2 text-2xl font-black text-gray-950">{products.length}</p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Explorando
-                </p>
-                <p className="mt-2 text-base font-bold text-gray-950">
-                  {isSituationMode && selectedSituation
-                    ? selectedSituation.name
-                    : mode === 'rubro'
-                        ? selectedBusinessType?.name || 'Todos los rubros'
-                        : selectedCatalogTypeLabel || selectedCategory?.name || 'Todos'}
-                </p>
-              </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm text-gray-500">
+              <span>{products.length} {products.length === 1 ? 'opción' : 'opciones'}</span>
               {q?.trim() && (
-                <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                    Búsqueda
-                  </p>
-                  <p className="mt-2 text-base font-bold text-gray-950">
-                    &quot;{q.trim()}&quot;
-                  </p>
-                </div>
+                <span className="rounded-full bg-white px-3 py-1.5 text-gray-700 ring-1 ring-gray-200">
+                  Búsqueda: “{q.trim()}”
+                </span>
               )}
             </div>
-          </div>
-        </section>
-
+          </section>
         )}
 
         <div className={`mt-8 ${isSituationMode ? 'mx-auto max-w-6xl' : 'grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
