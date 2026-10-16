@@ -280,15 +280,15 @@ La matriz de proveedor está identificada como `PROMO_DIRECTA_OFFSET` y su vigen
 
 | Especificación de la matriz | Costo proveedor | Precio final objetivo |
 |---|---:|---:|
-| 10×15 cm, ilustración 150g, 4/4, 1.000 u. | $32.000 | $64.500 |
+| 10×15 cm, ilustración 150g, 4/4, 1.000 u. | $32.000 | $65.000 |
 | 10×15 cm, ilustración 150g, 4/4, 5.000 u. | $85.000 | $171.500 |
-| 15×20 cm, ilustración 150g, 4/4, 1.000 u. | $64.000 | $129.000 |
+| 15×20 cm, ilustración 150g, 4/4, 1.000 u. | $64.000 | $129.500 |
 
 **Contraste público:**
 - Gráfica Lugano publica 10×15 cm, ilustración 115g, doble faz, a $65.000 por 1.000 y $150.000 por 5.000.
 - Imprimime publica flyers offset full color frente y dorso desde $64.050 + IVA por 1.000 (unos $77.501 finales). La página permite elegir medida y gramaje, por lo que el valor “desde” no garantiza la misma especificación.
 
-Para 1.000 unidades, el precio objetivo de $64.500 queda alrededor de 9% debajo del promedio simple de esas dos referencias (aprox. $71.250 finales). Para 5.000 unidades, $171.500 queda aproximadamente 14% por encima de los $150.000 publicados por Lugano para 115g; la diferencia de gramaje y la tarifa vencida impiden cerrar una conclusión definitiva.
+Para 1.000 unidades, el precio objetivo de $65.000 queda alrededor de 9% debajo del promedio simple de esas dos referencias (aprox. $71.250 finales). Para 5.000 unidades, $171.500 queda aproximadamente 14% por encima de los $150.000 publicados por Lugano para 115g; la diferencia de gramaje y la tarifa vencida impiden cerrar una conclusión definitiva.
 
 **Conclusión:** el precio teórico de 1.000 unidades parece competitivo; el de 5.000 puede quedar alto. No tocar margen para compensarlo: primero renovar la cotización de proveedor y confirmar formato, gramaje y tirada exactos.
 
@@ -324,7 +324,7 @@ No se fija precio final todavía. El configurador de tags usa `PRODUCT_QUOTER` y
 | Producto | Resultado preliminar | Decisión |
 |---|---|---|
 | Stickers circulares 5×5 | $74.500 / 1.000; por debajo del promedio de dos referencias circulares de 5 cm, pero por encima de la referencia básica de corte recto | Validar material, laca UV y corte; después cotizar |
-| Flyers 10×15 150g | $64.500 / 1.000; competitivo frente a dos referencias, pero la lista fuente venció | Pedir costo vigente antes de publicar |
+| Flyers 10×15 150g | $65.000 / 1.000; competitivo frente a dos referencias, pero la lista fuente venció | Pedir costo vigente antes de publicar |
 | Carpetas A4 300g | Objetivos de $1,28 M a $1,68 M / 500, claramente altos frente a referencias minoristas | No publicar; auditar la fuente y la unidad de costo |
 | Tags | No se puede obtener un precio confiable con el costo actual del motor | Corregir impresión y perforación antes de fijar precio |
 
