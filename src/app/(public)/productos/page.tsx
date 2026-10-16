@@ -354,11 +354,13 @@ export default async function ProductsPage({
                     >
                       <Link href={buildProductUrl(product.slug, explorationContext)} className="block">
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
-                          <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
-                            <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
-                              {getProductFamilyLabel(product)}
-                            </span>
-                          </div>
+                          {getProductFamilyLabel(product).trim().toLocaleLowerCase() !== product.name.trim().toLocaleLowerCase() && (
+                            <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
+                              <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
+                                {getProductFamilyLabel(product)}
+                              </span>
+                            </div>
+                          )}
 
                           {product.images[0] ? (
                             <Image
@@ -395,13 +397,13 @@ export default async function ProductsPage({
                                 Desde
                               </p>
                             )}
-                            <p className="mt-1 text-2xl font-black text-gray-950">
-                              {displayPrice !== null
-                                ? `$${displayPrice.toLocaleString('es-AR')}`
-                                : requiresConfiguration
-                                  ? 'Según configuración'
-                                  : 'Consultar'}
-                            </p>
+                            {(displayPrice !== null || requiresConfiguration) && (
+                              <p className="mt-1 text-2xl font-black text-gray-950">
+                                {displayPrice !== null
+                                  ? `${displayPrice.toLocaleString('es-AR')}`
+                                  : 'Según configuración'}
+                              </p>
+                            )}
                           </div>
 
                           <div className="flex sm:justify-end">
