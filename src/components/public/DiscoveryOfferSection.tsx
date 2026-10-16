@@ -71,7 +71,7 @@ export default function DiscoveryOfferSection({
 
   if (offers.length === 0) {
     return (
-      <section className="rounded-[30px] bg-white px-5 py-8 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.24)] sm:px-8 sm:py-10">
+      <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-8 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.24)] sm:px-8 sm:py-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">ZAP</p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950">No todo tiene una respuesta prefabricada.</h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
