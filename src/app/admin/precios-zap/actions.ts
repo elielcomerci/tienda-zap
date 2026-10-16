@@ -182,6 +182,7 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
   }
   const oldValue = getAtPath(version.pricing, path)
   if (typeof oldValue !== 'number') throw new Error('La celda no contiene un costo numérico editable.')
+  if (oldValue === value) return { success: true, value, unchanged: true }
 
   const nextPricing = structuredClone(version.pricing) as Record<string, any>
   setAtPath(nextPricing, path, value)
@@ -203,6 +204,91 @@ export async function saveDraftCostCell(versionId: string, path: string[], value
 
   revalidatePath(`/admin/precios-zap/${version.productId}`)
   return { success: true, value }
+}
+
+export async function importDraftCostRows(
+  versionId: string,
+  updates: Array<{ path: string[]; value: number }>,
+  sourceName: string,
+) {
+  const actor = await requirePricingAdmin()
+  if (!Array.isArray(updates) || updates.length === 0 || updates.length > 5000) {
+    throw new Error('La importación debe contener entre 1 y 5.000 filas.')
+  }
+  const safeSourceName = String(sourceName || 'lista.csv').replace(/[\\\\/\\r\\n]/g, '_').slice(0, 160)
+  const seen = new Set<string>()
+  for (const update of updates) {
+    if (!update || !Array.isArray(update.path) || update.path.length < 3
+      || update.path.some((segment) => typeof segment !== 'string' || !segment || segment === '__proto__' || segment === 'constructor')
+      || !isEditableProviderCostPath(update.path)
+      || !Number.isFinite(update.value) || update.value < 0) {
+      throw new Error('La importación contiene una ruta o un costo inválido. No se guardó ningún cambio.')
+    }
+    const key = update.path.join('.')
+    if (seen.has(key)) throw new Error(`La ruta ${key} aparece más de una vez en el archivo.`)
+    seen.add(key)
+  }
+
+  const version = await prisma.configuratorVersion.findUnique({
+    where: { id: versionId },
+    include: { product: { select: { id: true, name: true, slug: true } } },
+  })
+  if (!version || version.status !== 'DRAFT' || !isManagedSlug(version.product.slug)) {
+    throw new Error('Solo se puede importar sobre un borrador de una familia habilitada.')
+  }
+  const matrix = getProviderFinishedCostMatrix(version.pricing)
+  if (!matrix) throw new Error('El borrador no contiene una matriz de costos compatible.')
+
+  const nextPricing = structuredClone(version.pricing) as Record<string, any>
+  const changed: Array<{ path: string[]; before: number; after: number }> = []
+  let unchangedCount = 0
+  for (const update of updates) {
+    const oldValue = getAtPath(nextPricing, update.path)
+    if (typeof oldValue !== 'number') {
+      throw new Error(`La referencia ${update.path.join('.')} no existe o no es un costo editable. No se guardó ningún cambio.`)
+    }
+    if (oldValue === update.value) {
+      unchangedCount += 1
+      continue
+    }
+    changed.push({ path: update.path, before: oldValue, after: update.value })
+    setAtPath(nextPricing, update.path, update.value)
+  }
+
+  if (changed.length === 0) {
+    return { success: true, changedCount: 0, unchangedCount, message: 'Todos los costos importados ya tenían ese valor. No se escribió ningún dato.' }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.configuratorVersion.updateMany({
+      where: { id: versionId, status: 'DRAFT', updatedAt: version.updatedAt },
+      data: { pricing: nextPricing as Prisma.InputJsonValue },
+    })
+    if (updated.count !== 1) throw new Error('El borrador cambió durante la importación. Recargá la página e intentá nuevamente.')
+    await writeAudit(tx, actor, {
+      action: 'PRICING_COSTS_IMPORTED',
+      productId: version.productId,
+      description: `Importación de costos en ${version.product.name}: ${changed.length} cambios, ${unchangedCount} sin cambios.`,
+      before: { versionId, changed: changed.map((row) => ({ path: row.path, value: row.before })) } as Prisma.InputJsonValue,
+      after: { versionId, changed: changed.map((row) => ({ path: row.path, value: row.after })) } as Prisma.InputJsonValue,
+      metadata: {
+        sourceName: safeSourceName,
+        submittedRows: updates.length,
+        changedCount: changed.length,
+        unchangedCount,
+        importedAt: new Date().toISOString(),
+      } as Prisma.InputJsonValue,
+    })
+  })
+
+  revalidatePath(`/admin/precios-zap/${version.productId}`)
+  revalidatePath('/admin/precios-zap')
+  return {
+    success: true,
+    changedCount: changed.length,
+    unchangedCount,
+    message: `Se guardaron ${changed.length} cambios; ${unchangedCount} importes ya estaban actualizados.`,
+  }
 }
 
 export async function publishPricingDraft(versionId: string, formData: FormData) {
