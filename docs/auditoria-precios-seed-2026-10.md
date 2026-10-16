@@ -563,3 +563,12 @@ No se cambió el costo del proveedor ni el `profitMargin` global. Se añadieron 
 5. Que el producto no se activa ni se despliega hasta completar las verificaciones anteriores.
 
 **Estado actual de esta combinación: CORRECCIÓN IMPLEMENTADA EN LA RAMA, PENDIENTE DE PRUEBAS.** No activar en producción hasta ejecutar las pruebas de contrato, verificar el recorrido real API → cotizador → carrito y confirmar que el tratamiento de IVA sea consistente en pantalla y checkout. El bloqueo nunca fue por vigencia del costo.
+
+## 14. Tarjetas 9×5 — alcance comercial acotado implementado en la rama (16/10/2026)
+
+Se resolvió la terminación para los dos precios de trabajo: **papel Ilustración 350 g, formato 9×5 cm, laminado OPP brillo, 1.000 unidades**. La matriz de costos clásicos del seed contiene $24.000 para impresión 4/0 y $30.000 para 4/4; esos valores son costos de proveedor sin IVA. Con precio público final con IVA de $52.500 y $67.000, los márgenes brutos teóricos sobre venta neta de IVA son aproximadamente 44,7% y 45,8%, respectivamente.
+
+La rama ahora tiene un override comercial explícito para esas dos combinaciones. La resolución lee el costo desde `providerFinishedCostMatrix.tiers.clasicas.finishes.opp_brillo`, en lugar de usar la matriz digital on-demand. Las demás cantidades, laminados, formatos y opciones no aprobadas quedan en consulta; no se permite que vuelvan silenciosamente al cálculo genérico de tarjetas.
+
+Se agregaron pruebas contractuales para ambos precios/costos/márgenes y para el bloqueo de variantes no aprobadas. **Estado: corrección implementada en la rama, pruebas locales y recorrido real pendientes.** No se ejecutó seed, no se modificó la base de datos ni se activó/publicó el precio en producción. La activación requiere que `npm test` pase y que se valide el recorrido de cotización, carrito y checkout con la misma convención de IVA.
+
