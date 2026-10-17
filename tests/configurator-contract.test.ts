@@ -283,12 +283,40 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   assert.equal(offsetThousand.totalPrice, 55090);
   assert.equal(offsetThousand.taxTreatment, 'INCLUDED');
 
+  const offsetBrillo = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, productionProcess: 'offset', quantity: 1000, material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offsetBrillo.totalCost, 51989);
+
+  const offsetMate = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, productionProcess: 'offset', quantity: 1000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offsetMate.totalCost, 53000);
+
+  const offsetSectorized = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, productionProcess: 'offset', quantity: 1000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offsetSectorized.totalCost, 39000);
+
   const offsetThreeThousand = quoteConfiguratorSelection(
     config as any,
     { ...selection, productionProcess: 'offset', quantity: 3000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
     { profitMargin: 0 } as any,
   );
   assert.equal(offsetThreeThousand.totalCost, 35000);
+
+  const offsetFiveThousandSectorized = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, productionProcess: 'offset', quantity: 5000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offsetFiveThousandSectorized.totalCost, 37000);
 
   assert.throws(
     () => quoteConfiguratorSelection(
