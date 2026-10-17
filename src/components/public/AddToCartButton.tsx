@@ -63,7 +63,7 @@ export default function AddToCartButton({
         href={productHref || `/productos/${slug}`}
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
       >
-        Configurar <ArrowRight size={15} />
+        Ver opciones <ArrowRight size={15} />
       </Link>
     )
   }
