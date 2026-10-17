@@ -50,3 +50,20 @@ WHERE p.slug = 'talonarios-formularios' AND c.slug = 'talonarios-formularios'
 UPDATE "Product"
 SET active = FALSE, "updatedAt" = NOW()
 WHERE slug = 'bonos-para-lavaderos' AND active = TRUE;
+
+-- Do not advertise an interactive configurator until its active schema and pricing
+-- are published. Keep the product visible as a consultation-led offer meanwhile.
+UPDATE "Product"
+SET modality = 'CONSULTAR', "updatedAt" = NOW()
+WHERE active = TRUE
+  AND slug IN (
+    'anuncios-campanas',
+    'asistentes-bots',
+    'carteleria-ploteo',
+    'corporeos-marquesinas',
+    'indumentaria-textil',
+    'senaletica-placas',
+    'sitios-web-catalogos-digitales',
+    'objetos-regaleria'
+  )
+  AND modality <> 'CONSULTAR';
