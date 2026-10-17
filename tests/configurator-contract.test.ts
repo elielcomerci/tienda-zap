@@ -243,6 +243,31 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   );
   assert.equal(thousand.totalCost, 36475);
   assert.equal(thousand.taxTreatment, 'INCLUDED');
+
+  const offsetThousand = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, productionProcess: 'offset', quantity: 1000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offsetThousand.totalCost, 45477);
+  assert.equal(offsetThousand.totalPrice, 55090);
+  assert.equal(offsetThousand.taxTreatment, 'INCLUDED');
+
+  const offsetThreeThousand = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, productionProcess: 'offset', quantity: 3000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offsetThreeThousand.totalCost, 35000);
+
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, productionProcess: 'offset', quantity: 500 },
+      { profitMargin: 0 } as any,
+    ),
+    /La impresión offset de tarjetas comienza en 1.000 unidades/,
+  );
 });
 
 test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA explícitos', () => {
