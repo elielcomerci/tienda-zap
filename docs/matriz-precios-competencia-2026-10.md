@@ -158,7 +158,7 @@ Fuentes públicas consultadas el 17/10/2026:
 
 - [MEGA IMPRENTA — offset y digital](https://megaimprenta.com.ar/tarjetas-offset-digital/): digital 300 g, 500 u. $17.500 simple faz / $23.500 doble faz; offset con UV, 1.000 u. $29.200 simple faz / $35.400 doble faz; 3.000 u. $78.000 / $96.000; 5.000 u. $127.000 / $149.500.
 - [Imprimime — lista de precios](https://imprimime.com.ar/lista-de-precios): precios vigentes al 10/10/2026, sin IVA. Tarjetas offset brillantes 300 g 4/4 + UV frontal: 500 u. $34.290 + IVA; 1.000 u. $45.720 + IVA. Mate: 500 u. $39.320 + IVA; 1.000 u. $52.425 + IVA.
-- [Imprenta Lugones — tarjetas](https://www.imprentalugones.com.ar/productos/tarjetas/): precios finales publicados: offset 350 g 4/4 brillante 1.000 u. $62.000; OPP mate $70.500; sectorizadas $73.300.
+- [Imprenta Lugones — tarjetas](https://www.imprentalugones.com.ar/productos/tarjetas/): precios finales publicados: offset 350 g 4/4 brillante 1.000 u. $62.000; OPP mate $70.500; sectorizadas $73.300. Es una referencia de Córdoba y se mantiene como referencia secundaria de bajo costo, no como base del precio para Buenos Aires.
 - [Dokan — tarjetas sectorizadas](https://dokan.com.ar/product/tarjetas-con-laca-sectorizada/): 350 g, 4/4, OPP mate + UV sectorizada; 1.000 u. $125.000 frente / $135.000 frente y dorso.
 
 Los precios publicados de MEGA no indican claramente en la página el tratamiento del IVA; no se deben comparar como si fueran netos o finales sin confirmarlo. Las referencias tampoco tienen idéntico gramaje, entrega y terminación.
@@ -167,13 +167,13 @@ Los precios publicados de MEGA no indican claramente en la página el tratamient
 |---|---:|---:|---|
 | Digital 350 g, 100 u., 4/4 sin laminar | $8.213 | $12.490 | Prima de gramaje frente a ofertas económicas de 300 g; validar conversión antes de publicarlo como opción destacada. |
 | Digital 350 g, 500 u., 4/4 sin laminar | $39.930 | $60.490 | Cerca de Tecnoplotter ($61.250) para 500 u. 350 g 4/4 con laminado brillo frontal; ZAP queda apenas por debajo y sin laminar. |
-| Offset 350 g, 1.000 u., 4/4 sin laminar | $45.477 | $68.790 | Cerca de Gráfica Lugano ($70.000) para 1.000 u. 350 g 4/4 con laminado brillo; el costo fuente sigue requiriendo confirmación de vigencia. |
-| Offset 350 g, 1.000 u., 4/4 OPP mate | $53.000 | $80.190 | Aproximadamente 14,5% sobre la referencia de Gráfica Lugano ($70.000) con laminado brillo; mantener como terminación premium y reconfirmar costo fuente. |
-| Offset 350 g, 1.000 u., 4/4 OPP mate + UV sectorizada | $39.000 | $47.190 | Muy por debajo de las referencias públicas sectorizadas. Confirmar que el costo de la matriz corresponda realmente a esa terminación antes de tomar pedidos. |
+| Offset 350 g, 1.000 u., 4/4 sin laminar | $45.477 | $63.290 | Cerca de la referencia local de Gráfica B377 ($60.000 para 1.000 u. con laminado frontal) y por debajo de Gráfica Lugano ($70.000 con laminado brillo); confirmar vigencia del costo fuente. |
+| Offset 350 g, 1.000 u., 4/4 OPP mate | $53.000 | $73.790 | Cerca de Gráfica B377 ($72.000 para tarjetas 300 g con mate) y de la referencia de Gráfica Lugano ($70.000 con brillo); mantener como terminación premium y reconfirmar costo fuente. |
+| Offset 350 g, 1.000 u., 4/4 OPP mate + UV sectorizada | $39.000 | **En consulta** | Costo cargado inferior al de la impresión clásica 4/4 sin laminar ($45.477), pese a incluir una terminación premium. No se ofrece precio automático hasta reconfirmar la fuente. |
 
 **Activación en código:** se agregó selector digital/offset, mínimo de 1.000 unidades para offset, 300 g/350 g en digital y las cantidades offset cargadas. Las políticas de tarjetas usan recargo del 25% digital y 15% offset sobre costo neto + IVA; los ejemplos comerciales revisados son $12.490 para 100 u. 4/4 digital, $60.490 para 500 u. 4/4 digital y $63.290 para 1.000 u. 4/4 offset. Las celdas de 3.000/5.000 offset cuyo costo cae por debajo del de 1.000 se bloquean y requieren reconfirmación de proveedor.
 
-**Alerta de datos:** las celdas clásicas de offset para 3.000/5.000 u. contienen importes no monotónicos frente a 1.000 u. ($35.000 y $34.000 frente a $45.477). Se habilitaron porque existen como valores explícitos en la matriz, pero quedaron señaladas para la pasada manual. No asumir que son vigentes o correctas sin reconfirmar con el proveedor.
+**Alerta de datos:** las celdas clásicas de offset para 3.000/5.000 u. contienen importes no monotónicos frente a 1.000 u. ($35.000 y $34.000 frente a $45.477). Se bloquean para cotización automática aunque existan como valores explícitos en la matriz. No asumir que son vigentes o correctas sin reconfirmar con el proveedor.
 
 ### Flyers: activar todas las celdas digitales y offset que resuelven costo
 
