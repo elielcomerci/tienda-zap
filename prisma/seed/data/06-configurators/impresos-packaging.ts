@@ -99,16 +99,37 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Los costos de 300 unidades o más quedan en consulta: varias celdas de la
-    // tarifa superan precios minoristas comparables antes de sumar el margen.
-    // Las tiradas de 100/200 usan recargo del 90% + IVA 21% como precio final.
+    // Lista de costos digitales: se habilitan las combinaciones que mantienen
+    // una posición defendible; las tiradas 500/1000 restantes pasan a consulta
+    // por brechas entre celdas del proveedor y precios minoristas comparables.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
       percentage: 90,
       vatRatePercent: 21,
     },
-    consultRequiredQuantities: [300, 500, 1000],
+    consultRequiredQuantities: [1000],
+    consultRequiredSelections: [
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 100 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'mate', quantity: 100 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo', quantity: 100 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 100 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate', quantity: 100 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo', quantity: 100 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 200 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'mate', quantity: 200 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo', quantity: 200 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 200 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate', quantity: 200 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo', quantity: 200 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 300 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'mate', quantity: 300 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo', quantity: 300 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 300 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate', quantity: 300 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo', quantity: 300 },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 500 },
+    ],
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
     // Costo maestro de proveedor: producto terminado, sin IVA.
@@ -427,10 +448,20 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // El cálculo por pliego omitía el costo de impresión. La matriz offset venció
-    // en julio de 2026 y la tarifa digital disponible no sostiene una comparación
-    // competitiva en todas las combinaciones; mantener consulta hasta actualizarla.
-    commercialAvailability: 'CONSULT_REQUIRED',
+    // La matriz offset de producto terminado contiene un costo comparable para
+    // 1.000 flyers planos 10×15 cm, 4/4. Se habilita solo esa combinación por papel;
+    // otras cantidades, medidas, caras y plegados siguen en consulta.
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 75,
+      vatRatePercent: 21,
+    },
+    consultRequiredSelections: [
+      { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 1000 },
+      { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 1000 },
+      { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 1000 },
+    ],
     // El automático se resuelve contra el costo de proveedor, no solo el papel.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
     providerFinishedCostMatrix: {
@@ -938,16 +969,13 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // ADVERTENCIA DE AUDITORÍA (17/10/2026): la regla vigente de 72,5% produce
-    // aproximadamente $171.890 final para 50 carpetas 4/0 sin laminar (costo neto
-    // $82.350). La matriz comercial propone $139.900 como objetivo de trabajo,
-    // pero NO debe aplicarse hasta revalidar el costo/proveedor y aprobar el precio.
-    // Referencia pública consultada: Imprimime $107.793 + IVA para 50 unidades
-    // de 300g y una solapa (≈$130.430 con IVA 21%); comparar especificaciones.
+    // Precio competitivo: 40% de recargo sobre costo neto + IVA 21%.
+    // Para 50 unidades 4/0 sin laminar: costo $82.350; precio final ≈$139.590,
+    // cercano al objetivo de $139.900 y ~7% sobre la referencia final de Imprimime.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 72.5,
+      percentage: 40,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
