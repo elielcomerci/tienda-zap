@@ -222,6 +222,9 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           express_24h: { surchargePercent: 50 },
         },
       },
+      // Offset: costos cargados desde lista-print.pdf (abril 2026).
+      // Las celdas 3.000/5.000 de la matriz clásica no son monótonas respecto de 1.000;
+      // se conservan para revisión manual, no se corrigen por interpolación ni se inventan.
       tiers: {
         clasicas: {
           delivery: '7_8_DIAS',
