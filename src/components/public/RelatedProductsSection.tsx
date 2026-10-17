@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Link2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { getProductFamilyLabel } from '@/lib/catalog-domain'
 import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 
