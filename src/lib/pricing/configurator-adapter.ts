@@ -144,11 +144,14 @@ export function validateCommercialSelection(
   }
 
   // 3. Reglas de compatibilidad: allowedFormats por foldingType
-  if (configurator.compatibility?.allowedFormats && selection.foldingType && selection.format) {
-    const allowedForFolding = configurator.compatibility.allowedFormats[selection.foldingType];
-    if (allowedForFolding && !allowedForFolding.includes(selection.format)) {
+  const formatConstraintField = selection.foldingType ? 'foldingType' : selection.productType ? 'productType' : undefined;
+  const formatConstraintValue = formatConstraintField ? selection[formatConstraintField] : undefined;
+  if (configurator.compatibility?.allowedFormats && formatConstraintValue && selection.format) {
+    const allowedFormats = configurator.compatibility.allowedFormats[formatConstraintValue];
+    if (allowedFormats && !allowedFormats.includes(selection.format)) {
+      const constraintLabel = formatConstraintField === 'productType' ? 'tipo de talonario' : 'tipo de plegado';
       throw new Error(
-        `Formato '${selection.format}' no es compatible con el tipo de plegado '${selection.foldingType}'.`
+        `Formato '${selection.format}' no es compatible con el ${constraintLabel} '${formatConstraintValue}'.`
       );
     }
   }

@@ -1279,7 +1279,6 @@ export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 5,
         options: [
-          { value: 1, label: '1 talonario · 50 juegos' },
           { value: 5, label: '5 talonarios · 250 juegos' },
           { value: 10, label: '10 talonarios · 500 juegos' },
           { value: 20, label: '20 talonarios · 1.000 juegos' },
@@ -1288,9 +1287,6 @@ export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
     },
   },
   compatibility: {
-    uiRules: [
-      { field: 'format', condition: { field: 'productType', operator: 'eq', value: 'bonos_lavadero' }, action: 'show' },
-    ],
     allowedFormats: {
       recibos: ['17x22'],
       remitos: ['17x22'],
@@ -1301,7 +1297,7 @@ export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
     engine: 'STICKER_TABLE',
     matrix: {
       obra_80g_byn: {
-        '17x22': { '1': 29900, '5': 109000, '10': 199000, '20': 369000 },
+        '17x22': { '5': 109000, '10': 199000, '20': 369000 },
         '10x15': { '5': 34900, '10': 54900, '20': 94900 },
       },
     },
