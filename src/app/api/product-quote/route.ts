@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { calculateProductQuote } from '@/lib/pricing/product-quoter'
 import { quoteConfiguratorSelection } from '@/lib/pricing/configurator-adapter'
 import { getOrCreateCachedProductQuote, buildProductQuotePricingFingerprintInput } from '@/lib/pricing/quote-cache'
+import { impresosPackagingConfigurators } from '../../../../prisma/seed/data/06-configurators/impresos-packaging'
 
 const quoterConfigInclude = {
   rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } },
