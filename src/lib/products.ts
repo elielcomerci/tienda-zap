@@ -251,6 +251,7 @@ export async function getAllProductsAdmin() {
       variants: { include: { costing: true, options: { include: { optionValue: true } } } },
       quoterConfig: { include: { allowedMaterials: true, finishings: true, quantityPresets: true, sizePresets: true } },
       configuratorVersions: { select: { schemaVersion: true, status: true } },
+      categoryLinks: { where: { category: { active: true } }, include: { category: { select: { id: true, name: true, slug: true, sortOrder: true } } }, orderBy: { category: { sortOrder: 'asc' } } },
       outgoingRelations: { select: { relatedProductId: true } },
     },
     orderBy: { createdAt: 'desc' },

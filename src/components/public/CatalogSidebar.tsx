@@ -86,7 +86,7 @@ export default function CatalogSidebar({
               {categories.map((category) => (
                 <Link
                   key={category.id}
-                  href={catalogUrl({ mode: 'product', tipo: 'cosa', cat: category.slug })}
+                  href={catalogUrl({ mode: 'product', tipo: isCosas ? 'cosa' : isDesarrollos ? 'desarrollo' : undefined, cat: category.slug })}
                   scroll={false}
                   className={`flex items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-left text-sm transition-all xl:whitespace-normal ${
                     cat === category.slug
