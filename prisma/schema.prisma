@@ -283,6 +283,7 @@ model Product {
   configuratorVersions ConfiguratorVersion[]
   packItems            PackItem[]
   consultRequests      ConsultRequest[]
+  categoryLinks        ProductCategory[]
 
   @@index([catalogType, active])
   @@index([modality, active])
@@ -613,15 +614,49 @@ model ProductVariantCost {
   @@map("product_variant_costs")
 }
 
+enum ProductRelationType {
+  UPSELL
+  COMPLEMENTARY
+  ALTERNATIVE
+}
+
 model ProductRelation {
-  id               String   @id @default(cuid())
+  id               String              @id @default(cuid())
   productId        String
   relatedProductId String
-  createdAt        DateTime @default(now())
-  product          Product  @relation("ProductOutgoingRelations", fields: [productId], references: [id], onDelete: Cascade)
-  relatedProduct   Product  @relation("ProductIncomingRelations", fields: [relatedProductId], references: [id], onDelete: Cascade)
+  type             ProductRelationType @default(COMPLEMENTARY)
+  createdAt        DateTime            @default(now())
+  product          Product             @relation("ProductOutgoingRelations", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct   Product             @relation("ProductIncomingRelations", fields: [relatedProductId], references: [id], onDelete: Cascade)
 
   @@unique([productId, relatedProductId])
+  @@index([productId, type])
+}
+
+model Category {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  description String?
+  active      Boolean           @default(true)
+  sortOrder   Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  products    ProductCategory[]
+
+  @@index([active, sortOrder])
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@index([categoryId, sortOrder])
 }
 
 model VariantOption {
