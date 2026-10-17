@@ -372,7 +372,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.3',
+  schemaVersion: '1.4',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -463,22 +463,20 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     // 1.000 flyers planos 10×15 cm, 4/4. Se habilita solo esa combinación por papel;
     // otras cantidades, medidas, caras y plegados siguen en consulta.
     // El precio usa políticas distintas según el método resuelto.
-    // Offset: márgenes bajos pero positivos, calibrados contra precios públicos recientes.
-    // Digital: el costo cargado supera referencias de mercado en varias cantidades;
-    // se activa al costo neto (recargo 0%) para no vender por debajo del costo.
+    // Offset: recargo calibrado para acercar el precio neto a listas minoristas actuales.
+    // Digital: recargo calibrado con referencias minoristas de flyers 10×15 cm.
     commercialPricingPoliciesByProcessAndMaterial: {
       offset: {
-        obra_80g: { version: 1, mode: 'MARKUP', percentage: 55, vatRatePercent: 21 },
-        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 55, vatRatePercent: 21 },
-        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 30, vatRatePercent: 21 },
+        obra_80g: { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
+        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
+        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
       },
-      // Digital: 25% de recargo sobre costo neto + IVA. En la referencia
-      // de 100 u. 10×15 cm 4/4 resulta $22.690, próximo a ofertas locales
-      // de 100 flyers 10×15 cm de una cara (~$22.000).
+      // Digital: 50% de recargo sobre costo neto + IVA. La referencia de 100 u.
+      // 10×15 cm 4/0 queda alineada con ofertas minoristas locales más IVA.
       digital: {
-        obra_80g: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
-        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
-        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
+        obra_80g: { version: 1, mode: 'MARKUP', percentage: 50, vatRatePercent: 21 },
+        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 50, vatRatePercent: 21 },
+        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 50, vatRatePercent: 21 },
       },
     },
     commercialPricingPolicy: {
@@ -698,8 +696,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
 
 export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tags-etiquetas',
-  // Nueva versión para publicar los precios revisados sin pisar versiones administradas.
-  schemaVersion: '1.2',
+  // Versión revisada con precio alineado a tags de 300–350g publicados en Buenos Aires.
+  schemaVersion: '1.3',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -761,7 +759,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 20,
+      percentage: 80,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
