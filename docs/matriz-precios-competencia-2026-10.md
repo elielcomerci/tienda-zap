@@ -126,9 +126,9 @@ No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese mu
    https://www.holaoink.com.ar/oink_lista_precios_2026_iva.html
 12. **Imprenta Cubo Digital — tarjetas:** 1.000 u. 350 g laminado mate, frente y dorso, $72.000 final.  
    https://imprentacubodigital.com.ar/
-5. **CCprint:** catálogo público de papelería comercial con tags, flyers y carpetas, pero algunas fichas consultadas no permiten comprobar cantidad/especificación a partir del resultado indexado. Usar para descubrir productos, no para comparar sin abrir ficha y validar.  
+13. **CCprint:** catálogo público de papelería comercial con tags, flyers y carpetas, pero algunas fichas consultadas no permiten comprobar cantidad/especificación a partir del resultado indexado. Usar para descubrir productos, no para comparar sin abrir ficha y validar.  
    https://www.ccprint.com.ar/impresion-digital
-6. **E-tiquetas:** referencia de 1.000 etiquetas 80×50 mm $26.000; no comparable directamente con stickers circulares de papel 5×5 cm.  
+14. **E-tiquetas:** referencia de 1.000 etiquetas 80×50 mm $26.000; no comparable directamente con stickers circulares de papel 5×5 cm.  
    Referencia de búsqueda de producto; requiere abrir ficha y confirmar especificación/IVA/entrega antes de tomar decisión.
 
 ## 6. Próxima secuencia de trabajo
