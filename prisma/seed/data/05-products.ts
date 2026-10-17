@@ -374,7 +374,7 @@ export const productsData: ProductSeedData[] = [
     slug: 'diseno-papeleria-corporativa',
     catalogType: 'COSA', name: 'Diseño de Papelería Corporativa', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Aplicación de identidad existente a tres piezas acordadas', 'Criterio visual consistente', 'Hasta dos rondas de ajustes', 'Archivos finales listos para producción'], configurable: [], price: 185000, briefType: 'DESIGN', priceFrom: null, active: true,
-  },,
+  },
   {
     order: 32,
     slug: 'imanes-personalizados',
