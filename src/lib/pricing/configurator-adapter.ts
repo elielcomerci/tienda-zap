@@ -355,6 +355,11 @@ function quoteProviderFinishedCostSelection(
   const quantity = Number(selection.quantity || 0);
   if (!quantity) throw new Error('Debe especificar la cantidad.');
 
+  const consultRequiredQuantities = pricing?.consultRequiredQuantities;
+  if (Array.isArray(consultRequiredQuantities) && consultRequiredQuantities.includes(quantity)) {
+    throw new Error('CONSULT_REQUIRED: Esta cantidad necesita validación comercial antes de ofrecer un precio automático.');
+  }
+
   let totalCost = 0;
   const fields = configurator.schema?.fields || {};
 
