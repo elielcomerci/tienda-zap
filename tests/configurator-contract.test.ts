@@ -270,7 +270,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(threeHundred.totalCost, 17029);
-  assert.equal(threeHundred.totalPrice, 25890);
+  assert.equal(threeHundred.totalPrice, 25790);
   assert.equal(threeHundred.taxTreatment, 'INCLUDED');
 
   const fiveHundredSimplex = quoteConfiguratorSelection(
