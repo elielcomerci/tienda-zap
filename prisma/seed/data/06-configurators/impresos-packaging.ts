@@ -924,13 +924,14 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Precio objetivo para producto terminado tercerizado: 90% de recargo
+    // Precio objetivo para producto terminado tercerizado: 72,5% de recargo
     // sobre costo neto + IVA 21%. Con 50 carpetas 4/0 sin laminar, el total
-    // estimado queda aproximadamente 6–8% por encima de referencias comparables.
+    // queda aproximadamente 7,4% por encima de la referencia de $160.000 final
+    // para 50 carpetas A4 en ilustración 300g sin laminado.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 90,
+      percentage: 72.5,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
