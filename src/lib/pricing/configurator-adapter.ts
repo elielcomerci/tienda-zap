@@ -415,6 +415,12 @@ function quoteProviderFinishedCostSelection(
       totalCost = Number(offsetCost);
     } else {
     resolvedPricingProcess = 'digital';
+    // La tarifa digital de 500 u. 4/4 supera el precio minorista comparable
+    // de 500 tarjetas 300 g con UV; no publicar automáticamente por debajo
+    // del costo ni convertir una celda no competitiva en precio de catálogo.
+    if (quantity === 500 && selection.material === 'ilustracion_350g' && selection.printing === '4_4') {
+      throw new Error('CONSULT_REQUIRED: El costo digital de 500 tarjetas 4/4 requiere renegociación o una referencia competitiva equivalente.');
+    }
     if (selection.format !== '9x5') {
       throw new Error('CONSULT_REQUIRED: El costo cargado para tarjetas no contempla este formato.');
     }
