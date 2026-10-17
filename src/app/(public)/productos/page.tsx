@@ -437,14 +437,6 @@ export default async function ProductsPage({
                                 {displayPrice.toLocaleString('es-AR')}
                               </p>
                             )}
-                            {displayPrice === null &&
-                              requiresConfiguration &&
-                              !requiresConversation &&
-                              ['tarjetas-vouchers', 'flyers-desplegables', 'tags-etiquetas', 'adhesivos-stickers', 'carpetas-folders', 'expositores-stands'].includes(product.slug) && (
-                                <p className="mt-1 text-sm font-semibold text-[#C2103F]">
-                                  Precio al configurar
-                                </p>
-                              )}
                           </div>
 
                           <div className="flex sm:justify-end">
