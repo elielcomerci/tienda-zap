@@ -14,6 +14,7 @@ const MANAGED_PRICING_SLUGS = new Set([
   'flyers-desplegables',
   'tags-etiquetas',
   'adhesivos-stickers',
+  'imanes-personalizados',
   'carpetas-folders',
 ]);
 
