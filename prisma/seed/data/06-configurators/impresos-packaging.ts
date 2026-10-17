@@ -813,7 +813,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
 // No inventa materias primas ni terminaciones en el motor físico; resuelve directamente precios de lista oficial.
 export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'adhesivos-stickers',
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
