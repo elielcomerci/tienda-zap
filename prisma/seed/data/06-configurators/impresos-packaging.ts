@@ -1163,11 +1163,90 @@ const remainingConfigurators: ConfiguratorVersionSeedData[] = remainingImpresosS
   pricing: null,
 }));
 
+
+export const imanesPersonalizadosConfigurator: ConfiguratorVersionSeedData = {
+  productSlug: 'imanes-personalizados',
+  schemaVersion: '1.0',
+  status: 'ACTIVE',
+  schema: {
+    engine: 'IMPRESOS_PACKAGING',
+    productSlug: 'imanes-personalizados',
+    fields: {
+      format: {
+        label: 'Medida',
+        type: 'select',
+        required: true,
+        default: '9x5',
+        options: [
+          { id: '6x4', label: '6 × 4 cm' },
+          { id: '7x5', label: '7 × 5 cm' },
+          { id: '9x5', label: '9 × 5 cm' },
+          { id: '10x7', label: '10 × 7 cm' },
+        ],
+      },
+      lamination: {
+        label: 'Terminación',
+        type: 'select',
+        required: true,
+        default: 'sin_laca_uv',
+        options: [
+          { id: 'sin_laca_uv', label: 'Sin laca UV' },
+          { id: 'laca_uv_brillo', label: 'Con laca UV brillo' },
+        ],
+      },
+      quantity: {
+        label: 'Cantidad',
+        type: 'quantity_selector',
+        required: true,
+        default: 500,
+        options: [
+          { value: 100, label: '100 unidades' },
+          { value: 200, label: '200 unidades' },
+          { value: 300, label: '300 unidades' },
+          { value: 500, label: '500 unidades' },
+          { value: 1000, label: '1.000 unidades' },
+        ],
+      },
+    },
+  },
+  compatibility: { uiRules: [] },
+  pricing: {
+    engine: 'PROVIDER_FINISHED_COST',
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 110,
+      vatRatePercent: 21,
+    },
+    providerFinishedCostMatrix: {
+      resolver: { type: 'MAGNETS_RECTO' },
+      quoteRecto: {
+        sin_laca_uv: {
+          '100': { '6x4': 10032, '7x5': 13043, '9x5': 16054, '10x7': 22075 },
+          '200': { '6x4': 16304, '7x5': 22325, '9x5': 28346, '10x7': 40389 },
+          '300': { '6x4': 22825, '7x5': 31857, '9x5': 40889, '10x7': 58953 },
+          '500': { '6x4': 35618, '7x5': 50671, '9x5': 65725, '10x7': 96642 },
+          '1000': { '6x4': 66725, '7x5': 94789, '9x5': 123317, '10x7': 183225 },
+        },
+        laca_uv_brillo: {
+          '100': { '6x4': 10443, '7x5': 13590, '9x5': 16738, '10x7': 23033 },
+          '200': { '6x4': 16988, '7x5': 23283, '9x5': 29578, '10x7': 42169 },
+          '300': { '6x4': 23783, '7x5': 33226, '9x5': 42669, '10x7': 61554 },
+          '500': { '6x4': 37124, '7x5': 52862, '9x5': 68600, '10x7': 101159 },
+          '1000': { '6x4': 69600, '7x5': 99170, '9x5': 129067, '10x7': 191850 },
+        },
+      },
+      note: 'Costos de proveedor sin IVA. Los plazos se confirman caso por caso; no hay recargos automáticos por urgencia.',
+    },
+  },
+};
+
 export const impresosPackagingConfigurators: ConfiguratorVersionSeedData[] = [
   tarjetasVouchersConfigurator,
   flyersDesplegablesConfigurator,
   tagsEtiquetasConfigurator,
   adhesivosStickersConfigurator,
+  imanesPersonalizadosConfigurator,
   carpetasFoldersConfigurator,
   ...remainingConfigurators,
 ];
