@@ -258,11 +258,12 @@ export const sheetFinishingOperations: FinishingOperationSeedItem[] = [
   {
     id: 'fin_perforacion',
     name: 'Perforación / Ojalillo',
-    costType: 'PER_UNIT',
+    // Tarifa de proveedor por lote (lista de referencia): no es un costo unitario.
+    // Solo se habilitan las cantidades con importe documentado.
+    costType: 'FIXED_SETUP',
     tiers: [
-      { minQty: 1, maxQty: 100, unitPrice: 5 },
-      { minQty: 101, maxQty: 500, unitPrice: 3.5 },
-      { minQty: 501, maxQty: null, unitPrice: 2.5 },
+      { minQty: 500, maxQty: 500, unitPrice: 3225 },
+      { minQty: 1000, maxQty: 1000, unitPrice: 4500 },
     ],
   },
   {
