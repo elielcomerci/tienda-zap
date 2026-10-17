@@ -26,7 +26,7 @@ export default function ProductImageGallery({
   const touchStartXRef = useRef<number | null>(null)
   const didSwipeRef = useRef(false)
   const galleryRef = useRef<HTMLDivElement>(null)
-  const [keyboardReady, setKeyboardReady] = useState(false)
+  const [keyboardReady, setKeyboardReady] = useState(true)
 
   const goToImage = (index: number) => {
     if (safeImages.length === 0) return
@@ -34,9 +34,15 @@ export default function ProductImageGallery({
   }
 
   useEffect(() => {
-    if (!keyboardReady || zoomOpen || safeImages.length < 2) return
+    if (!keyboardReady && !zoomOpen) return
     const handleGalleryKeys = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return
+      if (event.key === 'Escape' && zoomOpen) {
+        event.preventDefault()
+        setZoomOpen(false)
+        return
+      }
+      if (safeImages.length < 2) return
       const target = event.target as HTMLElement | null
       if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return
       if (event.key === 'ArrowLeft') {
@@ -56,6 +62,11 @@ export default function ProductImageGallery({
     window.addEventListener('keydown', handleGalleryKeys)
     return () => window.removeEventListener('keydown', handleGalleryKeys)
   }, [keyboardReady, zoomOpen, safeImages.length, activeIndex])
+
+  useEffect(() => {
+    galleryRef.current?.focus({ preventScroll: true })
+    setKeyboardReady(true)
+  }, [])
 
   useEffect(() => {
     if (zoomOpen) {
@@ -109,11 +120,8 @@ export default function ProductImageGallery({
       aria-label={'Galería de imágenes de ' + productName}
       tabIndex={0}
       onMouseEnter={() => setKeyboardReady(true)}
-      onMouseLeave={() => setKeyboardReady(false)}
       onFocusCapture={() => setKeyboardReady(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setKeyboardReady(false)
-      }}
+      onBlurCapture={() => setKeyboardReady(false)}
       className="space-y-4 rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
     >
       <div className="flex items-center justify-between px-1">
@@ -133,7 +141,7 @@ export default function ProductImageGallery({
       <div className="relative">
         <button
           type="button"
-          className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] px-11 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+          className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] px-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
           onTouchStart={(event) => {
             touchStartXRef.current = event.changedTouches[0]?.clientX ?? null
             didSwipeRef.current = false
@@ -170,18 +178,20 @@ export default function ProductImageGallery({
               onClick={(event) => { event.stopPropagation(); goToImage(activeIndex - 1) }}
               disabled={activeIndex === 0}
               aria-label="Imagen anterior"
-              className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/55 text-gray-800 shadow-sm backdrop-blur-md transition hover:bg-white/85 disabled:pointer-events-none disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F] sm:left-3"
+              className="absolute left-0 top-1/2 z-10 flex h-24 w-8 -translate-y-1/2 items-center justify-center bg-transparent text-gray-800 transition hover:bg-white/10 disabled:pointer-events-none disabled:opacity-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ED164F] sm:w-10"
             >
-              <ChevronLeft size={20} />
+              <span className="flex h-16 w-1 items-center justify-center rounded-full bg-white/75 shadow-[0_1px_6px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all group-hover:w-1.5" aria-hidden="true" />
+              <ChevronLeft size={1} className="sr-only" />
             </button>
             <button
               type="button"
               onClick={(event) => { event.stopPropagation(); goToImage(activeIndex + 1) }}
               disabled={activeIndex === safeImages.length - 1}
               aria-label="Imagen siguiente"
-              className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/55 text-gray-800 shadow-sm backdrop-blur-md transition hover:bg-white/85 disabled:pointer-events-none disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F] sm:right-3"
+              className="absolute right-0 top-1/2 z-10 flex h-24 w-8 -translate-y-1/2 items-center justify-center bg-transparent text-gray-800 transition hover:bg-white/10 disabled:pointer-events-none disabled:opacity-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ED164F] sm:w-10"
             >
-              <ChevronRight size={20} />
+              <span className="flex h-16 w-1 items-center justify-center rounded-full bg-white/75 shadow-[0_1px_6px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all group-hover:w-1.5" aria-hidden="true" />
+              <ChevronRight size={1} className="sr-only" />
             </button>
           </>
         )}
