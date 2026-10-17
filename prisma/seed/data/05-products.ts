@@ -188,7 +188,7 @@ export const productsData: ProductSeedData[] = [
     slug: 'expositores-stands',
     catalogType: 'COSA',
     name: 'Expositores & Stands',
-    modality: 'CONSULTAR',
+    modality: 'CONFIGURABLE',
     engine: 'PRESENCIA_FISICA',
     whatIs: 'Stands portátiles, banners roll-up, pop-ups, paneles y exhibidores de mostrador.',
     purpose: 'Presencia destacada en eventos, ferias, exposiciones o puntos de venta.',

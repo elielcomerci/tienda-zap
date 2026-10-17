@@ -32,13 +32,19 @@ UPDATE "Product" SET "sortOrder" = CASE "slug"
   WHEN 'asistentes-bots' THEN 31 WHEN 'operaciones-consultoria' THEN 32
   WHEN 'sistema-captacion-eventos' THEN 33 ELSE 999 END;
 
--- Expositores is consultation-led until its full configurator matrix is persisted.
-UPDATE "Product" SET "modality"='CONSULTAR', "sortOrder"=25, "updatedAt"=NOW()
+-- Expositores has a validated finished-cost matrix; persist its tested schema and pricing.
+UPDATE "Product" SET "modality"='CONFIGURABLE', "sortOrder"=25, "updatedAt"=NOW()
 WHERE "slug"='expositores-stands';
-
--- Carpetas has an active, versioned price matrix and can be configured directly.
 UPDATE "Product" SET "modality"='CONFIGURABLE', "updatedAt"=NOW()
 WHERE "slug"='carpetas-folders';
 UPDATE "ConfiguratorVersion" SET status='ARCHIVED', "updatedAt"=NOW()
 WHERE "productId"=(SELECT id FROM "Product" WHERE slug='expositores-stands')
   AND "schemaVersion"='1.0' AND status='DRAFT';
+
+INSERT INTO "ConfiguratorVersion" ("id","productId","schemaVersion","status","schema","compatibility","pricing","createdAt","updatedAt")
+SELECT 'cfg_expositores_stands_1_2_20261017', p.id, '1.2', 'ACTIVE',
+  '{"engine":"PRESENCIA_FISICA","productSlug":"expositores-stands","fields":{"model":{"label":"Modelo","type":"select","required":true,"default":"double_90x190","options":[{"id":"double_90x190","label":"Portabanner doble tensor 90 × 190 cm"},{"id":"rollup_85x200","label":"Roll Up retráctil 85 × 200 cm"}]},"printing":{"label":"Impresión","type":"select","required":true,"default":"latex","options":[{"id":"latex","label":"Impresión látex"},{"id":"uv","label":"Impresión UV"}]},"quantity":{"label":"Cantidad","type":"quantity_selector","required":true,"default":1,"options":[{"value":1,"label":"1 unidad"},{"value":2,"label":"2 unidades"},{"value":3,"label":"3 unidades"},{"value":5,"label":"5 unidades"},{"value":10,"label":"10 unidades"}]}}}'::jsonb, '{"uiRules":[]}'::jsonb, '{"engine":"PROVIDER_FINISHED_COST","commercialPricingPolicy":{"version":1,"mode":"MARKUP","percentage":35,"vatRatePercent":21},"providerFinishedCostMatrix":{"resolver":{"type":"PORTABANNER_FINISHED"},"currency":"ARS","taxIncluded":false,"source":"CATALOGO_GRAN_FORMATO_2026_07","portabanner":{"kind":"PRODUCTO_TERMINADO","note":"Precio fuente combinado: estructura + impresión. No sumar estructura nuevamente.","frontMaterial":"FRONT_13OZ","items":{"simple_60x150":{"structure":16500,"latex":24700,"ecosolvent":28500,"uv":23500},"double_90x190":{"structure":32000,"latex":44800,"ecosolvent":47000,"uv":54700},"eco_double_90x190":{"structure":20900,"latex":43000,"ecosolvent":33900,"uv":36100},"simple_90x190":{"structure":21000,"latex":36500,"uv":44700},"eco_simple_90x190":{"structure":16000,"latex":40100,"uv":31500},"vertical_double_150x200":{"structure":49000,"latex":72600,"ecosolvent":75850,"uv":90500},"three_200x200":{"structure":75000,"latex":110200,"uv":104900},"eco_three_200x200":{"structure":59000,"latex":97200,"uv":92100},"four_300x200":{"structure":92000,"latex":141400,"uv":137400},"eco_four_300x200":{"structure":67000,"latex":125000,"uv":116900},"rollup_85x200":{"structure":26600,"latex":53400,"uv":43500,"assembly":3000},"fly_banner_50x260":{"structure":32000,"latex":98600},"drop_banner_60x250":{"structure":32000,"latex":98600},"drop_banner_gota_eco_73x220":{"structure":18000,"latex":59800},"cross_base":{"standalone":15000,"combo":9700}}}}}'::jsonb, NOW(), NOW()
+FROM "Product" p WHERE p.slug='expositores-stands'
+ON CONFLICT ("productId","schemaVersion") DO UPDATE SET
+  status='ACTIVE', schema=EXCLUDED.schema, compatibility=EXCLUDED.compatibility,
+  pricing=EXCLUDED.pricing, "updatedAt"=NOW();
