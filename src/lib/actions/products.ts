@@ -173,7 +173,7 @@ export async function deleteProduct(id: string) {
 
 export async function duplicateProduct(id: string) {
   await requireAdmin()
-  const original = await prisma.product.findUnique({ where: { id } })
+  const original = await prisma.product.findUnique({ where: { id }, include: { categoryLinks: { select: { categoryId: true } }, outgoingRelations: { select: { relatedProductId: true, type: true } } } })
   if (!original) throw new Error('Product Base no encontrado.')
   const duplicate = await prisma.product.create({
     data: {
@@ -199,6 +199,8 @@ export async function duplicateProduct(id: string) {
       configurable: original.configurable,
       consultationNote: original.consultationNote,
       creditDownPaymentPercent: original.creditDownPaymentPercent,
+      categoryLinks: { create: original.categoryLinks.map(({ categoryId }) => ({ categoryId })) },
+      outgoingRelations: { create: original.outgoingRelations.map(({ relatedProductId, type }) => ({ relatedProductId, type })) },
     },
   })
   revalidateProductPaths(duplicate.slug)
