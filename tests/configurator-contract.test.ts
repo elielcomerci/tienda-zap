@@ -304,12 +304,22 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   );
   assert.equal(offsetSectorized.totalCost, 39000);
 
-  const offsetThreeThousand = quoteConfiguratorSelection(
-    config as any,
-    { ...selection, productionProcess: 'offset', quantity: 3000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
-    { profitMargin: 0 } as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, productionProcess: 'offset', quantity: 3000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
+      { profitMargin: 0 } as any,
+    ),
+    /requieren reconfirmación del proveedor/,
   );
-  assert.equal(offsetThreeThousand.totalCost, 35000);
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, productionProcess: 'offset', quantity: 5000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
+      { profitMargin: 0 } as any,
+    ),
+    /requieren reconfirmación del proveedor/,
+  );
 
   const offsetFiveThousandSectorized = quoteConfiguratorSelection(
     config as any,
