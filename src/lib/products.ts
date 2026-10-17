@@ -113,7 +113,7 @@ export async function getProducts(
       variants: { select: { price: true }, orderBy: { price: 'asc' } },
       quoterConfig: { include: quoterConfigInclude },
       configuratorVersions: { where: { status: 'ACTIVE' }, select: { id: true, schemaVersion: true, status: true } },
-      categoryLinks: { where: { category: { active: true } }, include: { category: { select: { id: true, name: true, slug: true } } }, orderBy: { sortOrder: 'asc' } },
+      categoryLinks: { where: { category: { active: true } }, include: { category: { select: { id: true, name: true, slug: true, sortOrder: true } } }, orderBy: { category: { sortOrder: 'asc' } } },
       offerEntries: {
         select: {
           businessType: { select: { slug: true } },
@@ -192,6 +192,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
         where: { status: 'ACTIVE' },
         orderBy: { schemaVersion: 'desc' },
       },
+      categoryLinks: { where: { category: { active: true } }, include: { category: { select: { id: true, name: true, slug: true, sortOrder: true } } }, orderBy: { category: { sortOrder: 'asc' } } },
       outgoingRelations: {
         include: {
           relatedProduct: {
