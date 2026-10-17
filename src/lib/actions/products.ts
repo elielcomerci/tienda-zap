@@ -139,7 +139,7 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin()
-  const previous = await prisma.product.findUnique({ where: { id }, select: { slug: true, images: true } })
+  const previous = await prisma.product.findUnique({ where: { id }, select: { slug: true, images: true, price: true, priceFrom: true, active: true, stock: true, briefType: true, mediaType: true, includes: true, configurable: true } })
   if (!previous) throw new Error('Product Base no encontrado.')
   const data = productData(formData, previous.images)
   if (!data.name) throw new Error('Nombre requerido.')
@@ -149,6 +149,15 @@ export async function updateProduct(id: string, formData: FormData) {
     where: { id },
     data: {
       ...data,
+      // Campos que este formulario no edita deben conservar su valor actual.
+      price: previous.price,
+      priceFrom: previous.priceFrom,
+      active: previous.active,
+      stock: previous.stock,
+      briefType: previous.briefType,
+      mediaType: previous.mediaType,
+      includes: previous.includes,
+      configurable: previous.configurable,
       slug: await uniqueSlug(String(formData.get('slug') || data.name), id),
       categoryLinks: {
         deleteMany: {},
