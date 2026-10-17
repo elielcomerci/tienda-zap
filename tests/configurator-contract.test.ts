@@ -192,15 +192,55 @@ test('los procesos obligatorios están resueltos a terminaciones reales del adap
     const processes = config.compatibility?.requiredProcesses || [];
     if (!processes.length) continue;
     const adapter = (config.pricing as any)?.adapter;
-    assert.ok(adapter, `${config.productSlug}: falta adapter`);
+    const matrix = (config.pricing as any)?.providerFinishedCostMatrix;
     for (const rule of processes) {
-      assert.ok(adapter.processResolution?.[rule.process], `${config.productSlug}: proceso ${rule.process} sin resolver`);
+      const resolvedByAdapter = Boolean(adapter?.processResolution?.[rule.process]);
+      const resolvedByFinishedCostMatrix =
+        rule.process === 'PERFORACION' &&
+        matrix?.resolver?.type === 'TAGS_DIGITAL' &&
+        matrix?.perforationFixed;
+      assert.ok(
+        resolvedByAdapter || resolvedByFinishedCostMatrix,
+        `${config.productSlug}: proceso ${rule.process} sin resolver`,
+      );
     }
   }
 
   const tagSelection = defaultSelection(tagsEtiquetasConfigurator);
   const result = validateCommercialSelection(tagsEtiquetasConfigurator as any, tagSelection);
   assert.deepEqual(result.requiredProcesses, ['PERFORACION']);
+});
+
+
+test('tags 500 u. incluye papel, impresión y perforación en el costo terminado', () => {
+  const config = tagsEtiquetasConfigurator;
+  const selection = defaultSelection(config);
+  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
+  assert.equal(quote.totalCost, 39324);
+  assert.equal(quote.totalPrice, 57190);
+  assert.equal(quote.taxTreatment, 'INCLUDED');
+  assert.equal(quote.vatRatePercent, 21);
+
+  const singleSided = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, printing: '4_0' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(singleSided.totalCost, 28624.5);
+  assert.equal(singleSided.totalPrice, 41590);
+
+  const laminated = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, lamination: 'opp_brillo_frente' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(laminated.totalCost, 45666);
+  assert.equal(laminated.totalPrice, 66390);
+
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any),
+    /Cantidad '1000' no permitida/,
+  );
 });
 
 test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', () => {
