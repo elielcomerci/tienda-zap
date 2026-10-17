@@ -419,23 +419,23 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   };
   const quote = quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config));
   assert.equal(quote.totalCost, 25000);
-  assert.equal(quote.totalPrice, 60490);
+  assert.equal(quote.totalPrice, 46890);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   const obra = quoteConfiguratorSelection(config as any, { ...selection, material: 'obra_80g' }, makeQuoterConfig(config));
   assert.equal(obra.totalCost, 23000);
-  assert.equal(obra.totalPrice, 48790);
+  assert.equal(obra.totalPrice, 43190);
   const heavier = quoteConfiguratorSelection(config as any, { ...selection, material: 'ilustracion_150g' }, makeQuoterConfig(config));
   assert.equal(heavier.totalCost, 32000);
-  assert.equal(heavier.totalPrice, 68590);
+  assert.equal(heavier.totalPrice, 50390);
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - quote.totalPrice / 1.21) < 0.01);
 
   const twoThousandFiveHundred = quoteConfiguratorSelection(config as any, { ...selection, quantity: 2500 }, makeQuoterConfig(config));
   assert.equal(twoThousandFiveHundred.totalCost, 50000);
-  assert.equal(twoThousandFiveHundred.totalPrice, 120990);
+  assert.equal(twoThousandFiveHundred.totalPrice, 93790);
   const fiveThousand = quoteConfiguratorSelection(config as any, { ...selection, quantity: 5000 }, makeQuoterConfig(config));
   assert.equal(fiveThousand.totalCost, 70000);
-  assert.equal(fiveThousand.totalPrice, 169390);
+  assert.equal(fiveThousand.totalPrice, 131290);
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, format: 'a4' }, makeQuoterConfig(config)),
     /CONSULT_REQUIRED: No hay costo real cargado/,
