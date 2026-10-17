@@ -105,7 +105,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
     // La revisión comercial posterior puede ajustar margen/precio; no bloquear
     // celdas con costo conocido mediante una allowlist de selecciones.
     commercialPricingPolicy: {
-      version: 2,
+      version: 1,
       mode: 'MARKUP',
       percentage: 45,
       vatRatePercent: 21,
