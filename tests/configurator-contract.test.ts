@@ -243,7 +243,7 @@ test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA expl�
   );
 });
 
-test('stickers usa política versionada y carpetas conserva su configuración heredada', () => {
+test('stickers y carpetas aplican política comercial versionada y tratamiento fiscal explícito', () => {
   assert.equal(
     initialQuoterConfigs.some((entry) => entry.productSlug === 'adhesivos-stickers'),
     false,
