@@ -436,7 +436,7 @@ export default async function ProductsPage({
                             {displayPrice === null &&
                               requiresConfiguration &&
                               !requiresConversation &&
-                              ['tarjetas-vouchers', 'flyers-desplegables', 'tags-etiquetas', 'adhesivos-stickers', 'carpetas-folders'].includes(product.slug) && (
+                              ['tarjetas-vouchers', 'flyers-desplegables', 'tags-etiquetas', 'adhesivos-stickers', 'carpetas-folders', 'expositores-stands'].includes(product.slug) && (
                                 <p className="mt-1 text-sm font-semibold text-[#C2103F]">
                                   Precio al configurar
                                 </p>
