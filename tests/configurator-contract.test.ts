@@ -181,14 +181,16 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
 });
 
-test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta cantidades inventadas', () => {
+test('stickers exige validación comercial y no acepta cantidades inventadas', () => {
   const config = adhesivosStickersConfigurator;
   const selection = defaultSelection(config);
-  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
-  assert.ok(quote.totalPrice > 0);
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any),
+    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+  );
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
-    /Cantidad '999' no permitida/
+    /Cantidad '999' no permitida/,
   );
 });
 
