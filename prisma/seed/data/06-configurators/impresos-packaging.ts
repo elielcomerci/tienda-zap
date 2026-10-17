@@ -149,6 +149,10 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
     },
     commercialPricingPoliciesByProcessAndMaterialAndPrinting: {
       digital: {
+        ilustracion_300g: {
+          '4_0': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
+          '4_4': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 },
+        },
         ilustracion_350g: {
           '4_0': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
           '4_4': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 },

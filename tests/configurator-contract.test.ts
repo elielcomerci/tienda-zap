@@ -299,14 +299,22 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     /requiere renegociación o una referencia competitiva equivalente/,
   );
 
-  assert.throws(
-    () => quoteConfiguratorSelection(
-      config as any,
-      { ...selection, material: 'ilustracion_300g', quantity: 100, printing: '4_0', lamination: 'sin_laminar' },
-      { profitMargin: 0 } as any,
-    ),
-    /Opción 'ilustracion_300g' no válida/,
+  const threeHundredGram = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, material: 'ilustracion_300g', quantity: 100, printing: '4_0', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
   );
+  assert.equal(threeHundredGram.totalCost, 5210);
+  assert.equal(threeHundredGram.taxTreatment, 'INCLUDED');
+  assert.ok(threeHundredGram.totalPrice > threeHundredGram.totalCost);
+
+  const threeHundredGramFourFour = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, material: 'ilustracion_300g', quantity: 200, printing: '4_4', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(threeHundredGramFourFour.totalCost, 12361);
+  assert.equal(threeHundredGramFourFour.taxTreatment, 'INCLUDED');
 
   const uv = quoteConfiguratorSelection(
     config as any,
