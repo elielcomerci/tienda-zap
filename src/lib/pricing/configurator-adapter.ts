@@ -416,14 +416,25 @@ function quoteProviderFinishedCostSelection(
     }
   } else if (resolver.type === 'FLYERS_DIGITAL') {
     if (selection.foldingType !== 'plano') {
-      throw new Error('CONSULT_REQUIRED: El costo digital cargado no incluye el proceso de plegado.');
+      throw new Error('CONSULT_REQUIRED: El costo de proveedor cargado no incluye el proceso de plegado.');
     }
-    const source = matrix.digitalOndemand?.fullColor?.[selection.material || '']?.[selection.format || ''];
-    const row = source?.[String(quantity)]?.[selection.printing || ''];
-    if (row === undefined) {
-      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de folleto.');
+
+    // Priorizar el costo de producto terminado offset cuando la selección coincide
+    // con una celda explícita de esa matriz. No usar nesting/material como sustituto
+    // del costo de impresión. Las combinaciones restantes consultan la tabla digital.
+    const offsetRow = selection.printing === '4_4'
+      ? matrix.matrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)]
+      : undefined;
+    if (offsetRow !== undefined) {
+      totalCost = Number(offsetRow);
+    } else {
+      const source = matrix.digitalOndemand?.fullColor?.[selection.material || '']?.[selection.format || ''];
+      const row = source?.[String(quantity)]?.[selection.printing || ''];
+      if (row === undefined) {
+        throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de folleto.');
+      }
+      totalCost = Number(row);
     }
-    totalCost = Number(row);
   } else if (resolver.type === 'STICKERS_CIRCULAR') {
     if (selection.shape !== 'circular') {
       throw new Error('CONSULT_REQUIRED: La fuente cargada corresponde a stickers circulares.');
