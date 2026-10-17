@@ -387,16 +387,6 @@ function quoteProviderFinishedCostSelection(
       if ((selection.additionalFinishings || []).length > 0 || (selection.laminationSides && selection.laminationSides !== 'frente')) {
         throw new Error('CONSULT_REQUIRED: La matriz offset no tiene costos cargados para esas terminaciones adicionales.');
       }
-      // La lista clásica contiene importes 3.000/5.000 menores que el de 1.000
-      // para esta combinación. No convertir una celda dudosa en precio automático.
-      if (
-        selection.lamination === 'sin_laminar' &&
-        selection.printing === '4_4' &&
-        (quantity === 3000 || quantity === 5000)
-      ) {
-        throw new Error('CONSULT_REQUIRED: Los costos offset clásicos de 3.000/5.000 tarjetas requieren reconfirmación del proveedor.');
-      }
-
       const tiers = matrix.tiers || {};
       let offsetCost: unknown;
       if (selection.lamination === 'sin_laminar') {
@@ -412,15 +402,33 @@ function quoteProviderFinishedCostSelection(
       if (offsetCost === undefined) {
         throw new Error('CONSULT_REQUIRED: No hay costo offset cargado para esta cantidad, impresión y terminación.');
       }
+
+      // Algunas celdas de 3.000/5.000 unidades cuestan menos que la celda
+      // de 1.000 del mismo material, formato, impresión y terminación. Esas
+      // tarifas necesitan confirmación: no extrapolar ni publicar por error.
+      if (quantity > 1000) {
+        const baselineCost = (() => {
+          if (selection.lamination === 'sin_laminar') {
+            return tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.['9x5']?.['1000'];
+          }
+          if (selection.lamination === 'brillo') {
+            return tiers.clasicas?.finishes?.opp_brillo?.printing?.[selection.printing || '']?.['9x5']?.['1000'];
+          }
+          if (selection.lamination === 'mate') {
+            return tiers.premium?.finishes?.opp_mate?.printing?.[selection.printing || '']?.['9x5']?.['1000'];
+          }
+          if (selection.lamination === 'mate_uv_sectorizada' && selection.printing === '4_4') {
+            return tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.['9x5']?.['1000'];
+          }
+          return undefined;
+        })();
+        if (baselineCost !== undefined && Number(offsetCost) < Number(baselineCost)) {
+          throw new Error('CONSULT_REQUIRED: El costo offset de esta cantidad es menor que el de 1.000 unidades y requiere reconfirmación del proveedor.');
+        }
+      }
       totalCost = Number(offsetCost);
     } else {
     resolvedPricingProcess = 'digital';
-    // La tarifa digital de 500 u. 4/4 supera el precio minorista comparable
-    // de 500 tarjetas 300 g con UV; no publicar automáticamente por debajo
-    // del costo ni convertir una celda no competitiva en precio de catálogo.
-    if (quantity === 500 && selection.material === 'ilustracion_350g' && selection.printing === '4_4') {
-      throw new Error('CONSULT_REQUIRED: El costo digital de 500 tarjetas 4/4 requiere renegociación o una referencia competitiva equivalente.');
-    }
     if (selection.format !== '9x5') {
       throw new Error('CONSULT_REQUIRED: El costo cargado para tarjetas no contempla este formato.');
     }
