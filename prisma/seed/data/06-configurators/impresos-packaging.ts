@@ -1237,8 +1237,68 @@ export const imanesPersonalizadosConfigurator: ConfiguratorVersionSeedData = {
   },
 };
 
+export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
+  productSlug: 'talonarios-formularios',
+  schemaVersion: '1.0',
+  status: 'ACTIVE',
+  schema: {
+    engine: 'IMPRESOS_PACKAGING',
+    productSlug: 'talonarios-formularios',
+    fields: {
+      productType: {
+        label: 'Tipo de talonario',
+        type: 'select',
+        required: true,
+        default: 'bonos_lavadero',
+        options: [
+          { id: 'bonos_lavadero', label: 'Bonos numerados para lavaderos' },
+        ],
+      },
+      format: {
+        label: 'Formato',
+        type: 'select',
+        required: true,
+        default: '10x15',
+        options: [{ id: '10x15', label: '10 × 15 cm' }],
+      },
+      material: {
+        label: 'Impresión',
+        type: 'select',
+        required: true,
+        default: 'obra_80g_byn',
+        options: [{ id: 'obra_80g_byn', label: 'Láser blanco y negro' }],
+      },
+      quantity: {
+        label: 'Cantidad de talonarios',
+        type: 'quantity_selector',
+        required: true,
+        default: 5,
+        options: [
+          { value: 5, label: '5 talonarios · 250 números' },
+          { value: 10, label: '10 talonarios · 500 números' },
+          { value: 20, label: '20 talonarios · 1.000 números' },
+        ],
+      },
+    },
+  },
+  compatibility: null,
+  pricing: {
+    engine: 'STICKER_TABLE',
+    matrix: {
+      obra_80g_byn: {
+        '10x15': { '5': 34900, '10': 54900, '20': 94900 },
+      },
+    },
+    currency: 'ARS',
+    priceSource: 'ZAP commercial price matrix approved 2026-10-17',
+    taxIncluded: true,
+    commercialAvailability: 'ACTIVE',
+  },
+};
+
 export const impresosPackagingConfigurators: ConfiguratorVersionSeedData[] = [
   tarjetasVouchersConfigurator,
+  talonariosFormulariosConfigurator,
   flyersDesplegablesConfigurator,
   tagsEtiquetasConfigurator,
   adhesivosStickersConfigurator,

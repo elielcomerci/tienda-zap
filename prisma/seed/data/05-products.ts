@@ -389,4 +389,18 @@ export const productsData: ProductSeedData[] = [
     priceFrom: null,
     active: true,
   },
+  {
+    order: 33,
+    slug: 'talonarios-formularios',
+    catalogType: 'COSA',
+    name: 'Talonarios & Formularios',
+    modality: 'CONFIGURABLE',
+    engine: 'IMPRESOS_PACKAGING',
+    whatIs: 'Talonarios numerados, bonos duplicados y formularios impresos para registrar operaciones y controlar entregas.',
+    purpose: 'Ordenar registros, entregas y comprobantes del negocio.',
+    includes: ['Bonos numerados para lavaderos como primera opción configurable'],
+    configurable: ['Tipo de talonario', 'Formato', 'Impresión', 'Cantidad', 'Numeración y duplicado según necesidad'],
+    priceFrom: null,
+    active: true,
+  },
 ];

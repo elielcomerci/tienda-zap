@@ -35,6 +35,7 @@ const PRODUCT_EDITORIAL_ORDER = [
   'adhesivos-stickers',
   'menus-cartas',
   'tarjetas-vouchers',
+  'talonarios-formularios',
   'tags-etiquetas',
   'bolsas-contenedores',
   'fajas-envoltorios',
