@@ -594,17 +594,34 @@ function quoteProviderFinishedCostSelection(
       totalCost = Number(row);
     }
   } else if (resolver.type === 'STICKERS_CIRCULAR') {
-    if (selection.shape !== 'circular') {
-      throw new Error('CONSULT_REQUIRED: La fuente cargada corresponde a stickers circulares.');
+    if (selection.shape === 'recto') {
+      const finishKey = selection.lamination === 'laca_uv_brillo' ? 'laca_uv_brillo' : 'sin_laca_uv';
+      const source = matrix.quoteRecto?.[finishKey]?.[String(quantity)]?.[selection.format || ''];
+      if (source === undefined) {
+        throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta medida/cantidad de sticker de corte recto.');
+      }
+      totalCost = Number(source);
+      const deliverySurcharge = selection.delivery === 'express'
+        ? 15
+        : selection.delivery === 'super_express_48h'
+          ? 30
+          : selection.delivery === 'ya_24h'
+            ? 50
+            : 0;
+      totalCost *= 1 + deliverySurcharge / 100;
+    } else {
+      if (selection.shape !== 'circular') {
+        throw new Error('CONSULT_REQUIRED: La fuente cargada corresponde a stickers circulares o de corte recto.');
+      }
+      if (selection.lamination !== 'laca_uv_brillo') {
+        throw new Error('CONSULT_REQUIRED: La tarifa cargada de stickers circulares ya incluye laca UV brillo; no hay costo separado sin laca.');
+      }
+      const source = matrix.quote?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
+      if (source === undefined) {
+        throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta medida/cantidad de sticker.');
+      }
+      totalCost = Number(source);
     }
-    if (selection.lamination !== 'laca_uv_brillo') {
-      throw new Error('CONSULT_REQUIRED: La tarifa cargada de stickers ya incluye laca UV brillo; no hay costo separado sin laca.');
-    }
-    const source = matrix.quote?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
-    if (source === undefined) {
-      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta medida/cantidad de sticker.');
-    }
-    totalCost = Number(source);
   } else if (resolver.type === 'FOLDERS_DIGITAL') {
     if (selection.material !== 'ilustracion_300g') {
       throw new Error('CONSULT_REQUIRED: No hay costo digital cargado para este material de carpeta.');
