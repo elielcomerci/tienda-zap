@@ -6,7 +6,7 @@ import { digitalConfigurators } from '../data/06-configurators/digital';
 import { campanasConfigurators } from '../data/06-configurators/campanas';
 
 /**
- * Seed de configuradores. Las cinco familias gestionadas por Precios ZAP
+ * Seed de configuradores. Las familias gestionadas por Precios ZAP
  * preservan sus versiones existentes; las demás conservan el flujo histórico.
  */
 const MANAGED_PRICING_SLUGS = new Set([
