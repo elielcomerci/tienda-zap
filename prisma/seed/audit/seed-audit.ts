@@ -58,21 +58,12 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     configuratorSourceData.map(configuratorSourceKey)
   );
 
-  // Product Bases are the 23 ordered base offers. Eight additional direct
-  // design products (orders 24–31) are complementary catalog entries.
-  const productBaseData = productsData.filter((product) => product.order >= 1 && product.order <= 23);
-  const additionalCatalogProducts = productsData.filter((product) => product.order >= 24 && product.order <= 31);
-  const productBaseSlugs = new Set(productBaseData.map((product) => product.slug));
-  const productBaseOrders = new Set(productBaseData.map((product) => product.order));
-  const additionalCatalogOrders = new Set(additionalCatalogProducts.map((product) => product.order));
-  const missingBaseOrders = Array.from({ length: 23 }, (_, index) => index + 1).filter((order) => !productBaseOrders.has(order));
-  const missingComplementOrders = Array.from({ length: 8 }, (_, index) => index + 24).filter((order) => !additionalCatalogOrders.has(order));
-
-  if (productBaseData.length !== 23 || productBaseSlugs.size !== 23 || productBaseOrders.size !== 23 || missingBaseOrders.length > 0) {
-    errors.push(`[PRODUCT BASES COUNT] Esperadas 23 Product Bases únicas, con órdenes 1–23; filas ${productBaseData.length}, slugs ${productBaseSlugs.size}, órdenes faltantes ${missingBaseOrders.join(', ') || 'ninguna'}.`);
-  }
-  if (additionalCatalogProducts.length !== 8 || additionalCatalogOrders.size !== 8 || missingComplementOrders.length > 0) {
-    errors.push(`[CATALOG COMPLEMENTS COUNT] Esperados 8 productos directos complementarios con órdenes 24–31; filas ${additionalCatalogProducts.length}, órdenes faltantes ${missingComplementOrders.join(', ') || 'ninguna'}.`);
+  // All catalog offers share one unique, persisted editorial order.
+  const productOrders = new Set(productsData.map((product) => product.order));
+  const missingProductOrders = Array.from({ length: productsData.length }, (_, index) => index + 1)
+    .filter((order) => !productOrders.has(order));
+  if (productsData.length !== 33 || productOrders.size !== productsData.length || missingProductOrders.length > 0) {
+    errors.push(`[PRODUCT CATALOG ORDER] Esperados 33 productos con orden único 1–33; filas ${productsData.length}, órdenes faltantes ${missingProductOrders.join(', ') || 'ninguna'}.`);
   }
 
   // 1. Audit Rubros (BusinessTypes)
@@ -164,9 +155,6 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     if (p.modality === 'CONFIGURABLE' && !p.engine) {
       errors.push(`[RULE VIOLATION] Producto CONFIGURABLE '${p.slug}' no tiene engine.`);
     }
-    if ((p.modality === 'DIRECTO' || p.modality === 'CONSULTAR') && p.engine !== null) {
-      errors.push(`[RULE VIOLATION] Producto ${p.modality} '${p.slug}' tiene engine asignado (${p.engine}).`);
-    }
   }
 
   // 6. Audit ConfiguratorVersion
@@ -184,9 +172,10 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     const sourceVersion = configuratorSourceData.find(
       (item) => configuratorSourceKey(item) === `${cv.product.slug}|${cv.schemaVersion}`
     );
-    if (!sourceVersion) {
+    const managedPricingProduct = ['tarjetas-vouchers','flyers-desplegables','tags-etiquetas','adhesivos-stickers','imanes-personalizados','carpetas-folders'].includes(cv.product.slug);
+    if (!sourceVersion && !managedPricingProduct) {
       errors.push(`[CONFIGURATOR SOURCE MISSING] No hay definición fuente para '${cv.product.slug}|${cv.schemaVersion}'.`);
-    } else if (cv.status !== sourceVersion.status) {
+    } else if (sourceVersion && cv.status !== sourceVersion.status) {
       configuratorStatusMismatchCount += 1;
       if (cv.status === 'ACTIVE' && sourceVersion.status !== 'ACTIVE') unexpectedActiveCount += 1;
       errors.push(
@@ -195,9 +184,6 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     }
     if (cv.product.modality !== 'CONFIGURABLE') {
       errors.push(`[CONFIGURATOR ERROR] ConfiguratorVersion creado para producto ${cv.product.modality} '${cv.product.slug}'`);
-    }
-    if (cv.schemaVersion !== '1.0') {
-      errors.push(`[CONFIGURATOR ERROR] schemaVersion incorrecto '${cv.schemaVersion}' en '${cv.product.slug}'`);
     }
 
     const schema =

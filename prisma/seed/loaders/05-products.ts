@@ -7,6 +7,7 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
       where: { slug: p.slug },
       update: {
         name: p.name,
+        sortOrder: p.order,
         catalogType: p.catalogType,
         modality: p.modality,
         engine: p.engine,
@@ -23,6 +24,7 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
       create: {
         slug: p.slug,
         name: p.name,
+        sortOrder: p.order,
         catalogType: p.catalogType,
         modality: p.modality,
         engine: p.engine,

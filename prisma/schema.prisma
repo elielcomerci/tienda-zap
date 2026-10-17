@@ -258,6 +258,7 @@ model Product {
   engine                   ConfiguratorEngine?
   images                   String[]            @default([])
   active                   Boolean             @default(true)
+  sortOrder                Int                 @default(0)
   stock                    Int                 @default(0)
   briefType                String?             @default("NONE")
   mediaType                String?             @default("NONE")

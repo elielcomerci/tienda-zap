@@ -2,7 +2,7 @@ import { ProductSeedData } from '../types';
 
 export const productsData: ProductSeedData[] = [
   {
-    order: 1,
+    order: 13,
     slug: 'tarjetas-vouchers',
     catalogType: 'COSA',
     name: 'Tarjetas & Vouchers',
@@ -16,7 +16,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 2,
+    order: 9,
     slug: 'flyers-desplegables',
     catalogType: 'COSA',
     name: 'Flyers & Desplegables',
@@ -30,7 +30,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 3,
+    order: 15,
     slug: 'tags-etiquetas',
     catalogType: 'COSA',
     name: 'Tags & Etiquetas',
@@ -44,7 +44,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 4,
+    order: 10,
     slug: 'adhesivos-stickers',
     catalogType: 'COSA',
     name: 'Adhesivos & Stickers',
@@ -58,7 +58,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 5,
+    order: 17,
     slug: 'fajas-envoltorios',
     catalogType: 'COSA',
     name: 'Fajas & Envoltorios',
@@ -72,7 +72,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 6,
+    order: 16,
     slug: 'bolsas-contenedores',
     catalogType: 'COSA',
     name: 'Bolsas & Contenedores',
@@ -86,7 +86,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 7,
+    order: 18,
     slug: 'cajas-personalizadas',
     catalogType: 'COSA',
     name: 'Cajas Personalizadas',
@@ -100,7 +100,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 8,
+    order: 19,
     slug: 'carpetas-folders',
     catalogType: 'COSA',
     name: 'Carpetas & Folders',
@@ -114,7 +114,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 9,
+    order: 12,
     slug: 'menus-cartas',
     catalogType: 'COSA',
     name: 'Menús & Cartas',
@@ -128,7 +128,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 10,
+    order: 24,
     slug: 'individuales-posavasos',
     catalogType: 'COSA',
     name: 'Individuales & Posavasos',
@@ -142,7 +142,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 11,
+    order: 20,
     slug: 'carteleria-ploteo',
     catalogType: 'COSA',
     name: 'Cartelería & Ploteo',
@@ -156,7 +156,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 12,
+    order: 21,
     slug: 'corporeos-marquesinas',
     catalogType: 'COSA',
     name: 'Corpóreos & Marquesinas',
@@ -170,7 +170,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 13,
+    order: 22,
     slug: 'senaletica-placas',
     catalogType: 'COSA',
     name: 'Señalética & Placas',
@@ -184,11 +184,11 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 14,
+    order: 25,
     slug: 'expositores-stands',
     catalogType: 'COSA',
     name: 'Expositores & Stands',
-    modality: 'CONFIGURABLE',
+    modality: 'CONSULTAR',
     engine: 'PRESENCIA_FISICA',
     whatIs: 'Stands portátiles, banners roll-up, pop-ups, paneles y exhibidores de mostrador.',
     purpose: 'Presencia destacada en eventos, ferias, exposiciones o puntos de venta.',
@@ -198,7 +198,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 15,
+    order: 23,
     slug: 'indumentaria-textil',
     catalogType: 'COSA',
     name: 'Indumentaria & Textil',
@@ -212,7 +212,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 16,
+    order: 26,
     slug: 'objetos-regaleria',
     catalogType: 'COSA',
     name: 'Objetos & Regalería',
@@ -226,7 +226,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 17,
+    order: 27,
     slug: 'sitios-web-catalogos-digitales',
     catalogType: 'DESARROLLO',
     name: 'Sitios web y catálogos digitales',
@@ -240,7 +240,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 18,
+    order: 31,
     slug: 'asistentes-bots',
     catalogType: 'DESARROLLO',
     name: 'Asistentes & Bots',
@@ -254,7 +254,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 19,
+    order: 28,
     slug: 'anuncios-campanas',
     catalogType: 'DESARROLLO',
     name: 'Anuncios & Campañas',
@@ -268,7 +268,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 20,
+    order: 30,
     slug: 'produccion-audiovisual',
     catalogType: 'DESARROLLO',
     name: 'Producción Audiovisual',
@@ -281,7 +281,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 21,
+    order: 29,
     slug: 'sistema-identidad',
     catalogType: 'DESARROLLO',
     name: 'Sistema de Identidad',
@@ -294,7 +294,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 22,
+    order: 32,
     slug: 'operaciones-consultoria',
     catalogType: 'DESARROLLO',
     name: 'Operaciones & Consultoría',
@@ -307,7 +307,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 23,
+    order: 33,
     slug: 'sistema-captacion-eventos',
     catalogType: 'DESARROLLO',
     name: 'Sistema de Captación para Eventos',
@@ -328,55 +328,55 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 24,
+    order: 1,
     slug: 'diseno-flyer-volante',
     catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 79000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 25,
+    order: 5,
     slug: 'diseno-cartel-afiche',
     catalogType: 'COSA', name: 'Diseño de Cartel / Afiche', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 225386, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 26,
+    order: 2,
     slug: 'diseno-pack-graficos-redes',
     catalogType: 'COSA', name: 'Diseño Pack de piezas para redes (10)', modality: 'DIRECTO', engine: null,
     whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 220000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 27,
+    order: 6,
     slug: 'diseno-carteleria-rotulos',
     catalogType: 'COSA', name: 'Diseño de Cartelería / Rótulos', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño de piezas gráficas para cartelería y rótulos comerciales.', purpose: 'Definir qué se comunica y cómo se ve antes de producir la cartelería.', includes: ['Diseño de la pieza', 'Adaptación al formato definido', 'Archivo final listo para producción'], configurable: [], price: 289782, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 28,
+    order: 3,
     slug: 'diseno-menu-gastronomico',
     catalogType: 'COSA', name: 'Diseño de Menú Gastronómico', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 170000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 29,
+    order: 7,
     slug: 'diseno-vidriera',
     catalogType: 'COSA', name: 'Diseño de Vidriera', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño de una propuesta gráfica para una vidriera o escaparate comercial.', purpose: 'Definir qué debería ver primero quien pasa frente al local.', includes: ['Concepto visual', 'Diseño de la propuesta', 'Archivo final listo para producción'], configurable: [], price: 402475, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 30,
+    order: 4,
     slug: 'diseno-etiquetas',
     catalogType: 'COSA', name: 'Diseño de Etiquetas', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 241485, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 31,
+    order: 8,
     slug: 'diseno-papeleria-corporativa',
     catalogType: 'COSA', name: 'Diseño de Papelería Corporativa', modality: 'DIRECTO', engine: null,
     whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Aplicación de identidad existente a tres piezas acordadas', 'Criterio visual consistente', 'Hasta dos rondas de ajustes', 'Archivos finales listos para producción'], configurable: [], price: 185000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
-    order: 32,
+    order: 11,
     slug: 'imanes-personalizados',
     catalogType: 'COSA',
     name: 'Imanes personalizados',
@@ -390,7 +390,7 @@ export const productsData: ProductSeedData[] = [
     active: true,
   },
   {
-    order: 33,
+    order: 14,
     slug: 'talonarios-formularios',
     catalogType: 'COSA',
     name: 'Talonarios & Formularios',

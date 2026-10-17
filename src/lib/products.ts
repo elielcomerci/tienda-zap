@@ -3,8 +3,6 @@ import { Prisma } from '@prisma/client'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { engineForCatalogFamily } from '@/lib/catalog-domain'
-import { impresosPackagingConfigurators } from '../../prisma/seed/data/06-configurators/impresos-packaging'
-import { presenciaFisicaConfigurators } from '../../prisma/seed/data/06-configurators/presencia-fisica'
 
 async function requireAdmin() {
   const session = await auth()
@@ -18,48 +16,6 @@ const quoterConfigInclude = {
   quantityPresets: { orderBy: { sortOrder: 'asc' as const } },
   sizePresets: { orderBy: { sortOrder: 'asc' as const } },
 }
-
-// Editorial order: concrete, easy-to-evaluate design services first; then
-// tangible products; then developments, ordered from familiar to specialized.
-// This is presentation only: it does not alter availability, prices or filters.
-const PRODUCT_EDITORIAL_ORDER = [
-  'diseno-flyer-volante',
-  'diseno-pack-graficos-redes',
-  'diseno-menu-gastronomico',
-  'diseno-etiquetas',
-  'diseno-cartel-afiche',
-  'diseno-carteleria-rotulos',
-  'diseno-vidriera',
-  'diseno-papeleria-corporativa',
-  'flyers-desplegables',
-  'adhesivos-stickers',
-  'menus-cartas',
-  'tarjetas-vouchers',
-  'talonarios-formularios',
-  'tags-etiquetas',
-  'bolsas-contenedores',
-  'fajas-envoltorios',
-  'cajas-personalizadas',
-  'carpetas-folders',
-  'carteleria-ploteo',
-  'corporeos-marquesinas',
-  'senaletica-placas',
-  'indumentaria-textil',
-  'individuales-posavasos',
-  'expositores-stands',
-  'objetos-regaleria',
-  'activos-web-sitios',
-  'anuncios-campanas',
-  'sistema-identidad',
-  'produccion-audiovisual',
-  'asistentes-bots',
-  'operaciones-consultoria',
-  'sistema-captacion-eventos',
-] as const
-
-const PRODUCT_EDITORIAL_RANK = new Map<string, number>(
-  PRODUCT_EDITORIAL_ORDER.map((slug, index): [string, number] => [slug, index])
-)
 
 /** Minimal public catalog metadata for homepage entry points. */
 export async function getPublicCatalogTypes() {
@@ -169,9 +125,7 @@ export async function getProducts(
       }
     }
 
-    const rankA = PRODUCT_EDITORIAL_RANK.get(a.slug) ?? Number.MAX_SAFE_INTEGER
-    const rankB = PRODUCT_EDITORIAL_RANK.get(b.slug) ?? Number.MAX_SAFE_INTEGER
-    return rankA - rankB
+    return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)
   })
 
   return options?.take === undefined ? orderedProducts : orderedProducts.slice(0, options.take)
@@ -211,33 +165,8 @@ export const getProduct = cache(async function getProduct(slug: string) {
 
   if (!product) return product
 
-  // Pricing-managed print configurators are also available from the versioned
-  // source of truth. This prevents an older production DB seed from turning
-  // products with approved matrices into consultation-only products.
-  const seedConfigurator = [...impresosPackagingConfigurators, ...presenciaFisicaConfigurators]
-    .filter((item) => item.productSlug === product.slug && item.status === 'ACTIVE')
-    .sort((a, b) => b.schemaVersion.localeCompare(a.schemaVersion, undefined, { numeric: true }))[0]
-
-  if (!seedConfigurator) return product
-
-  const activeDatabaseConfigurator = product.configuratorVersions[0]
-  const seedIsNewer = !activeDatabaseConfigurator ||
-    seedConfigurator.schemaVersion.localeCompare(activeDatabaseConfigurator.schemaVersion, undefined, { numeric: true }) > 0
-
-  if (!seedIsNewer) return product
-
-  return {
-    ...product,
-    configuratorVersions: [{
-      id: `seed:${product.slug}:${seedConfigurator.schemaVersion}`,
-      productId: product.id,
-      schemaVersion: seedConfigurator.schemaVersion,
-      status: seedConfigurator.status,
-      schema: seedConfigurator.schema,
-      compatibility: seedConfigurator.compatibility,
-      pricing: seedConfigurator.pricing,
-    }],
-  }
+  // The database is the only public source for configurator versions.
+  return product
 })
 
 export async function getActiveProductSlugs() {
