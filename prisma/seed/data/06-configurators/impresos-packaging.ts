@@ -892,7 +892,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
 // No inventa materias primas ni terminaciones en el motor físico; resuelve directamente precios de lista oficial.
 export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'adhesivos-stickers',
-  schemaVersion: '1.5',
+  schemaVersion: '1.7',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -920,7 +920,6 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
           { id: '7x7', label: '7×7 cm · circular' },
           { id: '8x8', label: '8×8 cm · circular' },
           { id: '9x9', label: '9×9 cm · circular' },
-          { id: '10x10', label: '10×10 cm · circular' },
           { id: '6x4', label: '6×4 cm · corte recto' },
           { id: '7x5', label: '7×5 cm · corte recto' },
           { id: '9x5', label: '9×5 cm · corte recto' },
@@ -978,7 +977,7 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
     // El corte recto compite en una banda de precio distinta; el margen circular
     // se conserva porque sus costos y referencias de mercado son diferentes.
     commercialPricingPoliciesByShape: {
-      recto: { version: 1, mode: 'MARKUP', percentage: 20, vatRatePercent: 21 },
+      recto: { version: 1, mode: 'MARKUP', percentage: 50, vatRatePercent: 21 },
     },
     providerFinishedCostMatrix: {
       resolver: { type: 'STICKERS_CIRCULAR' },
@@ -1052,7 +1051,7 @@ const carpetasDigital300gTiers = [
 
 export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'carpetas-folders',
-  schemaVersion: '1.3',
+  schemaVersion: '1.4',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -1094,6 +1093,8 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // La matriz actual supera referencias locales comparables; cotización automática bloqueada hasta reconciliar costos.
+    commercialAvailability: 'CONSULT_REQUIRED',
     // Posicionamiento medio-alto con 20% de recargo sobre costo neto + IVA 21%.
     // Para 50 unidades 4/0 sin laminar: costo $82.350; precio final ≈$119.572.
     // Referencias consultadas: Imprimime $107.793 + IVA (50 u., 300 g); Lugones $77.500 (50 u., 250 g sin laminar).
