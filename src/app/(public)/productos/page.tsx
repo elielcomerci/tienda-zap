@@ -14,7 +14,7 @@ import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
 import ShareModal from '@/components/public/ShareModal'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { getProductCatalogGroupLabel, getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
+import { getProductFamilyLabel, isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
 const BUSINESS_CONTEXT: Record<string, string> = {
@@ -364,6 +364,7 @@ export default async function ProductsPage({
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => {
                   const development = isDevelopment(product)
+                  const categoryLabel = product.categoryLinks?.find((link) => link.category.slug === cat)?.category.name || product.categoryLinks?.[0]?.category.name || getProductFamilyLabel(product)
                   const hasVariants = Boolean(product.variants && product.variants.length > 0)
                   const requiresConfiguration = product.modality === 'CONFIGURABLE' || hasVariants || Boolean(product.quoterConfig)
                   // Active semantic configurators use their own commercial price engine.
@@ -389,10 +390,10 @@ export default async function ProductsPage({
                     >
                       <Link href={buildProductUrl(product.slug, explorationContext)} className="block">
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
-                          {(getProductCatalogGroupLabel(product.slug) || getProductFamilyLabel(product)).trim().toLocaleLowerCase() !== product.name.trim().toLocaleLowerCase() && (
+                          {categoryLabel.trim().toLocaleLowerCase() !== product.name.trim().toLocaleLowerCase() && (
                             <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
                               <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-700 shadow-sm">
-                                {getProductCatalogGroupLabel(product.slug) || getProductFamilyLabel(product)}
+                                {categoryLabel}
                               </span>
                             </div>
                           )}
