@@ -77,7 +77,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "gastronomia",
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-presencia-digital",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "gastronomia",
@@ -113,7 +113,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "gastronomia",
     "situationSlug": "quiero-conseguir-mas-pedidos",
     "needSlug": "necesito-facilitar-el-contacto",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "gastronomia",
@@ -312,7 +312,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "moda-showrooms",
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-presencia-digital",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "moda-showrooms",
@@ -372,7 +372,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "moda-showrooms",
     "situationSlug": "quiero-vender-online",
     "needSlug": "necesito-una-presencia-comercial",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "moda-showrooms",
@@ -492,7 +492,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "estoy-abriendo-o-renovando-la-inmobiliaria",
     "needSlug": "necesito-presencia-digital",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "inmobiliarias",
@@ -552,13 +552,13 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-conseguir-mas-consultas",
     "needSlug": "necesito-mostrar-mejor-las-propiedades",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-conseguir-mas-consultas",
     "needSlug": "necesito-facilitar-el-contacto",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "inmobiliarias",
@@ -600,7 +600,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-transmitir-mas-confianza",
     "needSlug": "necesito-presentarme-con-profesionalismo",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "belleza-salud",
@@ -678,7 +678,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-facilitar-el-contacto",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "belleza-salud",
@@ -714,7 +714,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-facilitar-el-contacto",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "belleza-salud",
@@ -750,7 +750,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "belleza-salud",
     "situationSlug": "quiero-llenar-la-agenda",
     "needSlug": "necesito-convertir-mejor-las-consultas",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "belleza-salud",
@@ -978,7 +978,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "comercios-retail",
     "situationSlug": "quiero-vender-mas",
     "needSlug": "necesito-vender-online",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "comercios-retail",
@@ -1230,7 +1230,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "wellness",
     "situationSlug": "estoy-por-abrir",
     "needSlug": "necesito-empezar-a-recibir-consultas",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "wellness",
@@ -1272,7 +1272,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-conseguir-alumnos",
     "needSlug": "necesito-facilitar-el-contacto",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "wellness",
@@ -1362,7 +1362,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-contacto-con-alumnos",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "wellness",
@@ -1386,7 +1386,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "wellness",
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-comunicar-disponibilidad-o-promociones",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "gastronomia",
@@ -1452,7 +1452,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-vender-o-alquilar-mas",
     "needSlug": "necesito-mostrar-mejor-las-propiedades",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "inmobiliarias",
@@ -1470,7 +1470,7 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "inmobiliarias",
     "situationSlug": "quiero-vender-o-alquilar-mas",
     "needSlug": "necesito-que-sea-facil-consultarme",
-    "productSlug": "activos-web-sitios"
+    "productSlug": "sitios-web-catalogos-digitales"
   },
   {
     "businessTypeSlug": "inmobiliarias",
