@@ -258,11 +258,12 @@ export const sheetFinishingOperations: FinishingOperationSeedItem[] = [
   {
     id: 'fin_perforacion',
     name: 'Perforación / Ojalillo',
-    costType: 'PER_UNIT',
+    // Tarifa de proveedor por lote (lista de referencia): no es un costo unitario.
+    // Solo se habilitan las cantidades con importe documentado.
+    costType: 'FIXED_SETUP',
     tiers: [
-      { minQty: 1, maxQty: 100, unitPrice: 5 },
-      { minQty: 101, maxQty: 500, unitPrice: 3.5 },
-      { minQty: 501, maxQty: null, unitPrice: 2.5 },
+      { minQty: 500, maxQty: 500, unitPrice: 3225 },
+      { minQty: 1000, maxQty: 1000, unitPrice: 4500 },
     ],
   },
   {
@@ -376,9 +377,8 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
   // ─── Tags & Etiquetas ────────────────────────────────────────────────────────
   // Base: Tarjetas Clásicas 350g (lista-print.txt pp. 11-13).
   // Reutiliza raw materials y finishings existentes; no crea nuevos registros.
-  // Deuda técnica: los tiers de fin_perforacion divergen de la tarifa real del
-  //   catálogo (AGUJEREADOS $3.225/500u vs $2.5/u × 500 = $1.250 del quoter).
-  //   Se documenta aquí y se resuelve en sprint independiente.
+  // La perforación usa importes fijos por lote documentados ($3.225/500 y
+  // $4.500/1.000). Tags permanece en consulta hasta conectar costo de impresión.
   {
     productSlug: 'tags-etiquetas',
     pricingMode: 'SHEET_NESTING',
@@ -406,6 +406,29 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
     quantityPresets: [
       { quantity: 500,  sortOrder: 0 },
       { quantity: 1000, sortOrder: 1 },
+    ],
+  },
+  {
+    productSlug: 'carpetas-folders',
+    pricingMode: 'PROVIDER_FINISHED_COST',
+    margin: 0,
+    bleed: 0,
+    profitMargin: 150,
+    minProfitMargin: 120,
+    maxProfitMargin: 180,
+    allowCustomSize: false,
+    rawMaterialIds: [],
+    finishingIds: [],
+    sizePresets: [],
+    quantityPresets: [
+      { quantity: 1, sortOrder: 0 },
+      { quantity: 2, sortOrder: 1 },
+      { quantity: 25, sortOrder: 2 },
+      { quantity: 50, sortOrder: 3 },
+      { quantity: 100, sortOrder: 4 },
+      { quantity: 300, sortOrder: 5 },
+      { quantity: 500, sortOrder: 6 },
+      { quantity: 1000, sortOrder: 7 },
     ],
   },
 ];

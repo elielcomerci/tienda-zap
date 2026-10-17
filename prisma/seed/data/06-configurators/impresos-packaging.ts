@@ -99,6 +99,16 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // Los costos de 300 unidades o más quedan en consulta: varias celdas de la
+    // tarifa superan precios minoristas comparables antes de sumar el margen.
+    // Las tiradas de 100/200 usan recargo del 90% + IVA 21% como precio final.
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 90,
+      vatRatePercent: 21,
+    },
+    consultRequiredQuantities: [300, 500, 1000],
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
     // Costo maestro de proveedor: producto terminado, sin IVA.
@@ -416,8 +426,12 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     ],
   },
   pricing: {
-    engine: 'PRODUCT_QUOTER',
-    // El automático se resuelve contra el cotizador real: material + formato + plegado + cantidad.
+    engine: 'PROVIDER_FINISHED_COST',
+    // El cálculo por pliego omitía el costo de impresión. La matriz offset venció
+    // en julio de 2026 y la tarifa digital disponible no sostiene una comparación
+    // competitiva en todas las combinaciones; mantener consulta hasta actualizarla.
+    commercialAvailability: 'CONSULT_REQUIRED',
+    // El automático se resuelve contra el costo de proveedor, no solo el papel.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
     providerFinishedCostMatrix: {
       resolver: { type: 'FLYERS_DIGITAL' },
@@ -699,7 +713,10 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
     ],
   },
   pricing: {
-    engine: 'PRODUCT_QUOTER',
+    engine: 'PROVIDER_FINISHED_COST',
+    // No cotizar automáticamente mientras falte el costo de impresión terminado.
+    // El motor físico solo sumaba papel y terminaciones, dejando fuera la impresión.
+    commercialAvailability: 'CONSULT_REQUIRED',
     adapter: {
       formatMapping: {
         '9x5':  { sizeLabel: '9x5 cm',  width: 9,  height: 5  },
@@ -807,6 +824,10 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // El costo cargado queda en consulta comercial: la comparación disponible
+    // no deja margen operativo suficiente para venderlo 5–10% sobre mercado.
+    // No activar precio automático hasta validar otra tarifa de proveedor.
+    commercialAvailability: 'CONSULT_REQUIRED',
     providerFinishedCostMatrix: {
       resolver: { type: 'STICKERS_CIRCULAR' },
       quote: {
@@ -903,6 +924,16 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // Precio objetivo para producto terminado tercerizado: 72,5% de recargo
+    // sobre costo neto + IVA 21%. Con 50 carpetas 4/0 sin laminar, el total
+    // queda aproximadamente 7,4% por encima de la referencia de $160.000 final
+    // para 50 carpetas A4 en ilustración 300g sin laminado.
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 72.5,
+      vatRatePercent: 21,
+    },
     providerFinishedCostMatrix: {
       resolver: { type: 'FOLDERS_DIGITAL' },
       currency: 'ARS',

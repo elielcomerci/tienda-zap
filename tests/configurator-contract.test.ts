@@ -18,6 +18,7 @@ import {
   isEditableProviderCostPath,
 } from '../src/lib/pricing/pricing-matrix-admin';
 import { calculateCommercialPrice, calculatePriceAtNetAmount, marginFromMarkup, validateCommercialPricingPolicy } from '../src/lib/pricing/commercial-pricing-policy';
+import { initialQuoterConfigs, sheetFinishingOperations } from '../prisma/seed/data/09-quoter-config';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -176,19 +177,64 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 8213);
-  assert.ok(quote.totalPrice > 0);
+  assert.equal(quote.totalPrice, 18890);
   assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
+
+  const twoHundred = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 200 },
+    { profitMargin: 150 } as any,
+  );
+  assert.equal(twoHundred.totalCost, 12361);
+  assert.equal(twoHundred.totalPrice, 28490);
+
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 500 }, { profitMargin: 150 } as any),
+    /CONSULT_REQUIRED: Esta cantidad necesita validación comercial/,
+  );
 });
 
-test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta cantidades inventadas', () => {
+test('stickers exige validación comercial y no acepta cantidades inventadas', () => {
   const config = adhesivosStickersConfigurator;
   const selection = defaultSelection(config);
-  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
-  assert.ok(quote.totalPrice > 0);
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any),
+    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+  );
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
-    /Cantidad '999' no permitida/
+    /Cantidad '999' no permitida/,
   );
+});
+
+test('stickers queda en consulta comercial y carpetas aplica política explícita con IVA', () => {
+  assert.equal(
+    initialQuoterConfigs.some((entry) => entry.productSlug === 'adhesivos-stickers'),
+    false,
+    'stickers no debe tener un recargo automático mientras el costo no sea viable',
+  );
+
+  const folderConfig = initialQuoterConfigs.find((entry) => entry.productSlug === 'carpetas-folders');
+  assert.ok(folderConfig, 'carpetas-folders: falta ProductQuoterConfig en el seed');
+  assert.equal(folderConfig.profitMargin, 150, 'el recargo heredado se conserva como fallback');
+  assert.equal(folderConfig.minProfitMargin, 120);
+  assert.equal(folderConfig.maxProfitMargin, 180);
+
+  const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
+  assert.throws(
+    () => quoteConfiguratorSelection(adhesivosStickersConfigurator as any, stickersSelection),
+    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+  );
+
+  const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
+  const foldersQuote = quoteConfiguratorSelection(
+    carpetasFoldersConfigurator as any,
+    foldersSelection,
+    folderConfig as any,
+  );
+  assert.equal(foldersQuote.totalCost, 82350);
+  assert.equal(foldersQuote.totalPrice, 171890);
+  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 42.0) < 0.1);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
@@ -205,11 +251,24 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
   );
 });
 
-test('flyers y tags llegan al motor físico con materiales, medidas y procesos resueltos', () => {
+test('la perforación solo usa los importes de proveedor documentados por lote', () => {
+  const perforation = sheetFinishingOperations.find((entry) => entry.id === 'fin_perforacion');
+  assert.ok(perforation);
+  assert.equal(perforation.costType, 'FIXED_SETUP');
+  assert.deepEqual(perforation.tiers, [
+    { minQty: 500, maxQty: 500, unitPrice: 3225 },
+    { minQty: 1000, maxQty: 1000, unitPrice: 4500 },
+  ]);
+});
+
+test('flyers y tags no publican precios cuando el costo de impresión no está validado', () => {
   for (const config of [flyersDesplegablesConfigurator, tagsEtiquetasConfigurator]) {
     const selection = defaultSelection(config);
-    const quote = quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config));
-    assert.ok(quote.totalPrice > 0, config.productSlug);
+    assert.throws(
+      () => quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config)),
+      /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+      config.productSlug,
+    );
   }
 });
 

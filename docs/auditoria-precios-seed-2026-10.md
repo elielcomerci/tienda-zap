@@ -216,11 +216,32 @@ Por tanto, los precios calculados por esos dos configuradores no deben considera
 
 
 
-### P0 — Stickers y Carpetas están ACTIVE, pero no tienen margen maestro sembrado
+### P0 — Hallazgo inicial: Stickers y Carpetas sin margen maestro
 
-La lista `initialQuoterConfigs` de `prisma/seed/data/09-quoter-config.ts` define solo `tarjetas-vouchers`, `flyers-desplegables` y `tags-etiquetas`. Sin embargo, `adhesivos-stickers` y `carpetas-folders` también están en estado `ACTIVE` y usan el motor `PROVIDER_FINISHED_COST`.
+En la revisión inicial, `initialQuoterConfigs` no declaraba margen para `adhesivos-stickers` ni `carpetas-folders`, aunque ambos usaban `PROVIDER_FINISHED_COST`. La decisión posterior no fue aplicar el mismo recargo a ambos: se contrastó la matriz con referencias de mercado y se documentó el resultado en la sección 9. Carpetas recibió una política comercial explícita; Stickers quedó en consulta porque el costo disponible no permite asegurar un precio rentable y 5–10% por encima de referencias públicas.
 
-Ese motor requiere `quoterConfig.profitMargin`; si falta, devuelve `CONSULT_REQUIRED: Falta el margen maestro del producto.`. Con el seed revisado, stickers y carpetas no tienen margen maestro declarado en esa lista. Confirmar en una base sembrada que no exista configuración residual, pero el repositorio no declara la configuración necesaria.
+La sección 9 reemplaza la recomendación inicial de agregar un margen maestro genérico a ambos productos.
 
-Acción: definir explícitamente el modelo de margen para ambos productos y agregar una prueba que confirme que la cotización responde con precio para una combinación válida. Hasta entonces, el estado comercial `ACTIVE` puede crear una experiencia de configuración que termina en consulta en vez de precio automático.
+## 9. Primera ejecución de la auditoría — 17/10/2026
 
+Se implementaron controles comerciales explícitos en la rama `feat/precios-publicables-impresos-20261017`. Esta fase distingue entre tener una cifra de costo y tener una combinación vendible a un precio competitivo.
+
+### Decisiones aplicadas
+
+- **Carpetas & Folders:** precio automático para la matriz digital de 300 g con una política explícita de recargo del 72,5% sobre costo neto e IVA del 21%. Para la selección predeterminada de 50 unidades, 4/0, sin laminar, el costo de proveedor es $82.350 y el precio final calculado es **$171.890**. Como referencias, Oink publica $160.000 finales por 50 carpetas A4 en ilustración 300 g antes de laminado/interior, y una publicación de MercadoLibre lista 50 carpetas A4 con solapa y diseño por $176.284,50; las especificaciones no son idénticas y deben mantenerse como referencias, no como cotizaciones equivalentes. Fuentes: https://www.holaoink.com.ar/oink_lista_precios_2026_iva.html y https://www.mercadolibre.com.ar/50-carpetas-institucionales-a4-300g--solapa--diseno-gratis/up/MLAU190281256
+- **Adhesivos & Stickers:** se mantiene en consulta comercial. La matriz tiene, por ejemplo, $19.231 de costo para 500 stickers circulares de 5 cm. Una lista pública de Bayres al Sur muestra precios finales de $15.000/$22.200 para 500 stickers circulares de 5 cm en dos columnas de terminación; la especificación exacta y vigencia no son suficientes para una equivalencia cerrada, pero el costo actual no deja margen operativo seguro para fijar un precio 5–10% por encima del mercado. No se agrega un recargo arbitrario: se necesita una tarifa de proveedor mejor o una confirmación de que las celdas y unidades de costo son correctas. Fuente: https://sistema.bayresalsur.com.ar/lista/Lista_de_precios.pdf
+- **Tarjetas & Vouchers:** la matriz aplica recargo del 90% más IVA del 21% solo a las cantidades 100 y 200. Las cantidades 300, 500 y 1.000 pasan a consulta hasta confirmar el costo, porque varias celdas se acercan o superan precios minoristas comparables antes de margen. No se corrige el costo fuente sin una cotización de proveedor verificable.
+- **Flyers & Desplegables:** pasa a consulta comercial. La matriz offset indica vigencia junio-julio de 2026, ya vencida, y el cálculo anterior podía omitir el costo de impresión al usar el motor físico. No se ofrece precio automático hasta actualizar la fuente y resolver la integración del costo terminado.
+- **Tags & Etiquetas:** pasa a consulta comercial mientras no haya costo de impresión terminado conectado. El motor anterior podía sumar papel y terminaciones sin incluir impresión.
+- **Perforación de Tags:** se corrigen los tiers para representar costos fijos por lote documentados: $3.225 para 500 unidades y $4.500 para 1.000. No se extrapolan cantidades que no tengan precio de proveedor cargado.
+
+### Resultado comercial
+
+Por ahora, quedan habilitados para precio automático la matriz digital de Carpetas y las tiradas de 100/200 tarjetas; las tiradas mayores de tarjetas y los configuradores de Stickers, Flyers y Tags devuelven consulta en vez de una cifra potencialmente engañosa. Esto es intencional: **no se considera activado comercialmente un producto si el precio automático puede ocultar un costo vencido, incompleto o fuera de mercado**.
+
+### Verificación técnica pendiente antes de desplegar
+
+- Ejecutar `npm test` y comprobar el precio calculado de cada caso de prueba en el entorno del repositorio.
+- Confirmar con contador la aplicación de IVA del 21% a las ventas de estos productos.
+- Obtener cotización vigente para tarjetas en tiradas de 300 o más, stickers circulares, flyers offset/digital y tags impresos.
+- Revisar que la interfaz y el carrito presenten como precio final el total con IVA para las configuraciones que sí están habilitadas.
