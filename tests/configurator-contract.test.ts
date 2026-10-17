@@ -177,7 +177,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 8213);
-  assert.equal(quote.totalPrice, 14490);
+  assert.equal(quote.totalPrice, 9990);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
@@ -189,7 +189,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(twoHundred.totalCost, 12361);
-  assert.equal(twoHundred.totalPrice, 21690);
+  assert.equal(twoHundred.totalPrice, 14990);
   assert.equal(twoHundred.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((twoHundred.netPrice ?? 0) - (twoHundred.totalPrice / 1.21)) < 0.01);
 
@@ -199,7 +199,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(threeHundred.totalCost, 17029);
-  assert.equal(threeHundred.totalPrice, 29990);
+  assert.equal(threeHundred.totalPrice, 20690);
   assert.equal(threeHundred.taxTreatment, 'INCLUDED');
 
   const fiveHundredSimplex = quoteConfiguratorSelection(
@@ -208,7 +208,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(fiveHundredSimplex.totalCost, 19219);
-  assert.equal(fiveHundredSimplex.totalPrice, 33790);
+  assert.equal(fiveHundredSimplex.totalPrice, 23290);
   assert.equal(fiveHundredSimplex.taxTreatment, 'INCLUDED');
 
   const fiveHundredDuplex = quoteConfiguratorSelection(
@@ -217,7 +217,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 0 } as any,
   );
   assert.equal(fiveHundredDuplex.totalCost, 39930);
-  assert.equal(fiveHundredDuplex.totalPrice, 70090);
+  assert.equal(fiveHundredDuplex.totalPrice, 48390);
   assert.equal(fiveHundredDuplex.taxTreatment, 'INCLUDED');
 
   const threeHundredGram = quoteConfiguratorSelection(
@@ -275,19 +275,19 @@ test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA expl�
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 19231);
-  assert.equal(quote.totalPrice, 53590);
+  assert.equal(quote.totalPrice, 48890);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
-  assert.ok((quote.breakdown?.marginPercent ?? 0) > 56.4 && (quote.breakdown?.marginPercent ?? 0) < 56.8);
+  assert.ok((quote.breakdown?.marginPercent ?? 0) > 52.3 && (quote.breakdown?.marginPercent ?? 0) < 52.5);
 
   const thousand = quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any);
   assert.equal(thousand.totalCost, 36859);
-  assert.equal(thousand.totalPrice, 102590);
+  assert.equal(thousand.totalPrice, 93690);
   const fourByFour = quoteConfiguratorSelection(config as any, { ...selection, format: '4x4' }, { profitMargin: 0 } as any);
   assert.equal(fourByFour.totalCost, 13249);
-  assert.equal(fourByFour.totalPrice, 36890);
+  assert.equal(fourByFour.totalPrice, 33690);
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
     /Cantidad '999' no permitida/,
@@ -309,7 +309,7 @@ test('stickers y carpetas aplican política comercial versionada y tratamiento f
 
   const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
   const stickerQuote = quoteConfiguratorSelection(adhesivosStickersConfigurator as any, stickersSelection);
-  assert.equal(stickerQuote.totalPrice, 53590);
+  assert.equal(stickerQuote.totalPrice, 48890);
   assert.equal(stickerQuote.taxTreatment, 'INCLUDED');
 
   const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
@@ -319,10 +319,10 @@ test('stickers y carpetas aplican política comercial versionada y tratamiento f
     folderConfig as any,
   );
   assert.equal(foldersQuote.totalCost, 82350);
-  assert.equal(foldersQuote.totalPrice, 139590);
+  assert.equal(foldersQuote.totalPrice, 129590);
   assert.equal(foldersQuote.taxTreatment, 'INCLUDED');
   assert.equal(foldersQuote.vatRatePercent, 21);
-  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 28.6) < 0.2);
+  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 23.1) < 0.2);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
