@@ -57,7 +57,21 @@ export async function POST(request: Request) {
     }
 
     const pricing = configurator?.pricing as any
-    const requestedProcess = String(selection.productionProcess || 'digital')
+    const requestedProcess = (() => {
+      if (selection.productionProcess) return String(selection.productionProcess)
+      // Flyers resolve offset from the exact finished-product matrix cell; keep
+      // the public-price policy aligned with the same resolver used for costing.
+      if (
+        pricing?.providerFinishedCostMatrix?.resolver?.type === 'FLYERS_DIGITAL' &&
+        selection.foldingType === 'plano' &&
+        selection.printing === '4_4'
+      ) {
+        const offsetCost =
+          pricing.providerFinishedCostMatrix.matrix?.[selection.material || '']?.[selection.format || '']?.[String(selection.quantity)]
+        if (offsetCost !== undefined) return 'offset'
+      }
+      return 'digital'
+    })()
     const commercialPolicy =
       pricing?.commercialPricingPoliciesByProcessAndMaterial?.[requestedProcess]?.[selection.material || ''] ||
       pricing?.commercialPricingPoliciesByProcess?.[requestedProcess] ||
