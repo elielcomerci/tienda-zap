@@ -343,7 +343,7 @@ export const productsData: ProductSeedData[] = [
     order: 26,
     slug: 'diseno-pack-graficos-redes',
     catalogType: 'COSA', name: 'Diseño Pack de piezas para redes (10)', modality: 'DIRECTO', engine: null,
-    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 270000, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 220000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
     order: 27,
