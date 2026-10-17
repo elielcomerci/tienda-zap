@@ -8,6 +8,7 @@ import {
   tagsEtiquetasConfigurator,
   tarjetasVouchersConfigurator,
 } from '../prisma/seed/data/06-configurators/impresos-packaging';
+import { expositoresStandsConfigurator } from '../prisma/seed/data/06-configurators/presencia-fisica';
 import {
   quoteConfiguratorSelection,
   validateCommercialSelection,
@@ -337,6 +338,34 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
       { profitMargin: 0 } as any,
     ),
     /La impresión offset de tarjetas comienza en 1.000 unidades/,
+  );
+});
+
+
+test('portabanners y roll up usan costo terminado explícito y precio competitivo', () => {
+  const config = expositoresStandsConfigurator;
+  const selection = defaultSelection(config as any);
+  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
+  assert.equal(quote.totalCost, 44800);
+  assert.equal(quote.totalPrice, 73190);
+  assert.equal(quote.taxTreatment, 'INCLUDED');
+
+  const rollup = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, model: 'rollup_85x200', printing: 'latex', quantity: 1 },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(rollup.totalCost, 56400);
+  assert.equal(rollup.totalPrice, 92190);
+  assert.equal(rollup.taxTreatment, 'INCLUDED');
+
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, printing: 'ecosolvent' },
+      { profitMargin: 0 } as any,
+    ),
+    /No hay costo terminado cargado para este modelo y tecnología de impresión/,
   );
 });
 
