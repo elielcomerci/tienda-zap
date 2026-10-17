@@ -14,13 +14,13 @@ export default async function AdminProductsPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-950">Product Bases</h1>
-          <p className="mt-1 text-sm text-gray-600">Cada producto tiene un motor comercial y una o más categorías visibles en la tienda. Los configuradores se versionan por separado.</p>
+          <p className="mt-1 text-sm text-gray-600">Cada producto tiene una familia comercial y una o más categorías visibles en la tienda. Los configuradores se versionan por separado.</p>
         </div>
         <Link href="/admin/productos/nuevo" className="btn-primary">Nuevo Product Base</Link>
       </header>
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-4 py-3">Producto</th><th className="px-4 py-3">Motor</th><th className="px-4 py-3">Categorías comerciales</th><th className="px-4 py-3">Modalidad</th><th className="px-4 py-3">Configurador</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3" /></tr></thead>
+          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-4 py-3">Producto</th><th className="px-4 py-3">Familia comercial</th><th className="px-4 py-3">Categorías comerciales</th><th className="px-4 py-3">Modalidad</th><th className="px-4 py-3">Configurador</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3" /></tr></thead>
           <tbody className="divide-y divide-gray-100">
             {products.map((product) => (
               <tr key={product.id}>
