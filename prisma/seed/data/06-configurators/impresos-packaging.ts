@@ -417,8 +417,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         HENDIDO_CENTRAL: 'fin_hendido_central',
       },
     },
-  },
-};
+  };
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
@@ -1002,9 +1001,8 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         '10x10': { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
       },
       quoteRecto: {"sin_laca_uv":{"100":{"6x4":3801,"7x5":4868,"9x5":5935,"10x7":8069},"200":{"6x4":6085,"7x5":8219,"9x5":10353,"10x7":14622},"300":{"6x4":8469,"7x5":11670,"9x5":14872,"10x7":21274},"500":{"6x4":13237,"7x5":18573,"9x5":26042,"10x7":37779},"1000":{"6x4":24808,"7x5":34648,"9x5":44726,"10x7":62154}},"laca_uv_brillo":{"100":{"6x4":4212,"7x5":5416,"9x5":6620,"10x7":9028},"200":{"6x4":6770,"7x5":9178,"9x5":11585,"10x7":16401},"300":{"6x4":9428,"7x5":13039,"9x5":16651,"10x7":23875},"500":{"6x4":14743,"7x5":20763,"9x5":29191,"10x7":42708},"1000":{"6x4":27683,"7x5":39029,"9x5":50476,"10x7":70779}}},
-      deliverySurcharges: { normalDays: '5/7 días', express: 15, superExpress48h: 30, ya24h: 50 },
+      // Los plazos y urgencias se confirman caso por caso; no se publican ni recargan automáticamente.
     },
-  },
   },
 };
 
