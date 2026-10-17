@@ -193,9 +193,27 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   assert.equal(twoHundred.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((twoHundred.netPrice ?? 0) - (twoHundred.totalPrice / 1.21)) < 0.01);
 
+  const threeHundred = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 300 },
+    { profitMargin: 150 } as any,
+  );
+  assert.equal(threeHundred.totalCost, 17029);
+  assert.equal(threeHundred.totalPrice, 39190);
+  assert.equal(threeHundred.taxTreatment, 'INCLUDED');
+
+  const fiveHundredSimplex = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 500, printing: '4_0', lamination: 'sin_laminar' },
+    { profitMargin: 150 } as any,
+  );
+  assert.equal(fiveHundredSimplex.totalCost, 19219);
+  assert.equal(fiveHundredSimplex.totalPrice, 44190);
+  assert.equal(fiveHundredSimplex.taxTreatment, 'INCLUDED');
+
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 500 }, { profitMargin: 150 } as any),
-    /CONSULT_REQUIRED: Esta cantidad necesita validación comercial/,
+    /CONSULT_REQUIRED: Esta combinación necesita validación comercial/,
   );
 });
 
@@ -250,8 +268,10 @@ test('stickers usa política versionada y carpetas conserva su configuración he
     folderConfig as any,
   );
   assert.equal(foldersQuote.totalCost, 82350);
-  assert.equal(foldersQuote.totalPrice, 171890);
-  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 42.0) < 0.1);
+  assert.equal(foldersQuote.totalPrice, 139590);
+  assert.equal(foldersQuote.taxTreatment, 'INCLUDED');
+  assert.equal(foldersQuote.vatRatePercent, 21);
+  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 28.6) < 0.2);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
@@ -278,15 +298,35 @@ test('la perforación solo usa los importes de proveedor documentados por lote',
   ]);
 });
 
-test('flyers y tags no publican precios cuando el costo de impresión no está validado', () => {
-  for (const config of [flyersDesplegablesConfigurator, tagsEtiquetasConfigurator]) {
-    const selection = defaultSelection(config);
-    assert.throws(
-      () => quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config)),
-      /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
-      config.productSlug,
-    );
-  }
+test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e IVA explícito', () => {
+  const config = flyersDesplegablesConfigurator;
+  const selection = {
+    ...defaultSelection(config),
+    foldingType: 'plano',
+    format: '10x15',
+    material: 'ilustracion_115g',
+    printing: '4_4',
+    quantity: 1000,
+  };
+  const quote = quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config));
+  assert.equal(quote.totalCost, 25000);
+  assert.equal(quote.totalPrice, 52990);
+  assert.equal(quote.taxTreatment, 'INCLUDED');
+  assert.equal(quote.vatRatePercent, 21);
+  assert.ok(Math.abs((quote.netPrice ?? 0) - quote.totalPrice / 1.21) < 0.01);
+
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, defaultSelection(config), makeQuoterConfig(config)),
+    /CONSULT_REQUIRED: Esta combinación necesita validación comercial/,
+  );
+});
+
+test('tags sigue en consulta porque el motor no incorpora impresión de proveedor', () => {
+  const selection = defaultSelection(tagsEtiquetasConfigurator);
+  assert.throws(
+    () => quoteConfiguratorSelection(tagsEtiquetasConfigurator as any, selection, makeQuoterConfig(tagsEtiquetasConfigurator)),
+    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+  );
 });
 
 
