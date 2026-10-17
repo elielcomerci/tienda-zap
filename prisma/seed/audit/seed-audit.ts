@@ -266,9 +266,9 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
       errors.push(`[MATRIX PRODUCT NOT IN CATALOG] La matriz referencia '${slug}', que no existe en el catálogo de productos.`);
     }
   }
-  for (const slug of catalogProductSlugs) {
-    if (!matrixProductSlugs.has(slug) && !productsData.some((product) => product.slug === slug && product.order >= 1 && product.order <= 33)) {
-      errors.push(`[CATALOG PRODUCT ORDER] Producto sin orden editorial válido: '${slug}'.`);
+  for (const product of productsData) {
+    if (!Number.isInteger(product.order) || product.order < 1 || product.order > productsData.length) {
+      errors.push(`[CATALOG PRODUCT ORDER] Producto con orden editorial inválido: '${product.slug}' (${product.order}).`);
     }
   }
 
