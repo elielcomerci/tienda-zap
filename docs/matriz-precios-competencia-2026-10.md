@@ -165,7 +165,7 @@ Los precios publicados de MEGA no indican claramente en la página el tratamient
 | Offset 350 g, 1.000 u., 4/4 OPP mate | $53.000 | $80.190 | Aproximadamente 14,5% sobre la referencia de Gráfica Lugano ($70.000) con laminado brillo; mantener como terminación premium y reconfirmar costo fuente. |
 | Offset 350 g, 1.000 u., 4/4 OPP mate + UV sectorizada | $39.000 | $47.190 | Muy por debajo de las referencias públicas sectorizadas. Confirmar que el costo de la matriz corresponda realmente a esa terminación antes de tomar pedidos. |
 
-**Activación en código:** se agregó selector digital/offset, mínimo de 1.000 unidades para offset, 300 g/350 g en digital y las cantidades offset cargadas. Las políticas de tarjetas se bajaron a recargo 0% para evitar añadir margen a costos que ya están fuera de mercado. Esto no resuelve la brecha de costo: digital 500 4/4 y algunas celdas offset requieren verificación de lista antes de aceptar una orden.
+**Activación en código:** se agregó selector digital/offset, mínimo de 1.000 unidades para offset, 300 g/350 g en digital y las cantidades offset cargadas. Las políticas de tarjetas usan recargo del 25% sobre costo neto + IVA; los ejemplos comerciales revisados son $12.490 para 100 u. 4/4 digital, $60.490 para 500 u. 4/4 digital y $68.790 para 1.000 u. 4/4 offset. Las celdas de 3.000/5.000 offset cuyo costo cae por debajo del de 1.000 se bloquean y requieren reconfirmación de proveedor.
 
 **Alerta de datos:** las celdas clásicas de offset para 3.000/5.000 u. contienen importes no monotónicos frente a 1.000 u. ($35.000 y $34.000 frente a $45.477). Se habilitaron porque existen como valores explícitos en la matriz, pero quedaron señaladas para la pasada manual. No asumir que son vigentes o correctas sin reconfirmar con el proveedor.
 
@@ -184,7 +184,7 @@ Referencias actuales:
 | 1.000 u., ilustración 115 g | $25.000 | $46.890 |
 | 1.000 u., ilustración 150 g | $32.000 | $50.390 |
 
-Se eliminó la allowlist que bloqueaba el resto de las celdas y se conectó la clave de materiales de la matriz digital (obra 80 g e ilustración 115 g comparten la tarifa de origen). Para offset se aplican recargos moderados por gramaje; para digital, recargo 0% cuando la matriz digital cargada supera el mercado. La matriz offset dice vigencia junio-julio 2026: las combinaciones se habilitan en código, pero la fuente está vencida y debe reconfirmarse antes de producción.
+Se eliminó la allowlist que bloqueaba el resto de las celdas y se conectó la clave de materiales de la matriz digital (obra 80 g e ilustración 115 g comparten la tarifa de origen). Para offset se aplica recargo del 25% sobre costo neto + IVA; la matriz declara vigencia junio-julio 2026, por lo que el costo debe reconfirmarse antes de producción.
 
 ### Stickers circulares: ajustar a referencias por tamaño y cantidad
 
