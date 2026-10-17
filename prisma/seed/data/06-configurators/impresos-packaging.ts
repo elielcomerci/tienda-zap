@@ -137,7 +137,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       digital: {
         ilustracion_350g: {
           '4_0': { '100': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 } },
-          '4_4': { '100': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 } },
+          '4_4': { '100': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 } },
         },
       },
     },
@@ -145,7 +145,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       digital: {
         ilustracion_350g: {
           '4_0': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
-          '4_4': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
+          '4_4': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 },
         },
       },
       offset: {
