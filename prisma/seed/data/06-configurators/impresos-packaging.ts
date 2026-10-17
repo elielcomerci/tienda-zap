@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '1.9',
+  schemaVersion: '2.0',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -14,8 +14,10 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: '9x5',
         options: [
+          { id: '9x3', label: '9×3 cm' },
           { id: '9x5', label: '9×5 cm (Estándar)' },
           { id: '9x10_plegada', label: '9×10 cm plegada (con hendido)' },
+          { id: '10x15', label: '10×15 cm' },
         ],
       },
       productionProcess: {
@@ -34,6 +36,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'ilustracion_350g',
         options: [
+          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g · consultar' },
           { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
         ],
       },
@@ -129,6 +132,14 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       // Políticas base por proceso; la matriz inferior ajusta por impresión.
       digital: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
       offset: { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
+    },
+    commercialPricingPoliciesByProcessAndMaterialAndPrintingAndQuantity: {
+      digital: {
+        ilustracion_350g: {
+          '4_0': { '100': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 } },
+          '4_4': { '100': { version: 1, mode: 'MARKUP', percentage: 65, vatRatePercent: 21 } },
+        },
+      },
     },
     commercialPricingPoliciesByProcessAndMaterialAndPrinting: {
       digital: {
