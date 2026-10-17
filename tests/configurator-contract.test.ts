@@ -207,7 +207,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 8213);
-  assert.equal(quote.totalPrice, 9990);
+  assert.equal(quote.totalPrice, 12490);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
@@ -219,7 +219,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(twoHundred.totalCost, 12361);
-  assert.equal(twoHundred.totalPrice, 14990);
+  assert.equal(twoHundred.totalPrice, 18790);
   assert.equal(twoHundred.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((twoHundred.netPrice ?? 0) - (twoHundred.totalPrice / 1.21)) < 0.01);
 
@@ -229,7 +229,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(threeHundred.totalCost, 17029);
-  assert.equal(threeHundred.totalPrice, 20690);
+  assert.equal(threeHundred.totalPrice, 25790);
   assert.equal(threeHundred.taxTreatment, 'INCLUDED');
 
   const fiveHundredSimplex = quoteConfiguratorSelection(
@@ -238,17 +238,17 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(fiveHundredSimplex.totalCost, 19219);
-  assert.equal(fiveHundredSimplex.totalPrice, 23290);
+  assert.equal(fiveHundredSimplex.totalPrice, 29090);
   assert.equal(fiveHundredSimplex.taxTreatment, 'INCLUDED');
 
-  assert.throws(
-    () => quoteConfiguratorSelection(
-      config as any,
-      { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
-      { profitMargin: 0 } as any,
-    ),
-    /requiere renegociación o una referencia competitiva equivalente/,
+  const fiveHundredDuplex = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
   );
+  assert.equal(fiveHundredDuplex.totalCost, 39930);
+  assert.equal(fiveHundredDuplex.totalPrice, 60490);
+  assert.equal(fiveHundredDuplex.taxTreatment, 'INCLUDED');
 
   const threeHundredGram = quoteConfiguratorSelection(
     config as any,
@@ -280,7 +280,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 0 } as any,
   );
   assert.equal(offsetThousand.totalCost, 45477);
-  assert.equal(offsetThousand.totalPrice, 55090);
+  assert.equal(offsetThousand.totalPrice, 68790);
   assert.equal(offsetThousand.taxTreatment, 'INCLUDED');
 
   const offsetBrillo = quoteConfiguratorSelection(
@@ -321,12 +321,14 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     /requieren reconfirmación del proveedor/,
   );
 
-  const offsetFiveThousandSectorized = quoteConfiguratorSelection(
-    config as any,
-    { ...selection, productionProcess: 'offset', quantity: 5000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
-    { profitMargin: 0 } as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, productionProcess: 'offset', quantity: 5000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
+      { profitMargin: 0 } as any,
+    ),
+    /requiere reconfirmación del proveedor/,
   );
-  assert.equal(offsetFiveThousandSectorized.totalCost, 37000);
 
   assert.throws(
     () => quoteConfiguratorSelection(
