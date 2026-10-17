@@ -191,6 +191,11 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           express_24h: { surchargePercent: 50 },
         },
       },
+      // IMPORTANTE: los importes de 3.000 y 5.000 unidades de la fuente del proveedor
+      // estaban expresados por millar; aquí se normalizan a costo total de la tirada.
+      // Los importes de 500 y 1.000 unidades ya son costos totales.
+      // Para tarjetas 9×5 OPP brillo, 4/0, 4/1 y 4/4, se carga la promoción vigente:
+      // 1.000 unidades = precio por millar; 3.000/5.000 = precio por millar × cantidad.
       tiers: {
         clasicas: {
           delivery: '7_8_DIAS',
@@ -201,7 +206,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
                   '9x5': { '500': 21000, '1000': 35211 },
                 },
                 '4_4': {
-                  '9x5': { '500': 27264, '1000': 45477, '3000': 35000, '5000': 34000 },
+                  '9x5': { '500': 27264, '1000': 45477, '3000': 105000, '5000': 170000 },
                 },
               },
             },
@@ -209,7 +214,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
               printing: {
                 '4_0': {
                   '9x3': { '500': 11090, '1000': 15842 },
-                  '9x5': { '500': 24173, '1000': 40316 },
+                  '9x5': { '500': 24173, '1000': 24000, '3000': 70500, '5000': 115000 },
                   '9x10': { '500': 32621, '1000': 46602 },
                   '5x18': { '500': 32621, '1000': 46602 },
                   '9x15': { '500': 49536, '1000': 70766 },
@@ -220,7 +225,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
                 },
                 '4_1': {
                   '9x3': { '500': 14485, '1000': 18403 },
-                  '9x5': { '500': 22150, '1000': 29342 },
+                  '9x5': { '500': 22150, '1000': 29000, '3000': 84000, '5000': 135000 },
                   '9x10': { '500': 41280, '1000': 54656 },
                   '5x18': { '500': 41280, '1000': 54656 },
                   '9x15': { '500': 62826, '1000': 81697 },
@@ -231,7 +236,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
                 },
                 '4_4': {
                   '9x3': { '500': 12882, '1000': 20693 },
-                  '9x5': { '500': 31541, '1000': 51989 },
+                  '9x5': { '500': 31541, '1000': 30000, '3000': 87000, '5000': 140000 },
                   '9x10': { '500': 38259, '1000': 58971 },
                   '5x18': { '500': 38259, '1000': 58971 },
                   '9x15': { '500': 57188, '1000': 89752 },
@@ -251,7 +256,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
               printing: {
                 '4_4': {
                   '9x3': { '500': 21176, '1000': 30014 },
-                  '9x5': { '500': 31000, '1000': 53000, '3000': 38000, '5000': 37000 },
+                  '9x5': { '500': 31000, '1000': 53000, '3000': 114000, '5000': 185000 },
                   '9x10': { '500': 47900, '1000': 69033 },
                   '5x18': { '500': 47900, '1000': 69033 },
                   '9x15': { '500': 70353, '1000': 101350 },
@@ -276,10 +281,10 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
                 '4_4': {
                   sectorizedSides: {
                     frente: {
-                      '9x5': { '500': 31000, '1000': 39000, '3000': 38000, '5000': 37000 },
+                      '9x5': { '500': 31000, '1000': 39000, '3000': 114000, '5000': 185000 },
                     },
                     frente_y_dorso: {
-                      '9x5': { '500': 35000, '1000': 44000, '3000': 43000, '5000': 42000 },
+                      '9x5': { '500': 35000, '1000': 44000, '3000': 129000, '5000': 210000 },
                     },
                   },
                 },
@@ -288,6 +293,26 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           },
         },
       },
+    },
+    commercialPriceOverrides: {
+      resolver: 'PROVIDER_FINISHED_COST',
+      publicPriceIncludesTax: true,
+      vatRate: 0.21,
+      minimumGrossMarginPercent: 35,
+      // Solo millar 9×5, ilustración 350 g, OPP brillo: costos de proveedor
+      // normalizados en tiers.clasicas.finishes.opp_brillo; precio público final con IVA.
+      // Cualquier otra cantidad, terminación o especificación queda en consulta.
+      requireApprovedMatch: true,
+      products: [
+        {
+          match: { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo' },
+          prices: { '1000': 52500 },
+        },
+        {
+          match: { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo' },
+          prices: { '1000': 67000 },
+        },
+      ],
     },
     adapter: {
       formatMapping: {
@@ -428,6 +453,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       delivery: 'NORMAL_5_7_DIAS',
       includes: ['IMPRESION_OFFSET_4_4', 'TERMINACION', 'EMPAQUETADO', 'CAJA'],
       validity: 'JUNIO_JULIO_2026',
+      ownerConfirmedCurrentAt: '2026-10-16',
+      validityNote: 'La referencia conserva su fecha original; ZAP confirmó que los costos cargados siguen vigentes el 16/10/2026.',
       matrix: {
         obra_80g: {
           '10x15': { '1000': 23000, '2500': 46000, '5000': 50000 },
@@ -585,6 +612,29 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         note: 'La fuente digital agrupa Papel 80g y 115g Ilustración en una misma tarifa; no se inventa una diferencia de costo entre ambos.',
       }
       },
+    },
+    commercialPriceOverrides: {
+      resolver: 'PROVIDER_FINISHED_COST',
+      publicPriceIncludesTax: true,
+      vatRate: 0.21,
+      minimumGrossMarginPercent: 35,
+      // Precios públicos aprobados para estas dos configuraciones offset.
+      // El costo se toma de providerFinishedCostMatrix.matrix (sin IVA).
+      // El resto de las configuraciones conserva el flujo habitual hasta su validación.
+      products: [
+        {
+          match: {
+            foldingType: 'plano',
+            format: '10x15',
+            material: 'ilustracion_150g',
+            printing: '4_4',
+          },
+          prices: {
+            '1000': 72000,
+            '5000': 166500,
+          },
+        },
+      ],
     },
     adapter: {
       matrixFormatMapping: {

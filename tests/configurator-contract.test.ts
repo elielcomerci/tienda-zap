@@ -171,13 +171,48 @@ test('los procesos obligatorios están resueltos a terminaciones reales del adap
   assert.deepEqual(result.requiredProcesses, ['PERFORACION']);
 });
 
-test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', () => {
-  const config = tarjetasVouchersConfigurator;
-  const selection = defaultSelection(config);
-  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
-  assert.equal(quote.totalCost, 8213);
-  assert.ok(quote.totalPrice > 0);
-  assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
+test('tarjetas offset 9x5 OPP brillo devuelve los precios aprobados para 1000 unidades', () => {
+  const config = tarjetasVouchersConfigurator as any;
+  const common = {
+    format: '9x5',
+    material: 'ilustracion_350g',
+    lamination: 'brillo',
+    quantity: 1000,
+  };
+
+  const frontOnly = quoteConfiguratorSelection(config, { ...common, printing: '4_0' }, { profitMargin: 0 } as any);
+  assert.equal(frontOnly.totalCost, 24000);
+  assert.equal(frontOnly.totalPrice, 52500);
+  assert.ok(Math.abs(frontOnly.breakdown!.marginPercent - 44.7) < 0.1);
+
+  const frontAndBack = quoteConfiguratorSelection(config, { ...common, printing: '4_4' }, { profitMargin: 0 } as any);
+  assert.equal(frontAndBack.totalCost, 30000);
+  assert.equal(frontAndBack.totalPrice, 67000);
+  assert.ok(Math.abs(frontAndBack.breakdown!.marginPercent - 45.8) < 0.1);
+});
+
+test('tarjetas bloquea combinaciones sin precio comercial aprobado', () => {
+  const config = tarjetasVouchersConfigurator as any;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      format: '9x5',
+      material: 'ilustracion_350g',
+      printing: '4_4',
+      lamination: 'sin_laminar',
+      quantity: 1000,
+    }, { profitMargin: 0 } as any),
+    /no tiene un precio comercial aprobado/
+  );
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      format: '9x5',
+      material: 'ilustracion_350g',
+      printing: '4_4',
+      lamination: 'brillo',
+      quantity: 500,
+    }, { profitMargin: 0 } as any),
+    /requiere cotización para la cantidad seleccionada/
+  );
 });
 
 test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta cantidades inventadas', () => {
@@ -202,6 +237,98 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1001 }, { profitMargin: 0 } as any),
     /Cantidad máxima permitida/
+  );
+});
+
+test('flyers offset 10x15 150g 4/4 usa costo terminado y precio comercial aprobado para 1000 y 5000', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  const base = {
+    foldingType: 'plano',
+    format: '10x15',
+    material: 'ilustracion_150g',
+    printing: '4_4',
+  };
+
+  const quote1000 = quoteConfiguratorSelection(config, { ...base, quantity: 1000 }, makeQuoterConfig(config));
+  assert.equal(quote1000.totalCost, 32000);
+  assert.equal(quote1000.totalPrice, 72000);
+  assert.ok(Math.abs((quote1000.breakdown!.marginPercent) - 46.2) < 0.1);
+
+  const quote5000 = quoteConfiguratorSelection(config, { ...base, quantity: 5000 }, makeQuoterConfig(config));
+  assert.equal(quote5000.totalCost, 85000);
+  assert.equal(quote5000.totalPrice, 166500);
+  assert.ok(Math.abs((quote5000.breakdown!.marginPercent) - 38.2) < 0.1);
+});
+
+test('flyers offset no usa el motor genérico para cantidades sin precio comercial aprobado', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      foldingType: 'plano',
+      format: '10x15',
+      material: 'ilustracion_150g',
+      printing: '4_4',
+      quantity: 2500,
+    }, makeQuoterConfig(config)),
+    /requiere cotización para la cantidad seleccionada/
+  );
+});
+
+test('payload real de la tienda para flyers aplica precio comercial aprobado en 1000 y 5000', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  const quoter = makeQuoterConfig(config);
+  for (const [quantity, expectedPrice, expectedCost] of [
+    [1000, 72000, 32000],
+    [5000, 166500, 85000],
+  ]) {
+    const quote = quoteConfiguratorSelection(config, {
+      rawMaterialId: 'raw_mat_ilustracion_150g_4_4',
+      sizeLabel: '10x15 cm',
+      quantity,
+      finishingIds: [],
+    }, quoter);
+    assert.equal(quote.totalPrice, expectedPrice);
+    assert.equal(quote.totalCost, expectedCost);
+  }
+});
+
+test('payload genérico de flyers no cubierto conserva el cotizador existente', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  const quote = quoteConfiguratorSelection(config, {
+    rawMaterialId: 'raw_mat_ilustracion_150g_4_0',
+    sizeLabel: '10x15 cm',
+    quantity: 1000,
+    finishingIds: [],
+  }, makeQuoterConfig(config));
+  assert.ok(quote.totalPrice > 0);
+  assert.notEqual(quote.totalPrice, 72000);
+});
+
+test('payload de flyers 10x15 150g 4/4 sin precio aprobado exige consulta', () => {
+  const config = flyersDesplegablesConfigurator as any;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      rawMaterialId: 'raw_mat_ilustracion_150g_4_4',
+      sizeLabel: '10x15 cm',
+      quantity: 2500,
+      finishingIds: [],
+    }, makeQuoterConfig(config)),
+    /requiere cotización para la cantidad seleccionada/
+  );
+});
+
+test('flyers offset bloquea el precio configurado si cae debajo del margen bruto mínimo', () => {
+  const config = structuredClone(flyersDesplegablesConfigurator) as any;
+  config.pricing.commercialPriceOverrides.minimumGrossMarginPercent = 50;
+  assert.throws(
+    () => quoteConfiguratorSelection(config, {
+      foldingType: 'plano',
+      format: '10x15',
+      material: 'ilustracion_150g',
+      printing: '4_4',
+      quantity: 1000,
+    }, makeQuoterConfig(config)),
+    /no alcanza el margen bruto mínimo/
   );
 });
 

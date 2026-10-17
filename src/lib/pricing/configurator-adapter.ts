@@ -651,6 +651,124 @@ export function quoteTieredUnitTableSelection(
 }
 
 /**
+ * Overrides comerciales explícitos respaldados por un costo de producto terminado.
+ * El precio override es precio público final; el costo proveedor se conserva sin IVA.
+ * Si la selección no coincide exactamente, el flujo normal del configurador continúa.
+ */
+function quoteCommercialPriceOverride(
+  configurator: ConfiguratorVersionPayload,
+  selection: CommercialSelection
+): ProductQuoteResult | null {
+  const pricing: any = configurator.pricing;
+  const overrideConfig = pricing?.commercialPriceOverrides;
+  if (overrideConfig?.resolver !== 'PROVIDER_FINISHED_COST') return null;
+
+  const productOverride = (overrideConfig.products || []).find((entry: any) =>
+    Object.entries(entry.match || {}).every(([key, value]) => selection[key] === value)
+  );
+  if (!productOverride) {
+    if (overrideConfig.requireApprovedMatch === true) {
+      throw new Error('CONSULT_REQUIRED: Esta combinación no tiene un precio comercial aprobado; requiere cotización.');
+    }
+    return null;
+  }
+
+  const quantity = Number(selection.quantity || 0);
+  if (!quantity) throw new Error('Debe especificar la cantidad.');
+  const configuredPrice = productOverride.prices?.[String(quantity)];
+  if (configuredPrice === undefined || !Number.isFinite(Number(configuredPrice)) || Number(configuredPrice) <= 0) {
+    throw new Error('CONSULT_REQUIRED: Esta combinación de flyer requiere cotización para la cantidad seleccionada.');
+  }
+  const totalPrice = Number(configuredPrice);
+
+  const costMatrix = pricing?.providerFinishedCostMatrix?.matrix;
+  let costValue = costMatrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)];
+
+  // Tarjetas: solo el millar 9×5 OPP brillo tiene precio comercial aprobado.
+  // El costo terminado está en la matriz de tarifas clásicas, no en la matriz digital.
+  if (
+    costValue === undefined &&
+    configurator.schema?.productSlug === 'tarjetas-vouchers' &&
+    selection.lamination === 'brillo'
+  ) {
+    costValue = pricing?.providerFinishedCostMatrix?.tiers?.clasicas?.finishes?.opp_brillo
+      ?.printing?.[selection.printing || '']?.[selection.format || '']?.[String(quantity)];
+  }
+
+  if (costValue === undefined || !Number.isFinite(Number(costValue)) || Number(costValue) <= 0) {
+    throw new Error('CONSULT_REQUIRED: Falta el costo de producto terminado para el precio comercial configurado.');
+  }
+
+  const totalCost = Number(costValue);
+  const vatRate = Number(overrideConfig.vatRate ?? 0.21);
+  const publicPriceIncludesTax = overrideConfig.publicPriceIncludesTax !== false;
+  const netSales = publicPriceIncludesTax ? totalPrice / (1 + vatRate) : totalPrice;
+  const grossMarginPercent = ((netSales - totalCost) / netSales) * 100;
+  const minimumGrossMarginPercent = Number(overrideConfig.minimumGrossMarginPercent ?? 35);
+
+  if (grossMarginPercent + 1e-9 < minimumGrossMarginPercent) {
+    throw new Error('CONSULT_REQUIRED: El precio comercial configurado no alcanza el margen bruto mínimo.');
+  }
+
+  const fields = configurator.schema?.fields || {};
+  const selectedOptions = Object.entries(selection)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => {
+      const fieldDef = fields[key];
+      const option = fieldDef?.options?.find((entry: any) => (entry.id ?? entry.value) === value);
+      return {
+        name: fieldDef?.label || key,
+        value: option?.label || String(value),
+      };
+    });
+
+  return {
+    unitPrice: totalPrice / quantity,
+    totalPrice,
+    totalCost,
+    selectedOptions,
+    breakdown: {
+      materialCost: 0,
+      printingCost: 0,
+      processCost: 0,
+      finishingCost: 0,
+      wasteCost: 0,
+      productionCost: totalCost,
+      marginAmount: netSales - totalCost,
+      marginPercent: grossMarginPercent,
+    },
+  };
+}
+
+/**
+ * Adapta el payload del cotizador genérico de la tienda a la selección semántica
+ * de flyers solo para la combinación offset plana explícitamente reconocida.
+ * Las demás combinaciones conservan el payload y su motor habitual.
+ */
+function normalizeLegacyFlyerSelection(
+  configurator: ConfiguratorVersionPayload,
+  selection: CommercialSelection
+): CommercialSelection {
+  if (configurator.schema?.productSlug !== 'flyers-desplegables') return selection;
+
+  const hasNoFinishings = !Array.isArray(selection.finishingIds) || selection.finishingIds.length === 0;
+  const isExactOffsetCombination =
+    selection.rawMaterialId === 'raw_mat_ilustracion_150g_4_4' &&
+    selection.sizeLabel === '10x15 cm' &&
+    hasNoFinishings;
+
+  if (!isExactOffsetCombination) return selection;
+
+  return {
+    foldingType: 'plano',
+    format: '10x15',
+    material: 'ilustracion_150g',
+    printing: '4_4',
+    quantity: Number(selection.quantity),
+  };
+}
+
+/**
  * Pipeline completo de cotización a través de ConfiguratorVersion:
  * 1. Validación UI y compatibilidad.
  * 2. Si el motor es STICKER_TABLE: cotiza directo contra matriz comercial versionada.
@@ -663,10 +781,30 @@ export function quoteConfiguratorSelection(
   selection: CommercialSelection,
   quoterConfig?: ProductQuoterConfigInput
 ): ProductQuoteResult {
-  // 1. Validación UI y reglas de compatibilidad
-  const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, selection);
+  // 1. La pantalla actual de flyers usa el payload del cotizador genérico.
+  // Solo la combinación exacta con precio aprobado pasa al motor comercial nuevo.
+  const isLegacyFlyerPayload =
+    configurator.schema?.productSlug === 'flyers-desplegables' &&
+    typeof selection.rawMaterialId === 'string' &&
+    !selection.format &&
+    !selection.material;
+  const normalizedSelection = normalizeLegacyFlyerSelection(configurator, selection);
 
-  // 2. Despacho por motor comercial
+  if (isLegacyFlyerPayload && normalizedSelection === selection) {
+    if (!quoterConfig) {
+      throw new Error('Error de configuración: Se requiere ProductQuoterConfig para la selección genérica de flyers.');
+    }
+    return calculateProductQuote(quoterConfig, selection as ProductQuoteSelection);
+  }
+
+  // 2. Validación UI y reglas de compatibilidad
+  const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, normalizedSelection);
+
+  // 3. Precio comercial explícito para configuraciones respaldadas por costo terminado.
+  const commercialOverride = quoteCommercialPriceOverride(configurator, sanitizedSelection);
+  if (commercialOverride) return commercialOverride;
+
+  // 4. Despacho por motor comercial
   if (configurator.pricing?.engine === 'STICKER_TABLE') {
     return quoteStickerTableSelection(configurator, sanitizedSelection);
   }
@@ -685,10 +823,10 @@ export function quoteConfiguratorSelection(
     );
   }
 
-  // 3. Resolución contra registros reales mediante pricing.adapter
+  // 5. Resolución contra registros reales mediante pricing.adapter
   const quoteSelection = resolveQuoterSelection(configurator, sanitizedSelection, requiredProcesses, quoterConfig);
 
-  // 4. Ejecución en el motor existente de nesting y cálculo
+  // 6. Ejecución en el motor existente de nesting y cálculo
   return calculateProductQuote(quoterConfig, quoteSelection);
 }
 
