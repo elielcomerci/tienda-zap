@@ -9,7 +9,7 @@
 
 ## DEUDA #001 — Perforación / Agujereado
 
-**Estado:** Abierta  
+**Estado:** Parcialmente resuelta (17/10/2026). Tags 9×5 cm de 500 u. ya incorpora papel, impresión digital por pliego, perforación y laminado opcional en `TAGS_DIGITAL`; 1.000 u. sigue en consulta. La operación genérica compartida conserva únicamente los tiers explícitos de 500 y 1.000 u.  
 **Descubierta en:** Tags & Etiquetas E2E (2026-10-04)  
 **Impacta:** `fin_perforacion` (ID estable)  
 **Productos activos afectados:** `tags-etiquetas`  
