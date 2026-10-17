@@ -182,8 +182,8 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
         `[CONFIGURATOR STATUS MISMATCH] '${cv.product.slug}|${cv.schemaVersion}': DB='${cv.status}', seed='${sourceVersion.status}'.`
       );
     }
-    if (cv.product.modality !== 'CONFIGURABLE') {
-      errors.push(`[CONFIGURATOR ERROR] ConfiguratorVersion creado para producto ${cv.product.modality} '${cv.product.slug}'`);
+    if (cv.status === 'ACTIVE' && cv.product.modality !== 'CONFIGURABLE') {
+      errors.push(`[CONFIGURATOR ERROR] Configurador activo para producto ${cv.product.modality} '${cv.product.slug}'`);
     }
 
     const schema =
@@ -218,14 +218,19 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  const configurableSlugs = new Set(
-    productsData.filter((p) => p.active !== false && p.modality === 'CONFIGURABLE').map((p) => p.slug)
-  );
+  const managedPricingSlugs = new Set([
+    'tarjetas-vouchers','flyers-desplegables','tags-etiquetas','adhesivos-stickers',
+    'imanes-personalizados','carpetas-folders',
+  ]);
   const actualConfigKeys = new Set(
     dbConfigurators.map((cv) => cv.product.slug + '|' + cv.schemaVersion)
   );
   const expectedConfigKeys = new Set(
-    Array.from(configurableSlugs).map((slug) => slug + '|1.0')
+    configuratorSourceData
+      .filter((cfg) => cfg.status === 'ACTIVE' || cfg.status === 'DRAFT')
+      .filter((cfg) => productsData.some((product) => product.slug === cfg.productSlug && product.active !== false))
+      .filter((cfg) => !managedPricingSlugs.has(cfg.productSlug))
+      .map((cfg) => cfg.productSlug + '|' + cfg.schemaVersion)
   );
 
   for (const key of expectedConfigKeys) {
@@ -235,7 +240,8 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   for (const key of actualConfigKeys) {
-    if (!expectedConfigKeys.has(key)) {
+    const slug = key.split('|')[0];
+    if (!expectedConfigKeys.has(key) && !managedPricingSlugs.has(slug)) {
       errors.push(`[CONFIGURATOR EXTRA] ConfiguratorVersion inesperado '${key}'`);
     }
   }

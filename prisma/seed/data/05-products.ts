@@ -104,7 +104,7 @@ export const productsData: ProductSeedData[] = [
     slug: 'carpetas-folders',
     catalogType: 'COSA',
     name: 'Carpetas & Folders',
-    modality: 'CONSULTAR',
+    modality: 'CONFIGURABLE',
     engine: 'IMPRESOS_PACKAGING',
     whatIs: 'Carpetas institucionales y comerciales con solapa y tarjetero.',
     purpose: 'Presentación formal de presupuestos, contratos y propuestas.',

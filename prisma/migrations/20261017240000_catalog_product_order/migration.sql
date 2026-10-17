@@ -31,9 +31,13 @@ UPDATE "Product" SET "sortOrder" = CASE "slug"
   WHEN 'asistentes-bots' THEN 31 WHEN 'operaciones-consultoria' THEN 32
   WHEN 'sistema-captacion-eventos' THEN 33 ELSE 999 END;
 
--- Do not advertise an interactive configurator that is not fully persisted in PostgreSQL.
+-- Expositores is consultation-led until its full configurator matrix is persisted.
 UPDATE "Product" SET "modality"='CONSULTAR', "sortOrder"=25, "updatedAt"=NOW()
 WHERE "slug"='expositores-stands';
+
+-- Carpetas has an active, versioned price matrix and can be configured directly.
+UPDATE "Product" SET "modality"='CONFIGURABLE', "updatedAt"=NOW()
+WHERE "slug"='carpetas-folders';
 UPDATE "ConfiguratorVersion" SET status='ARCHIVED', "updatedAt"=NOW()
 WHERE "productId"=(SELECT id FROM "Product" WHERE slug='expositores-stands')
   AND "schemaVersion"='1.0' AND status='DRAFT';
