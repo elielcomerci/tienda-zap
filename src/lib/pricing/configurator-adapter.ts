@@ -643,6 +643,8 @@ function quoteProviderFinishedCostSelection(
   let taxTreatment: 'INCLUDED' | undefined;
   const pricingProcess = resolvedPricingProcess || selection.productionProcess || '';
   const commercialPolicy =
+    pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrinting?.[pricingProcess]?.[selection.material || '']?.[selection.printing || ''] ||
+    pricing?.commercialPricingPoliciesByProcessAndMaterialAndQuantity?.[pricingProcess]?.[selection.material || '']?.[String(quantity)] ||
     pricing?.commercialPricingPoliciesByProcessAndMaterial?.[pricingProcess]?.[selection.material || ''] ||
     pricing?.commercialPricingPoliciesByProcess?.[pricingProcess] ||
     pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
