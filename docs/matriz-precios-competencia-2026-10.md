@@ -1,7 +1,7 @@
 # Matriz de costos, precios tentativos y competencia — Tienda ZAP
 
 **Corte de análisis:** 17/10/2026  
-**Estado:** precios comerciales ajustados en `main`: se amplía stickers a todas las combinaciones con costo explícito y flyers a 1.000/2.500/5.000 u. en 10×15 cm 4/4. La publicación efectiva depende de sincronizar la versión activa en producción y verificar cotización, carrito e impuestos.
+**Estado:** revisión competitiva y ampliación de matrices en `main` el 17/10/2026. Tarjetas: digital y offset separados; flyers: se retira allowlist restrictiva y se resuelven costos digitales/offset; stickers y carpetas ajustan recargo. Los cambios están en código/seed, no desplegados ni verificados en producción.
 **Moneda:** ARS. Salvo indicación, los costos del seed se consideran netos de IVA según sus comentarios; confirmar tratamiento fiscal y vigencia antes de aprobar.
 
 ## 1. Criterio de cálculo
@@ -140,3 +140,77 @@ No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese mu
 - **BLOQUEADO:** motor o costo base incorrecto/incompleto; no generar precio automático.
 - **SIN COSTO:** requiere cotización o costeo interno.
 - **LISTO PARA APROBAR:** costo vigente, especificación comparable, precio y margen recalculados, canal e impuestos probados. Actualmente ningún producto queda en este último estado con la evidencia disponible.
+
+
+## 8. Revisión competitiva y cambios de activación — 17/10/2026
+
+Esta sección reemplaza los precios tentativos anteriores cuando entren en conflicto con los nuevos valores calculados. Precios de venta finales indicados con el supuesto de IVA del 21% configurado en el cotizador; confirmar tratamiento fiscal antes de publicar.
+
+### Tarjetas: separar método y costo
+
+Fuentes públicas consultadas el 17/10/2026:
+
+- [MEGA IMPRENTA — offset y digital](https://megaimprenta.com.ar/tarjetas-offset-digital/): digital 300 g, 500 u. $17.500 simple faz / $23.500 doble faz; offset con UV, 1.000 u. $29.200 simple faz / $35.400 doble faz; 3.000 u. $78.000 / $96.000; 5.000 u. $127.000 / $149.500.
+- [Imprimime — lista de precios](https://imprimime.com.ar/lista-de-precios): precios vigentes al 10/10/2026, sin IVA. Tarjetas offset brillantes 300 g 4/4 + UV frontal: 500 u. $34.290 + IVA; 1.000 u. $45.720 + IVA. Mate: 500 u. $39.320 + IVA; 1.000 u. $52.425 + IVA.
+- [Imprenta Lugones — tarjetas](https://www.imprentalugones.com.ar/productos/tarjetas/): precios finales publicados: offset 350 g 4/4 brillante 1.000 u. $62.000; OPP mate $70.500; sectorizadas $73.300.
+- [Dokan — tarjetas sectorizadas](https://dokan.com.ar/product/tarjetas-con-laca-sectorizada/): 350 g, 4/4, OPP mate + UV sectorizada; 1.000 u. $125.000 frente / $135.000 frente y dorso.
+
+Los precios publicados de MEGA no indican claramente en la página el tratamiento del IVA; no se deben comparar como si fueran netos o finales sin confirmarlo. Las referencias tampoco tienen idéntico gramaje, entrega y terminación.
+
+| Variante ZAP | Costo de proveedor cargado (neto) | Precio ZAP final calculado | Lectura competitiva |
+|---|---:|---:|---|
+| Digital 350 g, 100 u., 4/4 sin laminar | $8.213 | $9.990 | Cerca de precios económicos de tirada corta, aunque algo por encima de la referencia digital de MEGA. |
+| Digital 350 g, 500 u., 4/4 sin laminar | $39.930 | $48.390 | Muy por encima de MEGA ($23.500 para 300 g, doble faz). El costo cargado impide igualar mercado sin vender por debajo del costo. Revisión manual prioritaria. |
+| Offset 350 g, 1.000 u., 4/4 sin laminar | $45.477 | $55.090 | Por encima de la promo de MEGA; debajo de referencias de offset 350 g con terminaciones de Lugones. Costo a reconfirmar. |
+| Offset 350 g, 1.000 u., 4/4 OPP mate | $53.000 | $64.190 | Próximo a Imprimime con IVA incluido (~$63.434); diferencia aproximada del 1,2%. Margen configurado: cero antes de gastos propios. |
+| Offset 350 g, 1.000 u., 4/4 OPP mate + UV sectorizada | $39.000 | $47.190 | Muy por debajo de las referencias públicas sectorizadas. Confirmar que el costo de la matriz corresponda realmente a esa terminación antes de tomar pedidos. |
+
+**Activación en código:** se agregó selector digital/offset, mínimo de 1.000 unidades para offset, 300 g/350 g en digital y las cantidades offset cargadas. Las políticas de tarjetas se bajaron a recargo 0% para evitar añadir margen a costos que ya están fuera de mercado. Esto no resuelve la brecha de costo: digital 500 4/4 y algunas celdas offset requieren verificación de lista antes de aceptar una orden.
+
+**Alerta de datos:** las celdas clásicas de offset para 3.000/5.000 u. contienen importes no monotónicos frente a 1.000 u. ($35.000 y $34.000 frente a $45.477). Se habilitaron porque existen como valores explícitos en la matriz, pero quedaron señaladas para la pasada manual. No asumir que son vigentes o correctas sin reconfirmar con el proveedor.
+
+### Flyers: activar todas las celdas digitales y offset que resuelven costo
+
+Referencias actuales:
+
+- [Gráfica Expresiones](https://graficaexpresiones.com.ar/productos/1000-folletos-volantes-10x15-full-color-doble-faz-115-g): 1.000 u., 10×15 cm, 115 g, 4/4, $49.900 publicado.
+- [Mercado Libre — 1.000 flyers](https://www.mercadolibre.com.ar/1000-folletos-volantes--10x15-cm-full-color-doble-faz-115g/up/MLAU3349007588): $40.000 publicado; confirmar vendedor, impuestos y vigencia.
+- [Imprimime — folletos](https://imprimime.com.ar/folletos/folletos-flyers): offset 4/4, 1.000 u. $64.050 + IVA; 2.500 u. $93.750 + IVA; 5.000 u. $134.250 + IVA.
+- [Gráfica Lugano](https://www.graficalugano.com.ar/): 10×15 cm, 1.000 u. $65.000 y 5.000 u. $150.000; no incluye diseño.
+
+| Variante offset 10×15 cm, 4/4 | Costo cargado neto | Precio ZAP final |
+|---|---:|---:|
+| 1.000 u., obra 80 g | $23.000 | $43.190 |
+| 1.000 u., ilustración 115 g | $25.000 | $46.890 |
+| 1.000 u., ilustración 150 g | $32.000 | $50.390 |
+
+Se eliminó la allowlist que bloqueaba el resto de las celdas y se conectó la clave de materiales de la matriz digital (obra 80 g e ilustración 115 g comparten la tarifa de origen). Para offset se aplican recargos moderados por gramaje; para digital, recargo 0% cuando la matriz digital cargada supera el mercado. La matriz offset dice vigencia junio-julio 2026: las combinaciones se habilitan en código, pero la fuente está vencida y debe reconfirmarse antes de producción.
+
+### Stickers circulares: ajustar a referencias por tamaño y cantidad
+
+Referencias actuales:
+
+- [Gráfica B377](https://graficab377.com/servicios/stickers): circular de 5 cm, 500 u. $60.000; 1.000 u. $110.000. Circular de 8 cm, 500 u. $150.000.
+- [Dokan](https://dokan.com.ar/product/stickers-redondos/): circular de 5 cm, 500 u. $55.000; 1.000 u. $95.000.
+
+Se redujo el recargo del 130% al 110% sobre el costo neto. Ejemplo 5×5 cm: 500 u. pasa de $53.590 a **$48.890 final**; 1.000 u. queda en **$93.690 final**. Ambos valores quedan ligeramente por debajo de las referencias públicas para 5 cm. Se mantienen activas las combinaciones de la matriz circular con laca UV incluida; no se extrapola a vinilo ni a cortes no circulares.
+
+### Carpetas: acercar el precio al mercado sin cambiar el costo cargado
+
+Referencias actuales:
+
+- [Imprimime — lista vigente al 10/10/2026](https://imprimime.com.ar/lista-de-precios): 50 carpetas 300 g, una solapa, full color: $107.793 + IVA (~$130.430 final con IVA 21%).
+- [Imprenta Lugones](https://www.imprentalugones.com.ar/productos/carpetas/): papel 300 g, 50 carpetas $97.400 final.
+- [Mercado Libre — 50 carpetas](https://www.mercadolibre.com.ar/50-carpetas-institucionales-a4-300g--solapa--diseno-gratis/up/MLAU190281256): 50 carpetas de 350 g con solapa y diseño, $176.284,50 final.
+
+Se redujo el recargo del 40% al 30%. Para 50 unidades, 4/0 sin laminar, el precio calculado pasa de $139.590 a **$129.590 final**, prácticamente alineado con la referencia final de Imprimime. El comparador de Lugones es más económico, pero la descripción no permite asegurar equivalencia exacta de diseño y terminación.
+
+### Qué queda sin activación automática
+
+- **Tags & Etiquetas:** sigue en consulta. Tiene papel y terminaciones cargados, pero el costo terminado aún no incorpora de forma verificable la impresión del producto completo; la perforación también tiene una deuda de costeo documentada. No presentar un costo parcial como si fuera costo de producto terminado.
+- **Formatos, papeles, cantidades o terminaciones fuera de las celdas existentes:** permanecen en consulta. Una opción visible no implica que toda combinación tenga costo.
+- **Fajas, bolsas, menús e individuales:** sus configuradores siguen en DRAFT sin matriz de costo terminado activa.
+
+### Estado de entrega
+
+Los cambios están guardados en `main` con nuevas versiones de configuración para tarjetas, flyers, stickers y carpetas. **No se ejecutaron las pruebas en un entorno local ni se sincronizó producción**; antes de publicar hay que correr la suite, revisar la selección de variantes en la interfaz y comprobar cotización, carrito e impuestos de extremo a extremo.
