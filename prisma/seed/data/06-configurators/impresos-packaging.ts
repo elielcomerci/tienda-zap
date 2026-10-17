@@ -207,20 +207,20 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           ilustracion_350g: 10,
         },
         cards: {
-          ilustracion_350g: {
-            note: 'Tarjetas — Papel Ilustración 350g. Recargo del 10% ya incluido en los importes de la lista.',
+          ilustracion_300g: {
+            note: 'Tarjetas personales — Papel Ilustración 300g. Costos sin IVA.',
             quantities: {
               '100': {
-                '4_0': { sin_laminar: 5210, laca_uv: 7009, laminado_brillo: 7009, laminado_mate: 7009 },
-                '4_4': { sin_laminar: 8213, laca_uv: 9034, laminado_brillo: 9034, laminado_mate: 9856 },
+                '4_0': { sin_laminar: 5210, laca_uv: 6873, laminado_brillo: 7009, laminado_mate: 7009 },
+                '4_4': { sin_laminar: 8213, laca_uv: 8898, laminado_brillo: 9034, laminado_mate: 9856 },
               },
               '200': {
                 '4_0': { sin_laminar: 8143, laca_uv: 10216, laminado_brillo: 10247, laminado_mate: 10435 },
-                '4_4': { sin_laminar: 12361, laca_uv: 13487, laminado_brillo: 13487, laminado_mate: 14989 },
+                '4_4': { sin_laminar: 12361, laca_uv: 13456, laminado_brillo: 13487, laminado_mate: 14989 },
               },
               '300': {
                 '4_0': { sin_laminar: 11596, laca_uv: 13735, laminado_brillo: 13968, laminado_mate: 14123 },
-                '4_4': { sin_laminar: 17029, laca_uv: 18423, laminado_brillo: 18423, laminado_mate: 20126 },
+                '4_4': { sin_laminar: 17029, laca_uv: 18190, laminado_brillo: 18423, laminado_mate: 20126 },
               },
               '500': {
                 '4_0': { sin_laminar: 19219, laca_uv: 31530, laminado_brillo: 32037, laminado_mate: 32797 },
@@ -232,31 +232,32 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
               },
             },
           },
-          ilustracion_300g: {
-            note: 'Tarjetas personales / postales — Papel Ilustración 300g. Cuando la fuente no indica medida, se interpreta como formato estándar 9x5 cm.',
+          ilustracion_350g: {
+            note: 'Tarjetas personales — Papel Ilustración 350g. Recargo del 10% sobre 300g.',
             quantities: {
               '100': {
-                '4_0': { sin_laminar: 13031, laca_uv: 14374, laminado_brillo: 14703, laminado_mate: 14703 },
-                '4_4': { sin_laminar: 17591, laca_uv: 17591, laminado_brillo: 17591, laminado_mate: 21534 },
+                '4_0': { sin_laminar: 5732, laca_uv: 7561, laminado_brillo: 7710, laminado_mate: 7710 },
+                '4_4': { sin_laminar: 9035, laca_uv: 9788, laminado_brillo: 9938, laminado_mate: 10842 },
               },
               '200': {
-                '4_0': { sin_laminar: 23485, laca_uv: 26634, laminado_brillo: 26724, laminado_mate: 27263 },
-                '4_4': { sin_laminar: 32800, laca_uv: 32800, laminado_brillo: 32800, laminado_mate: 40357 },
+                '4_0': { sin_laminar: 8958, laca_uv: 11238, laminado_brillo: 11272, laminado_mate: 11479 },
+                '4_4': { sin_laminar: 13598, laca_uv: 14802, laminado_brillo: 14836, laminado_mate: 16488 },
               },
               '300': {
-                '4_0': { sin_laminar: 32792, laca_uv: 36383, laminado_brillo: 37101, laminado_mate: 37580 },
-                '4_4': { sin_laminar: 45797, laca_uv: 45797, laminado_brillo: 45797, laminado_mate: 55372 },
+                '4_0': { sin_laminar: 12756, laca_uv: 15109, laminado_brillo: 15365, laminado_mate: 15536 },
+                '4_4': { sin_laminar: 18732, laca_uv: 20009, laminado_brillo: 20266, laminado_mate: 22139 },
               },
               '500': {
-                '4_0': { sin_laminar: 50663, laca_uv: 55920, laminado_brillo: 56971, laminado_mate: 58548 },
-                '4_4': { sin_laminar: 70823, laca_uv: 70823, laminado_brillo: 70823, laminado_mate: 86594 },
+                '4_0': { sin_laminar: 21141, laca_uv: 34683, laminado_brillo: 35241, laminado_mate: 36077 },
+                '4_4': { sin_laminar: 43923, laca_uv: 46712, laminado_brillo: 47270, laminado_mate: 52288 },
               },
               '1000': {
-                '4_0': { sin_laminar: 94443, laca_uv: 103643, laminado_brillo: 105483, laminado_mate: 110214 },
-                '4_4': { sin_laminar: 132243, laca_uv: 132243, laminado_brillo: 132243, laminado_mate: 163784 },
+                '4_0': { sin_laminar: 40123, laca_uv: 43285, laminado_brillo: 43918, laminado_mate: 45545 },
+                '4_4': { sin_laminar: 54850, laca_uv: 58012, laminado_brillo: 58645, laminado_mate: 65691 },
               },
             },
           },
+          }
         },
         finishing: {
           agujereado_3mm: {
