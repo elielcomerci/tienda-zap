@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '1.5',
+  schemaVersion: '1.6',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -372,7 +372,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -698,8 +698,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
 
 export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tags-etiquetas',
-  // Nueva versión para que el loader administrado publique el costo digital completo.
-  schemaVersion: '1.1',
+  // Nueva versión para publicar los precios revisados sin pisar versiones administradas.
+  schemaVersion: '1.2',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -815,7 +815,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
 // No inventa materias primas ni terminaciones en el motor físico; resuelve directamente precios de lista oficial.
 export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'adhesivos-stickers',
-  schemaVersion: '1.1',
+  schemaVersion: '1.2',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -962,7 +962,7 @@ const carpetasDigital300gTiers = [
 
 export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'carpetas-folders',
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
