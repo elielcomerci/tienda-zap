@@ -4,6 +4,7 @@ import { calculateProductQuote } from '@/lib/pricing/product-quoter'
 import { quoteConfiguratorSelection } from '@/lib/pricing/configurator-adapter'
 import { getOrCreateCachedProductQuote, buildProductQuotePricingFingerprintInput } from '@/lib/pricing/quote-cache'
 import { impresosPackagingConfigurators } from '../../../../prisma/seed/data/06-configurators/impresos-packaging'
+import { presenciaFisicaConfigurators } from '../../../../prisma/seed/data/06-configurators/presencia-fisica'
 
 const quoterConfigInclude = {
   rawMaterial: { include: { tiers: { orderBy: { minQty: 'asc' as const } } } },
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     const config = product?.quoterConfig
     const databaseConfigurator = product?.configuratorVersions?.[0]
     const seedConfigurator = product
-      ? impresosPackagingConfigurators
+      ? [...impresosPackagingConfigurators, ...presenciaFisicaConfigurators]
           .filter((item) => item.productSlug === product.slug && item.status === 'ACTIVE')
           .sort((a, b) => b.schemaVersion.localeCompare(a.schemaVersion, undefined, { numeric: true }))[0]
       : undefined
