@@ -99,7 +99,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 
 No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese multiplicador puede servir para una primera estimación histórica, pero en el costo completo hay que incorporar costos omitidos y después resolver el canal. El precio se redondea comercialmente solo después de validar margen y competencia.
 
-## 5. Referencias de competencia revisadas el 13/10/2026
+## 5. Referencias de competencia revisadas el 17/10/2026
 
 1. **Tecnoplotter — tarjetas 500 u. 350 g, 4/4, laminado brillo frontal, diseño incluido: $61.250 publicado.**  
    https://tecnoplotter.com.ar/productos/500-tarjetas-doble-faz-brillo-350g/
