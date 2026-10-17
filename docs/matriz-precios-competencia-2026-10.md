@@ -1,7 +1,7 @@
 # Matriz de costos, precios tentativos y competencia — Tienda ZAP
 
 **Corte de análisis:** 17/10/2026  
-**Estado:** revisión competitiva y ampliación de matrices en `main` el 17/10/2026. Tarjetas: digital y offset separados; flyers: se retira allowlist restrictiva y se resuelven costos digitales/offset; stickers y carpetas ajustan recargo. Los cambios están en código/seed, no desplegados ni verificados en producción.
+**Estado:** revisión competitiva y ampliación de matrices en `main` el 17/10/2026. Tarjetas y flyers: recargos recalibrados; offset con costos no monotónicos bloqueado. Expositores & Stands: activado un alcance acotado para portabanner doble tensor y roll up con costo terminado. Los cambios están en código/seed, no desplegados ni verificados en producción.
 **Moneda:** ARS. Salvo indicación, los costos del seed se consideran netos de IVA según sus comentarios; confirmar tratamiento fiscal y vigencia antes de aprobar.
 
 ## 1. Criterio de cálculo
@@ -46,7 +46,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 - **Flyers:** se prioriza el costo offset de producto terminado cuando la selección coincide exactamente con la matriz del proveedor. Se habilitan 1.000, 2.500 y 5.000 u. planas, 10×15 cm, 4/4 en los tres papeles con costo cargado. A 1.000 u.: obra 80 g $43.190; ilustración 115 g $46.890; ilustración 150 g $50.390, todos finales con IVA incluido. La matriz digital queda habilitada en todas las celdas que resuelve, con recargo del 25% sobre costo neto + IVA. La referencia de 100 u. 10×15 cm 4/4 queda a $22.690 final.
 - **Tarjetas:** se separan digital y offset. Ambas usan recargo del 25% sobre costo neto, más IVA 21%. Ejemplos finales: digital 100 u. 4/4 sin laminar $12.490; digital 500 u. 4/4 sin laminar $60.490; offset 1.000 u. 4/4 sin laminar $68.790; offset 1.000 u. OPP mate $80.190. El precio de 500 u. 4/4 queda alineado con la referencia minorista de Tecnoplotter ($61.250) para 500 u. 350 g 4/4 laminadas al frente; el precio offset de 1.000 u. queda cerca de Gráfica Lugano ($70.000) para 1.000 u. 350 g 4/4 con laminado brillo.
 - **Stickers:** se habilitan todas las medidas y cantidades que figuran con costo explícito en la matriz, únicamente para forma circular, papel autoadhesivo 90 g y laca UV brillo incluida. El recargo queda en 110% sobre costo neto + IVA 21%. El caso comparable 500 u. de 5×5 cm queda a $48.890 final, aproximadamente 15% por debajo de la mediana de las referencias públicas actuales ($55.000 y $60.000).
-- **Carpetas:** con recargo del 30%, la referencia de 50 u. queda en $129.590 final, aproximadamente alineada con Imprimime (~$130.430 final). El margen bruto estimado es ≈23,1%; no incluye gastos operativos no modelados.
+- **Carpetas:** con recargo del 30%
 - Los márgenes se estiman contra el costo seed y no incluyen cargos no modelados. No publicar hasta completar la validación.
 
 ## 3. Inventario de los 31 productos del seed
@@ -55,7 +55,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 
 | # | Producto | Estado de costo / precio para esta auditoría | Competencia / próximo paso |
 |---:|---|---|---|
-| 1 | Tarjetas & Vouchers | Matriz disponible; costo 500 u. 350 g 4/4 sin laminar $39.930 neto, vigencia por confirmar. Se habilitan celdas digitales y offset con costo explícito; confirmar los costos clásicos offset de 3.000/5.000 por valores no monotónicos. | Contrastar misma cantidad, gramaje, impresión y terminación. |
+| 1 | Tarjetas & Vouchers | Matriz disponible; costo 500 u. 350 g 4/4 sin laminar $39.930 neto, vigencia por confirmar. Recargo 25% + IVA. Se bloquean las celdas offset de 3.000/5.000 u. con costo inferior al de 1.000 hasta reconfirmar la lista. | Contrastar misma cantidad, gramaje, impresión y terminación. |
 | 2 | Flyers & Desplegables | Offset para 10×15 cm, plano, 4/4 en 1.000/2.500/5.000 u.; digital en celdas con costo explícito, con recargo del 25%. A 1.000 u. los precios finales son $43.190 (obra 80 g), $46.890 (ilustración 115 g) y $50.390 (ilustración 150 g); 100 u. digital 4/4 115 g: $22.690. | Formatos/plegados sin celda de costo permanecen en consulta. |
 | 3 | Tags & Etiquetas | Cotizador con impresión no incorporada y perforación subcosteada. | Rehacer costo completo y comparar con cantidad explícita. |
 | 4 | Adhesivos & Stickers | Habilitadas todas las combinaciones circulares con costo cargado; 5×5 cm, 500 u. $48.890 final con IVA incluido. Costo seed $19.231 neto. | Comparar equivalentes; no extrapolar. |
@@ -203,7 +203,7 @@ Referencias actuales:
 - [Imprenta Lugones](https://www.imprentalugones.com.ar/productos/carpetas/): papel 300 g, 50 carpetas $97.400 final.
 - [Mercado Libre — 50 carpetas](https://www.mercadolibre.com.ar/50-carpetas-institucionales-a4-300g--solapa--diseno-gratis/up/MLAU190281256): 50 carpetas de 350 g con solapa y diseño, $176.284,50 final.
 
-Se redujo el recargo del 40% al 30%. Para 50 unidades, 4/0 sin laminar, el precio calculado pasa de $139.590 a **$129.590 final**, prácticamente alineado con la referencia final de Imprimime. El comparador de Lugones es más económico, pero la descripción no permite asegurar equivalencia exacta de diseño y terminación.
+Se redujo el recargo del 40% al 30%. Para 50 unidades, 4/0 sin laminar, el precio calculado pasa de $139.590 a **$129.590 final**, alrededor de 10,6% por debajo de Imprenta Más ($144.901). La comparación sigue sujeta a confirmar que estructura, solapa y terminación coincidan.
 
 ### Qué queda sin activación automática
 
