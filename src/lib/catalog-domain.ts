@@ -22,6 +22,15 @@ export const catalogFamilies = [
   { slug: 'campanas', label: engineLabels.CAMPANAS, engine: 'CAMPANAS' },
 ] as const
 
+/** Agrupaciones comerciales dentro de una familia; no reemplazan el motor de cotización. */
+export const catalogGroups = [
+  {
+    slug: 'talonarios-formularios',
+    label: 'Talonarios & Formularios',
+    productSlugs: ['bonos-para-lavaderos', 'talonarios-recibos', 'talonarios-remitos'],
+  },
+] as const
+
 export function engineForCatalogFamily(slug?: string) {
   return catalogFamilies.find((family) => family.slug === slug)?.engine
 }
