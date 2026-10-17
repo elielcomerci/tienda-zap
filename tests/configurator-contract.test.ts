@@ -239,10 +239,9 @@ test('stickers usa política versionada y carpetas conserva su configuración he
   assert.equal(folderConfig.maxProfitMargin, 180);
 
   const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
-  assert.throws(
-    () => quoteConfiguratorSelection(adhesivosStickersConfigurator as any, stickersSelection),
-    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
-  );
+  const stickerQuote = quoteConfiguratorSelection(adhesivosStickersConfigurator as any, stickersSelection);
+  assert.equal(stickerQuote.totalPrice, 51290);
+  assert.equal(stickerQuote.taxTreatment, 'INCLUDED');
 
   const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
   const foldersQuote = quoteConfiguratorSelection(
