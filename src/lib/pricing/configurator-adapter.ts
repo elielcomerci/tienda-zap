@@ -344,10 +344,6 @@ function quoteProviderFinishedCostSelection(
   const matrix: any = pricing?.providerFinishedCostMatrix;
   const resolver = matrix?.resolver;
 
-  if (pricing?.commercialAvailability === 'CONSULT_REQUIRED') {
-    throw new Error('CONSULT_REQUIRED: El costo de proveedor necesita validación comercial antes de publicar un precio automático.');
-  }
-
   if (!matrix || !resolver) {
     throw new Error('CONSULT_REQUIRED: Esta configuración no tiene un costo real de proveedor conectado.');
   }
@@ -358,6 +354,10 @@ function quoteProviderFinishedCostSelection(
   const consultRequiredQuantities = pricing?.consultRequiredQuantities;
   if (Array.isArray(consultRequiredQuantities) && consultRequiredQuantities.includes(quantity)) {
     throw new Error('CONSULT_REQUIRED: Esta cantidad necesita validación comercial antes de ofrecer un precio automático.');
+  }
+
+  if (pricing?.commercialAvailability === 'CONSULT_REQUIRED') {
+    throw new Error('CONSULT_REQUIRED: El costo de proveedor necesita validación comercial antes de publicar un precio automático.');
   }
 
   let totalCost = 0;
