@@ -1,7 +1,7 @@
 # Matriz de costos, precios tentativos y competencia — Tienda ZAP
 
 **Corte de análisis:** 17/10/2026  
-**Estado:** revisión competitiva y ampliación de matrices en `main` el 17/10/2026. Tarjetas y flyers: recargos recalibrados; offset con costos no monotónicos bloqueado. Expositores & Stands: activado un alcance acotado para portabanner doble tensor y roll up con costo terminado. Los cambios están en código/seed, no desplegados ni verificados en producción.
+**Estado:** revisión competitiva y ampliación de matrices en `main` el 17/10/2026. Tarjetas y flyers: recargos recalibrados; offset con costos no monotónicos bloqueado. Tags: activado el alcance de 500 u. 9×5 cm con papel, impresión digital y perforación costados. Expositores & Stands: activado un alcance acotado para portabanner doble tensor y roll up con costo terminado. Los cambios están en código/seed, no desplegados ni verificados en producción.
 **Moneda:** ARS. Salvo indicación, los costos del seed se consideran netos de IVA según sus comentarios; confirmar tratamiento fiscal y vigencia antes de aprobar.
 
 ## 1. Criterio de cálculo
@@ -62,7 +62,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 | 5 | Fajas & Envoltorios | No hay matriz de producto terminado activa identificada. | Solicitar costo por medida, papel, impresión, adhesivo y cantidad. |
 | 6 | Bolsas & Contenedores | No hay matriz de producto terminado activa identificada. | Comparar material, tamaño, manija, impresión por cara y cantidad. |
 | 7 | Cajas Personalizadas | Consulta; costo depende de estructura y troquel. | Cotización por medidas, material, impresión, cantidad y armado. |
-| 8 | Carpetas & Folders | Matriz 300 g y matriz offset 350 g; margen maestro ausente en seed. Ejemplo 50 u. 300 g 4/0 sin laminar: costo base $82.350 neto. | Comparar cantidad, solapa, caras, gramaje, laminado, diseño y envío. |
+| 8 | Carpetas & Folders | Matriz digital 300 g activa con 30% de recargo + IVA; la matriz offset 350 g está cargada pero no se publica hasta confirmar unidad/escala de costos, que supera ampliamente al tramo digital. Ejemplo activo: 50 u. 300 g 4/0 sin laminar, costo $82.350 neto, precio final $129.590. | Imprenta Más: 50 u. A4 300 g 4/0 sin laminar $144.901 final; revisar equivalencia exacta de solapa y medidas. |
 | 9 | Menús & Cartas | Sin matriz activa identificada. | Costear hojas/plegado/encuadernado, protección, cantidad y reposición. |
 | 10 | Individuales & Posavasos | Sin matriz activa identificada. | Cotizar material, contacto con alimentos, impresión y tirada. |
 | 11 | Cartelería & Ploteo | Configurador DRAFT; costos de gran formato parciales por componentes. | No fijar precio general sin material, impresión, corte, instalación y traslado. |
@@ -118,6 +118,12 @@ No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese mu
    https://imprentadubie.com.ar/web/producto/tags-bijou-aros-x500/
 8. **Mercado Libre:** 500 tags personalizados Kraft 220 g, impresión negra simple faz y perforación, $99.750 publicado; no equivalente al tag de ilustración 350 g.  
    https://www.mercadolibre.com.ar/500-tags-etiquetas-personalizadas-papel-madera-kraft-220gr/up/MLAU152699092
+9. **Oink — lista de precios 2026 para tags:** 500 u. 4/4 estándar $44.000 + IVA; con OPP mate $58.000 + IVA; perforación incluida.  
+   https://www.holaoink.com.ar/oink_lista_precios_2026.html
+10. **Gráfica B377 — portabanners y roll up:** doble tensor 90×190 cm $71.000; roll up 85×200 cm $105.000, estructura e impresión.  
+   https://graficab377.com/servicios/gigantografias
+11. **Oink — portabanners y roll up:** doble tensor 90×190 cm $96.800 final; roll up 85×200 cm $112.550 final.  
+   https://www.holaoink.com.ar/oink_lista_precios_2026_iva.html
 5. **CCprint:** catálogo público de papelería comercial con tags, flyers y carpetas, pero algunas fichas consultadas no permiten comprobar cantidad/especificación a partir del resultado indexado. Usar para descubrir productos, no para comparar sin abrir ficha y validar.  
    https://www.ccprint.com.ar/impresion-digital
 6. **E-tiquetas:** referencia de 1.000 etiquetas 80×50 mm $26.000; no comparable directamente con stickers circulares de papel 5×5 cm.  
