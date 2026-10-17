@@ -614,6 +614,15 @@ function quoteProviderFinishedCostSelection(
       }
       totalCost = Number(source);
     }
+  } else if (resolver.type === 'MAGNETS_RECTO') {
+    if (selection.lamination !== 'sin_laca_uv' && selection.lamination !== 'laca_uv_brillo') {
+      throw new Error('CONSULT_REQUIRED: Terminación de imán no disponible en la matriz.');
+    }
+    const source = matrix.quoteRecto?.[selection.lamination]?.[String(quantity)]?.[selection.format || ''];
+    if (source === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta medida/cantidad de imán de corte recto.');
+    }
+    totalCost = Number(source);
   } else if (resolver.type === 'FOLDERS_DIGITAL') {
     if (selection.material !== 'ilustracion_300g') {
       throw new Error('CONSULT_REQUIRED: No hay costo digital cargado para este material de carpeta.');
