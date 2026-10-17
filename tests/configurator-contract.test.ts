@@ -220,8 +220,8 @@ test('stickers queda en consulta comercial y carpetas aplica política explícit
     folderConfig as any,
   );
   assert.equal(foldersQuote.totalCost, 82350);
-  assert.equal(foldersQuote.totalPrice, 189390);
-  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 47.4) < 0.1);
+  assert.equal(foldersQuote.totalPrice, 171890);
+  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 42.0) < 0.1);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
