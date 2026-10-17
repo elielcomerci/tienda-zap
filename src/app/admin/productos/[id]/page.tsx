@@ -19,5 +19,5 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     getProductRelationOptions(id),
   ])
   if (!product) notFound()
-  return <ProductBaseForm title={\`Editar \${product.name}\`} product={product} action={updateProduct.bind(null, product.id)} categories={categories} relationOptions={relationOptions} />
+  return <ProductBaseForm title={"Editar " + product.name} product={product} action={updateProduct.bind(null, product.id)} categories={categories} relationOptions={relationOptions} />
 }
