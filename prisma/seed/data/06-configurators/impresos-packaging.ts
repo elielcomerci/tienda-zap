@@ -129,10 +129,12 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       vatRatePercent: 21,
     },
     commercialPricingPoliciesByProcess: {
-      // Recargo de 25% sobre costo neto, más IVA. Alinea 500 tarjetas digitales
-      // 4/4 y 1.000 offset 4/4 con referencias minoristas comparables.
+      // Digital: 25% de recargo sobre costo neto + IVA; la referencia de 500 u.
+      // 4/4 queda cerca de la oferta minorista con laminado frontal.
       digital: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
-      offset: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
+      // Offset: 15% de recargo para mantener 1.000 u. dentro de la banda local
+      // sin vender al costo; las celdas con costo anómalo quedan en consulta.
+      offset: { version: 1, mode: 'MARKUP', percentage: 15, vatRatePercent: 21 },
     },
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
