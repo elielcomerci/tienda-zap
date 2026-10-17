@@ -1,3 +1,4 @@
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
 /** La navegación pública se administra desde ZAP Admin y sólo muestra categorías con productos activos. */
@@ -14,6 +15,8 @@ export async function getPublicCategories() {
 }
 
 export async function getAdminCategories() {
+  const session = await auth()
+  if (!session || session.user?.role !== 'ADMIN') throw new Error('No autorizado')
   return prisma.category.findMany({
     include: { _count: { select: { products: true } } },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
