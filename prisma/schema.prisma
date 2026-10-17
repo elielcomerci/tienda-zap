@@ -630,7 +630,6 @@ model ProductRelation {
   relatedProduct   Product             @relation("ProductIncomingRelations", fields: [relatedProductId], references: [id], onDelete: Cascade)
 
   @@unique([productId, relatedProductId])
-  @@index([productId, type])
 }
 
 model Category {
