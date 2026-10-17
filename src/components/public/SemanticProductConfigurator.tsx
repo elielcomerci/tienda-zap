@@ -19,6 +19,27 @@ function optionsFor(key: string, field: any, selected: Record<string, any>, conf
   let options = Array.isArray(field.options) ? field.options : []
   const allowed = configurator.compatibility?.allowedFormats?.[selected.foldingType]
   if (key === 'format' && allowed) options = options.filter((o: any) => allowed.includes(o.id))
+
+  // Tarjetas: mostrar solo las opciones compatibles con el método y las celdas de costo cargadas.
+  if (selected.productionProcess === 'digital') {
+    if (key === 'quantity') options = options.filter((o: any) => Number(o.value) <= 1000)
+    if (key === 'lamination') options = options.filter((o: any) => o.id !== 'mate_uv_sectorizada')
+  }
+  if (selected.productionProcess === 'offset') {
+    if (key === 'quantity') options = options.filter((o: any) => Number(o.value) >= 1000)
+    if (key === 'material') options = options.filter((o: any) => o.id === 'ilustracion_350g')
+    if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
+    if (key === 'lamination') {
+      const allowedFinishes = Number(selected.quantity) > 1000
+        ? ['sin_laminar', 'mate_uv_sectorizada']
+        : ['sin_laminar', 'brillo', 'mate', 'mate_uv_sectorizada']
+      options = options.filter((o: any) => allowedFinishes.includes(o.id))
+    }
+    if (key === 'printing' && Number(selected.quantity) > 1000) {
+      options = options.filter((o: any) => o.id === '4_4')
+    }
+    if (key === 'additionalFinishings') options = []
+  }
   return options
 }
 export default function SemanticProductConfigurator({ product, configurator, inquiryUrl }: Props) {
@@ -77,7 +98,38 @@ export default function SemanticProductConfigurator({ product, configurator, inq
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [complete, normalized, product.id])
-  const change = (key: string, value: any) => setSelected((previous) => ({ ...previous, [key]: value }))
+  const change = (key: string, value: any) => {
+    if (key === 'productionProcess' && fields.productionProcess) {
+      setSelected((previous) => {
+        const offset = value === 'offset'
+        const currentQuantity = Number(previous.quantity || 1000)
+        const quantity = offset ? Math.max(1000, currentQuantity) : Math.min(1000, currentQuantity)
+        return {
+          ...previous,
+          productionProcess: value,
+          material: offset ? 'ilustracion_350g' : previous.material,
+          format: offset ? '9x5' : previous.format,
+          quantity,
+          printing: offset && quantity > 1000 ? '4_4' : previous.printing,
+          lamination: offset
+            ? (['sin_laminar', 'brillo', 'mate', 'mate_uv_sectorizada'].includes(previous.lamination) ? previous.lamination : 'sin_laminar')
+            : (previous.lamination === 'mate_uv_sectorizada' ? 'sin_laminar' : previous.lamination),
+          additionalFinishings: offset ? [] : previous.additionalFinishings,
+        }
+      })
+      return
+    }
+    if (key === 'quantity' && selected.productionProcess === 'offset' && Number(value) > 1000) {
+      setSelected((previous) => ({
+        ...previous,
+        quantity: value,
+        printing: '4_4',
+        lamination: ['sin_laminar', 'mate_uv_sectorizada'].includes(previous.lamination) ? previous.lamination : 'sin_laminar',
+      }))
+      return
+    }
+    setSelected((previous) => ({ ...previous, [key]: value }))
+  }
   const quoteHasApprovedTaxDisplay = quote?.taxTreatment === 'INCLUDED' && typeof quote.netPrice === 'number' && typeof quote.vatAmount === 'number' && typeof quote.vatRatePercent === 'number'
   const addQuoted = () => {
     if (!quote || !quoteHasApprovedTaxDisplay) return
