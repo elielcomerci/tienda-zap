@@ -25,20 +25,21 @@ function optionsFor(key: string, field: any, selected: Record<string, any>, conf
     if (key === 'quantity') options = options.filter((o: any) => Number(o.value) <= 1000)
     if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
     if (key === 'lamination') options = options.filter((o: any) => o.id !== 'mate_uv_sectorizada')
+    // La tarifa digital 500 u. 4/4 queda fuera de mercado; a esa cantidad
+    // solo se ofrece 4/0, cuyo costo sí sostiene un precio competitivo.
+    if (key === 'printing' && Number(selected.quantity) === 500) {
+      options = options.filter((o: any) => o.id === '4_0')
+    }
   }
   if (selected.productionProcess === 'offset') {
-    if (key === 'quantity') options = options.filter((o: any) => Number(o.value) >= 1000)
+    // Las tarifas de 3.000/5.000 u. no son monotónicas frente a 1.000 u.
+    // Hasta reconfirmarlas con el proveedor, solo se ofrece el tramo validado.
+    if (key === 'quantity') options = options.filter((o: any) => Number(o.value) === 1000)
     if (key === 'material') options = options.filter((o: any) => o.id === 'ilustracion_350g')
     if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
     if (key === 'lamination') {
-      let allowedFinishes = Number(selected.quantity) > 1000
-        ? ['sin_laminar', 'mate_uv_sectorizada']
-        : ['sin_laminar', 'brillo', 'mate', 'mate_uv_sectorizada']
-      if (selected.printing === '4_0') allowedFinishes = allowedFinishes.filter((id) => id !== 'mate_uv_sectorizada')
-      options = options.filter((o: any) => allowedFinishes.includes(o.id))
-    }
-    if (key === 'printing' && Number(selected.quantity) > 1000) {
-      options = options.filter((o: any) => o.id === '4_4')
+      // La tarifa UV sectorizada tiene costo inferior a la clásica 4/4 y queda en consulta.
+      options = options.filter((o: any) => ['sin_laminar', 'brillo', 'mate'].includes(o.id))
     }
     if (key === 'additionalFinishings') options = []
   }
@@ -121,12 +122,16 @@ export default function SemanticProductConfigurator({ product, configurator, inq
       })
       return
     }
+    if (key === 'quantity' && selected.productionProcess === 'digital' && Number(value) === 500 && selected.printing === '4_4') {
+      setSelected((previous) => ({ ...previous, quantity: value, printing: '4_0' }))
+      return
+    }
     if (key === 'quantity' && selected.productionProcess === 'offset' && Number(value) > 1000) {
       setSelected((previous) => ({
         ...previous,
-        quantity: value,
+        quantity: 1000,
         printing: '4_4',
-        lamination: ['sin_laminar', 'mate_uv_sectorizada'].includes(previous.lamination) ? previous.lamination : 'sin_laminar',
+        lamination: ['sin_laminar', 'brillo', 'mate'].includes(previous.lamination) ? previous.lamination : 'sin_laminar',
       }))
       return
     }
