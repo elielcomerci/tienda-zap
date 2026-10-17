@@ -237,6 +237,14 @@ test('tags 500 u. incluye papel, impresión y perforación en el costo terminado
   assert.equal(laminated.totalCost, 45666);
   assert.equal(laminated.totalPrice, 66390);
 
+  const rounded = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, additionalFinishings: ['puntas_redondeadas'] },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(rounded.totalCost, 42549);
+  assert.equal(rounded.totalPrice, 61790);
+
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any),
     /Cantidad '1000' no permitida/,
