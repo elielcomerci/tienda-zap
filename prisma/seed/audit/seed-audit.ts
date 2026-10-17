@@ -257,17 +257,18 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   });
 
   const matrixProductSlugs = new Set(offerMatrixData.map((entry) => entry.productSlug));
+  const catalogProductSlugs = new Set(productsData.map((product) => product.slug));
   if (matrixProductSlugs.size !== 23) {
     errors.push(`[MATRIX PRODUCT BASE COUNT] Esperadas 23 Product Bases distintas en la matriz, encontradas ${matrixProductSlugs.size}.`);
   }
-  for (const slug of productBaseSlugs) {
-    if (!matrixProductSlugs.has(slug)) {
-      errors.push(`[MATRIX PRODUCT BASE MISSING] Product Base sin relación de descubrimiento: '${slug}'.`);
+  for (const slug of matrixProductSlugs) {
+    if (!catalogProductSlugs.has(slug)) {
+      errors.push(`[MATRIX PRODUCT NOT IN CATALOG] La matriz referencia '${slug}', que no existe en el catálogo de productos.`);
     }
   }
-  for (const slug of matrixProductSlugs) {
-    if (!productBaseSlugs.has(slug)) {
-      errors.push(`[MATRIX PRODUCT NOT BASE] La matriz referencia '${slug}', que no está en las 23 Product Bases declaradas.`);
+  for (const slug of catalogProductSlugs) {
+    if (!matrixProductSlugs.has(slug) && !productsData.some((product) => product.slug === slug && product.order >= 1 && product.order <= 33)) {
+      errors.push(`[CATALOG PRODUCT ORDER] Producto sin orden editorial válido: '${slug}'.`);
     }
   }
 
