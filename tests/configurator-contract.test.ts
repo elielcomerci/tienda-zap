@@ -395,6 +395,43 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
 });
 
 
+test('tarjetas offset cotiza todas las medidas publicadas con celdas de costo exactas', () => {
+  const config = tarjetasVouchersConfigurator;
+  const matrix = (config.pricing as any).providerFinishedCostMatrix.tiers.clasicas.finishes.opp_brillo.printing;
+  const formats: Array<[string, string]> = [
+    ['9x3', '9x3'],
+    ['9x5', '9x5'],
+    ['9x10_plegada', '9x10'],
+    ['5x18', '5x18'],
+    ['9x15', '9x15'],
+    ['10x15', '10x15'],
+    ['10x18', '10x18'],
+    ['15x20', '15x20'],
+    ['15x30', '15x30'],
+  ];
+
+  for (const [format, matrixFormat] of formats) {
+    for (const printing of ['4_0', '4_1', '4_4']) {
+      const quote = quoteConfiguratorSelection(
+        config as any,
+        {
+          ...defaultSelection(config),
+          productionProcess: 'offset',
+          quantity: 1000,
+          material: 'ilustracion_350g',
+          printing,
+          lamination: 'brillo',
+          format,
+        },
+        { profitMargin: 0 } as any,
+      );
+      assert.equal(quote.totalCost, matrix[printing][matrixFormat]['1000'], `${format} ${printing}`);
+      assert.equal(quote.taxTreatment, 'INCLUDED');
+      assert.ok(quote.totalPrice > quote.totalCost);
+    }
+  }
+});
+
 test('portabanners y roll up usan costo terminado explícito y precio competitivo', () => {
   const config = expositoresStandsConfigurator;
   const selection = defaultSelection(config as any);

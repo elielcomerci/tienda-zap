@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '2.0',
+  schemaVersion: '2.1',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -17,7 +17,12 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { id: '9x3', label: '9×3 cm' },
           { id: '9x5', label: '9×5 cm (Estándar)' },
           { id: '9x10_plegada', label: '9×10 cm plegada (con hendido)' },
+          { id: '5x18', label: '5×18 cm' },
+          { id: '9x15', label: '9×15 cm' },
           { id: '10x15', label: '10×15 cm' },
+          { id: '10x18', label: '10×18 cm' },
+          { id: '15x20', label: '15×20 cm' },
+          { id: '15x30', label: '15×30 cm' },
         ],
       },
       productionProcess: {
@@ -47,6 +52,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         default: '4_4',
         options: [
           { id: '4_0', label: 'Frente solo color (4/0)' },
+          { id: '4_1', label: 'Frente color y dorso negro (4/1)' },
           { id: '4_4', label: 'Frente y dorso color (4/4)' },
         ],
       },
@@ -155,36 +161,8 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         },
       },
     },
-    consultRequiredSelections: [
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'brillo', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'laca_uv', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'mate', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'brillo', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'laca_uv', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'mate', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'brillo', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'laca_uv', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'mate', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'brillo', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'laca_uv', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'mate', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'brillo', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'laca_uv', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'mate', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'brillo', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'laca_uv', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'mate', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 500, lamination: 'sin_laminar', productionProcess: 'digital' },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 1000, lamination: 'brillo', productionProcess: 'offset', additionalFinishings: [] },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 1000, lamination: 'sin_laminar', productionProcess: 'offset', additionalFinishings: [] },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 1000, lamination: 'sin_laminar', productionProcess: 'offset', additionalFinishings: [] }
-    ],
+    // La disponibilidad comercial se resuelve desde la matriz de costos: una selección
+    // solo se cotiza cuando existe la celda exacta de proveedor.
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
     // Costo maestro de proveedor: producto terminado, sin IVA.
@@ -382,10 +360,15 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       },
     adapter: {
       formatMapping: {
-        '9x5': { sizeLabel: '9x5 cm', width: 9, height: 5 },
         '9x3': { sizeLabel: '9x3 cm', width: 9, height: 3 },
-        '9x10_plegada': { sizeLabel: '9x10 cm', width: 9, height: 10 },
+        '9x5': { sizeLabel: '9x5 cm', width: 9, height: 5 },
+        '9x10_plegada': { sizeLabel: '9x10 cm plegada', width: 9, height: 10, matrixKey: '9x10' },
+        '5x18': { sizeLabel: '5x18 cm', width: 5, height: 18 },
+        '9x15': { sizeLabel: '9x15 cm', width: 9, height: 15 },
         '10x15': { sizeLabel: '10x15 cm', width: 10, height: 15 },
+        '10x18': { sizeLabel: '10x18 cm', width: 10, height: 18 },
+        '15x20': { sizeLabel: '15x20 cm', width: 15, height: 20 },
+        '15x30': { sizeLabel: '15x30 cm', width: 15, height: 30 },
       },
       materialResolution: {
         ilustracion_350g: {

@@ -15,33 +15,79 @@ function visible(key: string, selected: Record<string, any>, configurator: any) 
     return true
   })
 }
+function hasCardsCost(configurator: any, selection: Record<string, any>) {
+  const matrix = configurator.pricing?.providerFinishedCostMatrix
+  if (matrix?.resolver?.type !== 'CARDS_DIGITAL') return true
+  const quantity = String(selection.quantity ?? '')
+  const printing = String(selection.printing ?? '')
+  const format = selection.format === '9x10_plegada' ? '9x10' : String(selection.format ?? '')
+
+  if (selection.productionProcess === 'offset') {
+    if (selection.material !== 'ilustracion_350g') return false
+    if (Number(quantity) < 1000 || (selection.additionalFinishings || []).length > 0) return false
+    const tiers = matrix.tiers || {}
+    let row: any
+    if (selection.lamination === 'sin_laminar') row = tiers.clasicas?.finishes?.sin_laminar?.printing?.[printing]?.[format]
+    if (selection.lamination === 'brillo') row = tiers.clasicas?.finishes?.opp_brillo?.printing?.[printing]?.[format]
+    if (selection.lamination === 'mate') row = tiers.premium?.finishes?.opp_mate?.printing?.[printing]?.[format]
+    if (selection.lamination === 'mate_uv_sectorizada' && printing === '4_4' && format === '9x5') {
+      row = tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.[format]
+      const classic = tiers.clasicas?.finishes?.sin_laminar?.printing?.['4_4']?.[format]?.[quantity]
+      if (row?.[quantity] !== undefined && classic !== undefined && Number(row[quantity]) < Number(classic)) return false
+    }
+    if (selection.productionProcess !== 'offset' && Number(quantity) === 500 && selection.material === 'ilustracion_350g' && printing === '4_4') return false
+    return row?.[quantity] !== undefined
+  }
+
+  if (selection.format !== '9x5' || (selection.laminationSides && selection.laminationSides !== 'frente')) return false
+  const cards = matrix.digitalOndemand?.cards?.[String(selection.material ?? '')]
+  const row = cards?.quantities?.[quantity]?.[printing]
+  const finishKey = selection.lamination === 'mate' ? 'laminado_mate'
+    : selection.lamination === 'brillo' ? 'laminado_brillo'
+    : selection.lamination === 'laca_uv' ? 'laca_uv'
+    : selection.lamination === 'sin_laminar' ? 'sin_laminar' : null
+  if (!row || !finishKey || row[finishKey] === undefined) return false
+  const finishing = matrix.digitalOndemand?.finishing || {}
+  return (selection.additionalFinishings || []).every((key: string) => {
+    const source = key === 'puntas_redondeadas' ? finishing.puntas_redondeadas
+      : key === 'perforacion' ? finishing.agujereado_3mm : null
+    return source?.[quantity] !== undefined
+  })
+}
+
 function optionsFor(key: string, field: any, selected: Record<string, any>, configurator: any) {
   let options = Array.isArray(field.options) ? field.options : []
   const allowed = configurator.compatibility?.allowedFormats?.[selected.foldingType]
   if (key === 'format' && allowed) options = options.filter((o: any) => allowed.includes(o.id))
 
-  // Tarjetas: mostrar solo las opciones compatibles con el método y las celdas de costo cargadas.
-  if (selected.productionProcess === 'digital') {
-    if (key === 'quantity') options = options.filter((o: any) => Number(o.value) <= 1000)
-    if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
-    if (key === 'lamination') options = options.filter((o: any) => o.id !== 'mate_uv_sectorizada')
-    // La tarifa digital 500 u. 4/4 queda fuera de mercado; a esa cantidad
-    // solo se ofrece 4/0, cuyo costo sí sostiene un precio competitivo.
-    if (key === 'printing' && Number(selected.quantity) === 500) {
-      options = options.filter((o: any) => o.id === '4_0')
+  // En tarjetas, la matriz de proveedor decide qué variantes se pueden cotizar.
+  // No se duplican restricciones de tamaños, gramajes o terminaciones en la UI.
+  if (configurator.pricing?.providerFinishedCostMatrix?.resolver?.type === 'CARDS_DIGITAL') {
+    if (key === 'additionalFinishings' && selected.productionProcess === 'offset') return []
+    if (['format', 'material', 'printing', 'lamination', 'quantity'].includes(key)) {
+      options = options.filter((option: any) => {
+        const value = option.id ?? option.value
+        const candidate = { ...selected, [key]: key === 'quantity' ? Number(value) : value }
+        if (hasCardsCost(configurator, candidate)) return true
+        // Un formato puede tener precio en otra terminación o sistema de impresión.
+        // Para formatos/impresión/cantidad, buscar celdas reales compatibles sin
+        // alterar las otras elecciones del usuario. La terminación seleccionada
+        // se respeta cuando el campo que se está editando es la terminación misma.
+        const finishes = selected.productionProcess === 'offset'
+          ? ['sin_laminar', 'brillo', 'mate']
+          : ['sin_laminar', 'laca_uv', 'brillo', 'mate']
+        const printings = selected.productionProcess === 'offset'
+          ? ['4_0', '4_1', '4_4']
+          : ['4_0', '4_4']
+        const tryFinishes = key === 'lamination' ? [candidate.lamination] : finishes
+        const tryPrintings = key === 'printing' ? [candidate.printing] : printings
+        return tryFinishes.some((lamination: string) =>
+          tryPrintings.some((printing: string) =>
+            hasCardsCost(configurator, { ...candidate, lamination, printing })
+          )
+        )
+      })
     }
-  }
-  if (selected.productionProcess === 'offset') {
-    // Las tarifas de 3.000/5.000 u. no son monotónicas frente a 1.000 u.
-    // Hasta reconfirmarlas con el proveedor, solo se ofrece el tramo validado.
-    if (key === 'quantity') options = options.filter((o: any) => Number(o.value) === 1000)
-    if (key === 'material') options = options.filter((o: any) => o.id === 'ilustracion_350g')
-    if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
-    if (key === 'lamination') {
-      // La tarifa UV sectorizada tiene costo inferior a la clásica 4/4 y queda en consulta.
-      options = options.filter((o: any) => ['sin_laminar', 'brillo', 'mate'].includes(o.id))
-    }
-    if (key === 'additionalFinishings') options = []
   }
   return options
 }

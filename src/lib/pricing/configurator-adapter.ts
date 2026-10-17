@@ -457,22 +457,23 @@ function quoteProviderFinishedCostSelection(
       if (quantity < 1000) {
         throw new Error('CONSULT_REQUIRED: La impresión offset de tarjetas comienza en 1.000 unidades.');
       }
-      if (selection.format !== '9x5' || selection.material !== 'ilustracion_350g') {
-        throw new Error('CONSULT_REQUIRED: La matriz offset de tarjetas cubre 9×5 cm en ilustración 350 g.');
+      if (selection.material !== 'ilustracion_350g') {
+        throw new Error('CONSULT_REQUIRED: La matriz offset de tarjetas solo cubre ilustración 350 g.');
       }
+      const formatKey = selection.format === '9x10_plegada' ? '9x10' : String(selection.format || '');
       if ((selection.additionalFinishings || []).length > 0 || (selection.laminationSides && selection.laminationSides !== 'frente')) {
         throw new Error('CONSULT_REQUIRED: La matriz offset no tiene costos cargados para esas terminaciones adicionales.');
       }
       const tiers = matrix.tiers || {};
       let offsetCost: unknown;
       if (selection.lamination === 'sin_laminar') {
-        offsetCost = tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.['9x5']?.[String(quantity)];
+        offsetCost = tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.[formatKey]?.[String(quantity)];
       } else if (selection.lamination === 'brillo') {
-        offsetCost = tiers.clasicas?.finishes?.opp_brillo?.printing?.[selection.printing || '']?.['9x5']?.[String(quantity)];
+        offsetCost = tiers.clasicas?.finishes?.opp_brillo?.printing?.[selection.printing || '']?.[formatKey]?.[String(quantity)];
       } else if (selection.lamination === 'mate') {
-        offsetCost = tiers.premium?.finishes?.opp_mate?.printing?.[selection.printing || '']?.['9x5']?.[String(quantity)];
+        offsetCost = tiers.premium?.finishes?.opp_mate?.printing?.[selection.printing || '']?.[formatKey]?.[String(quantity)];
       } else if (selection.lamination === 'mate_uv_sectorizada' && selection.printing === '4_4') {
-        offsetCost = tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.['9x5']?.[String(quantity)];
+        offsetCost = tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.[formatKey]?.[String(quantity)];
       }
 
       if (offsetCost === undefined) {
@@ -496,16 +497,16 @@ function quoteProviderFinishedCostSelection(
       if (quantity > 1000) {
         const baselineCost = (() => {
           if (selection.lamination === 'sin_laminar') {
-            return tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.['9x5']?.['1000'];
+            return tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.[formatKey]?.['1000'];
           }
           if (selection.lamination === 'brillo') {
-            return tiers.clasicas?.finishes?.opp_brillo?.printing?.[selection.printing || '']?.['9x5']?.['1000'];
+            return tiers.clasicas?.finishes?.opp_brillo?.printing?.[selection.printing || '']?.[formatKey]?.['1000'];
           }
           if (selection.lamination === 'mate') {
-            return tiers.premium?.finishes?.opp_mate?.printing?.[selection.printing || '']?.['9x5']?.['1000'];
+            return tiers.premium?.finishes?.opp_mate?.printing?.[selection.printing || '']?.[formatKey]?.['1000'];
           }
           if (selection.lamination === 'mate_uv_sectorizada' && selection.printing === '4_4') {
-            return tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.['9x5']?.['1000'];
+            return tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.[formatKey]?.['1000'];
           }
           return undefined;
         })();
