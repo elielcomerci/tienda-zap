@@ -694,8 +694,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
 
 export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tags-etiquetas',
-  schemaVersion: '1.0',
-  // Promovido a ACTIVE — 10/10 casos E2E pasados.
+  // Nueva versión para que el loader administrado publique el costo digital completo.
+  schemaVersion: '1.1',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -706,12 +706,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
         type: 'select',
         required: true,
         default: '9x5',
-        options: [
-          { id: '9x5',  label: '9×5 cm (Tag estándar)' },
-          { id: '9x3',  label: '9×3 cm (Tag mini / precio)' },
-          { id: '5x18', label: '5×18 cm (Tag vertical / colgante largo)' },
-          { id: '9x10', label: '9×10 cm (Tag doble faz / mayor info)' },
-        ],
+        options: [{ id: '9x5', label: '9×5 cm (Tag estándar)' }],
       },
       printing: {
         label: 'Impresión',
@@ -729,8 +724,8 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'sin_laminar',
         options: [
-          { id: 'sin_laminar',      label: 'Sin laminar' },
-          { id: 'opp_brillo_frente', label: 'Laminado OPP Brillo (Frente)' },
+          { id: 'sin_laminar', label: 'Sin laminar' },
+          { id: 'opp_brillo_frente', label: 'Laminado OPP Brillo (frente)' },
         ],
       },
       additionalFinishings: {
@@ -738,25 +733,18 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
         type: 'multiselect',
         required: false,
         default: [],
-        options: [
-          { id: 'puntas_redondeadas', label: 'Puntas redondeadas' },
-        ],
+        options: [{ id: 'puntas_redondeadas', label: 'Puntas redondeadas' }],
       },
       quantity: {
         label: 'Cantidad',
         type: 'quantity_selector',
         required: true,
         default: 500,
-        options: [
-          { value: 500,  label: '500 u.' },
-          { value: 1000, label: '1.000 u.' },
-        ],
+        options: [{ value: 500, label: '500 unidades' }],
       },
     },
   },
   compatibility: {
-    // La perforación es siempre obligatoria para tags; no se expone al cliente.
-    // Se resuelve internamente como proceso requerido fijo.
     requiredProcesses: [
       {
         condition: { field: 'format', operator: 'exists', value: true },
@@ -766,37 +754,53 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // No cotizar automáticamente mientras falte el costo de impresión terminado.
-    // El motor físico solo sumaba papel y terminaciones, dejando fuera la impresión.
-    commercialAvailability: 'CONSULT_REQUIRED',
-    adapter: {
-      formatMapping: {
-        '9x5':  { sizeLabel: '9x5 cm',  width: 9,  height: 5  },
-        '9x3':  { sizeLabel: '9x3 cm',  width: 9,  height: 3  },
-        '5x18': { sizeLabel: '5x18 cm', width: 5,  height: 18 },
-        '9x10': { sizeLabel: '9x10 cm', width: 9,  height: 10 },
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 20,
+      vatRatePercent: 21,
+    },
+    providerFinishedCostMatrix: {
+      resolver: { type: 'TAGS_DIGITAL' },
+      currency: 'ARS',
+      taxIncluded: false,
+      source: 'LISTA_PRINT_PAG_11_12_Y_BAJADAS_DIGITAL_A3PLUS',
+      note: 'Costeo conservador de tags 9×5 cm en ilustración 350 g. Se estima 24 unidades por pliego imprimible 46×31 cm para reservar espacio de corte/merma. Solo se publica 500 unidades; 1.000 requiere cotización offset terminada.',
+      sheetYield: { '9x5': 24 },
+      paperCostPerSheet: {
+        '4_0': [
+          { minQty: 1, maxQty: 10, unitPrice: 203.5 },
+          { minQty: 11, maxQty: 50, unitPrice: 181.5 },
+          { minQty: 51, maxQty: 100, unitPrice: 159.5 },
+          { minQty: 101, maxQty: 500, unitPrice: 143 },
+          { minQty: 501, maxQty: null, unitPrice: 129.8 },
+        ],
+        '4_4': [
+          { minQty: 1, maxQty: 10, unitPrice: 324.5 },
+          { minQty: 11, maxQty: 50, unitPrice: 286 },
+          { minQty: 51, maxQty: 100, unitPrice: 253 },
+          { minQty: 101, maxQty: 500, unitPrice: 225.5 },
+          { minQty: 501, maxQty: null, unitPrice: 203.5 },
+        ],
       },
-      // Tags solo en 350g — evidencia directa del catálogo (Tarjetas Clásicas).
-      // 300g queda excluido por falta de evidencia comercial explícita para tags.
-      materialResolution: {
-        ilustracion_350g: {
-          '4_0': 'raw_mat_ilustracion_350g_4_0',
-          '4_4': 'raw_mat_ilustracion_350g_4_4',
-        },
-      },
-      laminationResolution: {
-        opp_brillo_frente: {
-          frente: 'fin_opp_brillo_1c',
-        },
-      },
-      additionalFinishingsResolution: {
-        puntas_redondeadas: 'fin_puntas_redondeadas',
-      },
-      // PERFORACION siempre requerida por compatibilidad.requiredProcesses.
-      // No se expone al cliente; se resuelve automáticamente aquí.
-      processResolution: {
-        PERFORACION: 'fin_perforacion',
-      },
+      printingCostPerSheet: [
+        { minQty: 1, fourZero: 1256, fourFour: 1751 },
+        { minQty: 2, fourZero: 1028, fourFour: 1433 },
+        { minQty: 26, fourZero: 971, fourFour: 1353 },
+        { minQty: 51, fourZero: 914, fourFour: 1274 },
+        { minQty: 101, fourZero: 857, fourFour: 1195 },
+        { minQty: 301, fourZero: 800, fourFour: 1115 },
+        { minQty: 501, fourZero: 743, fourFour: 1036 },
+      ],
+      laminationOppBrilloFrontPerSheet: [
+        { minQty: 1, maxQty: 10, unitPrice: 328 },
+        { minQty: 11, maxQty: 50, unitPrice: 302 },
+        { minQty: 51, maxQty: 100, unitPrice: 280 },
+        { minQty: 101, maxQty: 500, unitPrice: 254 },
+        { minQty: 501, maxQty: null, unitPrice: 238 },
+      ],
+      perforationFixed: { '500': 3225 },
+      roundedCornersFixed: { '500': 3225 },
     },
   },
 };
