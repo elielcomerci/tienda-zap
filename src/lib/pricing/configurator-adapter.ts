@@ -372,10 +372,12 @@ function quoteProviderFinishedCostSelection(
   }
 
   let totalCost = 0;
+  let resolvedPricingProcess: string | undefined;
   const fields = configurator.schema?.fields || {};
 
   if (resolver.type === 'CARDS_DIGITAL') {
     if (selection.productionProcess === 'offset') {
+      resolvedPricingProcess = 'offset';
       if (quantity < 1000) {
         throw new Error('CONSULT_REQUIRED: La impresión offset de tarjetas comienza en 1.000 unidades.');
       }
@@ -403,6 +405,7 @@ function quoteProviderFinishedCostSelection(
       }
       totalCost = Number(offsetCost);
     } else {
+    resolvedPricingProcess = 'digital';
     if (selection.format !== '9x5') {
       throw new Error('CONSULT_REQUIRED: El costo cargado para tarjetas no contempla este formato.');
     }
@@ -457,9 +460,15 @@ function quoteProviderFinishedCostSelection(
       ? matrix.matrix?.[selection.material || '']?.[selection.format || '']?.[String(quantity)]
       : undefined;
     if (offsetRow !== undefined) {
+      resolvedPricingProcess = 'offset';
       totalCost = Number(offsetRow);
     } else {
-      const source = matrix.digitalOndemand?.fullColor?.[selection.material || '']?.[selection.format || ''];
+      resolvedPricingProcess = 'digital';
+      const sourceMaterial =
+        selection.material === 'obra_80g' || selection.material === 'ilustracion_115g'
+          ? 'ilustracion_80g_115g'
+          : selection.material || '';
+      const source = matrix.digitalOndemand?.fullColor?.[sourceMaterial]?.[selection.format || ''];
       const row = source?.[String(quantity)]?.[selection.printing || ''];
       if (row === undefined) {
         throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de folleto.');
@@ -511,8 +520,10 @@ function quoteProviderFinishedCostSelection(
   let vatAmount: number | undefined;
   let vatRatePercent: number | undefined;
   let taxTreatment: 'INCLUDED' | undefined;
+  const pricingProcess = resolvedPricingProcess || selection.productionProcess || '';
   const commercialPolicy =
-    pricing?.commercialPricingPoliciesByProcess?.[selection.productionProcess || ''] ||
+    pricing?.commercialPricingPoliciesByProcessAndMaterial?.[pricingProcess]?.[selection.material || ''] ||
+    pricing?.commercialPricingPoliciesByProcess?.[pricingProcess] ||
     pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
     pricing?.commercialPricingPolicy;
 
