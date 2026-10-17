@@ -905,7 +905,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
 // No inventa materias primas ni terminaciones en el motor físico; resuelve directamente precios de lista oficial.
 export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'adhesivos-stickers',
-  schemaVersion: '1.4',
+  schemaVersion: '1.5',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -926,14 +926,18 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: '5x5',
         options: [
-          { id: '3x3', label: '3×3 cm' },
-          { id: '4x4', label: '4×4 cm' },
-          { id: '5x5', label: '5×5 cm' },
-          { id: '6x6', label: '6×6 cm' },
-          { id: '7x7', label: '7×7 cm' },
-          { id: '8x8', label: '8×8 cm' },
-          { id: '9x9', label: '9×9 cm' },
-          { id: '10x10', label: '10×10 cm' },
+          { id: '3x3', label: '3×3 cm · circular' },
+          { id: '4x4', label: '4×4 cm · circular' },
+          { id: '5x5', label: '5×5 cm · circular' },
+          { id: '6x6', label: '6×6 cm · circular' },
+          { id: '7x7', label: '7×7 cm · circular' },
+          { id: '8x8', label: '8×8 cm · circular' },
+          { id: '9x9', label: '9×9 cm · circular' },
+          { id: '10x10', label: '10×10 cm · circular' },
+          { id: '6x4', label: '6×4 cm · corte recto' },
+          { id: '7x5', label: '7×5 cm · corte recto' },
+          { id: '9x5', label: '9×5 cm · corte recto' },
+          { id: '10x7', label: '10×7 cm · corte recto' },
         ],
       },
       shape: {
@@ -943,6 +947,7 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         default: 'circular',
         options: [
           { id: 'circular', label: 'Circular' },
+          { id: 'recto', label: 'Corte recto' },
         ],
       },
       lamination: {
@@ -951,7 +956,8 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'laca_uv_brillo',
         options: [
-          { id: 'laca_uv_brillo', label: 'Laca UV Brillo (incluida en tarifa)' },
+          { id: 'sin_laca_uv', label: 'Sin laca UV' },
+          { id: 'laca_uv_brillo', label: 'Con laca UV brillo' },
         ],
       },
       quantity: {
@@ -961,6 +967,10 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         default: 500,
         options: [
           { value: 100, label: '100 unidades' },
+          { value: 200, label: '200 unidades' },
+          { value: 300, label: '300 unidades' },
+          { value: 500, label: '500 unidades' },
+          { value: 1000, label: '1.000 unidades' },
         ],
       },
     },
@@ -990,6 +1000,8 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         '8x8':   { '100': 10906, '200': 21811, '300': 30266, '500': 48058, '1000': 88260 },
         '9x9':   { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
         '10x10': { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
+      quoteRecto: {"sin_laca_uv":{"100":{"6x4":3801,"7x5":4868,"9x5":5935,"10x7":8069},"200":{"6x4":6085,"7x5":8219,"9x5":10353,"10x7":14622},"300":{"6x4":8469,"7x5":11670,"9x5":14872,"10x7":21274},"500":{"6x4":13237,"7x5":18573,"9x5":26042,"10x7":37779},"1000":{"6x4":24808,"7x5":34648,"9x5":44726,"10x7":62154}},"laca_uv_brillo":{"100":{"6x4":4212,"7x5":5416,"9x5":6620,"10x7":9028},"200":{"6x4":6770,"7x5":9178,"9x5":11585,"10x7":16401},"300":{"6x4":9428,"7x5":13039,"9x5":16651,"10x7":23875},"500":{"6x4":14743,"7x5":20763,"9x5":29191,"10x7":42708},"1000":{"6x4":27683,"7x5":39029,"9x5":50476,"10x7":70779}}},
+      deliverySurcharges: { normalDays: '5/7 días', express: 15, superExpress48h: 30, ya24h: 50 },
       },
     },
   },
