@@ -23,6 +23,7 @@ function optionsFor(key: string, field: any, selected: Record<string, any>, conf
   // Tarjetas: mostrar solo las opciones compatibles con el método y las celdas de costo cargadas.
   if (selected.productionProcess === 'digital') {
     if (key === 'quantity') options = options.filter((o: any) => Number(o.value) <= 1000)
+    if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
     if (key === 'lamination') options = options.filter((o: any) => o.id !== 'mate_uv_sectorizada')
   }
   if (selected.productionProcess === 'offset') {
@@ -30,9 +31,10 @@ function optionsFor(key: string, field: any, selected: Record<string, any>, conf
     if (key === 'material') options = options.filter((o: any) => o.id === 'ilustracion_350g')
     if (key === 'format') options = options.filter((o: any) => o.id === '9x5')
     if (key === 'lamination') {
-      const allowedFinishes = Number(selected.quantity) > 1000
+      let allowedFinishes = Number(selected.quantity) > 1000
         ? ['sin_laminar', 'mate_uv_sectorizada']
         : ['sin_laminar', 'brillo', 'mate', 'mate_uv_sectorizada']
+      if (selected.printing === '4_0') allowedFinishes = allowedFinishes.filter((id) => id !== 'mate_uv_sectorizada')
       options = options.filter((o: any) => allowedFinishes.includes(o.id))
     }
     if (key === 'printing' && Number(selected.quantity) > 1000) {
