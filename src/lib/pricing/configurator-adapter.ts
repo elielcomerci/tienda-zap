@@ -356,6 +356,17 @@ function quoteProviderFinishedCostSelection(
     throw new Error('CONSULT_REQUIRED: Esta cantidad necesita validación comercial antes de ofrecer un precio automático.');
   }
 
+  const approvedSelections = pricing?.consultRequiredSelections;
+  if (Array.isArray(approvedSelections) && approvedSelections.length > 0) {
+    const selectionApproved = approvedSelections.some((rule: any) =>
+      rule && typeof rule === 'object' &&
+      Object.entries(rule).every(([key, value]) => String((selection as any)[key] ?? '') === String(value))
+    );
+    if (!selectionApproved) {
+      throw new Error('CONSULT_REQUIRED: Esta combinación necesita validación comercial antes de ofrecer un precio automático.');
+    }
+  }
+
   if (pricing?.commercialAvailability === 'CONSULT_REQUIRED') {
     throw new Error('CONSULT_REQUIRED: El costo de proveedor necesita validación comercial antes de publicar un precio automático.');
   }

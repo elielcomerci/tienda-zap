@@ -824,10 +824,24 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // El costo cargado queda en consulta comercial: la comparación disponible
-    // no deja margen operativo suficiente para venderlo 5–10% sobre mercado.
-    // No activar precio automático hasta validar otra tarifa de proveedor.
-    commercialAvailability: 'CONSULT_REQUIRED',
+    // Única combinación habilitada tras contraste de mercado: 500 u., 5×5 cm,
+    // papel autoadhesivo 90 g, corte circular y laca UV brillo incluida.
+    // El resto de las combinaciones queda en consulta hasta auditar su precio.
+    consultRequiredSelections: [
+      {
+        material: 'papel_autoadhesivo_90g',
+        format: '5x5',
+        shape: 'circular',
+        lamination: 'laca_uv_brillo',
+        quantity: 500,
+      },
+    ],
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 120,
+      vatRatePercent: 21,
+    },
     providerFinishedCostMatrix: {
       resolver: { type: 'STICKERS_CIRCULAR' },
       quote: {

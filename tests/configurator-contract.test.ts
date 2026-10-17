@@ -199,12 +199,25 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   );
 });
 
-test('stickers exige validación comercial y no acepta cantidades inventadas', () => {
+test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA explícitos', () => {
   const config = adhesivosStickersConfigurator;
   const selection = defaultSelection(config);
+  const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
+  assert.equal(quote.totalCost, 19231);
+  assert.equal(quote.totalPrice, 51290);
+  assert.equal(quote.taxTreatment, 'INCLUDED');
+  assert.equal(quote.vatRatePercent, 21);
+  assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
+  assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
+  assert.ok((quote.breakdown?.marginPercent ?? 0) > 54 && (quote.breakdown?.marginPercent ?? 0) < 55);
+
   assert.throws(
-    () => quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any),
-    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any),
+    /CONSULT_REQUIRED: Esta combinación necesita validación comercial/,
+  );
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, { ...selection, format: '4x4' }, { profitMargin: 0 } as any),
+    /CONSULT_REQUIRED: Esta combinación necesita validación comercial/,
   );
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
@@ -212,11 +225,11 @@ test('stickers exige validación comercial y no acepta cantidades inventadas', (
   );
 });
 
-test('stickers queda en consulta comercial y carpetas aplica política explícita con IVA', () => {
+test('stickers usa política versionada y carpetas conserva su configuración heredada', () => {
   assert.equal(
     initialQuoterConfigs.some((entry) => entry.productSlug === 'adhesivos-stickers'),
     false,
-    'stickers no debe tener un recargo automático mientras el costo no sea viable',
+    'stickers usa su política comercial explícita, no el recargo maestro heredado',
   );
 
   const folderConfig = initialQuoterConfigs.find((entry) => entry.productSlug === 'carpetas-folders');

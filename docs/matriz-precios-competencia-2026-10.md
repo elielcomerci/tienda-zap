@@ -1,7 +1,7 @@
 # Matriz de costos, precios tentativos y competencia — Tienda ZAP
 
-**Corte de análisis:** 13/10/2026  
-**Estado:** documento de trabajo; no modifica seed, configuradores ni precios publicados.  
+**Corte de análisis:** 17/10/2026  
+**Estado:** matriz de decisión comercial; una combinación de stickers queda habilitada de forma acotada en `main`, las demás siguen en consulta.  
 **Moneda:** ARS. Salvo indicación, los costos del seed se consideran netos de IVA según sus comentarios; confirmar tratamiento fiscal y vigencia antes de aprobar.
 
 ## 1. Criterio de cálculo
@@ -44,7 +44,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 ### Cómo leer los tentativos
 
 - **Tarjetas:** el cálculo matemático para lograr 35% de margen sería aproximadamente $74.900 final, pero no lo recomiendo como precio competitivo sin validar el costo. Tecnoplotter publica 500 tarjetas 350 g 4/4 con laminado brillo frontal e incluye diseño por $61.250; cobrar más por la variante sin laminar requiere una justificación comercial. Si se vendiera a $61.250 final y el costo de $39.930 fuera neto correcto, el margen bruto sería solo ≈21,1% antes de otros gastos. Es una señal de que hay que validar costo/proveedor o asumir explícitamente una posición premium, no bajar el margen a ciegas.
-- **Stickers:** el precio se calcula con un multiplicador objetivo cercano a 1,54; aún no se demuestra que sea competitivo.
+- **Stickers:** para 500 unidades de 5×5 cm se aplica recargo del 120% sobre el costo neto y luego IVA 21%, redondeando a $51.290 final. El margen bruto calculado sobre el neto de venta es aproximadamente 54,6%; queda por confirmar la condición fiscal y que el costo incluya todos los cargos de proveedor. Se habilita solo esa combinación; las demás siguen en consulta.
 - **Carpetas:** el precio propuesto sacrifica margen respecto del objetivo general de 35% para acercarse al mercado. Si hay que sumar flete, diseño, preparación o comisión de cobro, debe recalcularse.
 - Los márgenes se estiman contra el costo seed y no incluyen cargos no modelados. No publicar hasta completar la validación.
 
@@ -57,7 +57,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 | 1 | Tarjetas & Vouchers | Matriz disponible; costo 500 u. 350 g 4/4 sin laminar $39.930 neto, vigencia por confirmar. Precio tentativo $74.900 final para esa combinación. | Contrastar misma cantidad, gramaje, impresión y terminación. |
 | 2 | Flyers & Desplegables | Matrices offset/digital; offset vencida y motor incompleto. Sin precio automático aprobado. | Comparar tamaño, papel, una/dos caras, cantidad, plegado y entrega. |
 | 3 | Tags & Etiquetas | Cotizador con impresión no incorporada y perforación subcosteada. | Rehacer costo completo y comparar con cantidad explícita. |
-| 4 | Adhesivos & Stickers | Matriz parcial para stickers circulares; ejemplo 500 × 5 cm $19.231 neto. | Buscar comparables exactos por soporte, forma, corte, cantidad y laminado. |
+| 4 | Adhesivos & Stickers | Habilitada solo la combinación circular 5×5 cm, papel autoadhesivo 90 g, laca UV brillo, 500 u.: $51.290 final con IVA incluido. Costo seed $19.231 neto. | Revalidar IVA y costo completo; el resto de medidas/cantidades sigue en consulta hasta tener comparables equivalentes. |
 | 5 | Fajas & Envoltorios | No hay matriz de producto terminado activa identificada. | Solicitar costo por medida, papel, impresión, adhesivo y cantidad. |
 | 6 | Bolsas & Contenedores | No hay matriz de producto terminado activa identificada. | Comparar material, tamaño, manija, impresión por cara y cantidad. |
 | 7 | Cajas Personalizadas | Consulta; costo depende de estructura y troquel. | Cotización por medidas, material, impresión, cantidad y armado. |
