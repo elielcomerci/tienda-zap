@@ -4,6 +4,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { engineForCatalogFamily } from '@/lib/catalog-domain'
 import { impresosPackagingConfigurators } from '../../prisma/seed/data/06-configurators/impresos-packaging'
+import { presenciaFisicaConfigurators } from '../../prisma/seed/data/06-configurators/presencia-fisica'
 
 async function requireAdmin() {
   const session = await auth()
@@ -185,7 +186,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
   // Pricing-managed print configurators are also available from the versioned
   // source of truth. This prevents an older production DB seed from turning
   // products with approved matrices into consultation-only products.
-  const seedConfigurator = impresosPackagingConfigurators
+  const seedConfigurator = [...impresosPackagingConfigurators, ...presenciaFisicaConfigurators]
     .filter((item) => item.productSlug === product.slug && item.status === 'ACTIVE')
     .sort((a, b) => b.schemaVersion.localeCompare(a.schemaVersion, undefined, { numeric: true }))[0]
 
