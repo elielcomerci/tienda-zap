@@ -68,7 +68,7 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 | 11 | Cartelería & Ploteo | Configurador DRAFT; costos de gran formato parciales por componentes. | No fijar precio general sin material, impresión, corte, instalación y traslado. |
 | 12 | Corpóreos & Marquesinas | Configurador DRAFT; costo final requiere fabricación e instalación. | Cotizar por material, espesor, iluminación, estructura, montaje y traslado. |
 | 13 | Señalética & Placas | Configurador DRAFT. | Cotizar soporte, tamaño, grabado/impresión, fijación e instalación. |
-| 14 | Expositores & Stands | Configurador DRAFT. | Cotizar estructura, gráfica, armado, embalaje, envío y reutilización. |
+| 14 | Expositores & Stands | Activado en alcance acotado: portabanner doble tensor 90×190 cm y roll up 85×200 cm, con impresión látex o UV y costo terminado explícito. Recargo 35% + IVA 21%; sin descuentos por volumen porque la matriz no los informa. | B377: doble tensor 90×190 cm $71.000 y roll up 85×200 cm $105.000; Oink: doble tensor $96.800 y roll up $112.550 finales. Los precios ZAP calculados quedan $73.190 (doble tensor látex), $89.390 (doble tensor UV), $92.190 (roll up látex con armado) y $75.990 (roll up UV con armado). |
 | 15 | Indumentaria & Textil | Configurador DRAFT. | Cotizar prenda, técnica, ubicación, cantidad, talles y merma. |
 | 16 | Objetos & Regalería | Producto directo sin precio/costo validado en el seed de producto. | Costear producto base, personalización, mínimo de compra y logística. |
 | 17 | Activos Web & Sitios | Servicio configurable sin costo de producción asociado en seed. | Definir paquetes por alcance y costear horas, integraciones, QA y mantenimiento. |
