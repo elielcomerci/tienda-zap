@@ -227,9 +227,9 @@ export const productsData: ProductSeedData[] = [
   },
   {
     order: 17,
-    slug: 'activos-web-sitios',
+    slug: 'sitios-web-catalogos-digitales',
     catalogType: 'DESARROLLO',
-    name: 'Activos Web & Sitios',
+    name: 'Sitios web y catálogos digitales',
     modality: 'CONSULTAR',
     engine: 'DIGITAL',
     whatIs: 'Sitios web institucionales, landing pages de conversión y catálogos digitales.',
