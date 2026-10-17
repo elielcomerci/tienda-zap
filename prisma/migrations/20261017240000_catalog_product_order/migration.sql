@@ -1,5 +1,6 @@
 -- Persist editorial ordering and reconcile the active design offers in the canonical seed.
-ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "sortOrder" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "sortOrder" INTEGER NOT NULL DEFAULT 999;
+ALTER TABLE "Product" ALTER COLUMN "sortOrder" SET DEFAULT 999;
 
 INSERT INTO "Product" ("id","name","slug","price","catalogType","modality","engine","active","sortOrder","briefType","whatIs","purpose","includes","configurable","priceFrom","images","createdAt","updatedAt") VALUES
 ('prod_diseno_flyer_volante_20261017','Diseño de Flyer / Volante','diseno-flyer-volante',79000,'COSA','DIRECTO',NULL,TRUE,1,'DESIGN','Diseño de una pieza gráfica promocional lista para imprimir o publicar.','Resolver una comunicación puntual sin convertirla en un proyecto mayor.',ARRAY['Una pieza gráfica original','Una propuesta de diseño','Hasta dos rondas de ajustes','Archivo final listo para producción o publicación']::text[],ARRAY[]::text[],NULL,ARRAY[]::text[],NOW(),NOW()),
