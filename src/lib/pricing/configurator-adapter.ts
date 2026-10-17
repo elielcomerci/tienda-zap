@@ -375,7 +375,68 @@ function quoteProviderFinishedCostSelection(
   let resolvedPricingProcess: string | undefined;
   const fields = configurator.schema?.fields || {};
 
-  if (resolver.type === 'PORTABANNER_FINISHED') {
+  if (resolver.type === 'TAGS_DIGITAL') {
+    const format = String(selection.format || '');
+    const printing = String(selection.printing || '');
+    const lamination = String(selection.lamination || 'sin_laminar');
+    if (format !== '9x5' || quantity !== 500) {
+      throw new Error('CONSULT_REQUIRED: Solo hay costo digital validado para tags 9×5 cm, 500 unidades.');
+    }
+    if (printing !== '4_0' && printing !== '4_4') {
+      throw new Error('CONSULT_REQUIRED: No hay costo de impresión cargado para esta selección de tags.');
+    }
+    if (lamination !== 'sin_laminar' && lamination !== 'opp_brillo_frente') {
+      throw new Error('CONSULT_REQUIRED: No hay costo de laminado cargado para esta selección de tags.');
+    }
+
+    const yieldPerSheet = Number(matrix.sheetYield?.[format] || 0);
+    if (!yieldPerSheet) {
+      throw new Error('CONSULT_REQUIRED: Falta la imposición validada para este formato de tag.');
+    }
+    const sheetCount = Math.ceil(quantity / yieldPerSheet);
+    const paperTiers = matrix.paperCostPerSheet?.[printing] || [];
+    const paperTier = paperTiers.find((tier: any) =>
+      sheetCount >= tier.minQty && (tier.maxQty === null || sheetCount <= tier.maxQty)
+    );
+    const printTier = matrix.printingCostPerSheet
+      ?.filter((tier: any) => sheetCount >= tier.minQty)
+      .slice(-1)[0];
+    if (!paperTier || !printTier) {
+      throw new Error('CONSULT_REQUIRED: No hay tarifa de papel o impresión para esta tirada de tags.');
+    }
+
+    const printUnitCost = printing === '4_4' ? Number(printTier.fourFour) : Number(printTier.fourZero);
+    let finishingCost = 0;
+    if (lamination === 'opp_brillo_frente') {
+      const laminationTiers = matrix.laminationOppBrilloFrontPerSheet || [];
+      const laminationTier = laminationTiers.find((tier: any) =>
+        sheetCount >= tier.minQty && (tier.maxQty === null || sheetCount <= tier.maxQty)
+      );
+      if (!laminationTier) {
+        throw new Error('CONSULT_REQUIRED: No hay tarifa de laminado para esta tirada de tags.');
+      }
+      finishingCost += Number(laminationTier.unitPrice) * sheetCount;
+    }
+
+    const perforationCost = matrix.perforationFixed?.[String(quantity)];
+    if (perforationCost === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo de perforación cargado para esta cantidad de tags.');
+    }
+    finishingCost += Number(perforationCost);
+
+    if ((selection.additionalFinishings || []).includes('puntas_redondeadas')) {
+      const roundedCornersCost = matrix.roundedCornersFixed?.[String(quantity)];
+      if (roundedCornersCost === undefined) {
+        throw new Error('CONSULT_REQUIRED: No hay costo de puntas redondeadas cargado para esta cantidad.');
+      }
+      finishingCost += Number(roundedCornersCost);
+    }
+
+    // El costo de impresión digital se suma al pliego de papel; la imposición
+    // reserva espacio para corte y merma. La perforación es obligatoria.
+    totalCost = sheetCount * (Number(paperTier.unitPrice) + printUnitCost) + finishingCost;
+    resolvedPricingProcess = 'finished_product';
+  } else if (resolver.type === 'PORTABANNER_FINISHED') {
     const model = String(selection.model || '');
     const printing = String(selection.printing || '');
     const item = matrix.portabanner?.items?.[model];
