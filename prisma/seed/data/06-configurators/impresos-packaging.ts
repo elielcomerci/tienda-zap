@@ -776,7 +776,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
 export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tags-etiquetas',
   // Versión revisada con precio alineado a tags de 300–350g publicados en Buenos Aires.
-  schemaVersion: '1.5',
+  schemaVersion: '1.4',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
