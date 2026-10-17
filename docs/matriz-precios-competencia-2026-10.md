@@ -126,7 +126,7 @@ No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese mu
 ## 6. Próxima secuencia de trabajo
 
 1. Confirmar con proveedores los costos prioritarios (tarjetas, flyers, tags, stickers y carpetas), con fecha, IVA, cantidad, terminación, entrega y pago.
-2. Corregir el motor de Flyers y Tags para incluir impresión y procesos obligatorios; agregar margen maestro para Stickers y Carpetas.
+2. Completar los motores de costeo de las familias con matrices parciales: tags 1.000 u., carpetas offset 350 g, gran formato por componentes y textil sin prenda base.
 3. Construir casos de prueba reproducibles para cada cantidad/variante realmente vendible; comparar cotizador, carrito y checkout.
 4. Obtener comparables equivalentes para cada combinación principal y guardar URL, fecha de consulta y especificación.
 5. Incorporar costos de compra/logística, arte, preparación, mermas, cobro y canal cuando correspondan.
