@@ -34,7 +34,7 @@ const presenciaDraftConfigurators: ConfiguratorVersionSeedData[] = presenciaSlug
  */
 export const expositoresStandsConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'expositores-stands',
-  schemaVersion: '1.1',
+  schemaVersion: '1.2',
   status: 'ACTIVE',
   schema: {
     engine: 'PRESENCIA_FISICA',
