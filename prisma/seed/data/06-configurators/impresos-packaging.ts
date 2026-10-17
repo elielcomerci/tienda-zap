@@ -976,7 +976,7 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 25,
+      percentage: 30,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
