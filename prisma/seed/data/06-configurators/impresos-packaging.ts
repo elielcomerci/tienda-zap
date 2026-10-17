@@ -36,7 +36,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'ilustracion_350g',
         options: [
-          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g · consultar' },
+          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
           { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
         ],
       },
