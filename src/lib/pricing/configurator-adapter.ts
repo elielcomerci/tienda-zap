@@ -479,6 +479,17 @@ function quoteProviderFinishedCostSelection(
         throw new Error('CONSULT_REQUIRED: No hay costo offset cargado para esta cantidad, impresión y terminación.');
       }
 
+      // La tarifa deluxe de laca UV sectorizada no puede costar menos que
+      // la clásica 4/4 sin laminar para la misma cantidad; la matriz cargada
+      // contradice esa relación y requiere confirmación antes de publicar.
+      if (selection.lamination === 'mate_uv_sectorizada' && selection.printing === '4_4') {
+        const classicCostSameQuantity =
+          tiers.clasicas?.finishes?.sin_laminar?.printing?.['4_4']?.['9x5']?.[String(quantity)];
+        if (classicCostSameQuantity !== undefined && Number(offsetCost) < Number(classicCostSameQuantity)) {
+          throw new Error('CONSULT_REQUIRED: El costo offset con UV sectorizada es menor que el costo clásico 4/4 sin laminar; requiere reconfirmación del proveedor.');
+        }
+      }
+
       // Algunas celdas de 3.000/5.000 unidades cuestan menos que la celda
       // de 1.000 del mismo material, formato, impresión y terminación. Esas
       // tarifas necesitan confirmación: no extrapolar ni publicar por error.
