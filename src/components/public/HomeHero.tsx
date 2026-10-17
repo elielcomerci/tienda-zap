@@ -170,7 +170,7 @@ export default function HomeHero({
 
 
   // Format names to lowercase for inline sentence flow
-  const formatRubroName = (name: string) => name.toLowerCase()
+  const formatRubroName = (name: string) => name.toLocaleLowerCase('es-AR').replace(/\s*&\s*/g, ' y ')
   const formatSituacionName = (name: string) => name.toLowerCase()
 
   return (

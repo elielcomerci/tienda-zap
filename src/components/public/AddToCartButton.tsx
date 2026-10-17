@@ -51,7 +51,7 @@ export default function AddToCartButton({
         href={productHref || `/productos/${slug}`}
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
       >
-        Configurar <ArrowRight size={15} />
+        Configurar producto <ArrowRight size={15} />
       </Link>
     )
   }
@@ -63,7 +63,7 @@ export default function AddToCartButton({
         href={productHref || `/productos/${slug}`}
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
       >
-        Consultar <ArrowRight size={15} />
+        Ver producto <ArrowRight size={15} />
       </Link>
     )
   }
@@ -83,7 +83,7 @@ export default function AddToCartButton({
       }`}
     >
       {added ? <Check size={16} /> : <ShoppingCart size={16} />}
-      {added ? 'Agregado' : 'Agregar'}
+      {added ? 'Agregado' : 'Agregar al carrito'}
     </button>
   )
 }
