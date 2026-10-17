@@ -408,29 +408,6 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
       { quantity: 1000, sortOrder: 1 },
     ],
   },
-  // Estos dos productos cotizan contra matrices de proveedor terminado.
-  // No necesitan materias primas ni terminaciones del cotizador físico: el
-  // motor PROVIDER_FINISHED_COST solo consume el recargo maestro.
-  {
-    productSlug: 'adhesivos-stickers',
-    pricingMode: 'PROVIDER_FINISHED_COST',
-    margin: 0,
-    bleed: 0,
-    profitMargin: 150,
-    minProfitMargin: 120,
-    maxProfitMargin: 180,
-    allowCustomSize: false,
-    rawMaterialIds: [],
-    finishingIds: [],
-    sizePresets: [],
-    quantityPresets: [
-      { quantity: 100, sortOrder: 0 },
-      { quantity: 200, sortOrder: 1 },
-      { quantity: 300, sortOrder: 2 },
-      { quantity: 500, sortOrder: 3 },
-      { quantity: 1000, sortOrder: 4 },
-    ],
-  },
   {
     productSlug: 'carpetas-folders',
     pricingMode: 'PROVIDER_FINISHED_COST',
