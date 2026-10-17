@@ -454,6 +454,10 @@ function quoteProviderFinishedCostSelection(
   let totalPrice: number;
   let marginAmount: number;
   let marginPercent: number;
+  let netPrice: number | undefined;
+  let vatAmount: number | undefined;
+  let vatRatePercent: number | undefined;
+  let taxTreatment: 'INCLUDED' | undefined;
   const commercialPolicy = pricing?.commercialPricingPolicy;
 
   if (commercialPolicy) {
@@ -461,6 +465,10 @@ function quoteProviderFinishedCostSelection(
     // El cálculo separa venta neta, IVA y precio final; el IVA no se cuenta como ganancia.
     const calculated = calculateCommercialPrice(totalCost, commercialPolicy);
     totalPrice = calculated.finalPrice;
+    netPrice = calculated.netPrice;
+    vatAmount = calculated.vatAmount;
+    vatRatePercent = commercialPolicy.vatRatePercent;
+    taxTreatment = 'INCLUDED';
     marginAmount = calculated.grossProfit;
     marginPercent = calculated.grossMarginPercent;
   } else {
@@ -492,6 +500,7 @@ function quoteProviderFinishedCostSelection(
     totalPrice,
     totalCost,
     selectedOptions,
+    ...(taxTreatment ? { taxTreatment, netPrice, vatAmount, vatRatePercent } : {}),
     breakdown: {
       materialCost: 0,
       printingCost: 0,

@@ -80,6 +80,11 @@ export type ProductQuoteResult = {
   totalPrice: number
   totalCost: number
   selectedOptions: Array<{ name: string; value: string }>
+  /** Explicit tax display metadata; absent means the tax treatment is not approved for public display. */
+  taxTreatment?: 'INCLUDED'
+  netPrice?: number
+  vatAmount?: number
+  vatRatePercent?: number
   breakdown?: ProductQuoteBreakdown
 }
 

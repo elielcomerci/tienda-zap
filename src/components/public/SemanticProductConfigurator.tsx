@@ -4,7 +4,7 @@ import { Check, MessageCircleMore } from 'lucide-react'
 import { useCartStore } from '@/lib/cart-store'
 import { appendWhatsappDetails } from '@/lib/whatsapp'
 type Props = { product: any; configurator: any; inquiryUrl?: string | null }
-type QuoteResult = { unitPrice: number; totalPrice: number; totalCost: number; selectedOptions: Array<{ name: string; value: string }>; breakdown?: Record<string, number> }
+type QuoteResult = { unitPrice: number; totalPrice: number; totalCost: number; selectedOptions: Array<{ name: string; value: string }>; taxTreatment?: 'INCLUDED'; netPrice?: number; vatAmount?: number; vatRatePercent?: number; breakdown?: Record<string, number> }
 const quoteCache = new Map<string, QuoteResult>()
 function visible(key: string, selected: Record<string, any>, configurator: any) {
   return (configurator.compatibility?.uiRules || []).filter((r: any) => r.field === key).every((r: any) => {
@@ -78,8 +78,9 @@ export default function SemanticProductConfigurator({ product, configurator, inq
     return () => controller.abort()
   }, [complete, normalized, product.id])
   const change = (key: string, value: any) => setSelected((previous) => ({ ...previous, [key]: value }))
+  const quoteHasApprovedTaxDisplay = quote?.taxTreatment === 'INCLUDED' && typeof quote.netPrice === 'number'
   const addQuoted = () => {
-    if (!quote) return
+    if (!quote || !quoteHasApprovedTaxDisplay) return
     addItem({ productId: product.id, name: product.name, price: quote.totalPrice, catalogType: product.catalogType, modality: product.modality, creditDownPaymentPercent: product.creditDownPaymentPercent || 30, image: product.images?.[0] || '', quantity: 1, briefType: ['DESIGN','MUSIC','VIDEO'].includes(product.briefType) ? product.briefType : 'NONE', selectedOptions: quote.selectedOptions })
     setAdded(true); setTimeout(() => setAdded(false), 1500)
   }
@@ -97,7 +98,29 @@ export default function SemanticProductConfigurator({ product, configurator, inq
           return <label key={key} className="block rounded-[24px] border border-gray-200 bg-gray-50/70 p-4"><span className="text-base font-bold text-gray-900">{field.label || key}</span><select value={selected[key] ?? ''} onChange={(event) => change(key, field.type === 'quantity_selector' ? Number(event.target.value) : event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900">{options.map((option: any) => <option key={option.id ?? option.value} value={option.id ?? option.value}>{option.label ?? option.value}</option>)}</select></label>
         })}
       </div>
-      <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio final</p>{loading ? <p className="mt-3 text-sm text-gray-300">Calculando…</p> : quote ? <p className="mt-3 text-4xl font-black">{'$' + quote.totalPrice.toLocaleString('es-AR')}</p> : error === 'CONSULT_REQUIRED' ? <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p> : <p className="mt-3 text-sm text-gray-300">{complete ? 'Elegí una configuración válida.' : 'Elegí las opciones que faltan.'}</p>}{error === 'CONSULT_REQUIRED' ? <p className="mt-2 text-sm text-gray-300">Esta combinación necesita una revisión con ZAP.</p> : null}<div className="mt-5">{quote ? <button type="button" onClick={addQuoted} className="w-full rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white">{added ? 'Agregado' : 'Agregar al carrito'}</button> : <a href={configuredInquiryUrl || inquiryUrl || '#'} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white"><MessageCircleMore size={18} />Hablar con ZAP</a>}</div></div>
+      <div className="mt-6 rounded-[28px] bg-gray-950 p-5 text-white">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio final</p>
+        {loading ? <p className="mt-3 text-sm text-gray-300">Calculando…</p> : quoteHasApprovedTaxDisplay && quote ? (
+          <>
+            <p className="mt-3 text-4xl font-black">{'$' + quote.totalPrice.toLocaleString('es-AR')}</p>
+            <p className="mt-2 text-sm font-semibold text-gray-200">IVA incluido</p>
+            <p className="mt-2 text-xs leading-5 text-gray-300">{'$' + quote.netPrice!.toLocaleString('es-AR', { maximumFractionDigits: 2 })} · PRECIO SIN IMPUESTOS NACIONALES</p>
+          </>
+        ) : quote || error === 'CONSULT_REQUIRED' ? (
+          <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p>
+        ) : (
+          <p className="mt-3 text-sm text-gray-300">{complete ? 'Elegí una configuración válida.' : 'Elegí las opciones que faltan.'}</p>
+        )}
+        {quote && !quoteHasApprovedTaxDisplay ? <p className="mt-2 text-sm text-gray-300">Estamos validando el precio final y los impuestos aplicables a esta configuración.</p> : null}
+        {error === 'CONSULT_REQUIRED' ? <p className="mt-2 text-sm text-gray-300">Esta combinación necesita una revisión con ZAP.</p> : null}
+        <div className="mt-5">
+          {quoteHasApprovedTaxDisplay && quote ? (
+            <button type="button" onClick={addQuoted} className="w-full rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white">{added ? 'Agregado' : 'Agregar al carrito'}</button>
+          ) : (
+            <a href={configuredInquiryUrl || inquiryUrl || '#'} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white"><MessageCircleMore size={18} />Hablar con ZAP</a>
+          )}
+        </div>
+      </div>
     </section>
   )
 }

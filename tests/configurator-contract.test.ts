@@ -178,6 +178,9 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 8213);
   assert.equal(quote.totalPrice, 18890);
+  assert.equal(quote.taxTreatment, 'INCLUDED');
+  assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
+  assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
   assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
 
   const twoHundred = quoteConfiguratorSelection(
@@ -187,6 +190,8 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   );
   assert.equal(twoHundred.totalCost, 12361);
   assert.equal(twoHundred.totalPrice, 28490);
+  assert.equal(twoHundred.taxTreatment, 'INCLUDED');
+  assert.ok(Math.abs((twoHundred.netPrice ?? 0) - (twoHundred.totalPrice / 1.21)) < 0.01);
 
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 500 }, { profitMargin: 150 } as any),
