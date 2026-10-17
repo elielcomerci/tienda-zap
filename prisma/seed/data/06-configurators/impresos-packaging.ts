@@ -1239,18 +1239,20 @@ export const imanesPersonalizadosConfigurator: ConfiguratorVersionSeedData = {
 
 export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'talonarios-formularios',
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
     productSlug: 'talonarios-formularios',
     fields: {
       productType: {
-        label: 'Tipo de talonario',
+        label: 'Qué necesitás',
         type: 'select',
         required: true,
-        default: 'bonos_lavadero',
+        default: 'recibos',
         options: [
+          { id: 'recibos', label: 'Recibos personalizados' },
+          { id: 'remitos', label: 'Remitos personalizados' },
           { id: 'bonos_lavadero', label: 'Bonos numerados para lavaderos' },
         ],
       },
@@ -1258,15 +1260,18 @@ export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
         label: 'Formato',
         type: 'select',
         required: true,
-        default: '10x15',
-        options: [{ id: '10x15', label: '10 × 15 cm' }],
+        default: '17x22',
+        options: [
+          { id: '17x22', label: '17 × 22 cm · Recibos y remitos' },
+          { id: '10x15', label: '10 × 15 cm · Bonos para lavaderos' },
+        ],
       },
       material: {
         label: 'Impresión',
         type: 'select',
         required: true,
         default: 'obra_80g_byn',
-        options: [{ id: 'obra_80g_byn', label: 'Láser blanco y negro' }],
+        options: [{ id: 'obra_80g_byn', label: 'Tinta negra' }],
       },
       quantity: {
         label: 'Cantidad de talonarios',
@@ -1274,28 +1279,38 @@ export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 5,
         options: [
-          { value: 5, label: '5 talonarios · 250 números' },
-          { value: 10, label: '10 talonarios · 500 números' },
-          { value: 20, label: '20 talonarios · 1.000 números' },
+          { value: 1, label: '1 talonario · 50 juegos' },
+          { value: 5, label: '5 talonarios · 250 juegos' },
+          { value: 10, label: '10 talonarios · 500 juegos' },
+          { value: 20, label: '20 talonarios · 1.000 juegos' },
         ],
       },
     },
   },
-  compatibility: null,
+  compatibility: {
+    uiRules: [
+      { field: 'format', condition: { field: 'productType', operator: 'eq', value: 'bonos_lavadero' }, action: 'show' },
+    ],
+    allowedFormats: {
+      recibos: ['17x22'],
+      remitos: ['17x22'],
+      bonos_lavadero: ['10x15'],
+    },
+  },
   pricing: {
     engine: 'STICKER_TABLE',
     matrix: {
       obra_80g_byn: {
+        '17x22': { '1': 29900, '5': 109000, '10': 199000, '20': 369000 },
         '10x15': { '5': 34900, '10': 54900, '20': 94900 },
       },
     },
     currency: 'ARS',
-    priceSource: 'ZAP commercial price matrix approved 2026-10-17',
+    priceSource: 'ZAP commercial price matrix approved 2026-10-17; receipts/remitos benchmarked against published Buenos Aires print-shop prices',
     taxIncluded: true,
     commercialAvailability: 'ACTIVE',
   },
 };
-
 export const impresosPackagingConfigurators: ConfiguratorVersionSeedData[] = [
   tarjetasVouchersConfigurator,
   talonariosFormulariosConfigurator,
