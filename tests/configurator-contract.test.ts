@@ -290,14 +290,14 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   assert.equal(fiveHundredSimplex.totalPrice, 29090);
   assert.equal(fiveHundredSimplex.taxTreatment, 'INCLUDED');
 
-  const fiveHundredDuplex = quoteConfiguratorSelection(
-    config as any,
-    { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
-    { profitMargin: 0 } as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
+      { profitMargin: 0 } as any,
+    ),
+    /requiere renegociación o una referencia competitiva equivalente/,
   );
-  assert.equal(fiveHundredDuplex.totalCost, 39930);
-  assert.equal(fiveHundredDuplex.totalPrice, 60490);
-  assert.equal(fiveHundredDuplex.taxTreatment, 'INCLUDED');
 
   const threeHundredGram = quoteConfiguratorSelection(
     config as any,
@@ -421,7 +421,7 @@ test('portabanners y roll up usan costo terminado explícito y precio competitiv
   );
 });
 
-test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA explícitos', () => {
+test('stickers habilita las combinaciones con costo exacto y precio final con IVA', () => {
   const config = adhesivosStickersConfigurator;
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
@@ -535,12 +535,16 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   );
 });
 
-test('tags sigue en consulta porque el motor no incorpora impresión de proveedor', () => {
+test('tags publica 500 unidades con impresión, perforación y precio final calculados', () => {
   const selection = defaultSelection(tagsEtiquetasConfigurator);
-  assert.throws(
-    () => quoteConfiguratorSelection(tagsEtiquetasConfigurator as any, selection, makeQuoterConfig(tagsEtiquetasConfigurator)),
-    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+  const quote = quoteConfiguratorSelection(
+    tagsEtiquetasConfigurator as any,
+    selection,
+    makeQuoterConfig(tagsEtiquetasConfigurator),
   );
+  assert.equal(quote.totalCost, 39324);
+  assert.equal(quote.totalPrice, 57190);
+  assert.equal(quote.taxTreatment, 'INCLUDED');
 });
 
 

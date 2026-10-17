@@ -542,6 +542,14 @@ function quoteProviderFinishedCostSelection(
       throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de tarjeta.');
     }
 
+    // La tarifa digital de 500 u. 4/4 cuesta $39.930 netos antes de sumar
+    // terminaciones. Queda por encima del precio final de referencias locales
+    // comparables; no publicar el precio teórico mientras el proveedor no mejore
+    // el costo o aparezca una referencia realmente equivalente.
+    if (quantity === 500 && selection.material === 'ilustracion_350g' && selection.printing === '4_4') {
+      throw new Error('CONSULT_REQUIRED: El costo digital de 500 tarjetas 4/4 requiere renegociación o una referencia competitiva equivalente.');
+    }
+
     totalCost = Number(row[finishKey]);
 
     const finishing = matrix.digitalOndemand.finishing || {};

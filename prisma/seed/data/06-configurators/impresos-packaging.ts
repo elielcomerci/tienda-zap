@@ -129,8 +129,9 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       vatRatePercent: 21,
     },
     commercialPricingPoliciesByProcess: {
-      // Digital: 25% de recargo sobre costo neto + IVA; la referencia de 500 u.
-      // 4/4 queda cerca de la oferta minorista con laminado frontal.
+      // Digital: 25% de recargo sobre costo neto + IVA. La combinación 500 u.
+      // 4/4 supera el mercado con el costo actual y queda bloqueada en el adapter.
+      // 500 u. 4/0 permanece disponible con costo terminado explícito.
       digital: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
       // Offset: 15% de recargo para mantener 1.000 u. dentro de la banda local
       // sin vender al costo; las celdas con costo anómalo quedan en consulta.
