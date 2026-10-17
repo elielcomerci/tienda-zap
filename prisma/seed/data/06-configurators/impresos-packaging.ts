@@ -144,7 +144,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       offset: {
         ilustracion_350g: {
           '4_0': { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
-          '4_4': { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
+          '4_4': { version: 1, mode: 'MARKUP', percentage: 10, vatRatePercent: 21 },
         },
       },
     },
