@@ -59,13 +59,20 @@ export async function loadConfigurators(prisma: PrismaClient): Promise<void> {
   await prisma.$transaction(async (tx) => {
     for (const { cfg, productId } of resolvedConfigs) {
       if (MANAGED_PRICING_SLUGS.has(cfg.productSlug)) {
-        const existingVersions = await tx.configuratorVersion.findMany({
-          where: { productId },
+        // No pisar una versión gestionada por Precios ZAP. Sí permitir una
+        // nueva versión explícita (schemaVersion nuevo) para publicar cambios
+        // de pricing; la API toma la versión ACTIVE más alta.
+        const existingVersion = await tx.configuratorVersion.findUnique({
+          where: {
+            productId_schemaVersion: {
+              productId,
+              schemaVersion: cfg.schemaVersion,
+            },
+          },
           select: { id: true },
-          take: 1,
         });
 
-        if (existingVersions.length > 0) {
+        if (existingVersion) {
           preserved += 1;
           continue;
         }
