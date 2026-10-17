@@ -958,7 +958,7 @@ const carpetasDigital300gTiers = [
 
 export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'carpetas-folders',
-  schemaVersion: '1.1',
+  schemaVersion: '1.2',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
