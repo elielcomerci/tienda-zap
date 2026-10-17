@@ -1081,13 +1081,13 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Precio competitivo: 30% de recargo sobre costo neto + IVA 21%.
-    // Para 50 unidades 4/0 sin laminar: costo $82.350; precio final ≈$129.590,
-    // por debajo de las referencias minoristas actuales para carpetas equivalentes.
+    // Posicionamiento medio-alto con 20% de recargo sobre costo neto + IVA 21%.
+    // Para 50 unidades 4/0 sin laminar: costo $82.350; precio final ≈$119.572.
+    // Referencias consultadas: Imprimime $107.793 + IVA (50 u., 300 g); Lugones $77.500 (50 u., 250 g sin laminar).
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 30,
+      percentage: 20,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {

@@ -530,10 +530,10 @@ test('stickers y carpetas aplican política comercial versionada y tratamiento f
     folderConfig as any,
   );
   assert.equal(foldersQuote.totalCost, 82350);
-  assert.equal(foldersQuote.totalPrice, 129590);
+  assert.equal(foldersQuote.totalPrice, 119572);
   assert.equal(foldersQuote.taxTreatment, 'INCLUDED');
   assert.equal(foldersQuote.vatRatePercent, 21);
-  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 23.1) < 0.2);
+  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 16.67) < 0.2);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
