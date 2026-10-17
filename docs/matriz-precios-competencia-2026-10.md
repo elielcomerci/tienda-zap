@@ -205,9 +205,9 @@ Se redujo el recargo del 130% al 110% sobre el costo neto. Ejemplo 5×5 cm: 500 
 
 Referencias actuales:
 
-- [Imprimime — lista vigente al 10/10/2026](https://imprimime.com.ar/lista-de-precios): 50 carpetas 300 g, una solapa, full color: $107.793 + IVA (~$130.430 final con IVA 21%).
-- [Imprenta Lugones](https://www.imprentalugones.com.ar/productos/carpetas/): papel 300 g, 50 carpetas $97.400 final.
-- [Mercado Libre — 50 carpetas](https://www.mercadolibre.com.ar/50-carpetas-institucionales-a4-300g--solapa--diseno-gratis/up/MLAU190281256): 50 carpetas de 350 g con solapa y diseño, $176.284,50 final.
+- [Imprenta Más](https://www.imprentamas.com.ar/productos/carpetas-institucionales-sin-laminar-dde-50-un/): 50 carpetas A4, ilustración 300 g, 4/0 sin laminar: $144.901 final.
+- [Mercado Libre — 50 carpetas](https://www.mercadolibre.com.ar/50-carpetas-institucionales-a4-300g--solapa--diseno-gratis/up/MLAU190281256): publicación de 50 carpetas A4, ilustración 350 g, con solapa y diseño, $176.284,50 final.
+- Imprenta Lugones se conserva como referencia secundaria de Córdoba, no como precio base de Buenos Aires.
 
 Se redujo el recargo del 40% al 30%. Para 50 unidades, 4/0 sin laminar, el precio calculado pasa de $139.590 a **$129.590 final**, alrededor de 10,6% por debajo de Imprenta Más ($144.901). La comparación sigue sujeta a confirmar que estructura, solapa y terminación coincidan.
 
@@ -216,7 +216,13 @@ Se redujo el recargo del 40% al 30%. Para 50 unidades, 4/0 sin laminar, el preci
 - **Tags & Etiquetas:** activado en alcance acotado para 500 u. de 9×5 cm. El costo suma papel, impresión digital por pliego, perforación y laminado frontal cuando corresponde; se usa una imposición conservadora de 24 unidades por pliego. 1.000 u. permanece en consulta hasta obtener un costo offset terminado competitivo.
 - **Formatos, papeles, cantidades o terminaciones fuera de las celdas existentes:** permanecen en consulta. Una opción visible no implica que toda combinación tenga costo.
 - **Fajas, bolsas, menús e individuales:** sus configuradores siguen en DRAFT sin matriz de costo terminado activa.
+- **Carpetas offset 350 g:** hay una matriz cargada, pero sus importes y escala deben reconfirmarse antes de exponerla; el precio automático no debe superar al mercado por una unidad de costo mal interpretada.
+- **Gran formato, corpóreos, señalética y textil:** hay costos de materiales/procesos, pero faltan combinaciones de producto terminado, fabricación, instalación, traslado o prenda base. No sumar componentes sin validar si una línea ya incluye material + impresión + corte.
+- **DTF textil:** la unidad de precio del proveedor sigue sin resolver; no publicar un precio automático.
+- **Cuadernos:** la matriz de costos está cargada, pero no existe un producto dedicado en el catálogo actual; crear una ficha de producto y validar las unidades antes de publicarla.
+- **Imanes:** la matriz disponible corresponde a plancha sin montar o material troquelado; falta validar montaje/terminación del producto final.
+- **Membretes y sobres:** la matriz on-demand no tiene unidad de precio suficientemente clara para compararla con precios minoristas; no interpretar sus importes como total por lote sin confirmación.
 
 ### Estado de entrega
 
-Los cambios están guardados en `main` con nuevas versiones de configuración para tarjetas, flyers, stickers y carpetas. **No se ejecutaron las pruebas en un entorno local ni se sincronizó producción**; antes de publicar hay que correr la suite, revisar la selección de variantes en la interfaz y comprobar cotización, carrito e impuestos de extremo a extremo.
+Los cambios de código están guardados en `main`: tarjetas v1.4, flyers v1.2, tags v1.1, carpetas v1.2 y Expositores & Stands v1.1. **No se pudo verificar la suite**: las ejecuciones de GitHub Actions fallan antes de exponer pasos o registros. Vercel informa límite de despliegues por 24 horas, por lo que los cambios aún no están confirmados en producción. Antes de publicar hay que ejecutar pruebas, revisar las variantes en la interfaz y comprobar cotización, carrito e impuestos de extremo a extremo.
