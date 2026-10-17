@@ -73,6 +73,7 @@ export async function POST(request: Request) {
       return 'digital'
     })()
     const commercialPolicy =
+      pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrintingAndQuantity?.[requestedProcess]?.[selection.material || '']?.[selection.printing || '']?.[String(selection.quantity)] ||
       pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrinting?.[requestedProcess]?.[selection.material || '']?.[selection.printing || ''] ||
       pricing?.commercialPricingPoliciesByProcessAndMaterialAndQuantity?.[requestedProcess]?.[selection.material || '']?.[String(selection.quantity)] ||
       pricing?.commercialPricingPoliciesByProcessAndMaterial?.[requestedProcess]?.[selection.material || ''] ||
