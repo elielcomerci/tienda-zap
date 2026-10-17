@@ -454,7 +454,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 75,
+      percentage: 100,
       vatRatePercent: 21,
     },
     consultRequiredSelections: [
@@ -870,7 +870,7 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 120,
+      percentage: 130,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {

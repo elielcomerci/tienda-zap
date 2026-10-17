@@ -222,12 +222,12 @@ test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA expl√
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 19231);
-  assert.equal(quote.totalPrice, 51290);
+  assert.equal(quote.totalPrice, 53590);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
-  assert.ok((quote.breakdown?.marginPercent ?? 0) > 54 && (quote.breakdown?.marginPercent ?? 0) < 55);
+  assert.ok((quote.breakdown?.marginPercent ?? 0) > 56.4 && (quote.breakdown?.marginPercent ?? 0) < 56.8);
 
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any),
@@ -258,7 +258,7 @@ test('stickers y carpetas aplican pol√≠tica comercial versionada y tratamiento f
 
   const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
   const stickerQuote = quoteConfiguratorSelection(adhesivosStickersConfigurator as any, stickersSelection);
-  assert.equal(stickerQuote.totalPrice, 51290);
+  assert.equal(stickerQuote.totalPrice, 53590);
   assert.equal(stickerQuote.taxTreatment, 'INCLUDED');
 
   const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
@@ -310,7 +310,7 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   };
   const quote = quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config));
   assert.equal(quote.totalCost, 25000);
-  assert.equal(quote.totalPrice, 52990);
+  assert.equal(quote.totalPrice, 60490);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - quote.totalPrice / 1.21) < 0.01);
