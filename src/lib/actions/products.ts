@@ -1,6 +1,6 @@
 'use server'
 
-import { CatalogType, ConfiguratorEngine, ProductModality } from '@prisma/client'
+import { CatalogType, ConfiguratorEngine, ProductModality, ProductRelationType } from '@prisma/client'
 import { auth } from '@/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -60,6 +60,20 @@ function productImages(formData: FormData, fallbackImages: string[] = []) {
   return [...new Set(urls)]
 }
 
+function relationInputs(formData: FormData) {
+  const groups: Array<[string, ProductRelationType]> = [
+    ['upsellProductIds', 'UPSELL'],
+    ['complementaryProductIds', 'COMPLEMENTARY'],
+    ['alternativeProductIds', 'ALTERNATIVE'],
+  ]
+  const seen = new Set<string>()
+  return groups.flatMap(([field, type]) => formData.getAll(field).map(String).filter((relatedProductId) => {
+    if (!relatedProductId || seen.has(relatedProductId)) return false
+    seen.add(relatedProductId)
+    return true
+  }).map((relatedProductId) => ({ relatedProductId, type })))
+}
+
 function productData(formData: FormData, fallbackImages: string[] = []) {
   const catalogTypeValue = String(formData.get('catalogType') || 'COSA')
   const catalogType = Object.values(CatalogType).includes(catalogTypeValue as CatalogType)
@@ -109,8 +123,15 @@ export async function createProduct(formData: FormData) {
   await requireAdmin()
   const data = productData(formData)
   if (!data.name) throw new Error('Nombre requerido.')
+  const categoryIds = [...new Set(formData.getAll('categoryIds').map(String).filter(Boolean))]
+  const relations = relationInputs(formData)
   const product = await prisma.product.create({
-    data: { ...data, slug: await uniqueSlug(String(formData.get('slug') || data.name)) },
+    data: {
+      ...data,
+      slug: await uniqueSlug(String(formData.get('slug') || data.name)),
+      categoryLinks: { create: categoryIds.map((categoryId) => ({ categoryId })) },
+      outgoingRelations: { create: relations },
+    },
   })
   revalidateProductPaths(product.slug)
   redirect('/admin/productos')
@@ -122,9 +143,22 @@ export async function updateProduct(id: string, formData: FormData) {
   if (!previous) throw new Error('Product Base no encontrado.')
   const data = productData(formData, previous.images)
   if (!data.name) throw new Error('Nombre requerido.')
+  const categoryIds = [...new Set(formData.getAll('categoryIds').map(String).filter(Boolean))]
+  const relations = relationInputs(formData)
   const product = await prisma.product.update({
     where: { id },
-    data: { ...data, slug: await uniqueSlug(String(formData.get('slug') || data.name), id) },
+    data: {
+      ...data,
+      slug: await uniqueSlug(String(formData.get('slug') || data.name), id),
+      categoryLinks: {
+        deleteMany: {},
+        create: categoryIds.map((categoryId) => ({ categoryId })),
+      },
+      outgoingRelations: {
+        deleteMany: {},
+        create: relations,
+      },
+    },
   })
   revalidateProductPaths(previous?.slug)
   revalidateProductPaths(product.slug)
@@ -139,7 +173,7 @@ export async function deleteProduct(id: string) {
 
 export async function duplicateProduct(id: string) {
   await requireAdmin()
-  const original = await prisma.product.findUnique({ where: { id } })
+  const original = await prisma.product.findUnique({ where: { id }, include: { categoryLinks: { select: { categoryId: true } }, outgoingRelations: { select: { relatedProductId: true, type: true } } } })
   if (!original) throw new Error('Product Base no encontrado.')
   const duplicate = await prisma.product.create({
     data: {
@@ -165,6 +199,8 @@ export async function duplicateProduct(id: string) {
       configurable: original.configurable,
       consultationNote: original.consultationNote,
       creditDownPaymentPercent: original.creditDownPaymentPercent,
+      categoryLinks: { create: original.categoryLinks.map(({ categoryId }) => ({ categoryId })) },
+      outgoingRelations: { create: original.outgoingRelations.map(({ relatedProductId, type }) => ({ relatedProductId, type })) },
     },
   })
   revalidateProductPaths(duplicate.slug)

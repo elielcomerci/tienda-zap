@@ -1,12 +1,12 @@
-﻿import Image from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Link2 } from 'lucide-react'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
-import { getProductFamilyLabel } from '@/lib/catalog-domain'
 import { buildProductUrl, type ExplorationContext } from '@/lib/exploration-context'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 
 type RelatedProduct = {
+  relationType: 'UPSELL' | 'COMPLEMENTARY' | 'ALTERNATIVE'
   id: string
   name: string
   slug: string
@@ -44,10 +44,10 @@ export default function RelatedProductsSection({
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            Puede completar este trabajo
+            También puede interesarte
           </h2>
           <p className="text-sm text-gray-500">
-            Una pieza que puede tener sentido junto con esta.
+            Alternativas y complementos que ZAP seleccionó para esta propuesta.
           </p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function RelatedProductsSection({
 
               <div className="space-y-3 p-4">
                 <div>
-                  <p className="mb-1 text-xs font-semibold text-[#ED164F]">{getProductFamilyLabel(product)}</p>
+                  <p className="mb-1 text-xs font-semibold text-[#ED164F]">{product.relationType === 'UPSELL' ? 'Una opción más completa' : product.relationType === 'ALTERNATIVE' ? 'Una alternativa' : 'Un buen complemento'}</p>
                   <h3 className="line-clamp-2 text-base font-bold text-gray-900">{product.name}</h3>
                 </div>
 
@@ -102,7 +102,7 @@ export default function RelatedProductsSection({
                   </div>
 
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#ED164F]">
-                    Ver complemento
+                    {product.relationType === 'UPSELL' ? 'Ver opción' : product.relationType === 'ALTERNATIVE' ? 'Ver alternativa' : 'Ver complemento'}
                     <ArrowRight size={16} />
                   </span>
                 </div>

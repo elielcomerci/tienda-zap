@@ -1,27 +1,26 @@
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { catalogFamilies, catalogGroups } from '@/lib/catalog-domain'
 
-/** Las familias son internas; la navegación pública se deriva de productos activos. */
+/** La navegación pública se administra desde ZAP Admin y sólo muestra categorías con productos activos. */
 export async function getPublicCategories() {
-  const activeFamilies = await prisma.product.findMany({
-    where: { active: true, engine: { not: null } },
-    select: { engine: true },
-    distinct: ['engine'],
+  const categories = await prisma.category.findMany({
+    where: {
+      active: true,
+      products: { some: { product: { active: true } } },
+    },
+    select: { id: true, name: true, slug: true, sortOrder: true },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
   })
-  const activeEngines = new Set(activeFamilies.map((product) => product.engine).filter(Boolean))
-  const families = catalogFamilies.filter((family) => activeEngines.has(family.engine)).map((family) => ({
-    id: family.slug, name: family.label, slug: family.slug,
-  }))
-  const activeProducts = await prisma.product.findMany({
-    where: { active: true },
-    select: { slug: true },
-  })
-  const activeSlugs = new Set(activeProducts.map((product) => product.slug))
-  const groups = catalogGroups
-    .filter((group) => group.productSlugs.some((slug) => activeSlugs.has(slug)))
-    .map((group) => ({ id: group.slug, name: group.label, slug: group.slug }))
-  return families.flatMap((family) =>
-    family.slug === 'impresos-packaging' ? [family, ...groups] : [family]
-  )
+  return categories.map(({ sortOrder: _sortOrder, ...category }) => category)
 }
+
+export async function getAdminCategories() {
+  const session = await auth()
+  if (!session || session.user?.role !== 'ADMIN') throw new Error('No autorizado')
+  return prisma.category.findMany({
+    include: { _count: { select: { products: true } } },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+  })
+}
+
 export const getCategories = getPublicCategories
