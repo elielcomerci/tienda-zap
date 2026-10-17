@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '1.4',
+  schemaVersion: '1.5',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -34,7 +34,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'ilustracion_350g',
         options: [
-          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
           { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
         ],
       },
@@ -150,6 +149,8 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       // Impresión digital para producción on-demand.
       // Estos costos son de proveedor terminado, sin IVA, y no son precios de venta ZAP.
       // La lista de 350g ya trae aplicado el recargo del 10%; no debe volver a calcularse.
+     // El costo digital 300g queda conservado para auditoría, pero no se ofrece: su escala
+     // no es coherente con el mercado ni con el costo de 350g hasta reconfirmar la fuente.
       digitalOndemand: {
         source: 'DIGITAL_ONDEMAND',
         taxIncluded: false,

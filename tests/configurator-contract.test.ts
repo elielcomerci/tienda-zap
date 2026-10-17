@@ -299,13 +299,14 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     /requiere renegociación o una referencia competitiva equivalente/,
   );
 
-  const threeHundredGram = quoteConfiguratorSelection(
-    config as any,
-    { ...selection, material: 'ilustracion_300g', quantity: 100, printing: '4_0', lamination: 'sin_laminar' },
-    { profitMargin: 0 } as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, material: 'ilustracion_300g', quantity: 100, printing: '4_0', lamination: 'sin_laminar' },
+      { profitMargin: 0 } as any,
+    ),
+    /tarjetas 300 g no es competitivo y requiere reconfirmación/,
   );
-  assert.equal(threeHundredGram.totalCost, 13031);
-  assert.equal(threeHundredGram.taxTreatment, 'INCLUDED');
 
   const uv = quoteConfiguratorSelection(
     config as any,
@@ -439,6 +440,20 @@ test('stickers habilita las combinaciones con costo exacto y precio final con IV
   const fourByFour = quoteConfiguratorSelection(config as any, { ...selection, format: '4x4' }, { profitMargin: 0 } as any);
   assert.equal(fourByFour.totalCost, 13249);
   assert.equal(fourByFour.totalPrice, 33690);
+
+  const matrix = (config.pricing as any).providerFinishedCostMatrix.quote.papel_autoadhesivo_90g;
+  for (const [format, quantities] of Object.entries(matrix) as Array<[string, Record<string, number>]>) {
+    for (const [quantity, expectedCost] of Object.entries(quantities)) {
+      const result = quoteConfiguratorSelection(
+        config as any,
+        { ...selection, format, quantity: Number(quantity) },
+        { profitMargin: 0 } as any,
+      );
+      assert.equal(result.totalCost, expectedCost, `Costo stickers ${format}, ${quantity} u.`);
+      assert.ok(result.totalPrice > result.totalCost, `Precio stickers ${format}, ${quantity} u.`);
+    }
+  }
+
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
     /Cantidad '999' no permitida/,
