@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
