@@ -79,6 +79,7 @@ export async function POST(request: Request) {
       pricing?.commercialPricingPoliciesByProcessAndMaterial?.[requestedProcess]?.[selection.material || ''] ||
       pricing?.commercialPricingPoliciesByProcess?.[requestedProcess] ||
       pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
+      pricing?.commercialPricingPoliciesByShape?.[selection.shape || ''] ||
       pricing?.commercialPricingPolicy
 
     // If this configurator declares process-specific policies, never silently
