@@ -4,6 +4,7 @@ import {
   adhesivosStickersConfigurator,
   carpetasFoldersConfigurator,
   flyersDesplegablesConfigurator,
+  imanesPersonalizadosConfigurator,
   impresosPackagingConfigurators,
   tagsEtiquetasConfigurator,
   tarjetasVouchersConfigurator,
@@ -536,6 +537,15 @@ test('stickers y carpetas aplican política comercial versionada y tratamiento f
   assert.equal(rectoStickerQuote.totalCost, 26042);
   assert.equal(rectoStickerQuote.totalPrice, 37890);
   assert.equal(rectoStickerQuote.taxTreatment, 'INCLUDED');
+
+  const magnetSelection = defaultSelection(imanesPersonalizadosConfigurator);
+  const magnetQuote = quoteConfiguratorSelection(
+    imanesPersonalizadosConfigurator as any,
+    magnetSelection,
+  );
+  assert.equal(magnetQuote.totalCost, 65725);
+  assert.equal(magnetQuote.totalPrice, 143190);
+  assert.equal(magnetQuote.taxTreatment, 'INCLUDED');
 
   const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
   const foldersQuote = quoteConfiguratorSelection(

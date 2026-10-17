@@ -1197,10 +1197,12 @@ export const imanesPersonalizadosConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // Recargo de 80% + IVA: queda cerca del tramo alto observado en MercadoLibre
+    // para 500 y 1.000 imanes 9×5 cm, sin excederlo ampliamente.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 110,
+      percentage: 80,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
