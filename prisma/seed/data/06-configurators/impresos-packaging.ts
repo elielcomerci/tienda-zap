@@ -807,6 +807,10 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // El costo cargado queda en consulta comercial: la comparación disponible
+    // no deja margen operativo suficiente para venderlo 5–10% sobre mercado.
+    // No activar precio automático hasta validar otra tarifa de proveedor.
+    commercialAvailability: 'CONSULT_REQUIRED',
     providerFinishedCostMatrix: {
       resolver: { type: 'STICKERS_CIRCULAR' },
       quote: {
@@ -903,6 +907,15 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // Precio objetivo para producto terminado tercerizado: 90% de recargo
+    // sobre costo neto + IVA 21%. Con 50 carpetas 4/0 sin laminar, el total
+    // estimado queda aproximadamente 6–8% por encima de referencias comparables.
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 90,
+      vatRatePercent: 21,
+    },
     providerFinishedCostMatrix: {
       resolver: { type: 'FOLDERS_DIGITAL' },
       currency: 'ARS',
