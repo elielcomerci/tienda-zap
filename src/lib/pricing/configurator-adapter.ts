@@ -392,9 +392,11 @@ function quoteProviderFinishedCostSelection(
         ? 'laminado_mate'
         : selection.lamination === 'brillo'
           ? 'laminado_brillo'
-          : selection.lamination === 'sin_laminar'
-            ? 'sin_laminar'
-            : null;
+          : selection.lamination === 'laca_uv'
+            ? 'laca_uv'
+            : selection.lamination === 'sin_laminar'
+              ? 'sin_laminar'
+              : null;
     if (!row || !finishKey || row[finishKey] === undefined) {
       throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de tarjeta.');
     }
