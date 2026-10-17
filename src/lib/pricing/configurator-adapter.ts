@@ -516,9 +516,6 @@ function quoteProviderFinishedCostSelection(
       totalCost = Number(offsetCost);
     } else {
     resolvedPricingProcess = 'digital';
-    if (selection.material === 'ilustracion_300g') {
-      throw new Error('CONSULT_REQUIRED: El costo digital cargado para tarjetas 300 g no es competitivo y requiere reconfirmación del proveedor.');
-    }
     if (selection.format !== '9x5') {
       throw new Error('CONSULT_REQUIRED: El costo cargado para tarjetas no contempla este formato.');
     }
