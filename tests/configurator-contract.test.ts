@@ -329,7 +329,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 0 } as any,
   );
   assert.equal(offsetThousand.totalCost, 45477);
-  assert.equal(offsetThousand.totalPrice, 68790);
+  assert.equal(offsetThousand.totalPrice, 63290);
   assert.equal(offsetThousand.taxTreatment, 'INCLUDED');
 
   const offsetBrillo = quoteConfiguratorSelection(
@@ -338,6 +338,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 0 } as any,
   );
   assert.equal(offsetBrillo.totalCost, 51989);
+  assert.equal(offsetBrillo.totalPrice, 72390);
 
   const offsetMate = quoteConfiguratorSelection(
     config as any,
@@ -345,13 +346,16 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 0 } as any,
   );
   assert.equal(offsetMate.totalCost, 53000);
+  assert.equal(offsetMate.totalPrice, 73790);
 
-  const offsetSectorized = quoteConfiguratorSelection(
-    config as any,
-    { ...selection, productionProcess: 'offset', quantity: 1000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
-    { profitMargin: 0 } as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, productionProcess: 'offset', quantity: 1000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
+      { profitMargin: 0 } as any,
+    ),
+    /menor que el costo clásico 4\/4 sin laminar/,
   );
-  assert.equal(offsetSectorized.totalCost, 39000);
 
   assert.throws(
     () => quoteConfiguratorSelection(
