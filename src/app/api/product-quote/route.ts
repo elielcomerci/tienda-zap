@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote } from '@/lib/pricing/product-quoter'
 import { quoteConfiguratorSelection } from '@/lib/pricing/configurator-adapter'
+import { calculateCommercialPrice } from '@/lib/pricing/commercial-pricing-policy'
 import { getOrCreateCachedProductQuote, buildProductQuotePricingFingerprintInput } from '@/lib/pricing/quote-cache'
 import { impresosPackagingConfigurators } from '../../../../prisma/seed/data/06-configurators/impresos-packaging'
 import { presenciaFisicaConfigurators } from '../../../../prisma/seed/data/06-configurators/presencia-fisica'
@@ -55,6 +56,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Este producto no tiene un cotizador activo.' }, { status: 404 })
     }
 
+    const pricing = configurator?.pricing as any
+    const requestedProcess = String(selection.productionProcess || 'digital')
+    const commercialPolicy =
+      pricing?.commercialPricingPoliciesByProcessAndMaterial?.[requestedProcess]?.[selection.material || ''] ||
+      pricing?.commercialPricingPoliciesByProcess?.[requestedProcess] ||
+      pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
+      pricing?.commercialPricingPolicy
+
+    // If this configurator declares process-specific policies, never silently
+    // fall back to the legacy ProductQuoterConfig margin for a missing policy.
+    if (
+      pricing?.engine === 'PROVIDER_FINISHED_COST' &&
+      pricing?.commercialPricingPoliciesByProcess &&
+      !commercialPolicy
+    ) {
+      throw new Error('CONSULT_REQUIRED: Falta una política comercial para el proceso seleccionado.')
+    }
+
     const quote = await getOrCreateCachedProductQuote({
       cacheKeyInput: { productId, selection },
       pricingFingerprintInput: configurator
@@ -64,7 +83,33 @@ export async function POST(request: Request) {
       calculate: () => configurator ? quoteConfiguratorSelection(configurator as any, selection, config as any) : calculateProductQuote(config as any, selection),
     })
 
-    return NextResponse.json(quote, {
+    // The quote cache stores the cost and price, but older cache records do not
+    // persist the tax breakdown. Rebuild the public price from the current
+    // versioned policy on every response so total, net and VAT always agree.
+    const responseQuote = pricing?.engine === 'PROVIDER_FINISHED_COST' && commercialPolicy
+      ? (() => {
+          const calculated = calculateCommercialPrice(Number(quote.totalCost), commercialPolicy)
+          const quantity = Number(selection.quantity)
+          return {
+            ...quote,
+            unitPrice: calculated.finalPrice / quantity,
+            totalPrice: calculated.finalPrice,
+            taxTreatment: 'INCLUDED' as const,
+            netPrice: calculated.netPrice,
+            vatAmount: calculated.vatAmount,
+            vatRatePercent: commercialPolicy.vatRatePercent,
+            breakdown: quote.breakdown
+              ? {
+                  ...quote.breakdown,
+                  marginAmount: calculated.grossProfit,
+                  marginPercent: calculated.grossMarginPercent,
+                }
+              : quote.breakdown,
+          }
+        })()
+      : quote
+
+    return NextResponse.json(responseQuote, {
       headers: {
         'Cache-Control': 'private, max-age=30, stale-while-revalidate=300',
       },
