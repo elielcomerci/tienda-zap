@@ -177,7 +177,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 8213);
-  assert.ok(quote.totalPrice > 0);
+  assert.equal(quote.totalPrice, 18890);
   assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
 });
 
@@ -236,11 +236,14 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
   );
 });
 
-test('flyers y tags llegan al motor físico con materiales, medidas y procesos resueltos', () => {
+test('flyers y tags no publican precios cuando el costo de impresión no está validado', () => {
   for (const config of [flyersDesplegablesConfigurator, tagsEtiquetasConfigurator]) {
     const selection = defaultSelection(config);
-    const quote = quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config));
-    assert.ok(quote.totalPrice > 0, config.productSlug);
+    assert.throws(
+      () => quoteConfiguratorSelection(config as any, selection, makeQuoterConfig(config)),
+      /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
+      config.productSlug,
+    );
   }
 });
 
