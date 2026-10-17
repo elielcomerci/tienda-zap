@@ -12,6 +12,18 @@ INSERT INTO "Product" ("id","name","slug","price","catalogType","modality","engi
 ('prod_diseno_vidriera_20261017','Diseño de Vidriera','diseno-vidriera',402475,'COSA','DIRECTO',NULL,TRUE,7,'DESIGN','Diseño de una propuesta gráfica para una vidriera o escaparate comercial.','Definir qué debería ver primero quien pasa frente al local.',ARRAY['Concepto visual','Diseño de la propuesta','Archivo final listo para producción']::text[],ARRAY[]::text[],NULL,ARRAY[]::text[],NOW(),NOW()),
 ('prod_diseno_papeleria_corporativa_20261017','Diseño de Papelería Corporativa','diseno-papeleria-corporativa',185000,'COSA','DIRECTO',NULL,TRUE,8,'DESIGN','Diseño coordinado de piezas básicas de papelería institucional.','Mantener una misma identidad visual en los documentos y piezas de uso habitual.',ARRAY['Aplicación de identidad existente a tres piezas acordadas','Criterio visual consistente','Hasta dos rondas de ajustes','Archivos finales listos para producción']::text[],ARRAY[]::text[],NULL,ARRAY[]::text[],NOW(),NOW())
 ON CONFLICT ("slug") DO UPDATE SET "sortOrder"=EXCLUDED."sortOrder";
+-- Make the direct design offers discoverable through the existing Marca & Contenido category.
+INSERT INTO "ProductCategory" ("productId","categoryId","sortOrder","createdAt")
+SELECT p.id, c.id, p."sortOrder", NOW()
+FROM "Product" p
+JOIN "Category" c ON c.slug='marca-contenido'
+WHERE p.slug IN (
+  'diseno-flyer-volante','diseno-pack-graficos-redes','diseno-menu-gastronomico',
+  'diseno-etiquetas','diseno-cartel-afiche','diseno-carteleria-rotulos',
+  'diseno-vidriera','diseno-papeleria-corporativa'
+)
+ON CONFLICT ("productId","categoryId") DO NOTHING;
+
 
 UPDATE "Product" SET "sortOrder" = CASE "slug"
   WHEN 'diseno-flyer-volante' THEN 1 WHEN 'diseno-pack-graficos-redes' THEN 2
