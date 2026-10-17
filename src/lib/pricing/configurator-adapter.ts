@@ -375,6 +375,34 @@ function quoteProviderFinishedCostSelection(
   const fields = configurator.schema?.fields || {};
 
   if (resolver.type === 'CARDS_DIGITAL') {
+    if (selection.productionProcess === 'offset') {
+      if (quantity < 1000) {
+        throw new Error('CONSULT_REQUIRED: La impresión offset de tarjetas comienza en 1.000 unidades.');
+      }
+      if (selection.format !== '9x5' || selection.material !== 'ilustracion_350g') {
+        throw new Error('CONSULT_REQUIRED: La matriz offset de tarjetas cubre 9×5 cm en ilustración 350 g.');
+      }
+      if ((selection.additionalFinishings || []).length > 0 || (selection.laminationSides && selection.laminationSides !== 'frente')) {
+        throw new Error('CONSULT_REQUIRED: La matriz offset no tiene costos cargados para esas terminaciones adicionales.');
+      }
+
+      const tiers = matrix.tiers || {};
+      let offsetCost: unknown;
+      if (selection.lamination === 'sin_laminar') {
+        offsetCost = tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.['9x5']?.[String(quantity)];
+      } else if (selection.lamination === 'brillo') {
+        offsetCost = tiers.clasicas?.finishes?.opp_brillo?.printing?.[selection.printing || '']?.['9x5']?.[String(quantity)];
+      } else if (selection.lamination === 'mate') {
+        offsetCost = tiers.premium?.finishes?.opp_mate?.printing?.[selection.printing || '']?.['9x5']?.[String(quantity)];
+      } else if (selection.lamination === 'mate_uv_sectorizada' && selection.printing === '4_4') {
+        offsetCost = tiers.deluxe?.finishes?.opp_mate_laca_uv_sectorizada?.printing?.['4_4']?.sectorizedSides?.frente?.['9x5']?.[String(quantity)];
+      }
+
+      if (offsetCost === undefined) {
+        throw new Error('CONSULT_REQUIRED: No hay costo offset cargado para esta cantidad, impresión y terminación.');
+      }
+      totalCost = Number(offsetCost);
+    } else {
     if (selection.format !== '9x5') {
       throw new Error('CONSULT_REQUIRED: El costo cargado para tarjetas no contempla este formato.');
     }
@@ -415,6 +443,7 @@ function quoteProviderFinishedCostSelection(
         }
         totalCost += Number(surcharge);
       }
+    }
     }
   } else if (resolver.type === 'FLYERS_DIGITAL') {
     if (selection.foldingType !== 'plano') {
@@ -482,7 +511,10 @@ function quoteProviderFinishedCostSelection(
   let vatAmount: number | undefined;
   let vatRatePercent: number | undefined;
   let taxTreatment: 'INCLUDED' | undefined;
-  const commercialPolicy = pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] || pricing?.commercialPricingPolicy;
+  const commercialPolicy =
+    pricing?.commercialPricingPoliciesByProcess?.[selection.productionProcess || ''] ||
+    pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
+    pricing?.commercialPricingPolicy;
 
   if (commercialPolicy) {
     // Una política guardada en la versión activa prevalece sobre el recargo heredado.
