@@ -192,23 +192,24 @@ test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta can
   );
 });
 
-test('stickers y carpetas tienen margen maestro sembrado y cotizan con el recargo configurado', () => {
+test('stickers queda en consulta comercial y carpetas aplica política explícita con IVA', () => {
   for (const slug of ['adhesivos-stickers', 'carpetas-folders']) {
     const config = initialQuoterConfigs.find((entry) => entry.productSlug === slug);
     assert.ok(config, `${slug}: falta ProductQuoterConfig en el seed`);
-    assert.equal(config.profitMargin, 150, `${slug}: debe mantener el recargo maestro vigente`);
+    assert.equal(config.profitMargin, 150, `${slug}: el recargo heredado debe permanecer explícito`);
     assert.equal(config.minProfitMargin, 120);
     assert.equal(config.maxProfitMargin, 180);
   }
 
   const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
-  const stickersQuote = quoteConfiguratorSelection(
-    adhesivosStickersConfigurator as any,
-    stickersSelection,
-    initialQuoterConfigs.find((entry) => entry.productSlug === 'adhesivos-stickers') as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      adhesivosStickersConfigurator as any,
+      stickersSelection,
+      initialQuoterConfigs.find((entry) => entry.productSlug === 'adhesivos-stickers') as any,
+    ),
+    /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
   );
-  assert.equal(stickersQuote.totalCost, 19231);
-  assert.equal(stickersQuote.totalPrice, 48090);
 
   const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
   const foldersQuote = quoteConfiguratorSelection(
@@ -217,7 +218,8 @@ test('stickers y carpetas tienen margen maestro sembrado y cotizan con el recarg
     initialQuoterConfigs.find((entry) => entry.productSlug === 'carpetas-folders') as any,
   );
   assert.equal(foldersQuote.totalCost, 82350);
-  assert.equal(foldersQuote.totalPrice, 205890);
+  assert.equal(foldersQuote.totalPrice, 189390);
+  assert.equal(foldersQuote.breakdown?.marginPercent, 47.4);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
