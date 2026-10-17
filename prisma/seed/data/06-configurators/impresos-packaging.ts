@@ -938,10 +938,12 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Precio objetivo para producto terminado tercerizado: 72,5% de recargo
-    // sobre costo neto + IVA 21%. Con 50 carpetas 4/0 sin laminar, el total
-    // queda aproximadamente 7,4% por encima de la referencia de $160.000 final
-    // para 50 carpetas A4 en ilustración 300g sin laminado.
+    // ADVERTENCIA DE AUDITORÍA (17/10/2026): la regla vigente de 72,5% produce
+    // aproximadamente $171.890 final para 50 carpetas 4/0 sin laminar (costo neto
+    // $82.350). La matriz comercial propone $139.900 como objetivo de trabajo,
+    // pero NO debe aplicarse hasta revalidar el costo/proveedor y aprobar el precio.
+    // Referencia pública consultada: Imprimime $107.793 + IVA para 50 unidades
+    // de 300g y una solapa (≈$130.430 con IVA 21%); comparar especificaciones.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
