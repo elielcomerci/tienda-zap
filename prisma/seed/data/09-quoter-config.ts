@@ -377,9 +377,8 @@ export const initialQuoterConfigs: ProductQuoterConfigSeedItem[] = [
   // ─── Tags & Etiquetas ────────────────────────────────────────────────────────
   // Base: Tarjetas Clásicas 350g (lista-print.txt pp. 11-13).
   // Reutiliza raw materials y finishings existentes; no crea nuevos registros.
-  // Deuda técnica: los tiers de fin_perforacion divergen de la tarifa real del
-  //   catálogo (AGUJEREADOS $3.225/500u vs $2.5/u × 500 = $1.250 del quoter).
-  //   Se documenta aquí y se resuelve en sprint independiente.
+  // La perforación usa importes fijos por lote documentados ($3.225/500 y
+  // $4.500/1.000). Tags permanece en consulta hasta conectar costo de impresión.
   {
     productSlug: 'tags-etiquetas',
     pricingMode: 'SHEET_NESTING',
