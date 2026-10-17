@@ -166,7 +166,7 @@ export default function ProductImageGallery({
           <img
             src={safeImages[activeIndex]}
             alt={productName + ' - Vista ' + (activeIndex + 1)}
-            className="absolute inset-y-0 left-10 right-10 h-full w-auto object-contain transition-opacity duration-200"
+            className="absolute inset-0 h-full w-full object-contain transition-opacity duration-200"
             loading="eager"
             draggable={false}
           />
@@ -263,7 +263,7 @@ export default function ProductImageGallery({
             <img
               src={safeImages[activeIndex]}
               alt={productName + ' ampliado'}
-              className="max-h-full max-w-full object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
+              className="h-full w-full object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
               draggable={false}
             />
           </span>
