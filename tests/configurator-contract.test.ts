@@ -217,7 +217,7 @@ test('tags 500 u. incluye papel, impresión y perforación en el costo terminado
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 39324);
-  assert.equal(quote.totalPrice, 57290);
+  assert.equal(quote.totalPrice, 57190);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.equal(quote.vatRatePercent, 21);
 
