@@ -688,7 +688,6 @@ function quoteProviderFinishedCostSelection(
   }
 
   if (deliverySurchargePercent > 0) {
-    const previousTotalPrice = totalPrice;
     totalPrice = roundProviderPrice(totalPrice * (1 + deliverySurchargePercent / 100));
     if (netPrice !== undefined) {
       netPrice = roundProviderPrice(netPrice * (1 + deliverySurchargePercent / 100));
