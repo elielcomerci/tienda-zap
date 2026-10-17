@@ -980,9 +980,9 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   compatibility: { uiRules: [] },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Precio competitivo: 40% de recargo sobre costo neto + IVA 21%.
-    // Para 50 unidades 4/0 sin laminar: costo $82.350; precio final ≈$139.590,
-    // cercano al objetivo de $139.900 y ~7% sobre la referencia final de Imprimime.
+    // Precio competitivo: 30% de recargo sobre costo neto + IVA 21%.
+    // Para 50 unidades 4/0 sin laminar: costo $82.350; precio final ≈$129.590,
+    // por debajo de las referencias minoristas actuales para carpetas equivalentes.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
