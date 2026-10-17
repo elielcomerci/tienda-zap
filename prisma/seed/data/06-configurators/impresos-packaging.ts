@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '1.1',
+  schemaVersion: '1.2',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -125,7 +125,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
     },
     commercialPricingPoliciesByProcess: {
       // Digital: recargo moderado para no alejarse más del mercado.
-      digital: { version: 1, mode: 'MARKUP', percentage: 45, vatRatePercent: 21 },
+      digital: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
       // Offset: margen cero como piso de activación mientras se valida la brecha
       // con la lista mayorista y los precios públicos comparables.
       offset: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
@@ -797,7 +797,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
 // No inventa materias primas ni terminaciones en el motor físico; resuelve directamente precios de lista oficial.
 export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'adhesivos-stickers',
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -871,7 +871,7 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 130,
+      percentage: 110,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
@@ -944,7 +944,7 @@ const carpetasDigital300gTiers = [
 
 export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'carpetas-folders',
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -976,7 +976,7 @@ export const carpetasFoldersConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 40,
+      percentage: 25,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
