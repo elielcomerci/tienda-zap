@@ -310,6 +310,12 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   assert.equal(quote.totalCost, 25000);
   assert.equal(quote.totalPrice, 60490);
   assert.equal(quote.taxTreatment, 'INCLUDED');
+  const obra = quoteConfiguratorSelection(config as any, { ...selection, material: 'obra_80g' }, makeQuoterConfig(config));
+  assert.equal(obra.totalCost, 23000);
+  assert.equal(obra.totalPrice, 48790);
+  const heavier = quoteConfiguratorSelection(config as any, { ...selection, material: 'ilustracion_150g' }, makeQuoterConfig(config));
+  assert.equal(heavier.totalCost, 32000);
+  assert.equal(heavier.totalPrice, 68590);
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - quote.totalPrice / 1.21) < 0.01);
 

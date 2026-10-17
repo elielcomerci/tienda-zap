@@ -454,8 +454,13 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 100,
+      percentage: 75,
       vatRatePercent: 21,
+    },
+    commercialPricingPoliciesByMaterial: {
+      obra_80g: { version: 1, mode: 'MARKUP', percentage: 75, vatRatePercent: 21 },
+      ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
+      ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 77, vatRatePercent: 21 },
     },
     consultRequiredSelections: [
       { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 1000 },

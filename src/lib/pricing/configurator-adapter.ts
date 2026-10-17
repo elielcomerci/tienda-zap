@@ -480,7 +480,7 @@ function quoteProviderFinishedCostSelection(
   let vatAmount: number | undefined;
   let vatRatePercent: number | undefined;
   let taxTreatment: 'INCLUDED' | undefined;
-  const commercialPolicy = pricing?.commercialPricingPolicy;
+  const commercialPolicy = pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] || pricing?.commercialPricingPolicy;
 
   if (commercialPolicy) {
     // Una política guardada en la versión activa prevalece sobre el recargo heredado.
