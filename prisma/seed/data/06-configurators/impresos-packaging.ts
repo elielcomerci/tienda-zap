@@ -408,7 +408,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.6',
+  schemaVersion: '1.7',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -500,9 +500,9 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     // Digital: recargo calibrado con referencias minoristas de flyers 10×15 cm.
     commercialPricingPoliciesByProcessAndMaterial: {
       offset: {
-        obra_80g: { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
-        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
-        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
+        obra_80g: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
+        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
+        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
       },
       // Digital: 50% de recargo sobre costo neto + IVA. La referencia de 100 u.
       // 10×15 cm 4/0 queda alineada con ofertas minoristas locales más IVA.
@@ -521,9 +521,17 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPoliciesByProcessAndMaterialAndQuantity: {
       offset: {
         obra_80g: {
-          '1000': { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
+          '1000': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
           '2500': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
-          '5000': { version: 1, mode: 'MARKUP', percentage: 150, vatRatePercent: 21 },
+          '5000': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
+        },
+        ilustracion_115g: {
+          '2500': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
+          '5000': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
+        },
+        ilustracion_150g: {
+          '2500': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
+          '5000': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
         },
       },
     },
