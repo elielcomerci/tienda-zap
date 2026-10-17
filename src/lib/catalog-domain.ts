@@ -31,6 +31,10 @@ export const catalogGroups = [
   },
 ] as const
 
+export function getProductCatalogGroupLabel(productSlug: string) {
+  return catalogGroups.find((group) => (group.productSlugs as readonly string[]).includes(productSlug))?.label
+}
+
 export function engineForCatalogFamily(slug?: string) {
   return catalogFamilies.find((family) => family.slug === slug)?.engine
 }
