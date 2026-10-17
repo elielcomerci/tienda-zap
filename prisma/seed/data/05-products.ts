@@ -331,7 +331,7 @@ export const productsData: ProductSeedData[] = [
     order: 24,
     slug: 'diseno-flyer-volante',
     catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'DIRECTO', engine: null,
-    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 128792, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 79000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
     order: 25,
@@ -343,7 +343,7 @@ export const productsData: ProductSeedData[] = [
     order: 26,
     slug: 'diseno-pack-graficos-redes',
     catalogType: 'COSA', name: 'Diseño Pack de piezas para redes (10)', modality: 'DIRECTO', engine: null,
-    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas', 'Criterio visual unificado', 'Archivos finales listos para publicar'], configurable: [], price: 225386, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 270000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
     order: 27,
@@ -355,7 +355,7 @@ export const productsData: ProductSeedData[] = [
     order: 28,
     slug: 'diseno-menu-gastronomico',
     catalogType: 'COSA', name: 'Diseño de Menú Gastronómico', modality: 'DIRECTO', engine: null,
-    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño del menú', 'Jerarquía de contenidos', 'Archivo final listo para producción'], configurable: [], price: 321980, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 170000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
   {
     order: 29,
@@ -373,6 +373,6 @@ export const productsData: ProductSeedData[] = [
     order: 31,
     slug: 'diseno-papeleria-corporativa',
     catalogType: 'COSA', name: 'Diseño de Papelería Corporativa', modality: 'DIRECTO', engine: null,
-    whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Sistema visual aplicado a la papelería acordada', 'Archivos finales listos para producción'], configurable: [], price: 536097, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Aplicación de identidad existente a tres piezas acordadas', 'Criterio visual consistente', 'Hasta dos rondas de ajustes', 'Archivos finales listos para producción'], configurable: [], price: 185000, briefType: 'DESIGN', priceFrom: null, active: true,
   },
 ];
