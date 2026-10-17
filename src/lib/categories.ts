@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { catalogFamilies } from '@/lib/catalog-domain'
+import { catalogFamilies, catalogGroups } from '@/lib/catalog-domain'
 
 /** Las familias son internas; la navegación pública se deriva de productos activos. */
 export async function getPublicCategories() {
@@ -9,8 +9,17 @@ export async function getPublicCategories() {
     distinct: ['engine'],
   })
   const activeEngines = new Set(activeFamilies.map((product) => product.engine).filter(Boolean))
-  return catalogFamilies.filter((family) => activeEngines.has(family.engine)).map((family) => ({
+  const families = catalogFamilies.filter((family) => activeEngines.has(family.engine)).map((family) => ({
     id: family.slug, name: family.label, slug: family.slug,
   }))
+  const activeProducts = await prisma.product.findMany({
+    where: { active: true },
+    select: { slug: true },
+  })
+  const activeSlugs = new Set(activeProducts.map((product) => product.slug))
+  const groups = catalogGroups
+    .filter((group) => group.productSlugs.some((slug) => activeSlugs.has(slug)))
+    .map((group) => ({ id: group.slug, name: group.label, slug: group.slug }))
+  return [...families, ...groups]
 }
 export const getCategories = getPublicCategories
