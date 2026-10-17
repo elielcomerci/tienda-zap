@@ -72,7 +72,7 @@ export async function getPublicCatalogTypes() {
 export async function getProducts(
   familySlug?: string,
   search?: string,
-  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO'; rankContext?: { situationSlug?: string; needSlug?: string; businessTypeSlug?: string } }
+  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO'; rankContext?: { situationSlug?: string; needSlug?: string; businessTypeSlug?: string; situationPriority?: string[] } }
 ) {
   const engine = engineForCatalogFamily(familySlug)
   const offerFilter: Prisma.OfferMatrixEntryWhereInput = {
@@ -125,21 +125,45 @@ export async function getProducts(
 
   const orderedProducts = products.sort((a, b) => {
     if (options?.rankContext) {
+      const context = options.rankContext
       const contextRank = (product: (typeof products)[number]) => {
         const entries = product.offerEntries
-        const context = options.rankContext!
         const matches = (entry: (typeof entries)[number], includeNeed: boolean) =>
           (!context.businessTypeSlug || entry.businessType.slug === context.businessTypeSlug) &&
           (!context.situationSlug || entry.situation.slug === context.situationSlug) &&
           (!includeNeed || !context.needSlug || entry.need.slug === context.needSlug)
 
-        if (entries.some((entry) => matches(entry, true))) return 0
-        if (context.needSlug && entries.some((entry) => matches(entry, false))) return 1
-        if (context.businessTypeSlug && entries.some((entry) => entry.businessType.slug === context.businessTypeSlug)) return 2
-        return 3
+        if (context.situationSlug) {
+          if (entries.some((entry) => matches(entry, true))) return [0, 0, 0] as const
+          if (context.needSlug && entries.some((entry) => matches(entry, false))) return [1, 0, 0] as const
+          if (context.businessTypeSlug && entries.some((entry) => entry.businessType.slug === context.businessTypeSlug)) {
+            return [2, 0, 0] as const
+          }
+          return [3, 0, 0] as const
+        }
+
+        if (context.businessTypeSlug) {
+          const relevant = entries.filter((entry) => entry.businessType.slug === context.businessTypeSlug)
+          if (relevant.length === 0) return [1, Number.MAX_SAFE_INTEGER, 0] as const
+          const priorities = context.situationPriority || []
+          const ranks = relevant.map((entry) => {
+            const index = priorities.indexOf(entry.situation.slug)
+            return index < 0 ? priorities.length : index
+          })
+          const firstPriority = Math.min(...ranks)
+          const situationCoverage = new Set(relevant.map((entry) => entry.situation.slug)).size
+          // Prioritize the rubro's highest-priority situations, then products useful
+          // across more of that rubro's situations. Editorial order breaks ties.
+          return [0, firstPriority, -situationCoverage] as const
+        }
+
+        return [0, 0, 0] as const
       }
-      const contextDifference = contextRank(a) - contextRank(b)
-      if (contextDifference !== 0) return contextDifference
+      const rankA = contextRank(a)
+      const rankB = contextRank(b)
+      for (let i = 0; i < rankA.length; i += 1) {
+        if (rankA[i] !== rankB[i]) return rankA[i] - rankB[i]
+      }
     }
 
     const rankA = PRODUCT_EDITORIAL_RANK.get(a.slug) ?? Number.MAX_SAFE_INTEGER
