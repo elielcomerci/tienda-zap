@@ -44,7 +44,19 @@ export default function AddToCartButton({
     )
   }
 
-  // 2. Configurable -> "Configurar"
+  // 2. Solo consulta: tiene prioridad sobre variantes o configuradores heredados.
+  if (disabled && slug) {
+    return (
+      <Link
+        href={productHref || `/productos/${slug}`}
+        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
+      >
+        {consultLabel} <ArrowRight size={15} />
+      </Link>
+    )
+  }
+
+  // 3. Configurable -> "Configurar"
   if (hasVariants && slug) {
     return (
       <Link
@@ -52,18 +64,6 @@ export default function AddToCartButton({
         className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5] px-4 py-3 text-sm font-semibold text-[#C2103F] transition-all hover:-translate-y-0.5 hover:border-orange-300 hover:bg-[#FEF1F5]"
       >
         Configurar producto <ArrowRight size={15} />
-      </Link>
-    )
-  }
-
-  // 3. Solo consulta (sin precio / carrito) -> "Consultar" a la ficha del producto
-  if (disabled && slug) {
-    return (
-      <Link
-        href={productHref || `/productos/${slug}`}
-        className="inline-flex min-w-[136px] items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:border-[#F7638B]/25 hover:bg-[#FEF1F5] hover:text-[#C2103F]"
-      >
-        Ver producto <ArrowRight size={15} />
       </Link>
     )
   }
