@@ -216,13 +216,11 @@ Por tanto, los precios calculados por esos dos configuradores no deben considera
 
 
 
-### P0 — Stickers y Carpetas están ACTIVE, pero no tienen margen maestro sembrado
+### P0 — Hallazgo inicial: Stickers y Carpetas sin margen maestro
 
-La lista `initialQuoterConfigs` de `prisma/seed/data/09-quoter-config.ts` define solo `tarjetas-vouchers`, `flyers-desplegables` y `tags-etiquetas`. Sin embargo, `adhesivos-stickers` y `carpetas-folders` también están en estado `ACTIVE` y usan el motor `PROVIDER_FINISHED_COST`.
+En la revisión inicial, `initialQuoterConfigs` no declaraba margen para `adhesivos-stickers` ni `carpetas-folders`, aunque ambos usaban `PROVIDER_FINISHED_COST`. La decisión posterior no fue aplicar el mismo recargo a ambos: se contrastó la matriz con referencias de mercado y se documentó el resultado en la sección 9. Carpetas recibió una política comercial explícita; Stickers quedó en consulta porque el costo disponible no permite asegurar un precio rentable y 5–10% por encima de referencias públicas.
 
-Ese motor requiere `quoterConfig.profitMargin`; si falta, devuelve `CONSULT_REQUIRED: Falta el margen maestro del producto.`. Con el seed revisado, stickers y carpetas no tienen margen maestro declarado en esa lista. Confirmar en una base sembrada que no exista configuración residual, pero el repositorio no declara la configuración necesaria.
-
-Acción: definir explícitamente el modelo de margen para ambos productos y agregar una prueba que confirme que la cotización responde con precio para una combinación válida. Hasta entonces, el estado comercial `ACTIVE` puede crear una experiencia de configuración que termina en consulta en vez de precio automático.
+La sección 9 reemplaza la recomendación inicial de agregar un margen maestro genérico a ambos productos.
 
 ## 9. Primera ejecución de la auditoría — 17/10/2026
 
