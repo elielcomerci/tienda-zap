@@ -156,6 +156,36 @@ test('los formatos permitidos por tipo de plegado existen en las opciones visibl
   );
 });
 
+test('flyers habilita costos offset y digitales según la matriz disponible', () => {
+  const config = flyersDesplegablesConfigurator;
+  const offset = quoteConfiguratorSelection(
+    config as any,
+    { ...defaultSelection(config), foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 1000 },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(offset.totalCost, 25000);
+  assert.equal(offset.totalPrice, 46890);
+  assert.equal(offset.taxTreatment, 'INCLUDED');
+
+  const digital = quoteConfiguratorSelection(
+    config as any,
+    { ...defaultSelection(config), foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 100 },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(digital.totalCost, 14976);
+  assert.equal(digital.totalPrice, 18190);
+  assert.equal(digital.taxTreatment, 'INCLUDED');
+
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...defaultSelection(config), foldingType: 'diptico', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 1000 },
+      { profitMargin: 0 } as any,
+    ),
+    /no incluye el proceso de plegado/,
+  );
+});
+
 test('los procesos obligatorios están resueltos a terminaciones reales del adapter', () => {
   for (const config of configs) {
     const processes = config.compatibility?.requiredProcesses || [];
