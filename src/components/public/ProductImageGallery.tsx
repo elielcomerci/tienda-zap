@@ -178,7 +178,7 @@ export default function ProductImageGallery({
               onClick={(event) => { event.stopPropagation(); goToImage(activeIndex - 1) }}
               disabled={activeIndex === 0}
               aria-label="Imagen anterior"
-              className="absolute left-0 top-1/2 z-10 flex h-24 w-8 -translate-y-1/2 items-center justify-center bg-transparent text-gray-800 transition hover:bg-white/10 disabled:pointer-events-none disabled:opacity-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ED164F] sm:w-10"
+              className="group absolute left-0 top-1/2 z-10 flex h-24 w-8 -translate-y-1/2 items-center justify-center bg-transparent text-gray-800 transition hover:bg-white/10 disabled:pointer-events-none disabled:opacity-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ED164F] sm:w-10"
             >
               <span className="flex h-16 w-1 items-center justify-center rounded-full bg-white/75 shadow-[0_1px_6px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all group-hover:w-1.5" aria-hidden="true" />
               <ChevronLeft size={1} className="sr-only" />
@@ -188,7 +188,7 @@ export default function ProductImageGallery({
               onClick={(event) => { event.stopPropagation(); goToImage(activeIndex + 1) }}
               disabled={activeIndex === safeImages.length - 1}
               aria-label="Imagen siguiente"
-              className="absolute right-0 top-1/2 z-10 flex h-24 w-8 -translate-y-1/2 items-center justify-center bg-transparent text-gray-800 transition hover:bg-white/10 disabled:pointer-events-none disabled:opacity-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ED164F] sm:w-10"
+              className="group absolute right-0 top-1/2 z-10 flex h-24 w-8 -translate-y-1/2 items-center justify-center bg-transparent text-gray-800 transition hover:bg-white/10 disabled:pointer-events-none disabled:opacity-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ED164F] sm:w-10"
             >
               <span className="flex h-16 w-1 items-center justify-center rounded-full bg-white/75 shadow-[0_1px_6px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all group-hover:w-1.5" aria-hidden="true" />
               <ChevronRight size={1} className="sr-only" />
