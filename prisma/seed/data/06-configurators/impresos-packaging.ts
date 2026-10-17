@@ -776,7 +776,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
 export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tags-etiquetas',
   // Versión revisada con precio alineado a tags de 300–350g publicados en Buenos Aires.
-  schemaVersion: '1.4',
+  schemaVersion: '1.5',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -974,8 +974,8 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
       percentage: 110,
       vatRatePercent: 21,
     },
-    // El corte recto compite en una banda de precio distinta; el margen circular
-    // se conserva porque sus costos y referencias de mercado son diferentes.
+    // El corte recto usa un margen del 50% + IVA: queda entre las referencias locales
+    // relevadas, sin intentar ser la opción más barata.
     commercialPricingPoliciesByShape: {
       recto: { version: 1, mode: 'MARKUP', percentage: 50, vatRatePercent: 21 },
     },
@@ -983,7 +983,7 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
       resolver: { type: 'STICKERS_CIRCULAR' },
       quote: {
       papel_autoadhesivo_90g: {
-        '3x3':   { '100': 2859,  '200': 5244,  '300': 5322,  '500': 8870,  '1000': 16566 },
+        '3x3':   { '100': 2859,  '200': 5244,  '300': 5322,  '500': 8870,  '1000': 15966 },
         '4x4':   { '100': 4726,  '200': 4968,  '300': 8281,  '500': 13249, '1000': 24039 },
         '5x5':   { '100': 4968,  '200': 8281,  '300': 11593, '500': 19231, '1000': 36859 },
         '6x6':   { '100': 6625,  '200': 13249, '300': 17628, '500': 28846, '1000': 53806 },
