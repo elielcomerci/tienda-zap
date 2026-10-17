@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 import type { ProductQuoteResult } from './product-quoter'
 
-export const PRODUCT_QUOTE_CACHE_ENGINE_VERSION = '2'
+export const PRODUCT_QUOTE_CACHE_ENGINE_VERSION = '3'
 
 function stableSerialize(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value)
@@ -102,6 +102,7 @@ export async function getOrCreateCachedProductQuote({
       sourceType,
       engineVersion,
       selectedOptions: result.selectedOptions,
+      taxIncluded: result.taxTreatment === 'INCLUDED',
     },
     create: {
       cacheKey,
@@ -121,7 +122,7 @@ export async function getOrCreateCachedProductQuote({
       marginPercent: breakdown?.marginPercent ?? null,
       marginAmount: breakdown?.marginAmount ?? null,
       currency: 'ARS',
-      taxIncluded: false,
+      taxIncluded: result.taxTreatment === 'INCLUDED',
       selectedOptions: result.selectedOptions,
     },
   })
