@@ -666,6 +666,7 @@ function quoteProviderFinishedCostSelection(
     pricing?.commercialPricingPoliciesByProcessAndMaterial?.[pricingProcess]?.[selection.material || ''] ||
     pricing?.commercialPricingPoliciesByProcess?.[pricingProcess] ||
     pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
+    pricing?.commercialPricingPoliciesByShape?.[selection.shape || ''] ||
     pricing?.commercialPricingPolicy;
 
   if (commercialPolicy) {

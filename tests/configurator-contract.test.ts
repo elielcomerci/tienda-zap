@@ -523,6 +523,20 @@ test('stickers y carpetas aplican política comercial versionada y tratamiento f
   assert.equal(stickerQuote.totalPrice, 48890);
   assert.equal(stickerQuote.taxTreatment, 'INCLUDED');
 
+  const rectoStickerSelection = {
+    ...stickersSelection,
+    shape: 'recto',
+    format: '9x5',
+    lamination: 'sin_laca_uv',
+  };
+  const rectoStickerQuote = quoteConfiguratorSelection(
+    adhesivosStickersConfigurator as any,
+    rectoStickerSelection,
+  );
+  assert.equal(rectoStickerQuote.totalCost, 26042);
+  assert.equal(rectoStickerQuote.totalPrice, 37890);
+  assert.equal(rectoStickerQuote.taxTreatment, 'INCLUDED');
+
   const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
   const foldersQuote = quoteConfiguratorSelection(
     carpetasFoldersConfigurator as any,

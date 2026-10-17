@@ -967,6 +967,11 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
       percentage: 110,
       vatRatePercent: 21,
     },
+    // El corte recto compite en una banda de precio distinta; el margen circular
+    // se conserva porque sus costos y referencias de mercado son diferentes.
+    commercialPricingPoliciesByShape: {
+      recto: { version: 1, mode: 'MARKUP', percentage: 20, vatRatePercent: 21 },
+    },
     providerFinishedCostMatrix: {
       resolver: { type: 'STICKERS_CIRCULAR' },
       quote: {
