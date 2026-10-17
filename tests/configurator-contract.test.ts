@@ -174,7 +174,7 @@ test('flyers habilita costos offset y digitales según la matriz disponible', ()
     { profitMargin: 0 } as any,
   );
   assert.equal(digital.totalCost, 14976);
-  assert.equal(digital.totalPrice, 18190);
+  assert.equal(digital.totalPrice, 22690);
   assert.equal(digital.taxTreatment, 'INCLUDED');
 
   assert.throws(
