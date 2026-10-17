@@ -468,10 +468,13 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 55, vatRatePercent: 21 },
         ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 30, vatRatePercent: 21 },
       },
+      // Digital: 25% de recargo sobre costo neto + IVA. En la referencia
+      // de 100 u. 10×15 cm 4/4 resulta $22.690, próximo a ofertas locales
+      // de 100 flyers 10×15 cm de una cara (~$22.000).
       digital: {
-        obra_80g: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
-        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
-        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
+        obra_80g: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
+        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
+        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 25, vatRatePercent: 21 },
       },
     },
     commercialPricingPolicy: {
