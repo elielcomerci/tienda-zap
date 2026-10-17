@@ -25,7 +25,12 @@ INSERT INTO "ConfiguratorVersion" (
 )
 SELECT
   'cfg_talonarios_formularios_20261017', np.id, cv."schemaVersion", cv.status,
-  jsonb_set(cv.schema, '{productSlug}', '"talonarios-formularios"'::jsonb, TRUE),
+  jsonb_set(
+    jsonb_set(cv.schema, '{productSlug}', '"talonarios-formularios"'::jsonb, TRUE),
+    '{fields,productType}',
+    '{"label":"Tipo de talonario","type":"select","required":true,"default":"bonos_lavadero","options":[{"id":"bonos_lavadero","label":"Bonos numerados para lavaderos"}]}'::jsonb,
+    TRUE
+  ),
   cv.compatibility, cv.pricing, NOW(), NOW()
 FROM "Product" oldp
 JOIN "ConfiguratorVersion" cv ON cv."productId" = oldp.id AND cv.status = 'ACTIVE'
