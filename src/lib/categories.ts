@@ -20,6 +20,8 @@ export async function getPublicCategories() {
   const groups = catalogGroups
     .filter((group) => group.productSlugs.some((slug) => activeSlugs.has(slug)))
     .map((group) => ({ id: group.slug, name: group.label, slug: group.slug }))
-  return [...families, ...groups]
+  return families.flatMap((family) =>
+    family.slug === 'impresos-packaging' ? [family, ...groups] : [family]
+  )
 }
 export const getCategories = getPublicCategories
