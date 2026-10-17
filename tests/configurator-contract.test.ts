@@ -241,14 +241,14 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   assert.equal(fiveHundredSimplex.totalPrice, 23290);
   assert.equal(fiveHundredSimplex.taxTreatment, 'INCLUDED');
 
-  const fiveHundredDuplex = quoteConfiguratorSelection(
-    config as any,
-    { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
-    { profitMargin: 0 } as any,
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
+      { profitMargin: 0 } as any,
+    ),
+    /requiere renegociación o una referencia competitiva equivalente/,
   );
-  assert.equal(fiveHundredDuplex.totalCost, 39930);
-  assert.equal(fiveHundredDuplex.totalPrice, 48390);
-  assert.equal(fiveHundredDuplex.taxTreatment, 'INCLUDED');
 
   const threeHundredGram = quoteConfiguratorSelection(
     config as any,
