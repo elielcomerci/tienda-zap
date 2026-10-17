@@ -305,7 +305,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
       { ...selection, material: 'ilustracion_300g', quantity: 100, printing: '4_0', lamination: 'sin_laminar' },
       { profitMargin: 0 } as any,
     ),
-    /tarjetas 300 g no es competitivo y requiere reconfirmación/,
+    /Opción 'ilustracion_300g' no válida/,
   );
 
   const uv = quoteConfiguratorSelection(
