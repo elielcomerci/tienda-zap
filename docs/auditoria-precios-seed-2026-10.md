@@ -237,9 +237,9 @@ Se implementaron controles comerciales explícitos en la rama `feat/precios-publ
 
 ### Resultado comercial
 
-Por ahora, solo la matriz digital de Carpetas queda habilitada para precio automático entre estos cinco productos; los demás casos que no pasan el control de costo/mercado devuelven consulta en vez de una cifra potencialmente engañosa. Esto es intencional: **no se considera activado comercialmente un producto si el precio automático puede ocultar un costo vencido, incompleto o fuera de mercado**.
+Por ahora, quedan habilitados para precio automático la matriz digital de Carpetas y las tiradas de 100/200 tarjetas; las tiradas mayores de tarjetas y los configuradores de Stickers, Flyers y Tags devuelven consulta en vez de una cifra potencialmente engañosa. Esto es intencional: **no se considera activado comercialmente un producto si el precio automático puede ocultar un costo vencido, incompleto o fuera de mercado**.
 
-### Verificación pendiente antes de llevar a `main`
+### Verificación técnica pendiente antes de desplegar
 
 - Ejecutar `npm test` y comprobar el precio calculado de cada caso de prueba en el entorno del repositorio.
 - Confirmar con contador la aplicación de IVA del 21% a las ventas de estos productos.
