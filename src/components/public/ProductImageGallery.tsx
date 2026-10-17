@@ -122,7 +122,7 @@ export default function ProductImageGallery({
       onMouseEnter={() => setKeyboardReady(true)}
       onFocusCapture={() => setKeyboardReady(true)}
       onBlurCapture={() => setKeyboardReady(false)}
-      className="min-w-0 w-full space-y-4 overflow-hidden rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
+      className="mx-auto w-full max-w-[560px] min-w-0 space-y-4 overflow-hidden rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
     >
       <div className="flex items-center justify-between px-1">
         <div>
@@ -141,7 +141,7 @@ export default function ProductImageGallery({
       <div className="relative">
         <button
           type="button"
-          className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] px-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
+          className="group relative block aspect-square w-full min-w-0 cursor-zoom-in overflow-hidden rounded-[28px] border border-gray-100 bg-[#F7F7F8] p-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FEF1F5]"
           onTouchStart={(event) => {
             touchStartXRef.current = event.changedTouches[0]?.clientX ?? null
             didSwipeRef.current = false
@@ -166,7 +166,7 @@ export default function ProductImageGallery({
           <img
             src={safeImages[activeIndex]}
             alt={productName + ' - Vista ' + (activeIndex + 1)}
-            className="absolute inset-0 h-full w-full object-contain p-12 transition-opacity duration-200 sm:p-14"
+            className="absolute inset-y-0 left-10 right-10 h-full w-auto object-contain transition-opacity duration-200"
             loading="eager"
             draggable={false}
           />
@@ -259,7 +259,7 @@ export default function ProductImageGallery({
           onClick={() => setZoomOpen(false)}
           aria-label={'Cerrar imagen ampliada de ' + productName}
         >
-          <span className="flex h-[min(86dvh,800px)] w-[min(92vw,1100px)] max-h-full max-w-full items-center justify-center rounded-2xl bg-black/10 p-3 sm:p-6">
+          <span className="flex h-[min(82dvh,760px)] w-[min(88vw,1000px)] max-h-full max-w-full items-center justify-center rounded-2xl bg-black/10 p-2 sm:p-4">
             <img
               src={safeImages[activeIndex]}
               alt={productName + ' ampliado'}
