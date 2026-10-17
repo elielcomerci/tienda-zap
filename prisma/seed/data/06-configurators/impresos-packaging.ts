@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '1.8',
+  schemaVersion: '1.9',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -90,8 +90,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { value: 300, label: '300 u.' },
           { value: 500, label: '500 u.' },
           { value: 1000, label: '1000 u.' },
-          { value: 3000, label: '3000 u.' },
-          { value: 5000, label: '5000 u.' },
         ],
       },
     },
@@ -134,8 +132,52 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       digital: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
       // Offset: 15% de recargo para mantener 1.000 u. dentro de la banda local
       // sin vender al costo; las celdas con costo anómalo quedan en consulta.
-      offset: { version: 1, mode: 'MARKUP', percentage: 60, vatRatePercent: 21 },
+      offset: { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
     },
+    commercialPricingPoliciesByProcessAndMaterialAndPrinting: {
+      digital: {
+        ilustracion_350g: {
+          '4_0': { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
+          '4_4': { version: 1, mode: 'MARKUP', percentage: 35, vatRatePercent: 21 },
+        },
+      },
+      offset: {
+        ilustracion_350g: {
+          '4_0': { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
+          '4_4': { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
+        },
+      },
+    },
+    consultRequiredSelections: [
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'brillo', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'laca_uv', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'mate', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 100, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'brillo', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'laca_uv', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'mate', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 100, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'brillo', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'laca_uv', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'mate', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 200, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'brillo', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'laca_uv', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'mate', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 200, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'brillo', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'laca_uv', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'mate', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 300, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'brillo', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'laca_uv', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'mate', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 300, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 500, lamination: 'sin_laminar', productionProcess: 'digital' },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 1000, lamination: 'brillo', productionProcess: 'offset', additionalFinishings: [] },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', quantity: 1000, lamination: 'sin_laminar', productionProcess: 'offset', additionalFinishings: [] },
+      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', quantity: 1000, lamination: 'sin_laminar', productionProcess: 'offset', additionalFinishings: [] }
+    ],
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
     // Costo maestro de proveedor: producto terminado, sin IVA.
@@ -372,7 +414,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.4',
+  schemaVersion: '1.5',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -483,6 +525,50 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       percentage: 0,
       vatRatePercent: 21,
     },
+    commercialPricingPoliciesByProcessAndMaterialAndQuantity: {
+      offset: {
+        obra_80g: {
+          '1000': { version: 1, mode: 'MARKUP', percentage: 180, vatRatePercent: 21 },
+          '2500': { version: 1, mode: 'MARKUP', percentage: 80, vatRatePercent: 21 },
+          '5000': { version: 1, mode: 'MARKUP', percentage: 150, vatRatePercent: 21 },
+        },
+      },
+    },
+    consultRequiredSelections: [
+      { format: '10x10', material: 'obra_80g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x10', material: 'obra_80g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'obra_80g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '15x21', material: 'obra_80g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '15x21', material: 'obra_80g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: 'a4', material: 'obra_80g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: 'a4', material: 'obra_80g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x20', material: 'obra_80g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x20', material: 'obra_80g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x10', material: 'ilustracion_115g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x10', material: 'ilustracion_115g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'ilustracion_115g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '15x21', material: 'ilustracion_115g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '15x21', material: 'ilustracion_115g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: 'a4', material: 'ilustracion_115g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: 'a4', material: 'ilustracion_115g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x20', material: 'ilustracion_115g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x20', material: 'ilustracion_115g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x10', material: 'ilustracion_150g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x10', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'ilustracion_150g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '15x21', material: 'ilustracion_150g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '15x21', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: 'a4', material: 'ilustracion_150g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: 'a4', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x20', material: 'ilustracion_150g', printing: '4_0', quantity: 100, foldingType: 'plano' },
+      { format: '10x20', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
+      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 1000, foldingType: 'plano' },
+      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 2500, foldingType: 'plano' },
+      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 5000, foldingType: 'plano' }
+    ],
     // El automático se resuelve contra el costo de proveedor, no solo el papel.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
     providerFinishedCostMatrix: {
@@ -695,7 +781,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
 export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tags-etiquetas',
   // Versión revisada con precio alineado a tags de 300–350g publicados en Buenos Aires.
-  schemaVersion: '1.3',
+  schemaVersion: '1.4',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -757,7 +843,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 80,
+      percentage: 15,
       vatRatePercent: 21,
     },
     providerFinishedCostMatrix: {
@@ -811,7 +897,7 @@ export const tagsEtiquetasConfigurator: ConfiguratorVersionSeedData = {
 // No inventa materias primas ni terminaciones en el motor físico; resuelve directamente precios de lista oficial.
 export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'adhesivos-stickers',
-  schemaVersion: '1.3',
+  schemaVersion: '1.4',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -867,10 +953,6 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         default: 500,
         options: [
           { value: 100, label: '100 unidades' },
-          { value: 200, label: '200 unidades' },
-          { value: 300, label: '300 unidades' },
-          { value: 500, label: '500 unidades' },
-          { value: 1000, label: '1.000 unidades' },
         ],
       },
     },
