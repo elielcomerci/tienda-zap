@@ -461,6 +461,12 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 1000 },
       { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 1000 },
       { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 1000 },
+      { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 2500 },
+      { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 2500 },
+      { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 2500 },
+      { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 5000 },
+      { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 5000 },
+      { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 5000 },
     ],
     // El automático se resuelve contra el costo de proveedor, no solo el papel.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
@@ -855,18 +861,8 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Única combinación habilitada tras contraste de mercado: 500 u., 5×5 cm,
-    // papel autoadhesivo 90 g, corte circular y laca UV brillo incluida.
-    // El resto de las combinaciones queda en consulta hasta auditar su precio.
-    consultRequiredSelections: [
-      {
-        material: 'papel_autoadhesivo_90g',
-        format: '5x5',
-        shape: 'circular',
-        lamination: 'laca_uv_brillo',
-        quantity: 500,
-      },
-    ],
+    // Se habilitan todas las combinaciones circulares con costo explícito en la matriz.
+    // La tarifa cargada incluye laca UV brillo; no se extrapola a otras formas o soportes.
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',

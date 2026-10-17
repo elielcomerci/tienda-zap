@@ -1,7 +1,7 @@
 # Matriz de costos, precios tentativos y competencia — Tienda ZAP
 
 **Corte de análisis:** 17/10/2026  
-**Estado:** precios comerciales ajustados en `main` para tarjetas, flyers, stickers y carpetas; la publicación efectiva depende de sincronizar la versión activa en producción y verificar cotización, carrito e impuestos.  
+**Estado:** precios comerciales ajustados en `main`: se amplía stickers a todas las combinaciones con costo explícito y flyers a 1.000/2.500/5.000 u. en 10×15 cm 4/4. La publicación efectiva depende de sincronizar la versión activa en producción y verificar cotización, carrito e impuestos.
 **Moneda:** ARS. Salvo indicación, los costos del seed se consideran netos de IVA según sus comentarios; confirmar tratamiento fiscal y vigencia antes de aprobar.
 
 ## 1. Criterio de cálculo
@@ -43,9 +43,9 @@ Los precios finales de esta tabla son **hipótesis comerciales**, no aprobación
 
 ### Cómo leer los tentativos
 
-- **Flyers:** se prioriza el costo offset de producto terminado cuando la combinación coincide exactamente con la matriz del proveedor. Solo se habilita 1.000 u. planas, 10×15 cm, 4/4: obra 80 g $48.790; ilustración 115 g $60.490; ilustración 150 g $67.790, todos finales con IVA incluido. El 115 g queda aproximadamente 5% sobre la mediana de las dos referencias públicas comparadas. No se mezcla con el costo digital de Ricoh ni se extrapola a plegados.
+- **Flyers:** se prioriza el costo offset de producto terminado cuando la selección coincide exactamente con la matriz del proveedor. Se habilitan 1.000, 2.500 y 5.000 u. planas, 10×15 cm, 4/4, en los tres papeles con costo cargado; 1.000 u. ilustración 115 g queda a $60.490 final, aproximadamente 5% sobre la mediana de las referencias comparadas. Las demás combinaciones siguen en consulta.
 - **Tarjetas:** se aplica recargo del 90% + IVA 21% a las combinaciones aprobadas. El seed habilita 100/200/300 unidades para las combinaciones con costo digital cargado y, en 500 unidades, solo 4/0 sin laminar. Ejemplos finales: 100 u. 4/4 sin laminar $18.890; 200 u. $28.490; 300 u. $39.190; 500 u. 4/0 sin laminar $44.190. Las combinaciones 500 4/4 y 1.000 quedan en consulta porque algunas celdas de costo hacen que el precio se despegue de referencias minoristas comparables.
-- **Stickers:** para 500 unidades de 5×5 cm se aplica recargo del 130% sobre el costo neto y luego IVA 21%, redondeando a $53.590 final. El margen bruto calculado sobre el neto de venta es aproximadamente 56,6%. El precio queda aproximadamente 5% sobre la mediana de las referencias públicas ($47.250 y $55.000); se habilita solo esa combinación.
+- **Stickers:** se habilitan todas las medidas y cantidades que figuran con costo explícito en la matriz, únicamente para forma circular, papel autoadhesivo 90 g y laca UV brillo incluida. Se aplica recargo del 130% sobre costo neto + IVA 21%. El caso comparable 500 u. de 5×5 cm queda a $53.590 final, aproximadamente 5% sobre la mediana de las referencias públicas ($47.250 y $55.000).
 - **Carpetas:** se mantiene $139.590 final con IVA incluido, aproximadamente 7% sobre la referencia de $130.430. Advertencia comercial: el margen bruto estimado es ≈28,6%, por debajo del piso interno del 35%; es una excepción explícita para priorizar competitividad y no cumple el objetivo de margen. Si ese piso es innegociable, esta configuración debe seguir en consulta en lugar de publicarse.
 - Los márgenes se estiman contra el costo seed y no incluyen cargos no modelados. No publicar hasta completar la validación.
 

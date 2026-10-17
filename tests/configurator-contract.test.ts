@@ -229,14 +229,12 @@ test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA expl�
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
   assert.ok((quote.breakdown?.marginPercent ?? 0) > 56.4 && (quote.breakdown?.marginPercent ?? 0) < 56.8);
 
-  assert.throws(
-    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any),
-    /CONSULT_REQUIRED: Esta combinaci처n necesita validaci처n comercial/,
-  );
-  assert.throws(
-    () => quoteConfiguratorSelection(config as any, { ...selection, format: '4x4' }, { profitMargin: 0 } as any),
-    /CONSULT_REQUIRED: Esta combinaci처n necesita validaci처n comercial/,
-  );
+  const thousand = quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any);
+  assert.equal(thousand.totalCost, 36859);
+  assert.equal(thousand.totalPrice, 102590);
+  const fourByFour = quoteConfiguratorSelection(config as any, { ...selection, format: '4x4' }, { profitMargin: 0 } as any);
+  assert.equal(fourByFour.totalCost, 13249);
+  assert.equal(fourByFour.totalPrice, 36890);
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
     /Cantidad '999' no permitida/,
@@ -315,9 +313,15 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - quote.totalPrice / 1.21) < 0.01);
 
+  const twoThousandFiveHundred = quoteConfiguratorSelection(config as any, { ...selection, quantity: 2500 }, makeQuoterConfig(config));
+  assert.equal(twoThousandFiveHundred.totalCost, 50000);
+  assert.equal(twoThousandFiveHundred.totalPrice, 120990);
+  const fiveThousand = quoteConfiguratorSelection(config as any, { ...selection, quantity: 5000 }, makeQuoterConfig(config));
+  assert.equal(fiveThousand.totalCost, 70000);
+  assert.equal(fiveThousand.totalPrice, 169390);
   assert.throws(
-    () => quoteConfiguratorSelection(config as any, defaultSelection(config), makeQuoterConfig(config)),
-    /CONSULT_REQUIRED: Esta combinaci처n necesita validaci처n comercial/,
+    () => quoteConfiguratorSelection(config as any, { ...selection, format: 'a4' }, makeQuoterConfig(config)),
+    /CONSULT_REQUIRED: No hay costo real cargado/,
   );
 });
 
