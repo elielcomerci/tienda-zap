@@ -122,7 +122,7 @@ export default function ProductImageGallery({
       onMouseEnter={() => setKeyboardReady(true)}
       onFocusCapture={() => setKeyboardReady(true)}
       onBlurCapture={() => setKeyboardReady(false)}
-      className="space-y-4 rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
+      className="min-w-0 w-full space-y-4 overflow-hidden rounded-[32px] border border-gray-200 bg-white p-3 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED164F]/40 sm:p-4"
     >
       <div className="flex items-center justify-between px-1">
         <div>
@@ -166,7 +166,7 @@ export default function ProductImageGallery({
           <img
             src={safeImages[activeIndex]}
             alt={productName + ' - Vista ' + (activeIndex + 1)}
-            className="h-full w-full object-contain p-2 transition-opacity duration-200 sm:p-4"
+            className="absolute inset-0 h-full w-full object-contain p-12 transition-opacity duration-200 sm:p-14"
             loading="eager"
             draggable={false}
           />
@@ -255,15 +255,15 @@ export default function ProductImageGallery({
       {zoomOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/80 p-3 text-left backdrop-blur-md sm:p-8"
+          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center overflow-hidden bg-black/80 p-3 text-left backdrop-blur-md sm:p-8"
           onClick={() => setZoomOpen(false)}
           aria-label={'Cerrar imagen ampliada de ' + productName}
         >
-          <span className="flex h-[min(86vh,800px)] w-[min(92vw,1100px)] items-center justify-center rounded-2xl bg-black/10 p-3 sm:p-6">
+          <span className="flex h-[min(86dvh,800px)] w-[min(92vw,1100px)] max-h-full max-w-full items-center justify-center rounded-2xl bg-black/10 p-3 sm:p-6">
             <img
               src={safeImages[activeIndex]}
               alt={productName + ' ampliado'}
-              className="h-full w-full object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
+              className="max-h-full max-w-full object-contain shadow-[0_28px_90px_-24px_rgba(0,0,0,0.75)]"
               draggable={false}
             />
           </span>
