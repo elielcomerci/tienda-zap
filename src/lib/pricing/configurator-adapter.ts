@@ -373,6 +373,7 @@ function quoteProviderFinishedCostSelection(
 
   let totalCost = 0;
   let resolvedPricingProcess: string | undefined;
+  let deliverySurchargePercent = 0;
   const fields = configurator.schema?.fields || {};
 
   if (resolver.type === 'TAGS_DIGITAL') {
@@ -601,14 +602,13 @@ function quoteProviderFinishedCostSelection(
         throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta medida/cantidad de sticker de corte recto.');
       }
       totalCost = Number(source);
-      const deliverySurcharge = selection.delivery === 'express'
+      deliverySurchargePercent = selection.delivery === 'express'
         ? 15
         : selection.delivery === 'super_express_48h'
           ? 30
           : selection.delivery === 'ya_24h'
             ? 50
             : 0;
-      totalCost *= 1 + deliverySurcharge / 100;
     } else {
       if (selection.shape !== 'circular') {
         throw new Error('CONSULT_REQUIRED: La fuente cargada corresponde a stickers circulares o de corte recto.');
@@ -685,6 +685,20 @@ function quoteProviderFinishedCostSelection(
     totalPrice = roundProviderPrice(totalCost * (1 + Number(margin) / 100));
     marginAmount = totalPrice - totalCost;
     marginPercent = Number(margin);
+  }
+
+  if (deliverySurchargePercent > 0) {
+    const previousTotalPrice = totalPrice;
+    totalPrice = roundProviderPrice(totalPrice * (1 + deliverySurchargePercent / 100));
+    if (netPrice !== undefined) {
+      netPrice = roundProviderPrice(netPrice * (1 + deliverySurchargePercent / 100));
+      vatAmount = totalPrice - netPrice;
+      marginAmount = netPrice - totalCost;
+      marginPercent = netPrice > 0 ? (marginAmount / netPrice) * 100 : 0;
+    } else {
+      marginAmount = totalPrice - totalCost;
+      marginPercent = totalCost > 0 ? (marginAmount / totalCost) * 100 : 0;
+    }
   }
 
   const selectedOptions: Array<{ name: string; value: string }> = [];
