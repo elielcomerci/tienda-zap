@@ -344,6 +344,10 @@ function quoteProviderFinishedCostSelection(
   const matrix: any = pricing?.providerFinishedCostMatrix;
   const resolver = matrix?.resolver;
 
+  if (pricing?.commercialAvailability === 'CONSULT_REQUIRED') {
+    throw new Error('CONSULT_REQUIRED: El costo de proveedor necesita validación comercial antes de publicar un precio automático.');
+  }
+
   if (!matrix || !resolver) {
     throw new Error('CONSULT_REQUIRED: Esta configuración no tiene un costo real de proveedor conectado.');
   }
