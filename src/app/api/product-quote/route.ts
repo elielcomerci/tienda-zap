@@ -32,11 +32,23 @@ export async function POST(request: Request) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId, active: true },
-      select: { quoterConfig: { include: quoterConfigInclude }, configuratorVersions: { where: { status: 'ACTIVE' }, orderBy: { schemaVersion: 'desc' }, take: 1 } },
+      select: { slug: true, quoterConfig: { include: quoterConfigInclude }, configuratorVersions: { where: { status: 'ACTIVE' }, orderBy: { schemaVersion: 'desc' }, take: 1 } },
     })
 
     const config = product?.quoterConfig
-    const configurator = product?.configuratorVersions?.[0]
+    const databaseConfigurator = product?.configuratorVersions?.[0]
+    const seedConfigurator = product
+      ? impresosPackagingConfigurators
+          .filter((item) => item.productSlug === product.slug && item.status === 'ACTIVE')
+          .sort((a, b) => b.schemaVersion.localeCompare(a.schemaVersion, undefined, { numeric: true }))[0]
+      : undefined
+    const seedIsNewer = Boolean(seedConfigurator) && (
+      !databaseConfigurator ||
+      seedConfigurator!.schemaVersion.localeCompare(databaseConfigurator.schemaVersion, undefined, { numeric: true }) > 0
+    )
+    const configurator = seedIsNewer
+      ? { ...seedConfigurator!, id: `seed:${product!.slug}:${seedConfigurator!.schemaVersion}` }
+      : databaseConfigurator
     if (!config && !configurator) {
       return NextResponse.json({ error: 'Este producto no tiene un cotizador activo.' }, { status: 404 })
     }
