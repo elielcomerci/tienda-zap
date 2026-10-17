@@ -474,7 +474,7 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
   assert.equal(quote.totalCost, (unitPrice + (selection.flap === 'impresa' ? tier.flapSurcharge || 0 : 0)) * selection.quantity);
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1001 }, { profitMargin: 0 } as any),
-    /Cantidad máxima permitida/
+    /Cantidad '1001' no permitida/
   );
 });
 
