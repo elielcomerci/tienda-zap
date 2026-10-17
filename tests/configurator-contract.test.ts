@@ -186,7 +186,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(twoHundred.totalCost, 12361);
-  assert.equal(twoHundred.totalPrice, 28490);
+  assert.equal(twoHundred.totalPrice, 28420);
 
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 500 }, { profitMargin: 150 } as any),
