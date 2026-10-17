@@ -24,6 +24,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'ilustracion_350g',
         options: [
+          { id: 'ilustracion_300g', label: 'Papel Ilustración 300g' },
           { id: 'ilustracion_350g', label: 'Papel Ilustración 350g' },
         ],
       },
@@ -44,6 +45,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         default: 'sin_laminar',
         options: [
           { id: 'sin_laminar', label: 'Sin laminar' },
+          { id: 'laca_uv', label: 'Laca UV' },
           { id: 'mate', label: 'Laminado OPP Mate' },
           { id: 'brillo', label: 'Laminado OPP Brillo' },
         ],
@@ -99,37 +101,15 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Lista de costos digitales: se habilitan las combinaciones que mantienen
-    // una posición defendible; las tiradas 500/1000 restantes pasan a consulta
-    // por brechas entre celdas del proveedor y precios minoristas comparables.
+    // Habilitar toda combinación digital con costo explícito en la matriz.
+    // La revisión comercial posterior puede ajustar margen/precio; no bloquear
+    // celdas con costo conocido mediante una allowlist de selecciones.
     commercialPricingPolicy: {
-      version: 1,
+      version: 2,
       mode: 'MARKUP',
-      percentage: 90,
+      percentage: 45,
       vatRatePercent: 21,
     },
-    consultRequiredQuantities: [1000],
-    consultRequiredSelections: [
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 100 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'mate', quantity: 100 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo', quantity: 100 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 100 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate', quantity: 100 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo', quantity: 100 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 200 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'mate', quantity: 200 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo', quantity: 200 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 200 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate', quantity: 200 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo', quantity: 200 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 300 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'mate', quantity: 300 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'brillo', quantity: 300 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 300 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate', quantity: 300 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'brillo', quantity: 300 },
-      { format: '9x5', material: 'ilustracion_350g', printing: '4_0', lamination: 'sin_laminar', quantity: 500 },
-    ],
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
     // Costo maestro de proveedor: producto terminado, sin IVA.
