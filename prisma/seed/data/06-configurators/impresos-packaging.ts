@@ -104,6 +104,11 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         condition: { field: 'lamination', operator: 'neq', value: 'sin_laminar' },
         action: 'visible',
       },
+      {
+        field: 'additionalFinishings',
+        condition: { field: 'productionProcess', operator: 'neq', value: 'offset' },
+        action: 'visible',
+      },
     ],
     requiredProcesses: [
       {
