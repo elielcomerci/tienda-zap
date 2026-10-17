@@ -361,7 +361,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.0',
+  schemaVersion: '1.1',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -451,28 +451,28 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
     // La matriz offset de producto terminado contiene un costo comparable para
     // 1.000 flyers planos 10×15 cm, 4/4. Se habilita solo esa combinación por papel;
     // otras cantidades, medidas, caras y plegados siguen en consulta.
+    // El precio usa políticas distintas según el método resuelto.
+    // Offset: márgenes bajos pero positivos, calibrados contra precios públicos recientes.
+    // Digital: el costo cargado supera referencias de mercado en varias cantidades;
+    // se activa al costo neto (recargo 0%) para no vender por debajo del costo.
+    commercialPricingPoliciesByProcessAndMaterial: {
+      offset: {
+        obra_80g: { version: 1, mode: 'MARKUP', percentage: 55, vatRatePercent: 21 },
+        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 55, vatRatePercent: 21 },
+        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 30, vatRatePercent: 21 },
+      },
+      digital: {
+        obra_80g: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
+        ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
+        ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
+      },
+    },
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 75,
+      percentage: 0,
       vatRatePercent: 21,
     },
-    commercialPricingPoliciesByMaterial: {
-      obra_80g: { version: 1, mode: 'MARKUP', percentage: 75, vatRatePercent: 21 },
-      ilustracion_115g: { version: 1, mode: 'MARKUP', percentage: 100, vatRatePercent: 21 },
-      ilustracion_150g: { version: 1, mode: 'MARKUP', percentage: 77, vatRatePercent: 21 },
-    },
-    consultRequiredSelections: [
-      { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 1000 },
-      { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 1000 },
-      { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 1000 },
-      { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 2500 },
-      { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 2500 },
-      { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 2500 },
-      { foldingType: 'plano', format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 5000 },
-      { foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 5000 },
-      { foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 5000 },
-    ],
     // El automático se resuelve contra el costo de proveedor, no solo el papel.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
     providerFinishedCostMatrix: {
