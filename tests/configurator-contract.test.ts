@@ -18,7 +18,7 @@ import {
   isEditableProviderCostPath,
 } from '../src/lib/pricing/pricing-matrix-admin';
 import { calculateCommercialPrice, calculatePriceAtNetAmount, marginFromMarkup, validateCommercialPricingPolicy } from '../src/lib/pricing/commercial-pricing-policy';
-import { initialQuoterConfigs } from '../prisma/seed/data/09-quoter-config';
+import { initialQuoterConfigs, sheetFinishingOperations } from '../prisma/seed/data/09-quoter-config';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -179,6 +179,19 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   assert.equal(quote.totalCost, 8213);
   assert.equal(quote.totalPrice, 18890);
   assert.ok(quote.selectedOptions.some((option) => option.name === 'Cantidad' && option.value.includes('100')));
+
+  const twoHundred = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 200 },
+    { profitMargin: 150 } as any,
+  );
+  assert.equal(twoHundred.totalCost, 12361);
+  assert.equal(twoHundred.totalPrice, 28490);
+
+  assert.throws(
+    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 500 }, { profitMargin: 150 } as any),
+    /CONSULT_REQUIRED: Esta cantidad necesita validación comercial/,
+  );
 });
 
 test('stickers exige validación comercial y no acepta cantidades inventadas', () => {
@@ -236,6 +249,16 @@ test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () =
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 1001 }, { profitMargin: 0 } as any),
     /Cantidad máxima permitida/
   );
+});
+
+test('la perforación solo usa los importes de proveedor documentados por lote', () => {
+  const perforation = sheetFinishingOperations.find((entry) => entry.id === 'fin_perforacion');
+  assert.ok(perforation);
+  assert.equal(perforation.costType, 'FIXED_SETUP');
+  assert.deepEqual(perforation.tiers, [
+    { minQty: 500, maxQty: 500, unitPrice: 3225 },
+    { minQty: 1000, maxQty: 1000, unitPrice: 4500 },
+  ]);
 });
 
 test('flyers y tags no publican precios cuando el costo de impresión no está validado', () => {
