@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { Prisma } from '@prisma/client'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { engineForCatalogFamily } from '@/lib/catalog-domain'
+import { catalogGroups, engineForCatalogFamily } from '@/lib/catalog-domain'
 import { impresosPackagingConfigurators } from '../../prisma/seed/data/06-configurators/impresos-packaging'
 import { presenciaFisicaConfigurators } from '../../prisma/seed/data/06-configurators/presencia-fisica'
 
@@ -75,6 +75,7 @@ export async function getProducts(
   options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO'; rankContext?: { situationSlug?: string; needSlug?: string; businessTypeSlug?: string; situationPriority?: string[] } }
 ) {
   const engine = engineForCatalogFamily(familySlug)
+  const catalogGroup = catalogGroups.find((group) => group.slug === familySlug)
   const offerFilter: Prisma.OfferMatrixEntryWhereInput = {
     ...(options?.situationSlug ? { situation: { slug: options.situationSlug } } : {}),
     ...(options?.needSlug ? { need: { slug: options.needSlug } } : {}),
@@ -89,7 +90,7 @@ export async function getProducts(
   const where: Prisma.ProductWhereInput = {
     active: true,
     ...catalogTypeFilter,
-    ...(engine ? { engine } : {}),
+    ...(catalogGroup ? { slug: { in: [...catalogGroup.productSlugs] } } : engine ? { engine } : {}),
     ...(hasOfferFilter ? { offerEntries: { some: offerFilter } } : {}),
     ...(search
       ? {
