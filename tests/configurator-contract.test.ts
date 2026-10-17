@@ -177,7 +177,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
   const selection = defaultSelection(config);
   const quote = quoteConfiguratorSelection(config as any, selection, { profitMargin: 0 } as any);
   assert.equal(quote.totalCost, 8213);
-  assert.equal(quote.totalPrice, 18890);
+  assert.equal(quote.totalPrice, 14490);
   assert.equal(quote.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
@@ -189,7 +189,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(twoHundred.totalCost, 12361);
-  assert.equal(twoHundred.totalPrice, 28490);
+  assert.equal(twoHundred.totalPrice, 21690);
   assert.equal(twoHundred.taxTreatment, 'INCLUDED');
   assert.ok(Math.abs((twoHundred.netPrice ?? 0) - (twoHundred.totalPrice / 1.21)) < 0.01);
 
@@ -199,7 +199,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(threeHundred.totalCost, 17029);
-  assert.equal(threeHundred.totalPrice, 39190);
+  assert.equal(threeHundred.totalPrice, 29990);
   assert.equal(threeHundred.taxTreatment, 'INCLUDED');
 
   const fiveHundredSimplex = quoteConfiguratorSelection(
@@ -208,13 +208,41 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
     { profitMargin: 150 } as any,
   );
   assert.equal(fiveHundredSimplex.totalCost, 19219);
-  assert.equal(fiveHundredSimplex.totalPrice, 44190);
+  assert.equal(fiveHundredSimplex.totalPrice, 33790);
   assert.equal(fiveHundredSimplex.taxTreatment, 'INCLUDED');
 
-  assert.throws(
-    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 500 }, { profitMargin: 150 } as any),
-    /CONSULT_REQUIRED: Esta combinación necesita validación comercial/,
+  const fiveHundredDuplex = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 500, printing: '4_4', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
   );
+  assert.equal(fiveHundredDuplex.totalCost, 39930);
+  assert.equal(fiveHundredDuplex.totalPrice, 70090);
+  assert.equal(fiveHundredDuplex.taxTreatment, 'INCLUDED');
+
+  const threeHundredGram = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, material: 'ilustracion_300g', quantity: 100, printing: '4_0', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(threeHundredGram.totalCost, 13031);
+  assert.equal(threeHundredGram.taxTreatment, 'INCLUDED');
+
+  const uv = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 100, printing: '4_0', lamination: 'laca_uv' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(uv.totalCost, 7009);
+  assert.equal(uv.taxTreatment, 'INCLUDED');
+
+  const thousand = quoteConfiguratorSelection(
+    config as any,
+    { ...selection, quantity: 1000, printing: '4_0', lamination: 'sin_laminar' },
+    { profitMargin: 0 } as any,
+  );
+  assert.equal(thousand.totalCost, 36475);
+  assert.equal(thousand.taxTreatment, 'INCLUDED');
 });
 
 test('stickers habilita solo 500 unidades de 5x5 cm con precio final e IVA explícitos', () => {
