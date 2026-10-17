@@ -18,6 +18,16 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { id: '9x10_plegada', label: '9×10 cm plegada (con hendido)' },
         ],
       },
+      productionProcess: {
+        label: 'Sistema de impresión',
+        type: 'select',
+        required: true,
+        default: 'digital',
+        options: [
+          { id: 'digital', label: 'Digital · tiradas cortas' },
+          { id: 'offset', label: 'Offset · desde 1.000 unidades' },
+        ],
+      },
       material: {
         label: 'Material',
         type: 'select',
@@ -48,6 +58,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { id: 'laca_uv', label: 'Laca UV' },
           { id: 'mate', label: 'Laminado OPP Mate' },
           { id: 'brillo', label: 'Laminado OPP Brillo' },
+          { id: 'mate_uv_sectorizada', label: 'OPP mate + UV sectorizada' },
         ],
       },
       laminationSides: {
@@ -80,6 +91,8 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { value: 300, label: '300 u.' },
           { value: 500, label: '500 u.' },
           { value: 1000, label: '1000 u.' },
+          { value: 3000, label: '3000 u.' },
+          { value: 5000, label: '5000 u.' },
         ],
       },
     },
@@ -109,6 +122,13 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       mode: 'MARKUP',
       percentage: 45,
       vatRatePercent: 21,
+    },
+    commercialPricingPoliciesByProcess: {
+      // Digital: recargo moderado para no alejarse más del mercado.
+      digital: { version: 1, mode: 'MARKUP', percentage: 45, vatRatePercent: 21 },
+      // Offset: margen cero como piso de activación mientras se valida la brecha
+      // con la lista mayorista y los precios públicos comparables.
+      offset: { version: 1, mode: 'MARKUP', percentage: 0, vatRatePercent: 21 },
     },
     // Costo real de proveedor: tarjetas terminadas, listas para entregar.
     // No representa precio de venta ZAP ni una materia prima.
