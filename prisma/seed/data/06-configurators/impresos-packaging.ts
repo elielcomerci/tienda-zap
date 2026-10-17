@@ -421,7 +421,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.5',
+  schemaVersion: '1.6',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -446,7 +446,6 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
           { id: '10x15', label: '10×15 cm' },
           { id: '15x21', label: '15×21 cm (A5)' },
           { id: 'a4', label: '21×30 cm (A4)' },
-          { id: '10x20', label: '10×20 cm' },
         ],
       },
       material: {
@@ -455,9 +454,9 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         required: true,
         default: 'ilustracion_115g',
         options: [
-          { id: 'obra_80g', label: 'Papel Obra 80g (Económico)' },
-          { id: 'ilustracion_115g', label: 'Papel Ilustración 115g (Promocional)' },
-          { id: 'ilustracion_150g', label: 'Papel Ilustración 150g (Óptimo / Mayor cuerpo)' },
+          { id: 'obra_80g', label: 'Papel 80g (Económico)' },
+          { id: 'ilustracion_115g', label: 'Papel Ilustración 115g' },
+          { id: 'ilustracion_150g', label: 'Papel Ilustración 150g (Mayor cuerpo)' },
         ],
       },
       printing: {
@@ -468,6 +467,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         options: [
           { id: '4_0', label: 'Frente solo color (4/0)' },
           { id: '4_4', label: 'Frente y dorso color (4/4)' },
+          { id: '1_0', label: 'Frente en escala de grises (1/0)' },
+          { id: '1_1', label: 'Frente y dorso en escala de grises (1/1)' },
         ],
       },
       quantity: {
@@ -481,15 +482,13 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
           { value: 300, label: '300 u.' },
           { value: 500, label: '500 u.' },
           { value: 1000, label: '1.000 u.' },
-          { value: 2500, label: '2.500 u.' },
-          { value: 5000, label: '5.000 u.' },
         ],
       },
     },
   },
   compatibility: {
     allowedFormats: {
-      plano: ['10x10', '10x15', '15x21', 'a4', '10x20'],
+      plano: ['10x10', '10x15', '15x21', 'a4'],
       diptico: ['15x21', '10x15', '10x20'],
       triptico: ['a4'],
     },
@@ -612,11 +611,6 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       digitalOndemand: {
         source: 'DIGITAL_ON_DEMAND_RICOH_PRO_C9200',
         taxIncluded: false,
-        deliverySurcharges: {
-          express_3_4_dias: 15,
-          super_express_48h: 30,
-          ya_24h: 50,
-        },
         fullColor: {
           'ilustracion_150g': {
             '10x10': {
@@ -752,7 +746,6 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
           '10x15': { sizeLabel: '10x15 cm', width: 10, height: 15 },
           '15x21': { sizeLabel: '15x21 cm', width: 15, height: 21 },
           'a4': { sizeLabel: 'A4', width: 21, height: 29.7 },
-          '10x20': { sizeLabel: '10x20 cm', width: 10, height: 20 },
         },
         diptico: {
           '15x21': { sizeLabel: 'A4', width: 21, height: 29.7, closedLabel: 'Cerrado A5 (abierto A4)' },
