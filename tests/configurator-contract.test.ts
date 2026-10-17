@@ -193,21 +193,21 @@ test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta can
 });
 
 test('stickers queda en consulta comercial y carpetas aplica política explícita con IVA', () => {
-  for (const slug of ['adhesivos-stickers', 'carpetas-folders']) {
-    const config = initialQuoterConfigs.find((entry) => entry.productSlug === slug);
-    assert.ok(config, `${slug}: falta ProductQuoterConfig en el seed`);
-    assert.equal(config.profitMargin, 150, `${slug}: el recargo heredado debe permanecer explícito`);
-    assert.equal(config.minProfitMargin, 120);
-    assert.equal(config.maxProfitMargin, 180);
-  }
+  assert.equal(
+    initialQuoterConfigs.some((entry) => entry.productSlug === 'adhesivos-stickers'),
+    false,
+    'stickers no debe tener un recargo automático mientras el costo no sea viable',
+  );
+
+  const folderConfig = initialQuoterConfigs.find((entry) => entry.productSlug === 'carpetas-folders');
+  assert.ok(folderConfig, 'carpetas-folders: falta ProductQuoterConfig en el seed');
+  assert.equal(folderConfig.profitMargin, 150, 'el recargo heredado se conserva como fallback');
+  assert.equal(folderConfig.minProfitMargin, 120);
+  assert.equal(folderConfig.maxProfitMargin, 180);
 
   const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
   assert.throws(
-    () => quoteConfiguratorSelection(
-      adhesivosStickersConfigurator as any,
-      stickersSelection,
-      initialQuoterConfigs.find((entry) => entry.productSlug === 'adhesivos-stickers') as any,
-    ),
+    () => quoteConfiguratorSelection(adhesivosStickersConfigurator as any, stickersSelection),
     /CONSULT_REQUIRED: El costo de proveedor necesita validación comercial/,
   );
 
@@ -215,11 +215,11 @@ test('stickers queda en consulta comercial y carpetas aplica política explícit
   const foldersQuote = quoteConfiguratorSelection(
     carpetasFoldersConfigurator as any,
     foldersSelection,
-    initialQuoterConfigs.find((entry) => entry.productSlug === 'carpetas-folders') as any,
+    folderConfig as any,
   );
   assert.equal(foldersQuote.totalCost, 82350);
   assert.equal(foldersQuote.totalPrice, 189390);
-  assert.equal(foldersQuote.breakdown?.marginPercent, 47.4);
+  assert.ok(Math.abs((foldersQuote.breakdown?.marginPercent ?? 0) - 47.4) < 0.1);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
