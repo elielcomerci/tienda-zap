@@ -380,7 +380,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           },
         },
       },
-    },
     adapter: {
       formatMapping: {
         '9x5': { sizeLabel: '9x5 cm', width: 9, height: 5 },
@@ -417,7 +416,8 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
         HENDIDO_CENTRAL: 'fin_hendido_central',
       },
     },
-  };
+  },
+};
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
