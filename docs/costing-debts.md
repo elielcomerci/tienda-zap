@@ -43,27 +43,20 @@ El `costType: PER_UNIT` con tier `501+ → $2.5/u` no captura esta estructura.
 no de la fuente primaria del catálogo. La tarifa real tiene un componente fijo de
 postura (setup) que hace la curva sublineal solo hasta cierto punto y luego salta.
 
-### Corrección pendiente
+### Resolución aplicada y trabajo pendiente
 
-Opciones a evaluar en el sprint de costing:
+Para `tags-etiquetas`, el configurador ya no usa la tarifa lineal subestimada. La versión activa `1.1` incorpora el costo de papel por pliego, impresión digital por pliego, perforación fija de $3.225 para 500 unidades y laminado frontal opcional. El redondeado también tiene costo explícito por lote.
 
-1. **Cambiar `costType` a `FIXED_SETUP`** con tiers por rango de cantidad:
-   ```
-   1–500:    $3.225 fijo
-   501–1000: $4.500 fijo
-   1001–2000: $8.056 fijo (4500 + 3556)
-   2001–3000: $11.612 fijo (4500 + 3556×2)
-   ```
-2. **Agregar campo `setupCost`** al modelo `FinishingOperation` para separar
-   costo fijo de postura + costo variable por unidad.
-3. Revalidar E2E de `tags-etiquetas` tras la corrección; los demás configuradores
-   activos (`tarjetas-vouchers`, `flyers-desplegables`) no usan `fin_perforacion`.
+El cálculo usa una imposición conservadora de 24 tags 9×5 cm por pliego imprimible 46×31 cm para reservar margen de corte y merma. La cantidad publicada se limita a 500 unidades porque la matriz digital no permite sostener un precio competitivo para 1.000 unidades frente a la alternativa offset.
+
+Pendiente para cerrar la deuda general:
+1. Obtener un costo offset terminado verificable para tags de 1.000 unidades.
+2. Revalidar el rendimiento real de imposición en producción y ajustar la reserva de merma si el proveedor confirma otra cantidad por pliego.
+3. Mantener la operación genérica `fin_perforacion` como tarifa fija por lote; no volver a representarla como costo unitario lineal.
 
 ### Impacto comercial estimado
 
-Los precios actuales de Tags subcotizan la perforación en ~$2.000–$4.000 por lote
-según cantidad. El margen de beneficio del 150% amortigua parte de esto, pero el
-costeo interno (`totalCost`) no refleja el costo real de producción.
+La configuración activa de 500 tags ahora incorpora el costo fijo de perforación. El riesgo pendiente está en 1.000 unidades y en confirmar la imposición real; no debe extrapolarse el precio de 500 unidades.
 
 ---
 
@@ -71,4 +64,4 @@ costeo interno (`totalCost`) no refleja el costo real de producción.
 
 ---
 
-*Última actualización: 2026-10-04*
+*Última actualización: 2026-10-17*
