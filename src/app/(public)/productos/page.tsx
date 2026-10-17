@@ -124,10 +124,14 @@ export default async function ProductsPage({
         needSlug: isSituationMode && selectedSituation ? necesidad : undefined,
         // Keep recommendations inside the selected business context in guided discovery too.
         businessTypeSlug: isSituationMode || mode === 'rubro' ? rubro : undefined,
-        rankContext: mode === 'product' && selectedSituation ? {
+        // Keep the general editorial order unless the visitor chose a context.
+        // With a rubro only, prioritize products linked to its highest-priority situations;
+        // with a situation/need, exact matches take precedence.
+        rankContext: mode === 'product' && (rubro || selectedSituation) ? {
           businessTypeSlug: rubro,
-          situationSlug: selectedSituation.slug,
-          needSlug: selectedSituation.needs.some((need) => need.slug === necesidad) ? necesidad : undefined,
+          situationSlug: selectedSituation?.slug,
+          needSlug: selectedSituation?.needs.some((need) => need.slug === necesidad) ? necesidad : undefined,
+          situationPriority: rubro ? BUSINESS_SITUATION_PRIORITY[rubro] : undefined,
         } : undefined,
         catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
       }
