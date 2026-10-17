@@ -375,7 +375,22 @@ function quoteProviderFinishedCostSelection(
   let resolvedPricingProcess: string | undefined;
   const fields = configurator.schema?.fields || {};
 
-  if (resolver.type === 'CARDS_DIGITAL') {
+  if (resolver.type === 'PORTABANNER_FINISHED') {
+    const model = String(selection.model || '');
+    const printing = String(selection.printing || '');
+    const item = matrix.portabanner?.items?.[model];
+    const sourceCost = item?.[printing];
+    if (sourceCost === undefined) {
+      throw new Error('CONSULT_REQUIRED: No hay costo terminado cargado para este modelo y tecnología de impresión.');
+    }
+
+    // El roll up tiene un adicional de armado explícito en la fuente.
+    // Los precios latex/UV ya incluyen estructura + impresión; no sumar
+    // nuevamente el valor de estructura.
+    const assembly = model === 'rollup_85x200' ? Number(item.assembly || 0) : 0;
+    totalCost = (Number(sourceCost) + assembly) * quantity;
+    resolvedPricingProcess = 'finished_product';
+  } else if (resolver.type === 'CARDS_DIGITAL') {
     if (selection.productionProcess === 'offset') {
       resolvedPricingProcess = 'offset';
       if (quantity < 1000) {
