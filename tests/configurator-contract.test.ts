@@ -18,6 +18,7 @@ import {
   isEditableProviderCostPath,
 } from '../src/lib/pricing/pricing-matrix-admin';
 import { calculateCommercialPrice, calculatePriceAtNetAmount, marginFromMarkup, validateCommercialPricingPolicy } from '../src/lib/pricing/commercial-pricing-policy';
+import { initialQuoterConfigs } from '../prisma/seed/data/09-quoter-config';
 
 type Config = (typeof impresosPackagingConfigurators)[number];
 
@@ -189,6 +190,34 @@ test('stickers usa la matriz de la medida/cantidad seleccionadas y no acepta can
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 999 }, { profitMargin: 0 } as any),
     /Cantidad '999' no permitida/
   );
+});
+
+test('stickers y carpetas tienen margen maestro sembrado y cotizan con el recargo configurado', () => {
+  for (const slug of ['adhesivos-stickers', 'carpetas-folders']) {
+    const config = initialQuoterConfigs.find((entry) => entry.productSlug === slug);
+    assert.ok(config, `${slug}: falta ProductQuoterConfig en el seed`);
+    assert.equal(config.profitMargin, 150, `${slug}: debe mantener el recargo maestro vigente`);
+    assert.equal(config.minProfitMargin, 120);
+    assert.equal(config.maxProfitMargin, 180);
+  }
+
+  const stickersSelection = defaultSelection(adhesivosStickersConfigurator);
+  const stickersQuote = quoteConfiguratorSelection(
+    adhesivosStickersConfigurator as any,
+    stickersSelection,
+    initialQuoterConfigs.find((entry) => entry.productSlug === 'adhesivos-stickers') as any,
+  );
+  assert.equal(stickersQuote.totalCost, 19231);
+  assert.equal(stickersQuote.totalPrice, 48090);
+
+  const foldersSelection = defaultSelection(carpetasFoldersConfigurator);
+  const foldersQuote = quoteConfiguratorSelection(
+    carpetasFoldersConfigurator as any,
+    foldersSelection,
+    initialQuoterConfigs.find((entry) => entry.productSlug === 'carpetas-folders') as any,
+  );
+  assert.equal(foldersQuote.totalCost, 82350);
+  assert.equal(foldersQuote.totalPrice, 205890);
 });
 
 test('carpetas cotiza cantidad exacta y rechaza cantidades fuera de rango', () => {
