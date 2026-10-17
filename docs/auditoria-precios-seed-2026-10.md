@@ -245,3 +245,20 @@ Por ahora, quedan habilitados para precio automático la matriz digital de Carpe
 - Confirmar con contador la aplicación de IVA del 21% a las ventas de estos productos.
 - Obtener cotización vigente para tarjetas en tiradas de 300 o más, stickers circulares, flyers offset/digital y tags impresos.
 - Revisar que la interfaz y el carrito presenten como precio final el total con IVA para las configuraciones que sí están habilitadas.
+
+## 10. Revisión comercial con listas de proveedor confirmadas — 17/10/2026
+
+El usuario confirmó que las listas de proveedor ya cargadas en el seed siguen vigentes. Esta confirmación reemplaza las advertencias anteriores que condicionaban la decisión únicamente a la antigüedad declarada de la lista. Se evalúa con los importes y especificaciones existentes, sin inventar costos nuevos.
+
+Cambios implementados en `main`:
+
+- **Tarjetas:** política de recargo del 90% + IVA 21%. Se habilitan combinaciones de 100, 200 y 300 unidades cubiertas por la matriz de costo; para 500 unidades solo se habilita 4/0 sin laminar. Las restantes combinaciones de 500 y todas las de 1.000 siguen en consulta por brechas de costo/precio frente a referencias minoristas. Ejemplos finales con IVA incluido: 100 u. 4/4 sin laminar $18.890; 200 u. $28.490; 300 u. $39.190; 500 u. 4/0 sin laminar $44.190.
+- **Flyers:** se conecta el resolver con la matriz de costo offset terminado cuando la selección coincide con una celda explícita. Solo se habilita 1.000 u., 10×15 cm, plano, 4/4. Precios finales con IVA incluido: obra 80 g $48.790; ilustración 115 g $52.990; ilustración 150 g $67.790. Otros tamaños, cantidades, impresión simple faz y plegados siguen en consulta.
+- **Carpetas:** la política cambia de 72,5% a 40% de recargo + IVA 21%. Para 50 u., A4, 300 g, 4/0 sin laminar, solapa blanca, el costo neto es $82.350 y el motor calcula $139.590 final, con margen bruto aproximado de 28,6% sobre la venta neta. La referencia pública de Imprimime equivale a unos $130.430 finales para 50 u.; el precio ZAP queda cerca de 7% por encima.
+- **Stickers:** se conserva la única combinación habilitada: 500 u., circular 5×5 cm, papel autoadhesivo 90 g, laca UV, $51.290 final con IVA incluido.
+- **Tags:** continúa en consulta. Aunque hay costos de papel y terminaciones, el motor todavía no suma un costo de impresión terminado; no corresponde habilitarlo solo con esos componentes.
+
+La matriz detallada y las referencias competitivas se registran en `docs/matriz-precios-competencia-2026-10.md`.
+
+**Límite de verificación:** los cambios de código y pruebas se guardaron en `main`, pero las pruebas no se ejecutaron en este flujo y no se confirmó el despliegue ni la actualización de la base de datos de producción. El commit en `main` no equivale a precio publicado en tienda. La habilitación efectiva sigue sujeta a las compuertas de auditoría/publicación existentes.
+
