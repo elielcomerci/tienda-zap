@@ -385,8 +385,6 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         default: 'plano',
         options: [
           { id: 'plano', label: 'Flyer / Volante plano' },
-          { id: 'diptico', label: 'Díptico (1 pliegue / 4 páginas)' },
-          { id: 'triptico', label: 'Tríptico (2 pliegues / 6 páginas)' },
         ],
       },
       format: {
