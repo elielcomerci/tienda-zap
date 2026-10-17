@@ -1297,7 +1297,7 @@ export const talonariosFormulariosConfigurator: ConfiguratorVersionSeedData = {
     engine: 'STICKER_TABLE',
     matrix: {
       obra_80g_byn: {
-        '17x22': { '5': 109000, '10': 199000, '20': 369000 },
+        '17x22': { '5': 89900, '10': 159900, '20': 289900 },
         '10x15': { '5': 34900, '10': 54900, '20': 94900 },
       },
     },
