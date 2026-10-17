@@ -960,18 +960,6 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
           { id: 'laca_uv_brillo', label: 'Con laca UV brillo' },
         ],
       },
-      delivery: {
-        label: 'Plazo de entrega',
-        type: 'select',
-        required: true,
-        default: 'normal',
-        options: [
-          { id: 'normal', label: 'Normal · 5/7 días' },
-          { id: 'express', label: 'Express · 3/4 días (+15%)' },
-          { id: 'super_express_48h', label: 'Super Express · 48 hs (+30%)' },
-          { id: 'ya_24h', label: '¡YA! · 24 hs (+50%)' },
-        ],
-      },
       quantity: {
         label: 'Cantidad',
         type: 'quantity_selector',
