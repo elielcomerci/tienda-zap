@@ -1,13 +1,13 @@
 import { ConfiguratorVersionSeedData } from '../../types';
+import { granFormatoCostCatalog } from './gran-formato-costos';
 
 const presenciaSlugs = [
   'carteleria-ploteo',
   'corporeos-marquesinas',
   'senaletica-placas',
-  'expositores-stands',
 ];
 
-export const presenciaFisicaConfigurators: ConfiguratorVersionSeedData[] = presenciaSlugs.map((slug) => ({
+const presenciaDraftConfigurators: ConfiguratorVersionSeedData[] = presenciaSlugs.map((slug) => ({
   productSlug: slug,
   schemaVersion: '1.0',
   status: 'DRAFT',
@@ -26,3 +26,70 @@ export const presenciaFisicaConfigurators: ConfiguratorVersionSeedData[] = prese
   compatibility: null,
   pricing: null,
 }));
+
+/**
+ * Subfamilia publicable de Expositores & Stands con costo de producto terminado.
+ * Solo expone dos modelos y dos tecnologías con celdas explícitas en la fuente.
+ * No extrapola materiales, medidas ni métodos de impresión.
+ */
+export const expositoresStandsConfigurator: ConfiguratorVersionSeedData = {
+  productSlug: 'expositores-stands',
+  schemaVersion: '1.1',
+  status: 'ACTIVE',
+  schema: {
+    engine: 'PRESENCIA_FISICA',
+    productSlug: 'expositores-stands',
+    fields: {
+      model: {
+        label: 'Modelo',
+        type: 'select',
+        required: true,
+        default: 'double_90x190',
+        options: [
+          { id: 'double_90x190', label: 'Portabanner doble tensor 90 × 190 cm' },
+          { id: 'rollup_85x200', label: 'Roll Up retráctil 85 × 200 cm' },
+        ],
+      },
+      printing: {
+        label: 'Impresión',
+        type: 'select',
+        required: true,
+        default: 'latex',
+        options: [
+          { id: 'latex', label: 'Impresión látex' },
+          { id: 'uv', label: 'Impresión UV' },
+        ],
+      },
+      quantity: {
+        label: 'Cantidad',
+        type: 'quantity_input',
+        required: true,
+        default: 1,
+        min: 1,
+        max: 10,
+      },
+    },
+  },
+  compatibility: { uiRules: [] },
+  pricing: {
+    engine: 'PROVIDER_FINISHED_COST',
+    commercialPricingPolicy: {
+      version: 1,
+      mode: 'MARKUP',
+      percentage: 35,
+      vatRatePercent: 21,
+    },
+    providerFinishedCostMatrix: {
+      resolver: { type: 'PORTABANNER_FINISHED' },
+      currency: 'ARS',
+      taxIncluded: false,
+      source: 'CATALOGO_GRAN_FORMATO_2026_07',
+      portabanner: granFormatoCostCatalog.finishedProducts.portabannerPlusPrinting,
+    },
+  },
+};
+
+export const presenciaFisicaConfigurators: ConfiguratorVersionSeedData[] = [
+  ...presenciaDraftConfigurators,
+  expositoresStandsConfigurator,
+];
