@@ -78,7 +78,7 @@ export default function SemanticProductConfigurator({ product, configurator, inq
     return () => controller.abort()
   }, [complete, normalized, product.id])
   const change = (key: string, value: any) => setSelected((previous) => ({ ...previous, [key]: value }))
-  const quoteHasApprovedTaxDisplay = quote?.taxTreatment === 'INCLUDED' && typeof quote.netPrice === 'number'
+  const quoteHasApprovedTaxDisplay = quote?.taxTreatment === 'INCLUDED' && typeof quote.netPrice === 'number' && typeof quote.vatAmount === 'number' && typeof quote.vatRatePercent === 'number'
   const addQuoted = () => {
     if (!quote || !quoteHasApprovedTaxDisplay) return
     addItem({ productId: product.id, name: product.name, price: quote.totalPrice, catalogType: product.catalogType, modality: product.modality, creditDownPaymentPercent: product.creditDownPaymentPercent || 30, image: product.images?.[0] || '', quantity: 1, briefType: ['DESIGN','MUSIC','VIDEO'].includes(product.briefType) ? product.briefType : 'NONE', selectedOptions: quote.selectedOptions })
@@ -104,7 +104,48 @@ export default function SemanticProductConfigurator({ product, configurator, inq
           <>
             <p className="mt-3 text-4xl font-black">{'$' + quote.totalPrice.toLocaleString('es-AR')}</p>
             <p className="mt-2 text-sm font-semibold text-gray-200">IVA incluido</p>
-            <p className="mt-2 text-xs leading-5 text-gray-300">{'$' + quote.netPrice!.toLocaleString('es-AR', { maximumFractionDigits: 2 })} · PRECIO SIN IMPUESTOS NACIONALES</p>
+            <p className="mt-2 text-xs leading-5 text-gray-300">{'
+          </>
+        ) : quote || error === 'CONSULT_REQUIRED' ? (
+          <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p>
+        ) : (
+          <p className="mt-3 text-sm text-gray-300">{complete ? 'Elegí una configuración válida.' : 'Elegí las opciones que faltan.'}</p>
+        )}
+        {quote && !quoteHasApprovedTaxDisplay ? <p className="mt-2 text-sm text-gray-300">Estamos validando el precio final y los impuestos aplicables a esta configuración.</p> : null}
+        {error === 'CONSULT_REQUIRED' ? <p className="mt-2 text-sm text-gray-300">Esta combinación necesita una revisión con ZAP.</p> : null}
+        <div className="mt-5">
+          {quoteHasApprovedTaxDisplay && quote ? (
+            <button type="button" onClick={addQuoted} className="w-full rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white">{added ? 'Agregado' : 'Agregar al carrito'}</button>
+          ) : (
+            <a href={configuredInquiryUrl || inquiryUrl || '#'} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white"><MessageCircleMore size={18} />Hablar con ZAP</a>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+ + quote.netPrice!.toLocaleString('es-AR', { maximumFractionDigits: 2 })} · PRECIO SIN IMPUESTOS NACIONALES</p>
+            <p className="mt-1 text-xs leading-5 text-gray-300">{'IVA (' + quote.vatRatePercent + '%): 
+          </>
+        ) : quote || error === 'CONSULT_REQUIRED' ? (
+          <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p>
+        ) : (
+          <p className="mt-3 text-sm text-gray-300">{complete ? 'Elegí una configuración válida.' : 'Elegí las opciones que faltan.'}</p>
+        )}
+        {quote && !quoteHasApprovedTaxDisplay ? <p className="mt-2 text-sm text-gray-300">Estamos validando el precio final y los impuestos aplicables a esta configuración.</p> : null}
+        {error === 'CONSULT_REQUIRED' ? <p className="mt-2 text-sm text-gray-300">Esta combinación necesita una revisión con ZAP.</p> : null}
+        <div className="mt-5">
+          {quoteHasApprovedTaxDisplay && quote ? (
+            <button type="button" onClick={addQuoted} className="w-full rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white">{added ? 'Agregado' : 'Agregar al carrito'}</button>
+          ) : (
+            <a href={configuredInquiryUrl || inquiryUrl || '#'} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-3 text-sm font-black text-white"><MessageCircleMore size={18} />Hablar con ZAP</a>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+ + quote.vatAmount!.toLocaleString('es-AR', { maximumFractionDigits: 2 })}</p>
           </>
         ) : quote || error === 'CONSULT_REQUIRED' ? (
           <p className="mt-3 text-3xl font-black text-[#F7638B]">Consultar</p>
