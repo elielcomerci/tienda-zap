@@ -586,7 +586,8 @@ function quoteProviderFinishedCostSelection(
         selection.material === 'obra_80g' || selection.material === 'ilustracion_115g'
           ? 'ilustracion_80g_115g'
           : selection.material || '';
-      const source = matrix.digitalOndemand?.fullColor?.[sourceMaterial]?.[selection.format || ''];
+      const colorFamily = selection.printing === '1_0' || selection.printing === '1_1' ? 'grayscale' : 'fullColor';
+      const source = matrix.digitalOndemand?.[colorFamily]?.[sourceMaterial]?.[selection.format || ''];
       const row = source?.[String(quantity)]?.[selection.printing || ''];
       if (row === undefined) {
         throw new Error('CONSULT_REQUIRED: No hay costo real cargado para esta combinación de folleto.');
