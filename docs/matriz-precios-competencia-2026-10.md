@@ -124,6 +124,8 @@ No se recomienda fijar un precio para todos los productos mediante ×2,5. Ese mu
    https://www.graficab377.com/servicios/gigantografias
 11. **Oink — portabanners y roll up:** doble tensor 90×190 cm $96.800 final; roll up 85×200 cm $112.550 final.  
    https://www.holaoink.com.ar/oink_lista_precios_2026_iva.html
+12. **Imprenta Cubo Digital — tarjetas:** 1.000 u. 350 g laminado mate, frente y dorso, $72.000 final.  
+   https://imprentacubodigital.com.ar/
 5. **CCprint:** catálogo público de papelería comercial con tags, flyers y carpetas, pero algunas fichas consultadas no permiten comprobar cantidad/especificación a partir del resultado indexado. Usar para descubrir productos, no para comparar sin abrir ficha y validar.  
    https://www.ccprint.com.ar/impresion-digital
 6. **E-tiquetas:** referencia de 1.000 etiquetas 80×50 mm $26.000; no comparable directamente con stickers circulares de papel 5×5 cm.  
@@ -167,8 +169,8 @@ Los precios publicados de MEGA no indican claramente en la página el tratamient
 |---|---:|---:|---|
 | Digital 350 g, 100 u., 4/4 sin laminar | $8.213 | $12.490 | Prima de gramaje frente a ofertas económicas de 300 g; validar conversión antes de publicarlo como opción destacada. |
 | Digital 350 g, 500 u., 4/4 sin laminar | $39.930 | $60.490 | Cerca de Tecnoplotter ($61.250) para 500 u. 350 g 4/4 con laminado brillo frontal; ZAP queda apenas por debajo y sin laminar. |
-| Offset 350 g, 1.000 u., 4/4 sin laminar | $45.477 | $63.290 | Cerca de la referencia local de Gráfica B377 ($60.000 para 1.000 u. con laminado frontal) y por debajo de Gráfica Lugano ($70.000 con laminado brillo); confirmar vigencia del costo fuente. |
-| Offset 350 g, 1.000 u., 4/4 OPP mate | $53.000 | $73.790 | Cerca de Gráfica B377 ($72.000 para tarjetas 300 g con mate) y de la referencia de Gráfica Lugano ($70.000 con brillo); mantener como terminación premium y reconfirmar costo fuente. |
+| Offset 350 g, 1.000 u., 4/4 sin laminar | $45.477 | $63.290 | ≈15% sobre Gráfica B377 ($55.000 para 1.000 u. 300 g 4/4 estándar), pero con gramaje 350 g; por debajo de Gráfica Lugano ($70.000 con laminado brillo). Confirmar vigencia del costo fuente. |
+| Offset 350 g, 1.000 u., 4/4 OPP mate | $53.000 | $73.790 | Cerca de Imprenta Cubo Digital ($72.000 para 1.000 u. 350 g mate) y de la referencia de Gráfica Lugano ($70.000 con brillo); mantener como terminación premium y reconfirmar costo fuente. |
 | Offset 350 g, 1.000 u., 4/4 OPP mate + UV sectorizada | $39.000 | **En consulta** | Costo cargado inferior al de la impresión clásica 4/4 sin laminar ($45.477), pese a incluir una terminación premium. No se ofrece precio automático hasta reconfirmar la fuente. |
 
 **Activación en código:** se agregó selector digital/offset, mínimo de 1.000 unidades para offset, 300 g/350 g en digital y las cantidades offset cargadas. Las políticas de tarjetas usan recargo del 25% digital y 15% offset sobre costo neto + IVA; los ejemplos comerciales revisados son $12.490 para 100 u. 4/4 digital, $60.490 para 500 u. 4/4 digital y $63.290 para 1.000 u. 4/4 offset. Las celdas de 3.000/5.000 offset cuyo costo cae por debajo del de 1.000 se bloquean y requieren reconfirmación de proveedor.
