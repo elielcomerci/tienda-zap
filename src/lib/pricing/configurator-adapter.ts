@@ -387,6 +387,15 @@ function quoteProviderFinishedCostSelection(
       if ((selection.additionalFinishings || []).length > 0 || (selection.laminationSides && selection.laminationSides !== 'frente')) {
         throw new Error('CONSULT_REQUIRED: La matriz offset no tiene costos cargados para esas terminaciones adicionales.');
       }
+      // La lista clásica contiene importes 3.000/5.000 menores que el de 1.000
+      // para esta combinación. No convertir una celda dudosa en precio automático.
+      if (
+        selection.lamination === 'sin_laminar' &&
+        selection.printing === '4_4' &&
+        (quantity === 3000 || quantity === 5000)
+      ) {
+        throw new Error('CONSULT_REQUIRED: Los costos offset clásicos de 3.000/5.000 tarjetas requieren reconfirmación del proveedor.');
+      }
 
       const tiers = matrix.tiers || {};
       let offsetCost: unknown;
