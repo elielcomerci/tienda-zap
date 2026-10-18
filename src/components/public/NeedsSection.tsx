@@ -32,7 +32,6 @@ export default function NeedsSection({
           const href = new URLSearchParams(query)
           href.set('necesidad', need.slug)
           const active = selectedNeedSlug === need.slug
-          const hasOffers = need._count.offerEntries > 0
           return (
             <Link
               key={need.id}
@@ -46,19 +45,15 @@ export default function NeedsSection({
                 </div>
                 <ArrowRight size={18} className="mt-0.5 shrink-0 text-[#ED164F]" />
               </div>
-              <p className="mt-auto pt-5 text-xs font-semibold text-[#C2103F] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 max-sm:hidden" aria-hidden="true">
-                {hasOffers ? 'Ver qué puede servirte' : 'Explorar esta necesidad'}
-              </p>
             </Link>
           )
         })}
       </div>
       <div className="mt-5 flex flex-col gap-4 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm leading-6 text-gray-600">¿Tu prioridad es otra?</p>
           <Link
             href={whatsappUrl || '/'}
-            className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
           >
             Contanos qué tenés en mente <ArrowRight size={15} />
           </Link>
