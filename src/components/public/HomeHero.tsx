@@ -55,8 +55,8 @@ export default function HomeHero({
         }
 
         setDemoRubroIndex(index)
-      }, 700)
-    }, 350)
+      }, 500)
+    }, 150)
 
     return () => {
       clearTimeout(start)
@@ -70,8 +70,8 @@ export default function HomeHero({
 
   useEffect(() => {
     if (!ready) return
-    if (context.situationSlug) setSelectedSituacion(context.situationSlug)
-  }, [ready])
+    setSelectedSituacion(context.situationSlug || '')
+  }, [ready, context.situationSlug])
 
   // Re-fetch situations filtered by rubro whenever rubro changes
   useEffect(() => {
@@ -191,7 +191,7 @@ export default function HomeHero({
                   className="border-b-[3px] sm:border-b-4 border-[#ED164F] pb-0.5 inline-flex items-center gap-1 cursor-pointer text-gray-950 hover:opacity-85 transition-opacity whitespace-nowrap"
                   aria-expanded={isRubroOpen}
                 >
-                  <span key={visibleRubroName} className="inline-block animate-in fade-in duration-300">
+                  <span key={visibleRubroName} className="inline-block animate-in fade-in duration-200">
                     {formatRubroName(visibleRubroName)}
                   </span>
                   <ChevronDown size={20} className={`shrink-0 transition-transform duration-200 text-gray-950 ${isRubroOpen ? 'rotate-180' : ''}`} strokeWidth={3} />

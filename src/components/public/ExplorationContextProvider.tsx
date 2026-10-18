@@ -41,11 +41,11 @@ function readContext(params: URLSearchParams): ExplorationContext {
   return normalizeExplorationContext({
     mode: mode === 'objective' ? 'situation' : mode === 'product' || mode === 'situation' || mode === 'rubro' ? mode : undefined,
     businessTypeSlug: params.get('rubro') || undefined,
-    situationSlug: params.get('situacion') || undefined,
+    situationSlug: params.get('situacion') || params.get('intent') || undefined,
     needSlug: params.get('necesidad') || undefined,
   })
 }
-function hasExplicitContext(params: URLSearchParams) { return ['rubro', 'situacion', 'necesidad'].some((key) => params.has(key)) }
+function hasExplicitContext(params: URLSearchParams) { return ['rubro', 'situacion', 'necesidad', 'intent'].some((key) => params.has(key)) }
 
 export function ExplorationContextProvider({
   children,
@@ -67,51 +67,34 @@ export function ExplorationContextProvider({
 
   useEffect(() => {
     const params = new URLSearchParams(query)
+
+    // An explicit contextual URL wins on entry. Persist its validated context,
+    // but don't rewrite the URL while the visitor is choosing options.
     if (hasExplicitContext(params)) {
       const fromUrl = validateContext(readContext(params), businessTypeSlugs, allSituations, situationsByBusinessType)
       setContextState(fromUrl)
       try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fromUrl)) } catch {}
-
-      const nextParams = new URLSearchParams(query)
-      for (const key of ['rubro', 'situacion', 'necesidad']) nextParams.delete(key)
-      if (fromUrl.businessTypeSlug) nextParams.set('rubro', fromUrl.businessTypeSlug)
-      if (fromUrl.situationSlug) nextParams.set('situacion', fromUrl.situationSlug)
-      if (fromUrl.needSlug) nextParams.set('necesidad', fromUrl.needSlug)
-      if (fromUrl.mode) nextParams.set('mode', fromUrl.mode)
-      const suffix = nextParams.toString()
-      if (suffix !== query) router.replace(suffix ? pathname + '?' + suffix : pathname, { scroll: false })
     } else {
       let saved: ExplorationContext = {}
-      try { const raw = window.localStorage.getItem(STORAGE_KEY); if (raw) saved = normalizeExplorationContext(JSON.parse(raw)) } catch {}
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY)
+        if (raw) saved = normalizeExplorationContext(JSON.parse(raw))
+      } catch {}
+
       const routeMode = readContext(params).mode
       const restored = validateContext({ ...saved, mode: routeMode || saved.mode }, businessTypeSlugs, allSituations, situationsByBusinessType)
       setContextState(restored)
-      const nextParams = new URLSearchParams(query)
-      for (const key of ['rubro', 'situacion', 'necesidad']) nextParams.delete(key)
-      if (restored.businessTypeSlug) nextParams.set('rubro', restored.businessTypeSlug)
-      if (restored.situationSlug) nextParams.set('situacion', restored.situationSlug)
-      if (restored.needSlug) nextParams.set('necesidad', restored.needSlug)
-      if (restored.mode) nextParams.set('mode', restored.mode)
-      const suffix = nextParams.toString()
-      if (suffix !== query) router.replace(suffix ? pathname + '?' + suffix : pathname, { scroll: false })
       try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restored)) } catch {}
     }
+
     setReady(true)
-  }, [pathname, query, router, businessTypeSlugs, allSituations, situationsByBusinessType])
+  }, [pathname, query, businessTypeSlugs, allSituations, situationsByBusinessType])
 
   const setContext = useCallback((next: Partial<ExplorationContext>) => {
     const normalized = validateContext(next, businessTypeSlugs, allSituations, situationsByBusinessType)
     setContextState(normalized)
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized)) } catch {}
-    const params = new URLSearchParams(query)
-    for (const key of ['rubro', 'situacion', 'necesidad', 'mode']) params.delete(key)
-    if (normalized.businessTypeSlug) params.set('rubro', normalized.businessTypeSlug)
-    if (normalized.situationSlug) params.set('situacion', normalized.situationSlug)
-    if (normalized.needSlug) params.set('necesidad', normalized.needSlug)
-    if (normalized.mode) params.set('mode', normalized.mode)
-    const suffix = params.toString()
-    router.replace(suffix ? pathname + '?' + suffix : pathname, { scroll: false })
-  }, [pathname, query, router, businessTypeSlugs, allSituations, situationsByBusinessType])
+  }, [businessTypeSlugs, allSituations, situationsByBusinessType])
 
   const clearContext = useCallback(() => {
     setContextState({})

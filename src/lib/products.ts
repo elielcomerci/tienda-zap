@@ -123,6 +123,15 @@ export async function getProducts(
       for (let i = 0; i < rankA.length; i += 1) {
         if (rankA[i] !== rankB[i]) return rankA[i] - rankB[i]
       }
+
+      const selectedNeedIsDesignRelated = Boolean(
+        context.needSlug && /identidad|marca|diseno|espacio|visual|presentar|comida-se-vea-mejor|productos-se-vean-mejor/.test(context.needSlug)
+      )
+      if (!selectedNeedIsDesignRelated) {
+        const designRank = (product: (typeof products)[number]) => product.briefType === 'DESIGN' ? 1 : 0
+        const designDifference = designRank(a) - designRank(b)
+        if (designDifference !== 0) return designDifference
+      }
     }
 
     return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)
