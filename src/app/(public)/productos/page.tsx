@@ -159,7 +159,7 @@ export default async function ProductsPage({
   }
 
   return (
-    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_20%,#f8fafc_100%)]">
+    <div className="bg-white">
       <div className="mx-auto max-w-[1380px] px-4 pb-16 pt-8 sm:pt-10 xl:px-8">
         {!isSituationMode && (
           <section className="mb-8 flex flex-col gap-3 border-b border-gray-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
@@ -377,7 +377,7 @@ export default async function ProductsPage({
 
             {!isSituationMode && mode !== 'rubro' && (
               products.length === 0 ? (
-              <div className="rounded-[32px] border border-dashed border-gray-300 bg-white/80 px-6 py-16 text-center shadow-[0_18px_50px_-42px_rgba(15,23,42,0.2)]">
+              <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Sin resultados
                 </p>
@@ -419,7 +419,7 @@ export default async function ProductsPage({
                   return (
                     <article
                       key={product.id}
-                      className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition-all hover:-translate-y-1 hover:border-[#F7638B]/25 hover:shadow-[0_28px_70px_-44px_rgba(237, 22, 79,0.28)]"
+                      className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition-colors hover:border-[#ED164F]/50"
                     >
                       <Link href={buildProductUrl(product.slug, explorationContext)} className="block">
                         <div className="relative aspect-[1.08/1] overflow-hidden bg-gray-100">
