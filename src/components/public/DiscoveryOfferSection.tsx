@@ -71,7 +71,7 @@ export default function DiscoveryOfferSection({
 
   if (offers.length === 0) {
     return (
-      <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-8 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.24)] sm:px-8 sm:py-10">
+      <section id="recomendacion" className="rounded-2xl border border-gray-200 bg-white px-5 py-8 sm:px-8 sm:py-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">ZAP</p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950">Lo vemos con vos.</h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
@@ -91,7 +91,7 @@ export default function DiscoveryOfferSection({
 
 
   return (
-    <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-7 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.28)] sm:px-8 sm:py-9">
+    <section id="recomendacion" className="rounded-2xl border border-gray-200 bg-white px-5 py-7 sm:px-8 sm:py-9">
       <div className="mb-7 max-w-2xl">
         <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
           {needsZAPReview ? 'Estas opciones pueden trabajar juntas' : `Opciones para ${needName.toLowerCase()}`}
@@ -128,7 +128,7 @@ export default function DiscoveryOfferSection({
                 : 'Ver producto'
 
           return (
-            <article key={product.id} className="flex min-h-[178px] flex-col rounded-[22px] bg-gray-50/80 p-5 sm:p-6">
+            <article key={product.id} className="flex min-h-[178px] flex-col rounded-xl border border-gray-200 bg-white p-5 sm:p-6">
               <h3 className="text-lg font-black tracking-tight text-gray-950 sm:text-xl">{getExplorationProductName(product)}</h3>
               <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
 
