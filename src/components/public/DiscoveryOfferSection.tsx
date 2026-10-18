@@ -73,10 +73,9 @@ export default function DiscoveryOfferSection({
     return (
       <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-8 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.24)] sm:px-8 sm:py-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">ZAP</p>
-        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950">No todo tiene una respuesta prefabricada.</h2>
+        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950">Lo vemos con vos.</h2>
         <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
-          Para <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>, no queremos inventarte una oferta.
-          Podemos mirar qué está pasando y decidir con vos dónde tiene sentido intervenir.
+          Conversemos sobre qué tiene sentido hacer en tu negocio.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 rounded-full bg-[#ED164F] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_-14px_rgba(237,22,79,0.55)] transition-transform hover:-translate-y-0.5">
@@ -94,15 +93,14 @@ export default function DiscoveryOfferSection({
   return (
     <section id="recomendacion" className="rounded-[30px] bg-white px-5 py-7 shadow-[0_22px_60px_-48px_rgba(15,23,42,0.28)] sm:px-8 sm:py-9">
       <div className="mb-7 max-w-2xl">
-        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-          {needsZAPReview ? 'Estas opciones pueden trabajar juntas' : 'Esto puede servirte'}
+        <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
+          {needsZAPReview ? 'Estas opciones pueden trabajar juntas' : `Opciones para ${needName.toLowerCase()}`}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
-          Partimos de <span className="font-semibold text-gray-900">{needName.toLowerCase()}</span>.
-          {needsZAPReview
-            ? ' Estas son alternativas concretas para que puedas conocerlas. Si necesitás combinarlas, también podemos ayudarte a definir por dónde empezar.'
-            : ' Estas son algunas formas concretas de intervenir.'}
-        </p>
+        {needsZAPReview && (
+          <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
+            Podemos ayudarte a definir por dónde empezar.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
