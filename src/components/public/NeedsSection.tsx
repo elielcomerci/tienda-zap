@@ -36,7 +36,7 @@ export default function NeedsSection({
             <Link
               key={need.id}
               href={`/productos?${href.toString()}#recomendacion`}
-              className={`group flex min-h-[128px] flex-col rounded-[22px] border p-5 transition-all sm:p-6 ${active ? 'border-[#ED164F]/60 bg-white shadow-[0_16px_40px_-30px_rgba(237,22,79,0.35)]' : 'border-gray-200/80 bg-white/85 shadow-[0_14px_36px_-32px_rgba(15,23,42,0.22)] hover:-translate-y-0.5 hover:border-[#F7638B]/50 hover:bg-white'}`}
+              className={`group flex min-h-[128px] flex-col rounded-2xl border p-5 transition-colors sm:p-6 ${active ? 'border-[#ED164F]/60 bg-white' : 'border-gray-200 bg-white hover:border-[#ED164F]/40'}`}
             >
               <div className="flex items-start gap-4">
                 <div className="min-w-0 flex-1">
