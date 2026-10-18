@@ -1658,5 +1658,47 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-renovar-la-marca-o-el-espacio",
     "needSlug": "necesito-que-el-espacio-se-vea-profesional",
     "productSlug": "senaletica-placas"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-vender-mas-en-el-local",
+    "needSlug": "necesito-recuperar-clientes-y-generar-recompra",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "moda-showrooms",
+    "situationSlug": "quiero-vender-online",
+    "needSlug": "necesito-recuperar-clientes-y-generar-recompra",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "comercios-retail",
+    "situationSlug": "quiero-vender-mas",
+    "needSlug": "necesito-recuperar-clientes-y-generar-recompra",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-conseguir-mas-consultas",
+    "needSlug": "necesito-dar-seguimiento-a-los-contactos",
+    "productSlug": "automatizaciones-comerciales"
+  },
+  {
+    "businessTypeSlug": "inmobiliarias",
+    "situationSlug": "quiero-conseguir-mas-consultas",
+    "needSlug": "necesito-dar-seguimiento-a-los-contactos",
+    "productSlug": "asistentes-bots"
+  },
+  {
+    "businessTypeSlug": "eventos-experiencias",
+    "situationSlug": "quiero-generar-contactos",
+    "needSlug": "necesito-dar-seguimiento-a-los-contactos",
+    "productSlug": "sistema-captacion-eventos"
+  },
+  {
+    "businessTypeSlug": "eventos-experiencias",
+    "situationSlug": "quiero-generar-contactos",
+    "needSlug": "necesito-dar-seguimiento-a-los-contactos",
+    "productSlug": "automatizaciones-comerciales"
   }
 ];

@@ -295,5 +295,15 @@ export const needsData: NeedSeedData[] = [
     "slug": "necesito-mantener-contacto-con-alumnos" ,
     "name": "Necesito seguir en contacto con mis alumnos" ,
     "order": 630
+  },
+  {
+    "slug": "necesito-recuperar-clientes-y-generar-recompra",
+    "name": "Necesito que mis clientes vuelvan a comprar",
+    "order": 640
+  },
+  {
+    "slug": "necesito-dar-seguimiento-a-los-contactos",
+    "name": "Necesito dar seguimiento a los contactos",
+    "order": 650
   }
 ];

@@ -48,6 +48,12 @@ La tienda debe ordenar capacidades de ZAP según el resultado que busca cada neg
 - Prioridad: recuperación de alumnos inactivos, continuidad de planes y conversión de clase de prueba en inscripción.
 - Campañas por consulta; no prometer membresías, reservas o CRM integrados sin validación.
 
+### Ajustes de matriz añadidos en la segunda pasada
+- Moda & Showrooms y Comercios & Retail: necesidad explícita de recompra, resuelta mediante campaña a medida por consulta.
+- Inmobiliarias: necesidad de seguimiento de contactos, relacionada con automatizaciones comerciales y asistentes, sin prometer una integración específica.
+- Eventos & Experiencias: seguimiento posterior conectado al Sistema de Captación para Eventos y a automatizaciones comerciales.
+- Estas relaciones usan productos ya existentes; no se creó un producto ficticio ni se asignó un precio no validado.
+
 ## Pendientes de validación antes de ampliar la matriz
 
 1. Probar visualmente cada rubro y cada situación en producción.

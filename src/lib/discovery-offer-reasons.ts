@@ -120,6 +120,21 @@ const REASONS: Record<string, string> = {
     "Una campaña a medida puede ayudar a recuperar alumnos inactivos, sostener la continuidad o comunicar nuevas propuestas.",
   "gastronomia|quiero-que-mis-clientes-vuelvan|necesito-mantener-la-marca-presente|objetos-regaleria":
     "Un regalo útil con tu marca mantiene el vínculo después de la compra y ayuda a que te recuerden.",
+
+  "moda-showrooms|quiero-vender-mas-en-el-local|necesito-recuperar-clientes-y-generar-recompra|anuncios-campanas":
+    "Diseñamos una campaña para que quienes ya compraron tengan un motivo para volver, alineada con tus colecciones y tu forma de vender.",
+  "moda-showrooms|quiero-vender-online|necesito-recuperar-clientes-y-generar-recompra|anuncios-campanas":
+    "Una campaña puede ayudar a reactivar compradores y acompañar nuevos lanzamientos; definimos el mecanismo según tus canales y datos disponibles.",
+  "comercios-retail|quiero-vender-mas|necesito-recuperar-clientes-y-generar-recompra|anuncios-campanas":
+    "Pensamos una acción de recompra según tu tipo de comercio, frecuencia de compra y margen, en lugar de aplicar una promoción genérica.",
+  "inmobiliarias|quiero-conseguir-mas-consultas|necesito-dar-seguimiento-a-los-contactos|automatizaciones-comerciales":
+    "Ayuda a ordenar el seguimiento de consultas y próximos pasos; las integraciones se definen según las herramientas que ya use la inmobiliaria.",
+  "inmobiliarias|quiero-conseguir-mas-consultas|necesito-dar-seguimiento-a-los-contactos|asistentes-bots":
+    "Puede facilitar respuestas y derivaciones iniciales, con alcance e integraciones definidos antes de implementarlo.",
+  "eventos-experiencias|quiero-generar-contactos|necesito-dar-seguimiento-a-los-contactos|sistema-captacion-eventos":
+    "Conecta la captación durante el evento con una base de contactos que pueda trabajarse después.",
+  "eventos-experiencias|quiero-generar-contactos|necesito-dar-seguimiento-a-los-contactos|automatizaciones-comerciales":
+    "Permite evaluar recordatorios y seguimientos posteriores al evento según los datos capturados y las herramientas disponibles.",
 }
 
 export function getDiscoveryOfferReason({
