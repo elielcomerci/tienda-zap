@@ -3,10 +3,10 @@ import Script from 'next/script'
 import { getSiteSettings } from '@/lib/site-settings'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import GoogleAnalyticsConsent from '@/components/GoogleAnalyticsConsent'
 import './globals.css'
 
 const PUBLIC_SITE_URL = 'https://tienda.zap.com.ar'
+const DEFAULT_GA_ID = 'G-QVDSSR8KXH'
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
@@ -43,34 +43,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings()
-  const googleTagId = settings.googleAdsId
+  const googleAnalyticsId = settings.googleAnalyticsId || DEFAULT_GA_ID
+  const googleAdsId = settings.googleAdsId
+  const googleTagId = googleAnalyticsId || googleAdsId
 
   return (
     <html lang="es" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
-        {settings.googleTagManagerId && (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${settings.googleTagManagerId}`}
-              height="0"
-              width="0"
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        )}
         {children}
-        <GoogleAnalyticsConsent />
-        {settings.googleTagManagerId && (
-          <Script id="google-tag-manager" strategy="afterInteractive">
-            {`
-              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','${settings.googleTagManagerId}');
-            `}
-          </Script>
-        )}
         {googleTagId && (
           <>
             <Script
@@ -80,10 +60,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script id="google-gtag" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
+                function gtag(){window.dataLayer.push(arguments);}
+                window.gtag = gtag;
                 gtag('js', new Date());
-                ${settings.googleAnalyticsId ? `gtag('config', '${settings.googleAnalyticsId}');` : ''}
-                ${settings.googleAdsId ? `gtag('config', '${settings.googleAdsId}');` : ''}
+                gtag('config', '${googleAnalyticsId}', { send_page_view: true });
+                ${googleAdsId ? `gtag('config', '${googleAdsId}');` : ''}
               `}
             </Script>
           </>

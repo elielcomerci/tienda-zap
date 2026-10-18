@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 
 export const SITE_SETTINGS_ID = 'site-settings'
+const DEFAULT_GOOGLE_ANALYTICS_ID = 'G-QVDSSR8KXH'
 
 export type SiteSettingsFormValues = {
   siteTitle: string
@@ -20,7 +21,7 @@ export const defaultSiteSettings: SiteSettingsFormValues = {
   metaKeywords: '',
   canonicalUrl: '',
   ogImageUrl: '',
-  googleAnalyticsId: '',
+  googleAnalyticsId: DEFAULT_GOOGLE_ANALYTICS_ID,
   googleAdsId: '',
   googleTagManagerId: '',
   googleSiteVerification: '',
@@ -43,7 +44,7 @@ export async function getSiteSettings(): Promise<SiteSettingsFormValues> {
     metaKeywords: normalize(settings.metaKeywords),
     canonicalUrl: normalize(settings.canonicalUrl),
     ogImageUrl: normalize(settings.ogImageUrl),
-    googleAnalyticsId: normalize(settings.googleAnalyticsId),
+    googleAnalyticsId: normalize(settings.googleAnalyticsId) || DEFAULT_GOOGLE_ANALYTICS_ID,
     googleAdsId: normalize(settings.googleAdsId),
     googleTagManagerId: normalize(settings.googleTagManagerId),
     googleSiteVerification: normalize(settings.googleSiteVerification),
