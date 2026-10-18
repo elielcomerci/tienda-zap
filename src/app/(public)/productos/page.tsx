@@ -59,16 +59,14 @@ function getBusinessSituations<T extends { slug: string }>(businessTypeSlug: str
 
 
 export const metadata = {
-  title: 'Productos y desarrollos para tu negocio',
-  description:
-    'Productos para elegir o configurar y desarrollos a medida de ZAP.',
+  title: 'Productos y desarrollos | Tienda ZAP',
+  description: 'Productos y desarrollos de ZAP para negocios.',
   alternates: {
     canonical: '/productos',
   },
   openGraph: {
-    title: 'Productos y desarrollos para tu negocio | Tienda ZAP',
-    description:
-      'Productos para elegir o configurar y desarrollos a medida de ZAP.',
+    title: 'Productos y desarrollos | Tienda ZAP',
+    description: 'Productos y desarrollos de ZAP para negocios.',
     url: '/productos',
     type: 'website',
   },
@@ -173,7 +171,7 @@ export default async function ProductsPage({
                     ? 'Desarrollos ZAP'
                     : tipo === 'cosa'
                       ? 'Productos ZAP'
-                      : 'Productos y desarrollos para tu negocio'}
+                      : 'Productos y desarrollos'}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
                 {mode === 'rubro'
@@ -184,7 +182,7 @@ export default async function ProductsPage({
                     ? 'Soluciones a medida para resolver necesidades concretas de tu negocio.'
                     : tipo === 'cosa'
                       ? 'Productos que podés elegir, configurar o comprar.'
-                      : 'Productos para elegir o configurar y desarrollos pensados para resolver necesidades concretas.'}
+                      : ''}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm text-gray-500">
@@ -202,6 +200,18 @@ export default async function ProductsPage({
               )}
             </div>
           </section>
+        )}
+
+        {!isSituationMode && mode !== 'rubro' && (
+          <form action="/productos" method="GET" role="search" className="mb-6 flex max-w-2xl items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm focus-within:border-[#ED164F]/50">
+            {tipo && <input type="hidden" name="tipo" value={tipo} />}
+            {cat && <input type="hidden" name="cat" value={cat} />}
+            {rubro && <input type="hidden" name="rubro" value={rubro} />}
+            <Search size={19} className="ml-2 shrink-0 text-gray-400" aria-hidden="true" />
+            <input type="search" name="q" defaultValue={q || ''} placeholder="Buscar productos y desarrollos" aria-label="Buscar productos y desarrollos" className="min-w-0 flex-1 border-0 bg-transparent px-1 py-2 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0" />
+            <button type="submit" className="shrink-0 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C2103F]">Buscar</button>
+            {q?.trim() && <Link href="/productos" className="px-2 text-sm font-medium text-gray-500 hover:text-gray-900">Limpiar</Link>}
+          </form>
         )}
 
         <div className={`mt-8 ${isSituationMode ? 'mx-auto max-w-6xl' : 'grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
@@ -241,10 +251,9 @@ export default async function ProductsPage({
               <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
                 <div className="mb-5">
                   <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">
-                    ¿Qué está pasando en tu negocio?
+                    ¿Qué querés resolver?
                   </h2>
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">
-                    Elegí la situación que más se parece a la tuya. A partir de ahí afinamos qué necesitás resolver.
                   </p>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -295,8 +304,7 @@ export default async function ProductsPage({
             {selectedBusinessType && mode === 'rubro' && !selectedSituation && (
               <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
                 <div className="mb-5">
-                  <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">¿Qué está pasando en tu negocio?</h2>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">Elegí la situación que más se parece a la tuya. A partir de ahí afinamos qué necesitás resolver.</p>
+                  <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">¿Qué querés resolver?</h2>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   {businessSituations.map((situation) => (
