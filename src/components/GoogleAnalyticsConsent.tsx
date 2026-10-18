@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-const GA_ID = 'G-185SVFQ798'
+const GA_ID = 'G-QVDSSR8KXH'
 const CONSENT_KEY = 'zap-tienda-analytics-consent-v1'
 
 declare global {
