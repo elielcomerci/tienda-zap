@@ -18,6 +18,9 @@ export default function Footer() {
             <span>en Parque Leloir</span>
           </p>
           <p>© {new Date().getFullYear()} ZAP Tienda · Todos los derechos reservados.</p>
+          <p className="mt-3">
+            <a href="/politica-devoluciones" className="underline underline-offset-4 hover:text-white">Política de devoluciones</a>
+          </p>
         </div>
       </footer>
     )
@@ -33,6 +36,9 @@ export default function Footer() {
         </p>
         <p className="mt-2 text-xs md:text-sm text-gray-400">
           © {new Date().getFullYear()} - ZAP Agencia Creativa. Todos los derechos reservados.
+        </p>
+        <p className="mt-3 text-xs text-gray-500">
+          <a href="/politica-devoluciones" className="underline underline-offset-4 hover:text-gray-800">Política de devoluciones</a>
         </p>
       </div>
     </footer>
