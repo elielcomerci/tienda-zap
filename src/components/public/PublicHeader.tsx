@@ -175,16 +175,16 @@ export default function PublicHeader({
 
                     {accountOpen && (
                       <div className="absolute right-0 top-[calc(100%-4px)] pt-3 w-56 z-50">
-                        <div className="rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
-                          <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Mi cuenta</p>
-                            <p className="mt-0.5 truncate text-sm font-semibold text-gray-900">{user.name || 'Usuario'}</p>
+                        <div className="rounded-2xl border border-white/10 bg-neutral-950/95 p-2 shadow-2xl backdrop-blur-xl">
+                          <div className="px-3 py-2 border-b border-white/10 mb-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-white/45">Mi cuenta</p>
+                            <p className="mt-0.5 truncate text-sm font-semibold text-white">{user.name || 'Usuario'}</p>
                           </div>
 
                           <Link
                             href="/perfil"
                             onClick={() => setAccountOpen(false)}
-                            className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#FEF1F5] hover:text-[#ED164F] transition-colors"
+                            className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white transition-colors"
                           >
                             Mi perfil
                           </Link>
@@ -193,7 +193,7 @@ export default function PublicHeader({
                             <Link
                               href="/admin"
                               onClick={() => setAccountOpen(false)}
-                              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#FEF1F5] hover:text-[#ED164F] transition-colors"
+                              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white transition-colors"
                             >
                               <LayoutDashboard size={15} />
                               Panel Admin
@@ -204,7 +204,7 @@ export default function PublicHeader({
                             <Link
                               href="/seller"
                               onClick={() => setAccountOpen(false)}
-                              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#EEF4FC] hover:text-[#2F5F9F] transition-colors"
+                              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white transition-colors"
                             >
                               <Handshake size={15} />
                               Panel Asesores
@@ -217,7 +217,7 @@ export default function PublicHeader({
                               setAccountOpen(false)
                               void signOut({ callbackUrl: '/' })
                             }}
-                            className="mt-1 flex w-full items-center gap-2 rounded-xl border-t border-gray-100 px-3 py-2.5 pt-3 text-left text-sm font-semibold text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                            className="mt-1 flex w-full items-center gap-2 rounded-xl border-t border-white/10 px-3 py-2.5 pt-3 text-left text-sm font-semibold text-white/60 hover:bg-white/10 hover:text-white transition-colors"
                           >
                             <LogOut size={15} />
                             Cerrar sesión
@@ -324,33 +324,33 @@ export default function PublicHeader({
         </div>
       )}
 
-      <div className={'fixed inset-0 z-[60] flex flex-col w-full h-full text-gray-900 transition-all duration-300 md:inset-auto md:right-4 md:top-[78px] md:w-[420px] md:h-auto md:max-h-[calc(100vh-96px)] md:rounded-2xl md:shadow-xl border border-gray-200 bg-white text-gray-900 ' + (menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none')} role="dialog" aria-modal="true" aria-label="Menú ZAP Tienda">
-        <div className="flex items-center justify-between px-6 h-[70px] border-b border-gray-100 shrink-0"><span className="text-base font-semibold">Explorá según tu negocio</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
+      <div className={'fixed inset-0 z-[60] flex flex-col w-full h-full text-white transition-all duration-300 md:inset-auto md:right-4 md:top-[78px] md:w-[420px] md:h-auto md:max-h-[calc(100vh-96px)] md:rounded-2xl md:shadow-2xl border border-white/10 bg-neutral-950/95 text-white backdrop-blur-xl ' + (menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none')} role="dialog" aria-modal="true" aria-label="Menú ZAP Tienda">
+        <div className="flex items-center justify-between px-6 h-[70px] border-b border-white/10 shrink-0"><span className="text-base font-semibold">Explorá según tu negocio</span><button type="button" onClick={() => setMenuOpen(false)} className="w-10 h-10 flex items-center justify-center" aria-label="Cerrar menú"><X size={24} /></button></div>
         <div className="flex-1 overflow-y-auto px-6 pt-6 pb-8 md:max-h-[calc(100vh-170px)]"><div className="mx-auto flex max-w-sm flex-col gap-6">
-          <nav aria-label="Más sobre ZAP" className="flex flex-wrap gap-x-5 gap-y-3 border-b border-gray-200 pb-5 text-sm font-semibold text-gray-600">
+          <nav aria-label="Más sobre ZAP" className="flex flex-wrap gap-x-5 gap-y-3 border-b border-white/10 pb-5 text-sm font-semibold text-white/75">
             <Link className="md:hidden" href={buildProductsUrl({ mode: 'product', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: explorationContext.situationSlug, needSlug: explorationContext.needSlug })} onClick={() => setMenuOpen(false)}>Todos los productos →</Link>
             <a href="https://zap.com.ar" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Conocé ZAP ↗</a>
             <a className="md:hidden" href={whatsappHref} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Hablemos ↗</a>
           </nav>
-          {contextReady && <section className="border-t border-gray-200 pt-5">
+          {contextReady && <section className="border-t border-white/10 pt-5">
             {!(explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && !contextEditorOpen ? (
-              <button type="button" onClick={() => setContextEditorOpen(true)} className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50">
-                <span>Tu negocio · <span className="font-normal text-gray-500">Elegí tu rubro</span></span>
+              <button type="button" onClick={() => setContextEditorOpen(true)} className="flex w-full items-center justify-between rounded-xl border border-white/15 px-3 py-2.5 text-left text-sm font-semibold text-white/85 transition-colors hover:bg-white/10">
+                <span>Tu negocio · <span className="font-normal text-white/65">Elegí tu rubro</span></span>
                 <ChevronDown size={16} />
               </button>
             ) : <>
-              <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">Tu negocio</p><p className="mt-1 text-sm font-semibold text-gray-800">Ajustá el contexto cuando quieras.</p></div><button type="button" onClick={() => { clearContext(); setContextEditorOpen(false); setMenuOpen(false) }} className="text-xs font-semibold underline underline-offset-2">Empezar de nuevo</button></div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600" htmlFor="zap-context-rubro">Rubro</label>
+              <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">Tu negocio</p><p className="mt-1 text-sm font-semibold text-white/85">Ajustá el contexto cuando quieras.</p></div><button type="button" onClick={() => { clearContext(); setContextEditorOpen(false); setMenuOpen(false) }} className="text-xs font-semibold text-white/80 underline underline-offset-2 hover:text-white">Empezar de nuevo</button></div>
+              <label className="mb-1 block text-xs font-semibold text-white/75" htmlFor="zap-context-rubro">Rubro</label>
               <select id="zap-context-rubro" value={explorationContext.businessTypeSlug || ''} onChange={(event) => { setContext({ mode: 'rubro', businessTypeSlug: event.target.value || undefined, situationSlug: undefined, needSlug: undefined }); setContextEditorOpen(true) }} className="mb-3 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir rubro</option>{businessTypes.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
               {explorationContext.businessTypeSlug && <>
                 <label className="mb-1 block text-xs font-semibold text-gray-600" htmlFor="zap-context-situacion">Qué está pasando</label>
                 <select id="zap-context-situacion" value={explorationContext.situationSlug || ''} onChange={(event) => setContext({ mode: 'situation', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: event.target.value || undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir situación</option>{availableSituations.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
                 {currentSituation?.needs && currentSituation.needs.length > 0 && <><label className="mb-1 block text-xs font-semibold text-gray-600" htmlFor="zap-context-necesidad">Qué necesitás resolver</label><select id="zap-context-necesidad" value={explorationContext.needSlug || ''} onChange={(event) => setContext({ ...explorationContext, needSlug: event.target.value || undefined })} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Ver todas las necesidades</option>{currentSituation.needs.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></>}
-                <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white">Ver opciones →</Link>
+                <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#C2103F]">Ver opciones →</Link>
               </>}
             </>}
           </section>}
-          {!user ? <div className="border-t border-gray-200 pt-4 flex flex-col gap-3 text-sm font-semibold md:hidden"><Link href="/login" onClick={() => setMenuOpen(false)}>Ingresar a mi cuenta →</Link></div> : <div className="border-t border-gray-200 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-gray-600">Cerrar sesión</button></div>}
+          {!user ? <div className="border-t border-white/10 pt-4 flex flex-col gap-3 text-sm font-semibold md:hidden"><Link href="/login" onClick={() => setMenuOpen(false)}>Ingresar a mi cuenta →</Link></div> : <div className="border-t border-gray-200 pt-4 flex flex-col gap-3 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)}>Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)}>Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)}>Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="text-left text-white/60 hover:text-white">Cerrar sesión</button></div>}
         </div></div>
       </div>
       {leadOpen && referralSeller && (
