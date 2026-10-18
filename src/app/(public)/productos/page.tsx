@@ -208,7 +208,7 @@ export default async function ProductsPage({
             <Search size={19} className="ml-2 shrink-0 text-gray-400" aria-hidden="true" />
             <input type="search" name="q" defaultValue={q || ''} placeholder="Buscar productos y desarrollos" aria-label="Buscar productos y desarrollos" className="min-w-0 flex-1 border-0 bg-transparent px-1 py-2 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0" />
             <button type="submit" className="shrink-0 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C2103F]">Buscar</button>
-            {q?.trim() && <Link href="/productos" className="px-2 text-sm font-medium text-gray-500 hover:text-gray-900">Limpiar</Link>}
+            {q?.trim() && <Link href={buildProductsUrl({ mode: 'product', businessTypeSlug: rubro }, { q: undefined, cat, tipo })} className="px-2 text-sm font-medium text-gray-500 hover:text-gray-900">Limpiar</Link>}
           </form>
         )}
 
