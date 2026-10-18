@@ -451,7 +451,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   }
 
   console.log('Rubros:              7 / 7');
-  console.log(`Productos fuente:    ${productsData.length} / 33`);
+  console.log(`Productos fuente:    ${productsData.length} / 51`);
   console.log(`Productos catálogo:  ${dbProducts.length} / ${expectedProductSlugs.size}`);
   console.log(`Situaciones:         ${dbSituations.length} OK`);
   console.log(`Necesidades:         ${dbNeeds.length} OK`);
