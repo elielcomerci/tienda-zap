@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { getSiteSettings } from '@/lib/site-settings'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
+import GoogleAnalyticsConsent from '@/components/GoogleAnalyticsConsent'
 import './globals.css'
 
 const PUBLIC_SITE_URL = 'https://tienda.zap.com.ar'
@@ -42,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings()
-  const googleTagId = settings.googleAnalyticsId || settings.googleAdsId
+  const googleTagId = settings.googleAdsId
 
   return (
     <html lang="es" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
@@ -58,6 +59,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </noscript>
         )}
         {children}
+        <GoogleAnalyticsConsent />
         {settings.googleTagManagerId && (
           <Script id="google-tag-manager" strategy="afterInteractive">
             {`
