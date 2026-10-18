@@ -17,6 +17,16 @@ import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
+const FIRST_STEP_PATH: Record<string, string> = {
+  gastronomia: '/gastronomia/primer-paso',
+  'moda-showrooms': '/moda/primer-paso',
+  inmobiliarias: '/inmobiliarias/primer-paso',
+  'belleza-salud': '/belleza-y-salud/primer-paso',
+  'comercios-retail': '/retail/primer-paso',
+  'eventos-experiencias': '/eventos/primer-paso',
+  wellness: '/gym-y-yoga/primer-paso',
+}
+
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Más pedidos, una propuesta que se destaque y una experiencia que invite a volver.',
   'moda-showrooms': 'Una marca sólida conecta producto, espacio, comunicación y experiencia.',
@@ -210,6 +220,23 @@ export default async function ProductsPage({
           )}
 
           <div className="space-y-8 min-w-0">
+            {selectedBusinessType && FIRST_STEP_PATH[selectedBusinessType.slug] && (
+              <Link
+                href={`https://zap.com.ar${FIRST_STEP_PATH[selectedBusinessType.slug]}`}
+                className="group flex flex-col gap-4 rounded-[26px] border border-[#ED164F]/20 bg-white px-5 py-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition hover:border-[#ED164F]/50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <div className="max-w-2xl">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C2103F]">Una primera mirada para tu rubro</p>
+                  <h2 className="mt-1 text-lg font-black tracking-tight text-gray-950">Primer paso para {selectedBusinessType.name}</h2>
+                  <p className="mt-1 text-sm leading-6 text-gray-600">Contanos qué está pasando en tu negocio. Te ayudamos a encontrar qué conviene mirar y por dónde empezar.</p>
+                </div>
+                <span className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-[#ED164F] px-5 py-3 text-sm font-bold text-white transition group-hover:bg-[#C2103F] sm:self-center">
+                  Dar el primer paso <ArrowRight size={16} />
+                </span>
+              </Link>
+            )}
             {isSituationMode && !selectedSituation && (
               <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
                 <div className="mb-5">

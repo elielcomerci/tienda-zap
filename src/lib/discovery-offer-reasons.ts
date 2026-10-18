@@ -108,6 +108,16 @@ const REASONS: Record<string, string> = {
     "Ordena la información y el camino para que consultar o inscribirse sea sencillo.",
   "wellness|quiero-conseguir-alumnos|necesito-facilitar-el-contacto|asistentes-bots":
     "Ayuda a atender consultas y derivarlas cuando responder manualmente empieza a quitar tiempo.",
+  "gastronomia|quiero-que-mis-clientes-vuelvan|necesito-mantener-la-marca-presente|anuncios-campanas":
+    "Diseñamos una campaña a medida para dar un motivo concreto para volver a pedir, según tus clientes, tus márgenes y la forma en que vendés.",
+  "gastronomia|quiero-que-mis-clientes-vuelvan|necesito-mantener-la-marca-presente|sitios-web-catalogos-digitales":
+    "Un menú digital o una presencia propia puede facilitar el próximo pedido y ayudar a que el cliente vuelva a elegirte.",
+  "belleza-salud|quiero-que-mis-clientes-vuelvan|necesito-mantener-la-marca-presente|anuncios-campanas":
+    "Una campaña pensada para tu actividad puede dar un motivo para volver, retomar un servicio o conocer una propuesta nueva.",
+  "belleza-salud|quiero-que-mis-clientes-vuelvan|necesito-comunicar-novedades|anuncios-campanas":
+    "Organiza las novedades como una acción concreta para volver a conectar con quienes ya te conocen.",
+  "wellness|quiero-que-mis-clientes-vuelvan|necesito-mantener-contacto-con-alumnos|anuncios-campanas":
+    "Una campaña a medida puede ayudar a recuperar alumnos inactivos, sostener la continuidad o comunicar nuevas propuestas.",
   "gastronomia|quiero-que-mis-clientes-vuelvan|necesito-mantener-la-marca-presente|objetos-regaleria":
     "Un regalo útil con tu marca mantiene el vínculo después de la compra y ayuda a que te recuerden.",
 }

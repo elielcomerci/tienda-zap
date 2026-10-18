@@ -216,6 +216,12 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "businessTypeSlug": "gastronomia",
     "situationSlug": "quiero-que-mis-clientes-vuelvan",
     "needSlug": "necesito-mantener-la-marca-presente",
+    "productSlug": "sitios-web-catalogos-digitales"
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-mantener-la-marca-presente",
     "productSlug": "objetos-regaleria"
   },
   {
