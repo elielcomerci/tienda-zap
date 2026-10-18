@@ -62,8 +62,8 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   const productOrders = new Set(productsData.map((product) => product.order));
   const missingProductOrders = Array.from({ length: productsData.length }, (_, index) => index + 1)
     .filter((order) => !productOrders.has(order));
-  if (productsData.length !== 33 || productOrders.size !== productsData.length || missingProductOrders.length > 0) {
-    errors.push(`[PRODUCT CATALOG ORDER] Esperados 33 productos con orden único 1–33; filas ${productsData.length}, órdenes faltantes ${missingProductOrders.join(', ') || 'ninguna'}.`);
+  if (productsData.length !== 51 || productOrders.size !== productsData.length || missingProductOrders.length > 0) {
+    errors.push(`[PRODUCT CATALOG ORDER] Esperados 51 productos con orden único 1–51; filas ${productsData.length}, órdenes faltantes ${missingProductOrders.join(', ') || 'ninguna'}.`);
   }
 
   // 1. Audit Rubros (BusinessTypes)
