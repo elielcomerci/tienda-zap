@@ -1700,5 +1700,23 @@ export const offerMatrixData: OfferMatrixEntrySeedData[] = [
     "situationSlug": "quiero-generar-contactos",
     "needSlug": "necesito-dar-seguimiento-a-los-contactos",
     "productSlug": "automatizaciones-comerciales"
-  }
+  },
+  {
+    "businessTypeSlug": "gastronomia",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-recuperar-clientes-y-generar-recompra",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "belleza-salud",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-recuperar-clientes-y-generar-recompra",
+    "productSlug": "anuncios-campanas"
+  },
+  {
+    "businessTypeSlug": "wellness",
+    "situationSlug": "quiero-que-mis-clientes-vuelvan",
+    "needSlug": "necesito-recuperar-clientes-y-generar-recompra",
+    "productSlug": "anuncios-campanas"
+  },
 ];

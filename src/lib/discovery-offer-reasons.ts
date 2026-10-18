@@ -36,7 +36,7 @@ const REASONS: Record<string, string> = {
     "Hace que la propuesta se entienda y resulte más deseable antes de pedir.",
   "gastronomia|quiero-conseguir-mas-pedidos|necesito-comunicar-mejor-lo-que-vendo|anuncios-campanas":
     "Lleva esa propuesta a más personas, más allá de quienes ya conocen el negocio.",
-  "gastronomia|quiero-conseguir-mas-pedidos|necesito-facilitar-el-contacto|activos-web-sitios":
+  "gastronomia|quiero-conseguir-mas-pedidos|necesito-facilitar-el-contacto|sitios-web-catalogos-digitales":
     "Ordena el recorrido para que pedirte sea fácil cuando alguien ya decidió hacerlo.",
   "gastronomia|quiero-conseguir-mas-pedidos|necesito-facilitar-el-contacto|asistentes-bots":
     "Ayuda a responder y derivar consultas cuando hacerlo manualmente empieza a generar fricción.",
@@ -60,9 +60,9 @@ const REASONS: Record<string, string> = {
     "Hace que cada propiedad se entienda y se perciba mejor antes de que alguien consulte.",
   "inmobiliarias|quiero-conseguir-mas-consultas|necesito-mostrar-mejor-las-propiedades|anuncios-campanas":
     "Pone las propiedades frente a personas que todavía no las están buscando en tu canal.",
-  "inmobiliarias|quiero-conseguir-mas-consultas|necesito-mostrar-mejor-las-propiedades|activos-web-sitios":
+  "inmobiliarias|quiero-conseguir-mas-consultas|necesito-mostrar-mejor-las-propiedades|sitios-web-catalogos-digitales":
     "Ordena la información para que una propiedad pueda ser explorada y consultada con menos fricción.",
-  "inmobiliarias|quiero-conseguir-mas-consultas|necesito-facilitar-el-contacto|activos-web-sitios":
+  "inmobiliarias|quiero-conseguir-mas-consultas|necesito-facilitar-el-contacto|sitios-web-catalogos-digitales":
     "Hace más claro y directo el camino desde una propiedad hasta una consulta.",
   "inmobiliarias|quiero-conseguir-mas-consultas|necesito-facilitar-el-contacto|asistentes-bots":
     "Ayuda a atender y derivar consultas cuando el volumen o los horarios empiezan a ser un problema.",
@@ -74,7 +74,7 @@ const REASONS: Record<string, string> = {
     "Muestra cómo es el servicio y ayuda a que alguien entienda qué está por elegir.",
   "belleza-salud|quiero-llenar-la-agenda|necesito-comunicar-servicios|anuncios-campanas":
     "Lleva esos servicios a personas que todavía no conocen el espacio.",
-  "belleza-salud|quiero-llenar-la-agenda|necesito-facilitar-el-contacto|activos-web-sitios":
+  "belleza-salud|quiero-llenar-la-agenda|necesito-facilitar-el-contacto|sitios-web-catalogos-digitales":
     "Ordena la información y el camino para que reservar o consultar sea sencillo.",
   "belleza-salud|quiero-llenar-la-agenda|necesito-facilitar-el-contacto|asistentes-bots":
     "Reduce la fricción de responder consultas y derivarlas hacia una reserva.",
@@ -104,7 +104,7 @@ const REASONS: Record<string, string> = {
     "Muestra la experiencia y ayuda a que alguien imagine cómo sería entrenar o participar.",
   "wellness|quiero-conseguir-alumnos|necesito-que-una-propuesta-se-vea|anuncios-campanas":
     "Lleva la propuesta a personas que todavía no conocen el espacio.",
-  "wellness|quiero-conseguir-alumnos|necesito-facilitar-el-contacto|activos-web-sitios":
+  "wellness|quiero-conseguir-alumnos|necesito-facilitar-el-contacto|sitios-web-catalogos-digitales":
     "Ordena la información y el camino para que consultar o inscribirse sea sencillo.",
   "wellness|quiero-conseguir-alumnos|necesito-facilitar-el-contacto|asistentes-bots":
     "Ayuda a atender consultas y derivarlas cuando responder manualmente empieza a quitar tiempo.",
@@ -135,6 +135,12 @@ const REASONS: Record<string, string> = {
     "Conecta la captación durante el evento con una base de contactos que pueda trabajarse después.",
   "eventos-experiencias|quiero-generar-contactos|necesito-dar-seguimiento-a-los-contactos|automatizaciones-comerciales":
     "Permite evaluar recordatorios y seguimientos posteriores al evento según los datos capturados y las herramientas disponibles.",
+  "gastronomia|quiero-que-mis-clientes-vuelvan|necesito-recuperar-clientes-y-generar-recompra|anuncios-campanas":
+    "Diseñamos una campaña para incentivar el próximo pedido con una propuesta coherente con el margen, la frecuencia de compra y el canal propio del negocio.",
+  "belleza-salud|quiero-que-mis-clientes-vuelvan|necesito-recuperar-clientes-y-generar-recompra|anuncios-campanas":
+    "Una campaña a medida puede invitar a retomar un servicio o volver a reservar, según el vínculo y la frecuencia de cada cliente.",
+  "wellness|quiero-que-mis-clientes-vuelvan|necesito-recuperar-clientes-y-generar-recompra|anuncios-campanas":
+    "Una campaña a medida puede ayudar a recuperar alumnos inactivos y sostener la continuidad, sin asumir una plataforma de membresías o reservas.",
 }
 
 export function getDiscoveryOfferReason({

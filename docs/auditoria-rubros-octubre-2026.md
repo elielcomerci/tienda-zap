@@ -62,3 +62,13 @@ La tienda debe ordenar capacidades de ZAP según el resultado que busca cada neg
 4. Añadir relaciones solo cuando el producto responda a la necesidad; evitar repetir el catálogo entero en cada contexto.
 5. Validar textos de explicación y enlaces de Primer paso en los siete rubros.
 6. Identificar brechas de capacidad real por separado de brechas de presentación o de relación en la matriz.
+
+
+## Hallazgos de validación de matriz y modalidad
+
+- El despliegue de producción del commit `bb26a8c` terminó en estado READY.
+- Se comprobó en el repositorio que existen las siete rutas de Primer paso usadas por la tienda: Gastronomía, Moda, Inmobiliarias, Belleza & Salud, Retail, Eventos y Wellness.
+- La matriz tenía textos de explicación que referían al slug anterior `activos-web-sitios`, mientras que el producto activo usa `sitios-web-catalogos-digitales`. Se alinearon las claves para que la explicación corresponda al producto realmente recomendado.
+- Se hizo explícita la necesidad de recompra para Gastronomía, Belleza & Salud y Wellness, asociándola a Anuncios & Campañas como consulta a medida. No se ofrece un programa de puntos, CRM o plataforma de membresía como si ya existiera.
+- La consulta de base muestra que los productos de desarrollo y la mayoría de los impresos configurables se venden por consulta o mediante configurador, no como compra directa con precio fijo. El precio cero de los productos de consulta no debe presentarse como precio de venta.
+- Pendiente para una pasada adicional: recorrer cada combinación de rubro/situación en navegador y validar el orden visual de necesidades y el comportamiento real de cada configurador antes de declarar la auditoría cerrada.
