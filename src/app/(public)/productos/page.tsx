@@ -251,8 +251,6 @@ export default async function ProductsPage({
                   <h2 className="mt-2 text-xl font-black tracking-tight text-gray-950">
                     ¿Qué querés resolver?
                   </h2>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">
-                  </p>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   {businessSituations.map((situation) => (
