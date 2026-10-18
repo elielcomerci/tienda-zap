@@ -34,9 +34,9 @@ export async function generateMetadata(): Promise<Metadata> {
       images: settings.ogImageUrl ? [{ url: settings.ogImageUrl }] : undefined,
       type: 'website',
     },
-    verification: settings.googleSiteVerification
-      ? { google: settings.googleSiteVerification }
-      : undefined,
+    verification: {
+      google: settings.googleSiteVerification || 'WLSgtr6BqJFYGwJ9zz9BuK1G6KCp_2EIl8q-Waviyac',
+    },
   }
 }
 
