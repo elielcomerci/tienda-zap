@@ -166,24 +166,22 @@ export default async function ProductsPage({
             <div className="max-w-3xl">
               <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
                 {mode === 'rubro'
-                  ? selectedBusinessType?.name || 'Elegí tu rubro'
+                  ? selectedBusinessType?.name || '¿En qué rubro trabajás?'
                   : tipo === 'desarrollo'
                     ? 'Desarrollos ZAP'
                     : tipo === 'cosa'
                       ? 'Productos ZAP'
                       : 'Productos y desarrollos'}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                {mode === 'rubro'
-                  ? selectedBusinessType
-                    ? BUSINESS_CONTEXT[selectedBusinessType.slug] || 'Mirá qué necesita tu negocio y dónde tiene sentido intervenir.'
-                    : 'Elegí tu rubro para explorar desde el contexto de tu negocio.'
-                  : tipo === 'desarrollo'
-                    ? 'Soluciones a medida para resolver necesidades concretas de tu negocio.'
-                    : tipo === 'cosa'
-                      ? 'Productos que podés elegir, configurar o comprar.'
-                      : ''}
-              </p>
+              {(mode === 'rubro' && selectedBusinessType || tipo === 'desarrollo' || tipo === 'cosa') && (
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+                  {mode === 'rubro' && selectedBusinessType
+                    ? BUSINESS_CONTEXT[selectedBusinessType.slug]
+                    : tipo === 'desarrollo'
+                      ? 'Soluciones a medida para tu negocio.'
+                      : 'Productos para elegir, configurar o comprar.'}
+                </p>
+              )}
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm text-gray-500">
               <span>
