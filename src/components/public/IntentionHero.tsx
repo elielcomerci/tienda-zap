@@ -52,9 +52,11 @@ const SITUATION_HEADLINES: Record<string, string> = {
 export default function IntentionHero({
   intention,
   businessTypeName,
+  compact = false,
 }: {
   intention: DiscoverySituation
   businessTypeName?: string
+  compact?: boolean
 }) {
   const headline =
     SITUATION_HEADLINES[intention.slug] ||
@@ -62,14 +64,14 @@ export default function IntentionHero({
     'Cada negocio tiene su propio punto de partida. ¿Por dónde necesitás empezar?'
 
   return (
-    <section className="border-b border-gray-200/80 pb-8 sm:pb-10">
+    <section className={`border-b border-gray-200/80 ${compact ? "pb-4 sm:pb-5" : "pb-8 sm:pb-10"}`}>
       <div className="max-w-4xl">
         {businessTypeName && (
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F]">
+          <p className={`${compact ? "mb-2" : "mb-4"} text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F]">
             {businessTypeName}
           </p>
         )}
-        <h1 className="text-[clamp(2.15rem,5.1vw,4.5rem)] font-bold leading-[0.98] tracking-[-0.055em] text-gray-950 text-balance">
+        <h1 className={`${compact ? "text-2xl leading-tight tracking-[-0.035em] sm:text-3xl" : "text-[clamp(2.15rem,5.1vw,4.5rem)] leading-[0.98] tracking-[-0.055em]"} font-bold text-gray-950 text-balance`}>
           {headline}
         </h1>
       </div>
