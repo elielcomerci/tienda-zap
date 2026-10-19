@@ -24,7 +24,7 @@ export default function CatalogOrientationFilters({
   query?: string
   catalogType?: 'cosa' | 'desarrollo'
 }) {
-  const { context, setContext } = useExplorationContext()
+  const { setContext } = useExplorationContext()
   const selectedNeed = situationSlug && needSlug ? `${situationSlug}::${needSlug}` : ''
 
   function navigate(nextBusinessType: string, nextNeed: string) {
