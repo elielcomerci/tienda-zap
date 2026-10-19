@@ -12,6 +12,7 @@ import CatalogOrientationFilters from '@/components/public/CatalogOrientationFil
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
 import ProductRelevanceItem from '@/components/public/ProductRelevanceItem'
+import LiveContextSummary from '@/components/public/LiveContextSummary'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
@@ -226,6 +227,9 @@ export default async function ProductsPage({
           )}
 
           <div className="space-y-8 min-w-0">
+            {!isSituationMode && mode !== 'rubro' && (
+              <LiveContextSummary businessTypes={businessTypes} situations={situations} />
+            )}
             {!isSituationMode && mode !== 'rubro' && (
               <CatalogOrientationFilters
                 businessTypes={businessTypes}
