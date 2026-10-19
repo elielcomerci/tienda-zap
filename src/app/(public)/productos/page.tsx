@@ -344,14 +344,7 @@ export default async function ProductsPage({
                   </Link>
                 </div>
                 {selectedNeed ? (
-                  <section className="border-b border-gray-100 pb-4">
-                    <p className="mb-2 text-xs font-medium text-gray-500">
-                      {[selectedBusinessType?.name, selectedSituation.name].filter(Boolean).join(' · ')}
-                    </p>
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
-                      {selectedNeed.name}
-                    </h1>
-                  </section>
+                  <LiveContextSummary businessTypes={businessTypes} situations={situations} />
                 ) : (
                   <IntentionHero intention={selectedSituation} businessTypeName={selectedBusinessType?.name} />
                 )}
