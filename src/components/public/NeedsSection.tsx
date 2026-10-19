@@ -16,6 +16,7 @@ export default function NeedsSection({
   selectedNeedSlug?: string
 }) {
   const { context, setContext } = useExplorationContext()
+  const activeNeedSlug = context.situationSlug === situation.slug ? context.needSlug : selectedNeedSlug
 
   function chooseNeed(needSlug: string) {
     const params = new URLSearchParams(window.location.search)
@@ -34,8 +35,6 @@ export default function NeedsSection({
 
   if (situation.needs.length === 0) return null
 
-  const query = new URLSearchParams({ mode: 'situation', situacion: situation.slug })
-  if (businessTypeSlug) query.set('rubro', businessTypeSlug)
   const whatsappMessage = [
     `Hola, estoy explorando: ${situation.name}.`,
     businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
@@ -43,8 +42,8 @@ export default function NeedsSection({
   ].filter(Boolean).join('\n')
   const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
-  if (selectedNeedSlug) {
-    const selectedNeed = situation.needs.find((need) => need.slug === selectedNeedSlug)
+  if (activeNeedSlug) {
+    const selectedNeed = situation.needs.find((need) => need.slug === activeNeedSlug)
     return (
       <section id="necesidades" className="px-0.5 sm:px-1">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
@@ -55,7 +54,7 @@ export default function NeedsSection({
             Cambiar necesidad
           </summary>
           <div className="mt-3 grid gap-2.5 md:grid-cols-2 sm:gap-3">
-            {situation.needs.filter((need) => need.slug !== selectedNeedSlug).map((need) => {
+            {situation.needs.filter((need) => need.slug !== activeNeedSlug).map((need) => {
               return (
                 <button key={need.id} type="button" onClick={() => chooseNeed(need.slug)} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 text-left transition-colors hover:border-[#ED164F]/40">
                   <span className="text-sm font-medium text-gray-800">{need.name}</span>
