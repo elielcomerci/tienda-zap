@@ -12,11 +12,12 @@ export default function LiveContextSummary({
   businessTypes: BusinessType[]
   situations: DiscoverySituation[]
 }) {
-  const { context, ready } = useExplorationContext()
+  const { context, ready, situationsByBusinessType } = useExplorationContext()
+  const availableSituations = context.businessTypeSlug ? situationsByBusinessType[context.businessTypeSlug] || situations : situations
   if (!ready || (!context.businessTypeSlug && !context.situationSlug && !context.needSlug)) return null
 
   const businessType = businessTypes.find((item) => item.slug === context.businessTypeSlug)
-  const situation = situations.find((item) => item.slug === context.situationSlug)
+  const situation = availableSituations.find((item) => item.slug === context.situationSlug)
   const need = situation?.needs.find((item) => item.slug === context.needSlug)
 
   const supportingCopy = need
