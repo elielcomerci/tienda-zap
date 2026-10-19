@@ -162,60 +162,17 @@ export default function CartPage() {
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_18%,#f8fafc_100%)]">
       <div className="mx-auto max-w-[1380px] px-4 pb-12 pt-5 sm:pt-6 xl:px-8">
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:items-end">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
-                  Paso 1 de 3
-                </span>
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                  {count} item{count === 1 ? '' : 's'} activos
-                </span>
-              </div>
-
-              <h1 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                Tu carrito
-              </h1>
-              <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Total visible
-                </p>
-                <p className="mt-2 text-2xl font-black text-gray-950">
-                  ${finalTotal.toLocaleString('es-AR')}
-                </p>
-                <p className="mt-1 text-sm text-gray-600">
-                  {discountAmount > 0 ? `incluye $${discountAmount.toLocaleString('es-AR')} de descuento` : 'sin pasos ocultos'}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Preparación
-                </p>
-                <p className="mt-2 text-base font-bold text-gray-950">
-                  Archivos o diseño
-                </p>
-                <p className="mt-1 text-sm text-gray-600">queda definido desde ahora</p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Siguiente paso
-                </p>
-                <p className="mt-2 text-base font-bold text-gray-950">Datos y pago</p>
-                <p className="mt-1 text-sm text-gray-600">datos, pago y archivos</p>
-              </div>
-            </div>
+        <section className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-xs font-semibold text-[#C2103F]">Paso 1 de 3</span>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-950">Tu carrito</h1>
+            <span className="text-sm text-gray-500">{count} {count === 1 ? 'pieza' : 'piezas'}</span>
           </div>
+          <p className="text-lg font-bold text-gray-950">Total: ${finalTotal.toLocaleString('es-AR')}</p>
         </section>
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-          <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+          <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
             <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
