@@ -8,6 +8,7 @@ import { getPublicSituationBySlug, getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import AddToCartButton from '@/components/public/AddToCartButton'
 import CatalogSidebar from '@/components/public/CatalogSidebar'
+import CatalogOrientationFilters from '@/components/public/CatalogOrientationFilters'
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
 import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
@@ -93,7 +94,18 @@ export default async function ProductsPage({
   // Legacy public entry: Packs/Combos no longer exist as a public layer.
   // Keep old links working by sending them into the real Solutions discovery.
   if (requestedMode === 'combo') {
-    redirect('/productos?mode=rubro')
+    redirect('/productos')
+  }
+
+  if (requestedMode === 'rubro') {
+    const params = new URLSearchParams({ mode: 'product' })
+    if (rubro) params.set('rubro', rubro)
+    if (cat) params.set('cat', cat)
+    if (q) params.set('q', q)
+    if (tipo) params.set('tipo', tipo)
+    if (situacion || intent) params.set('situacion', situacion || intent || '')
+    if (necesidad) params.set('necesidad', necesidad)
+    redirect(`/productos?${params.toString()}`)
   }
 
   const mode = requestedMode
@@ -228,22 +240,17 @@ export default async function ProductsPage({
           )}
 
           <div className="space-y-8 min-w-0">
-            {selectedBusinessType && !isSituationMode && FIRST_STEP_PATH[selectedBusinessType.slug] && (
-              <Link
-                href={`https://zap.com.ar${FIRST_STEP_PATH[selectedBusinessType.slug]}`}
-                className="group flex flex-col gap-4 rounded-[26px] border border-[#ED164F]/20 bg-white px-5 py-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition hover:border-[#ED164F]/50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <div className="max-w-2xl">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C2103F]">Una primera mirada para tu rubro</p>
-                  <h2 className="mt-1 text-lg font-black tracking-tight text-gray-950">Primer paso para {selectedBusinessType.name}</h2>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">Contanos qué está pasando en tu negocio. Te ayudamos a encontrar qué conviene mirar y por dónde empezar.</p>
-                </div>
-                <span className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-[#ED164F] px-5 py-3 text-sm font-bold text-white transition group-hover:bg-[#C2103F] sm:self-center">
-                  Dar el primer paso <ArrowRight size={16} />
-                </span>
-              </Link>
+            {!isSituationMode && mode !== 'rubro' && (
+              <CatalogOrientationFilters
+                businessTypes={businessTypes}
+                situations={situations}
+                businessTypeSlug={rubro}
+                situationSlug={selectedSituation?.slug}
+                needSlug={selectedNeed?.slug}
+                category={cat}
+                query={q}
+                catalogType={tipo}
+              />
             )}
             {isSituationMode && !selectedSituation && (
               <section className="rounded-[30px] bg-white/55 px-1 py-1 sm:px-2">
