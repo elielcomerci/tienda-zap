@@ -41,7 +41,7 @@ export default function NeedsSection({
               const params = new URLSearchParams(query)
               params.set('necesidad', need.slug)
               return (
-                <Link key={need.id} href={`/productos?${params.toString()}#catalogo`} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 transition-colors hover:border-[#ED164F]/40">
+                <Link key={need.id} href={`/productos?${params.toString()}`} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 transition-colors hover:border-[#ED164F]/40">
                   <span className="text-sm font-medium text-gray-800">{need.name}</span>
                   <ArrowRight size={15} className="shrink-0 text-[#ED164F]" />
                 </Link>
@@ -62,7 +62,7 @@ export default function NeedsSection({
           return (
             <Link
               key={need.id}
-              href={`/productos?${params.toString()}#catalogo`}
+              href={`/productos?${params.toString()}`}
               className="group flex min-h-[76px] items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3.5 transition-colors hover:border-[#ED164F]/40 sm:px-5"
             >
               <span className="text-sm font-semibold tracking-tight text-gray-950">{need.name}</span>
