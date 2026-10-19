@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'media.zap.com.ar',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.revex.run',
+      },
     ],
   },
 }
