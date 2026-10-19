@@ -30,15 +30,11 @@ export default function NeedsSection({
     return (
       <section id="necesidades" className="px-0.5 sm:px-1">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
-          <p className="text-xs text-gray-500">
-            Necesidad elegida <span className="mx-1 text-gray-300">/</span>
-            <span className="font-semibold text-gray-900">{selectedNeed?.name}</span>
-          </p>
-          <a href="#otras-necesidades" className="text-xs font-semibold text-[#C2103F] hover:text-[#ED164F]">Cambiar</a>
+          <p className="text-sm font-semibold text-gray-900">{selectedNeed?.name}</p>
         </div>
         <details id="otras-necesidades" className="group mt-3">
           <summary className="cursor-pointer list-none text-sm font-semibold text-gray-600 hover:text-gray-950">
-            Elegir otra necesidad
+            Cambiar necesidad
           </summary>
           <div className="mt-3 grid gap-2.5 md:grid-cols-2 sm:gap-3">
             {situation.needs.filter((need) => need.slug !== selectedNeedSlug).map((need) => {
