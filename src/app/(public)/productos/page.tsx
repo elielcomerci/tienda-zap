@@ -228,7 +228,7 @@ export default async function ProductsPage({
           )}
 
           <div className="space-y-8 min-w-0">
-            {selectedBusinessType && FIRST_STEP_PATH[selectedBusinessType.slug] && (
+            {selectedBusinessType && !isSituationMode && FIRST_STEP_PATH[selectedBusinessType.slug] && (
               <Link
                 href={`https://zap.com.ar${FIRST_STEP_PATH[selectedBusinessType.slug]}`}
                 className="group flex flex-col gap-4 rounded-[26px] border border-[#ED164F]/20 bg-white px-5 py-5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.28)] transition hover:border-[#ED164F]/50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
@@ -355,7 +355,7 @@ export default async function ProductsPage({
                     <ShareModal />
                   </div>
                 </div>
-                <IntentionHero intention={selectedSituation} businessTypeName={selectedBusinessType?.name} />
+                <IntentionHero intention={selectedSituation} businessTypeName={selectedBusinessType?.name} compact={Boolean(selectedNeed)} />
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} businessTypeName={selectedBusinessType?.name} selectedNeedSlug={necesidad} />
                 {selectedNeed && (
                   <>
