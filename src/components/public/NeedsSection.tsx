@@ -71,12 +71,9 @@ export default function NeedsSection({
           )
         })}
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
-        <Link href={whatsappUrl || '/'} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]">
+      <div className="mt-3 border-t border-gray-100 pt-3">
+        <Link href={whatsappUrl || '/'} className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#C2103F]">
           ¿No encontrás tu caso? Hablemos <ArrowRight size={15} />
-        </Link>
-        <Link href={`/productos?mode=product${businessTypeSlug ? `&rubro=${encodeURIComponent(businessTypeSlug)}` : ''}&situacion=${encodeURIComponent(situation.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#C2103F]">
-          Ver todos los productos <ArrowRight size={15} />
         </Link>
       </div>
     </section>
