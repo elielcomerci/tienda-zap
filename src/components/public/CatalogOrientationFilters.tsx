@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useExplorationContext } from '@/components/public/ExplorationContextProvider'
 import type { DiscoverySituation } from '@/lib/discovery'
 
 type BusinessType = { id: string; name: string; slug: string }
@@ -24,7 +24,7 @@ export default function CatalogOrientationFilters({
   query?: string
   catalogType?: 'cosa' | 'desarrollo'
 }) {
-  const router = useRouter()
+  const { context, setContext } = useExplorationContext()
   const selectedNeed = situationSlug && needSlug ? `${situationSlug}::${needSlug}` : ''
 
   function navigate(nextBusinessType: string, nextNeed: string) {
@@ -43,7 +43,14 @@ export default function CatalogOrientationFilters({
       }
     }
 
-    router.push(`/productos?${params.toString()}`, { scroll: false })
+    const nextContext = nextNeed ? nextNeed.split('::') : ['', '']
+    setContext({
+      mode: 'product',
+      businessTypeSlug: nextBusinessType || undefined,
+      situationSlug: nextContext[0] || undefined,
+      needSlug: nextContext[1] || undefined,
+    })
+    window.history.replaceState(null, '', `/productos?${params.toString()}`)
   }
 
   return (
