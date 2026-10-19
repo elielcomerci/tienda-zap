@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useExplorationContext } from '@/components/public/ExplorationContextProvider'
 import { ArrowRight } from 'lucide-react'
 import type { DiscoveryNeed, DiscoverySituation } from '@/lib/discovery'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
@@ -14,6 +15,23 @@ export default function NeedsSection({
   businessTypeName?: string
   selectedNeedSlug?: string
 }) {
+  const { context, setContext } = useExplorationContext()
+
+  function chooseNeed(needSlug: string) {
+    const params = new URLSearchParams(window.location.search)
+    params.set('mode', context.mode || 'situation')
+    if (businessTypeSlug) params.set('rubro', businessTypeSlug)
+    params.set('situacion', situation.slug)
+    params.set('necesidad', needSlug)
+    setContext({
+      mode: context.mode || 'situation',
+      businessTypeSlug: businessTypeSlug || context.businessTypeSlug,
+      situationSlug: situation.slug,
+      needSlug,
+    })
+    window.history.replaceState(null, '', `/productos?${params.toString()}`)
+  }
+
   if (situation.needs.length === 0) return null
 
   const query = new URLSearchParams({ mode: 'situation', situacion: situation.slug })
@@ -41,10 +59,10 @@ export default function NeedsSection({
               const params = new URLSearchParams(query)
               params.set('necesidad', need.slug)
               return (
-                <Link key={need.id} href={`/productos?${params.toString()}`} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 transition-colors hover:border-[#ED164F]/40">
+                <button key={need.id} type="button" onClick={() => chooseNeed(need.slug)} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 text-left transition-colors hover:border-[#ED164F]/40">
                   <span className="text-sm font-medium text-gray-800">{need.name}</span>
                   <ArrowRight size={15} className="shrink-0 text-[#ED164F]" />
-                </Link>
+                </button>
               )
             })}
           </div>
@@ -60,14 +78,15 @@ export default function NeedsSection({
           const params = new URLSearchParams(query)
           params.set('necesidad', need.slug)
           return (
-            <Link
+            <button
               key={need.id}
-              href={`/productos?${params.toString()}`}
-              className="group flex min-h-[76px] items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3.5 transition-colors hover:border-[#ED164F]/40 sm:px-5"
+              type="button"
+              onClick={() => chooseNeed(need.slug)}
+              className="group flex min-h-[76px] items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3.5 text-left transition-colors hover:border-[#ED164F]/40 sm:px-5"
             >
               <span className="text-sm font-semibold tracking-tight text-gray-950">{need.name}</span>
               <ArrowRight size={16} className="shrink-0 text-[#ED164F]" />
-            </Link>
+            </button>
           )
         })}
       </div>
