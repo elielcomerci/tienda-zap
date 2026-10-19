@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutGrid, PackageOpen } from 'lucide-react'
+import { BriefcaseBusiness, LayoutGrid, PackageOpen } from 'lucide-react'
 import { DiscoverySituation } from '@/lib/discovery'
 import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
