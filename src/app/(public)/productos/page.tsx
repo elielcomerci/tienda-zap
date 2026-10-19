@@ -130,14 +130,10 @@ export default async function ProductsPage({
       {
         // The URL may retain a previous choice as exploration context.
         // It becomes a filter only when its corresponding mode is active.
-        situationSlug: isSituationMode ? selectedSituation?.slug : undefined,
-        needSlug: isSituationMode && selectedSituation ? necesidad : undefined,
-        // Keep recommendations inside the selected business context in guided discovery too.
-        businessTypeSlug: isSituationMode ? rubro : undefined,
-        // Keep the general editorial order unless the visitor chose a context.
-        // With a rubro only, prioritize products linked to its highest-priority situations;
-        // with a situation/need, exact matches take precedence.
-        rankContext: mode === 'product' && (rubro || selectedSituation) ? {
+        // The editorial banner guides discovery, but never replaces or narrows the catalog.
+        // Use the selected context to rank relevant products first, keeping every active
+        // product available underneath the banner.
+        rankContext: (rubro || selectedSituation) ? {
           businessTypeSlug: rubro,
           situationSlug: selectedSituation?.slug,
           needSlug: selectedSituation?.needs.some((need) => need.slug === necesidad) ? necesidad : undefined,
@@ -356,24 +352,17 @@ export default async function ProductsPage({
                   <IntentionHero intention={selectedSituation} businessTypeName={selectedBusinessType?.name} />
                 )}
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} businessTypeName={selectedBusinessType?.name} selectedNeedSlug={necesidad} />
-                {selectedNeed && (
-                  <>
-                    <DiscoveryOfferSection
-                      products={products}
-                      needName={selectedNeed.name}
-                      businessTypeName={selectedBusinessType?.name}
-                      situationName={selectedSituation.name}
-                      businessTypeSlug={rubro}
-                      situationSlug={selectedSituation.slug}
-                      needSlug={selectedNeed.slug}
-                    />
-                  </>
-                )}
+
               </>
             )}
 
-            {!isSituationMode && mode !== 'rubro' && (
-              products.length === 0 ? (
+            {mode !== 'rubro' && (
+              <div id="catalogo" className="scroll-mt-24">
+              <div className="mb-5 flex items-end justify-between gap-3 border-b border-gray-100 pb-3">
+                <h2 className="text-lg font-semibold tracking-tight text-gray-950">Catálogo</h2>
+                <span className="text-sm text-gray-500">{products.length} {products.length === 1 ? 'opción' : 'opciones'}</span>
+              </div>
+              {products.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Sin resultados
