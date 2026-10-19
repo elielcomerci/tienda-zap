@@ -22,7 +22,8 @@ export default function CatalogOrientationFilters({
   query?: string
   catalogType?: 'cosa' | 'desarrollo'
 }) {
-  const { context, setContext } = useExplorationContext()
+  const { context, setContext, situationsByBusinessType } = useExplorationContext()
+  const availableSituations = context.businessTypeSlug ? situationsByBusinessType[context.businessTypeSlug] || situations : situations
   const selectedNeed = context.situationSlug && context.needSlug ? `${context.situationSlug}::${context.needSlug}` : ''
 
   function navigate(nextBusinessType: string, nextNeed: string) {
@@ -72,7 +73,7 @@ export default function CatalogOrientationFilters({
         className="h-9 max-w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-600 outline-none transition focus:border-[#ED164F] focus:ring-2 focus:ring-[#ED164F]/10"
       >
         <option value="">Necesidad</option>
-        {situations.map((situation) => (
+        {availableSituations.map((situation) => (
           <optgroup key={situation.id} label={situation.name}>
             {situation.needs.map((need) => (
               <option key={need.id} value={`${situation.slug}::${need.slug}`}>{need.name}</option>
