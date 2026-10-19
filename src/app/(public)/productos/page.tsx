@@ -11,6 +11,7 @@ import CatalogSidebar from '@/components/public/CatalogSidebar'
 import CatalogOrientationFilters from '@/components/public/CatalogOrientationFilters'
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
+import ProductRelevanceItem from '@/components/public/ProductRelevanceItem'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
@@ -404,8 +405,12 @@ export default async function ProductsPage({
                   const isConsultationOnlyFlow = requiresConversation || (!requiresConfiguration && !isPurchasable)
 
                   return (
-                    <article
+                    <ProductRelevanceItem
                       key={product.id}
+                      offerEntries={product.offerEntries}
+                      sortOrder={product.sortOrder}
+                    >
+                    <article
                       className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition-colors hover:border-[#ED164F]/50"
                     >
                       <Link href={buildProductUrl(product.slug, explorationContext)} className="block">
@@ -481,6 +486,7 @@ export default async function ProductsPage({
                         </div>
                       </div>
                     </article>
+                    </ProductRelevanceItem>
                   )
                 })}
               </div>
