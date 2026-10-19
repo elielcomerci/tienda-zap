@@ -67,7 +67,7 @@ export default function IntentionHero({
     <section className={`border-b border-gray-200/80 ${compact ? "pb-4 sm:pb-5" : "pb-8 sm:pb-10"}`}>
       <div className="max-w-4xl">
         {businessTypeName && (
-          <p className={`${compact ? "mb-2" : "mb-4"} text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F]">
+          <p className={`${compact ? "mb-2" : "mb-4"} text-xs font-bold uppercase tracking-[0.18em] text-[#C2103F]`}>
             {businessTypeName}
           </p>
         )}
