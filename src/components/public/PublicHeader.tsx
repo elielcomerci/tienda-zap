@@ -338,17 +338,44 @@ export default function PublicHeader({
                 <span>Tu negocio · <span className="font-normal text-white/65">Elegí tu rubro</span></span>
                 <ChevronDown size={16} />
               </button>
-            ) : <>
-              <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">Tu negocio</p><p className="mt-1 text-sm font-semibold text-white/85">Ajustá el contexto cuando quieras.</p></div><button type="button" onClick={() => { clearContext(); setContextEditorOpen(false); setMenuOpen(false) }} className="text-xs font-semibold text-white/80 underline underline-offset-2 hover:text-white">Empezar de nuevo</button></div>
-              <label className="mb-1 block text-xs font-semibold text-white/75" htmlFor="zap-context-rubro">Rubro</label>
-              <select id="zap-context-rubro" value={explorationContext.businessTypeSlug || ''} onChange={(event) => { setContext({ mode: 'rubro', businessTypeSlug: event.target.value || undefined, situationSlug: undefined, needSlug: undefined }); setContextEditorOpen(true) }} className="mb-3 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir rubro</option>{businessTypes.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
-              {explorationContext.businessTypeSlug && <>
-                <label className="mb-1 block text-xs font-semibold text-gray-600" htmlFor="zap-context-situacion">Qué está pasando</label>
-                <select id="zap-context-situacion" value={explorationContext.situationSlug || ''} onChange={(event) => setContext({ mode: 'situation', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: event.target.value || undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir situación</option>{availableSituations.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
-                {currentSituation?.needs && currentSituation.needs.length > 0 && <><label className="mb-1 block text-xs font-semibold text-gray-600" htmlFor="zap-context-necesidad">Qué necesitás resolver</label><select id="zap-context-necesidad" value={explorationContext.needSlug || ''} onChange={(event) => setContext({ ...explorationContext, needSlug: event.target.value || undefined })} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Ver todas las necesidades</option>{currentSituation.needs.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></>}
-                <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#C2103F]">Ver opciones →</Link>
-              </>}
-            </>}
+            ) : (explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && !contextEditorOpen ? (
+              <div className="rounded-xl border border-white/10 px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">Tu selección</p>
+                    <p className="mt-1 text-sm font-semibold leading-relaxed text-white/90">
+                      {[businessTypeName, currentSituation?.name, currentNeed?.name].filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => setContextEditorOpen(true)} className="shrink-0 text-xs font-semibold text-white/75 underline underline-offset-2 hover:text-white">Cambiar</button>
+                </div>
+                <button type="button" onClick={() => { clearContext(); setContextEditorOpen(true) }} className="mt-2 text-xs font-medium text-white/50 transition-colors hover:text-white/85">Borrar y empezar de nuevo</button>
+                <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#ED164F] px-3 py-2 text-sm font-semibold text-white hover:bg-[#C2103F]">Ver opciones →</Link>
+              </div>
+            ) : (
+              <>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-white/90">Tu negocio</p>
+                  {(explorationContext.businessTypeSlug || explorationContext.situationSlug || explorationContext.needSlug) && (
+                    <button type="button" onClick={() => { clearContext(); setContextEditorOpen(true) }} className="text-xs font-semibold text-white/60 underline underline-offset-2 hover:text-white">Borrar selección</button>
+                  )}
+                </div>
+                <label className="mb-1 block text-xs font-semibold text-white/75" htmlFor="zap-context-rubro">1. Elegí tu rubro</label>
+                <select id="zap-context-rubro" value={explorationContext.businessTypeSlug || ''} onChange={(event) => { setContext({ mode: 'rubro', businessTypeSlug: event.target.value || undefined, situationSlug: undefined, needSlug: undefined }); setContextEditorOpen(true) }} className="mb-3 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir rubro</option>{businessTypes.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+                {explorationContext.businessTypeSlug && <>
+                  <label className="mb-1 block text-xs font-semibold text-white/75" htmlFor="zap-context-situacion">2. ¿Qué está pasando?</label>
+                  <select id="zap-context-situacion" value={explorationContext.situationSlug || ''} onChange={(event) => setContext({ mode: 'situation', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: event.target.value || undefined, needSlug: undefined })} className="mb-3 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Elegir situación</option>{availableSituations.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+                  {currentSituation?.needs && currentSituation.needs.length > 0 && explorationContext.situationSlug && <>
+                    <label className="mb-1 block text-xs font-semibold text-white/75" htmlFor="zap-context-necesidad">3. ¿Qué necesitás resolver? <span className="font-normal text-white/45">(opcional)</span></label>
+                    <select id="zap-context-necesidad" value={explorationContext.needSlug || ''} onChange={(event) => setContext({ ...explorationContext, needSlug: event.target.value || undefined })} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-900"><option value="">Ver todas las necesidades</option>{currentSituation.needs.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+                  </>}
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <button type="button" onClick={() => setContextEditorOpen(false)} className="text-xs font-semibold text-white/65 underline underline-offset-2 hover:text-white">Guardar selección</button>
+                    <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => { setContextEditorOpen(false); setMenuOpen(false) }} className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#C2103F]">Ver opciones →</Link>
+                  </div>
+                </>}
+              </>
+            )}
           </section>}
           {!user ? <div className="border-t border-white/10 pt-4 flex flex-col gap-1 text-sm font-semibold"><Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 text-white/85 transition-colors hover:bg-white/10 hover:text-white">Ingresar →</Link><Link href="/registro" onClick={() => setMenuOpen(false)} className="rounded-lg bg-white px-3 py-2.5 text-center text-sm font-semibold text-gray-950 transition-colors hover:bg-gray-100">Crear cuenta</Link></div> : <div className="border-t border-white/10 pt-4 flex flex-col gap-1 text-sm font-semibold"><Link href="/perfil" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 text-white/85 transition-colors hover:bg-white/10 hover:text-white">Mi perfil →</Link>{canOpenAdminPanel && <Link href="/admin" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 text-white/85 transition-colors hover:bg-white/10 hover:text-white">Panel Admin →</Link>}{canOpenSellerPanel && <Link href="/seller" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 text-white/85 transition-colors hover:bg-white/10 hover:text-white">Panel Asesores →</Link>}<button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: '/' }) }} className="mt-1 rounded-lg border-t border-white/10 px-3 py-3 text-left text-white/60 hover:bg-white/10 hover:text-white">Cerrar sesión</button></div>}
         </div></div>
