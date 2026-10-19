@@ -350,7 +350,7 @@ export default function PublicHeader({
                   <button type="button" onClick={() => setContextEditorOpen(true)} className="shrink-0 text-xs font-semibold text-white/75 underline underline-offset-2 hover:text-white">Cambiar</button>
                 </div>
                 <button type="button" onClick={() => { clearContext(); setContextEditorOpen(true) }} className="mt-2 text-xs font-medium text-white/50 transition-colors hover:text-white/85">Borrar y empezar de nuevo</button>
-                <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#ED164F] px-3 py-2 text-sm font-semibold text-white hover:bg-[#C2103F]">Ver opciones →</Link>
+                <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => setMenuOpen(false)} className="mt-3 flex w-full items-center justify-between gap-3 rounded-lg bg-[#ED164F] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#C2103F]"><span>Ver opciones</span><span aria-hidden="true">→</span></Link>
               </div>
             ) : (
               <>
@@ -371,7 +371,7 @@ export default function PublicHeader({
                   </>}
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <button type="button" onClick={() => setContextEditorOpen(false)} className="text-xs font-semibold text-white/65 underline underline-offset-2 hover:text-white">Guardar selección</button>
-                    <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => { setContextEditorOpen(false); setMenuOpen(false) }} className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#C2103F]">Ver opciones →</Link>
+                    <Link href={buildProductsUrl({ ...explorationContext, mode: explorationContext.situationSlug ? 'situation' : 'rubro' })} onClick={() => { setContextEditorOpen(false); setMenuOpen(false) }} className="inline-flex items-center justify-between gap-3 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#C2103F]"><span>Ver opciones</span><span aria-hidden="true">→</span></Link>
                   </div>
                 </>}
               </>
