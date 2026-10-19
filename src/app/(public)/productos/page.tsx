@@ -125,7 +125,7 @@ export default async function ProductsPage({
   const businessSituations = getBusinessSituations(rubro, situations)
   const [products, categories] = await Promise.all([
     getProducts(
-      isSituationMode || mode === 'rubro' ? undefined : cat,
+      isSituationMode ? undefined : cat,
       q,
       {
         // The URL may retain a previous choice as exploration context.
@@ -133,7 +133,7 @@ export default async function ProductsPage({
         situationSlug: isSituationMode ? selectedSituation?.slug : undefined,
         needSlug: isSituationMode && selectedSituation ? necesidad : undefined,
         // Keep recommendations inside the selected business context in guided discovery too.
-        businessTypeSlug: isSituationMode || mode === 'rubro' ? rubro : undefined,
+        businessTypeSlug: isSituationMode ? rubro : undefined,
         // Keep the general editorial order unless the visitor chose a context.
         // With a rubro only, prioritize products linked to its highest-priority situations;
         // with a situation/need, exact matches take precedence.
