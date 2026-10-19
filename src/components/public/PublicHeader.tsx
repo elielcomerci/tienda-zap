@@ -159,7 +159,7 @@ export default function PublicHeader({
               <li className="h-full flex items-center"><Link href={buildProductsUrl({ mode: 'product', businessTypeSlug: explorationContext.businessTypeSlug, situationSlug: explorationContext.situationSlug, needSlug: explorationContext.needSlug })} className="group relative py-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#ED164F]">Todos los productos<span aria-hidden="true" className="pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-purple-400 to-blue-400 transition-all duration-300 group-hover:w-full" /></Link></li>
               <li className="h-full flex items-center"><a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="group relative py-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#ED164F]">Hablemos<span aria-hidden="true" className="pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-purple-400 to-blue-400 transition-all duration-300 group-hover:w-full" /></a></li>
               {/* User area */}
-              <li className="relative h-full flex items-center">
+              <li className={user ? "relative h-full flex items-center" : "hidden"}>
                 {user ? (
                   <>
                     <button
@@ -227,7 +227,7 @@ export default function PublicHeader({
                     )}
                   </>
                 ) : (
-                  <Link href="/login" className="text-sm font-semibold text-gray-700 transition-colors hover:text-[#ED164F]">Ingresar</Link>
+                  null
                 )}
               </li>
 
