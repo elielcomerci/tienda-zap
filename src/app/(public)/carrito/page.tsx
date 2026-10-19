@@ -161,8 +161,8 @@ export default function CartPage() {
 
   return (
     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fff8f1_18%,#f8fafc_100%)]">
-      <div className="mx-auto max-w-[1380px] px-4 pb-16 pt-8 sm:pt-10 xl:px-8">
-        <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+      <div className="mx-auto max-w-[1380px] px-4 pb-12 pt-5 sm:pt-6 xl:px-8">
+        <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:items-end">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -175,11 +175,10 @@ export default function CartPage() {
               </div>
 
               <h1 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                Tu pedido ya tiene forma.
+                Tu carrito
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                Revisamos cantidad, variantes, notas y preparacion del archivo antes de pasar al
-                pago. La idea es que cada pieza llegue bien definida antes de pasar a producción.
+                
               </p>
             </div>
 
@@ -215,7 +214,7 @@ export default function CartPage() {
           </div>
         </section>
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
             <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -223,11 +222,10 @@ export default function CartPage() {
                   Tu carrito
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
-                  Revisá cada pieza seleccionada.
+                  Tus productos
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                  Podés ajustar cantidades, sumar observaciones y definir si el trabajo llega con
-                  archivo final o con diseño a coordinar.
+                  
                 </p>
               </div>
 
@@ -249,7 +247,7 @@ export default function CartPage() {
               {items.map((item) => (
                 <article
                   key={item.cartItemId || item.productId}
-                  className="rounded-[28px] border border-gray-200 bg-gray-50/60 p-5"
+                  className="rounded-xl border border-gray-200 bg-gray-50/60 p-4"
                 >
                   <div className="flex flex-col gap-5 lg:flex-row">
                     <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-[24px] border border-gray-200 bg-white">
@@ -372,7 +370,7 @@ export default function CartPage() {
                       Preparación
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Definí si enviás el archivo final o si necesitás que coordinemos el diseño.
+                      
                     </p>
                     <OrderItemOptions item={item} />
                     <OrderItemBrief item={item} />
