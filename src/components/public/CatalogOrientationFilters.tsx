@@ -9,9 +9,7 @@ export default function CatalogOrientationFilters({
   businessTypes,
   situations,
   businessTypeSlug,
-  situationSlug,
-  needSlug,
-  category,
+    category,
   query,
   catalogType,
 }: {
