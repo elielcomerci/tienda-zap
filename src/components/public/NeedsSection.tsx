@@ -56,8 +56,6 @@ export default function NeedsSection({
           </summary>
           <div className="mt-3 grid gap-2.5 md:grid-cols-2 sm:gap-3">
             {situation.needs.filter((need) => need.slug !== selectedNeedSlug).map((need) => {
-              const params = new URLSearchParams(query)
-              params.set('necesidad', need.slug)
               return (
                 <button key={need.id} type="button" onClick={() => chooseNeed(need.slug)} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 text-left transition-colors hover:border-[#ED164F]/40">
                   <span className="text-sm font-medium text-gray-800">{need.name}</span>
@@ -75,8 +73,6 @@ export default function NeedsSection({
     <section id="necesidades" className="px-0.5 sm:px-1">
       <div className="grid gap-2.5 md:grid-cols-2 sm:gap-3">
         {situation.needs.map((need: DiscoveryNeed) => {
-          const params = new URLSearchParams(query)
-          params.set('necesidad', need.slug)
           return (
             <button
               key={need.id}
