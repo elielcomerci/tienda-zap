@@ -86,6 +86,8 @@ export async function getProducts(
   const orderedProducts = products.sort((a, b) => {
     const context = options?.rankContext
 
+    const matrixOrder = (order: number) => order > 0 ? order : Number.MAX_SAFE_INTEGER
+
     const contextRank = (product: (typeof products)[number]) => {
       if (!context) return [0, product.sortOrder, 0] as const
 
@@ -100,7 +102,7 @@ export async function getProducts(
       // then other offers for the same situation, then the rest of the rubro.
       if (context.situationSlug) {
         if (relevant.length > 0) {
-          return [0, Math.min(...relevant.map((entry) => entry.order)), product.sortOrder] as const
+          return [0, Math.min(...relevant.map((entry) => matrixOrder(entry.order))), product.sortOrder] as const
         }
 
         const sameSituation = entries.filter((entry) =>
@@ -108,7 +110,7 @@ export async function getProducts(
           entry.situation.slug === context.situationSlug
         )
         if (context.needSlug && sameSituation.length > 0) {
-          return [1, Math.min(...sameSituation.map((entry) => entry.order)), product.sortOrder] as const
+          return [1, Math.min(...sameSituation.map((entry) => matrixOrder(entry.order))), product.sortOrder] as const
         }
 
         const sameBusiness = context.businessTypeSlug
@@ -120,7 +122,7 @@ export async function getProducts(
             const index = priorities.indexOf(entry.situation.slug)
             return index < 0 ? priorities.length : index
           }))
-          const bestMatrixOrder = Math.min(...sameBusiness.map((entry) => entry.order))
+          const bestMatrixOrder = Math.min(...sameBusiness.map((entry) => matrixOrder(entry.order)))
           return [2, bestSituationRank, bestMatrixOrder] as const
         }
 
@@ -141,7 +143,7 @@ export async function getProducts(
             const index = priorities.indexOf(entry.situation.slug)
             return (index < 0 ? priorities.length : index) === bestSituationRank
           })
-          .map((entry) => entry.order))
+          .map((entry) => matrixOrder(entry.order)))
         const situationCoverage = new Set(sameBusiness.map((entry) => entry.situation.slug)).size
         return [0, bestSituationRank, bestMatrixOrder, -situationCoverage] as const
       }
