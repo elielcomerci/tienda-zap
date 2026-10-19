@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { useExplorationContext } from '@/components/public/ExplorationContextProvider'
 import { ArrowRight } from 'lucide-react'
