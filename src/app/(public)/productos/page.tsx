@@ -11,7 +11,6 @@ import CatalogSidebar from '@/components/public/CatalogSidebar'
 import CatalogOrientationFilters from '@/components/public/CatalogOrientationFilters'
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
-import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
@@ -358,10 +357,12 @@ export default async function ProductsPage({
 
             {mode !== 'rubro' && (
               <div id="catalogo" className="scroll-mt-24">
-              <div className="mb-5 flex items-end justify-between gap-3 border-b border-gray-100 pb-3">
-                <h2 className="text-lg font-semibold tracking-tight text-gray-950">Catálogo</h2>
-                <span className="text-sm text-gray-500">{products.length} {products.length === 1 ? 'opción' : 'opciones'}</span>
-              </div>
+              {isSituationMode && (
+                <div className="mb-5 flex items-end justify-between gap-3 border-b border-gray-100 pb-3">
+                  <h2 className="text-lg font-semibold tracking-tight text-gray-950">Catálogo completo</h2>
+                  <span className="text-sm text-gray-500">{products.length} {products.length === 1 ? 'opción' : 'opciones'}</span>
+                </div>
+              )}
               {products.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
