@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { isDevelopment } from '@/lib/catalog-domain'
-import { buildProductUrl, buildProductsUrl } from '@/lib/exploration-context'
+import { buildProductUrl } from '@/lib/exploration-context'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getDiscoveryOfferReason } from '@/lib/discovery-offer-reasons'
 
@@ -59,9 +59,6 @@ export default function DiscoveryOfferSection({
     .sort((a, b) => getOfferPriority(a.product) - getOfferPriority(b.product) || a.index - b.index)
     .slice(0, 4)
     .map(({ product }) => product)
-  const engines = new Set(offers.map((product) => product.engine).filter(Boolean))
-  const includesDevelopment = offers.some((product) => isDevelopment(product))
-  const needsZAPReview = offers.length >= 3 && includesDevelopment && engines.size > 1
   const whatsappMessage = [
     `Hola, necesito orientación para resolver: ${needName}.`,
     businessTypeName ? `Mi rubro es ${businessTypeName}.` : null,
@@ -91,19 +88,12 @@ export default function DiscoveryOfferSection({
 
 
   return (
-    <section id="recomendacion" className="rounded-2xl border border-gray-200 bg-white px-5 py-7 sm:px-8 sm:py-9">
-      <div className="mb-7 max-w-2xl">
-        <><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C2103F]">Recomendación ZAP</p><h2 className="mt-1 text-xl font-bold tracking-tight text-gray-950 sm:text-2xl">
-          {needsZAPReview ? 'Opciones que pueden trabajar juntas' : offers.length === 1 ? 'Una forma de avanzar' : 'Opciones para avanzar'}
-        </h2></>
-        {needsZAPReview && (
-          <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
-            Podemos ayudarte a definir por dónde empezar.
-          </p>
-        )}
-      </div>
+    <section id="recomendacion" className="border-t border-gray-200 pt-5">
+      {offers.length > 1 && (
+        <h2 className="mb-4 text-lg font-semibold tracking-tight text-gray-950">Opciones para avanzar</h2>
+      )}
 
-      <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
+      <div className={`grid gap-4 ${offers.length > 1 ? 'md:grid-cols-2' : ''}`}>
         {offers.map((product) => {
           const offerReason = needSlug
             ? getDiscoveryOfferReason({
@@ -128,7 +118,7 @@ export default function DiscoveryOfferSection({
                 : 'Ver producto'
 
           return (
-            <article key={product.id} className="flex min-h-[150px] flex-col rounded-xl border border-gray-200/90 bg-white p-4 transition-colors hover:border-gray-300 sm:p-5">
+            <article key={product.id} className="flex flex-col border-b border-gray-100 pb-5">
               <h3 className="text-base font-bold tracking-tight text-gray-950 sm:text-lg">{getExplorationProductName(product)}</h3>
               <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-gray-600">{explanation}</p>
 
@@ -148,17 +138,7 @@ export default function DiscoveryOfferSection({
         })}
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
-        <Link
-          href={buildProductsUrl({ mode: 'product', businessTypeSlug, situationSlug, needSlug })}
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
-        >
-          Ver todos los productos y desarrollos <ArrowRight size={15} />
-        </Link>
-        <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
-          'Hablemos con ZAP' <ArrowRight size={15} />
-        </Link>
-      </div>
+
     </section>
   )
 }
