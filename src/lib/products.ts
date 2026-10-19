@@ -73,6 +73,7 @@ export async function getProducts(
       categoryLinks: { where: { category: { active: true } }, include: { category: { select: { id: true, name: true, slug: true, sortOrder: true } } }, orderBy: { category: { sortOrder: 'asc' } } },
       offerEntries: {
         select: {
+          order: true,
           businessType: { select: { slug: true } },
           situation: { select: { slug: true } },
           need: { select: { slug: true } },
@@ -83,55 +84,76 @@ export async function getProducts(
   })
 
   const orderedProducts = products.sort((a, b) => {
-    if (options?.rankContext) {
-      const context = options.rankContext
-      const contextRank = (product: (typeof products)[number]) => {
-        const entries = product.offerEntries
-        const matches = (entry: (typeof entries)[number], includeNeed: boolean) =>
-          (!context.businessTypeSlug || entry.businessType.slug === context.businessTypeSlug) &&
-          (!context.situationSlug || entry.situation.slug === context.situationSlug) &&
-          (!includeNeed || !context.needSlug || entry.need.slug === context.needSlug)
+    const context = options?.rankContext
 
-        if (context.situationSlug) {
-          if (entries.some((entry) => matches(entry, true))) return [0, 0, 0] as const
-          if (context.needSlug && entries.some((entry) => matches(entry, false))) return [1, 0, 0] as const
-          if (context.businessTypeSlug && entries.some((entry) => entry.businessType.slug === context.businessTypeSlug)) {
-            return [2, 0, 0] as const
-          }
-          return [3, 0, 0] as const
+    const contextRank = (product: (typeof products)[number]) => {
+      if (!context) return [0, product.sortOrder, 0] as const
+
+      const entries = product.offerEntries
+      const relevant = entries.filter((entry) =>
+        (!context.businessTypeSlug || entry.businessType.slug === context.businessTypeSlug) &&
+        (!context.situationSlug || entry.situation.slug === context.situationSlug) &&
+        (!context.needSlug || entry.need.slug === context.needSlug)
+      )
+
+      // The offer matrix is the source of truth: exact need matches first,
+      // then other offers for the same situation, then the rest of the rubro.
+      if (context.situationSlug) {
+        if (relevant.length > 0) {
+          return [0, Math.min(...relevant.map((entry) => entry.order)), product.sortOrder] as const
         }
 
-        if (context.businessTypeSlug) {
-          const relevant = entries.filter((entry) => entry.businessType.slug === context.businessTypeSlug)
-          if (relevant.length === 0) return [1, Number.MAX_SAFE_INTEGER, 0] as const
+        const sameSituation = entries.filter((entry) =>
+          (!context.businessTypeSlug || entry.businessType.slug === context.businessTypeSlug) &&
+          entry.situation.slug === context.situationSlug
+        )
+        if (context.needSlug && sameSituation.length > 0) {
+          return [1, Math.min(...sameSituation.map((entry) => entry.order)), product.sortOrder] as const
+        }
+
+        const sameBusiness = context.businessTypeSlug
+          ? entries.filter((entry) => entry.businessType.slug === context.businessTypeSlug)
+          : []
+        if (sameBusiness.length > 0) {
           const priorities = context.situationPriority || []
-          const ranks = relevant.map((entry) => {
+          const bestSituationRank = Math.min(...sameBusiness.map((entry) => {
             const index = priorities.indexOf(entry.situation.slug)
             return index < 0 ? priorities.length : index
-          })
-          const firstPriority = Math.min(...ranks)
-          const situationCoverage = new Set(relevant.map((entry) => entry.situation.slug)).size
-          // Prioritize the rubro's highest-priority situations, then products useful
-          // across more of that rubro's situations. Editorial order breaks ties.
-          return [0, firstPriority, -situationCoverage] as const
+          }))
+          const bestMatrixOrder = Math.min(...sameBusiness.map((entry) => entry.order))
+          return [2, bestSituationRank, bestMatrixOrder] as const
         }
 
-        return [0, 0, 0] as const
-      }
-      const rankA = contextRank(a)
-      const rankB = contextRank(b)
-      for (let i = 0; i < rankA.length; i += 1) {
-        if (rankA[i] !== rankB[i]) return rankA[i] - rankB[i]
+        return [3, product.sortOrder, 0] as const
       }
 
-      const selectedNeedIsDesignRelated = Boolean(
-        context.needSlug && /identidad|marca|diseno|espacio|visual|presentar|comida-se-vea-mejor|productos-se-vean-mejor/.test(context.needSlug)
-      )
-      if (!selectedNeedIsDesignRelated) {
-        const designRank = (product: (typeof products)[number]) => product.briefType === 'DESIGN' ? 1 : 0
-        const designDifference = designRank(a) - designRank(b)
-        if (designDifference !== 0) return designDifference
+      if (context.businessTypeSlug) {
+        const sameBusiness = entries.filter((entry) => entry.businessType.slug === context.businessTypeSlug)
+        if (sameBusiness.length === 0) return [1, Number.MAX_SAFE_INTEGER, product.sortOrder] as const
+
+        const priorities = context.situationPriority || []
+        const bestSituationRank = Math.min(...sameBusiness.map((entry) => {
+          const index = priorities.indexOf(entry.situation.slug)
+          return index < 0 ? priorities.length : index
+        }))
+        const bestMatrixOrder = Math.min(...sameBusiness
+          .filter((entry) => {
+            const index = priorities.indexOf(entry.situation.slug)
+            return (index < 0 ? priorities.length : index) === bestSituationRank
+          })
+          .map((entry) => entry.order))
+        const situationCoverage = new Set(sameBusiness.map((entry) => entry.situation.slug)).size
+        return [0, bestSituationRank, bestMatrixOrder, -situationCoverage] as const
       }
+
+      return [0, product.sortOrder, 0] as const
+    }
+
+    const rankA = contextRank(a)
+    const rankB = contextRank(b)
+    for (let i = 0; i < Math.max(rankA.length, rankB.length); i += 1) {
+      const difference = (rankA[i] ?? 0) - (rankB[i] ?? 0)
+      if (difference !== 0) return difference
     }
 
     return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)
