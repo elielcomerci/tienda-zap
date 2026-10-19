@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BriefcaseBusiness, LayoutGrid, PackageOpen } from 'lucide-react'
+import { LayoutGrid, PackageOpen } from 'lucide-react'
 import { DiscoverySituation } from '@/lib/discovery'
 import { buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
@@ -29,7 +29,6 @@ export default function CatalogSidebar({
   const currentSituation = situation || intent
   const isCosas = currentMode === 'product' && catalogType === 'cosa'
   const isDesarrollos = currentMode === 'product' && catalogType === 'desarrollo'
-  const isRubro = currentMode === 'rubro'
   const explorationContext: ExplorationContext = {
     mode: isSituationMode ? 'situation' : currentMode === 'rubro' ? 'rubro' : currentMode === 'product' ? 'product' : undefined,
     businessTypeSlug: businessType,
@@ -39,20 +38,13 @@ export default function CatalogSidebar({
 
   return (
     <aside className="min-w-0 space-y-6 xl:sticky xl:top-24 xl:self-start">
-      <div className="grid grid-cols-3 gap-1 rounded-xl bg-gray-200/60 p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-200/60 p-1">
         <Link
           href={catalogUrl({ mode: 'product', tipo: 'cosa', cat: undefined })}
           scroll={false}
           className={`flex items-center justify-center rounded-lg py-2 text-xs font-semibold transition-all ${isCosas ? 'bg-[#ED164F] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'}`}
         >
           Productos
-        </Link>
-        <Link
-          href={catalogUrl({ mode: 'rubro', situacion: undefined, necesidad: undefined, cat: undefined, tipo: undefined })}
-          scroll={false}
-          className={`flex items-center justify-center rounded-lg py-2 text-xs font-semibold transition-all ${isRubro ? 'bg-[#ED164F] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200/50 hover:text-gray-900'}`}
-        >
-          Rubro
         </Link>
         <Link
           href={catalogUrl({ mode: 'product', tipo: 'desarrollo', cat: undefined })}
