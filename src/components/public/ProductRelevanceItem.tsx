@@ -28,7 +28,6 @@ export default function ProductRelevanceItem({
   )
   const sameSituation = entries.filter((entry) =>
     (!context.businessTypeSlug || entry.businessType.slug === context.businessTypeSlug) &&
-    (!context.needSlug || entry.need.slug === context.needSlug) &&
     (!context.situationSlug || entry.situation.slug === context.situationSlug)
   )
   const exactRank = matches.length ? 0 : context.situationSlug && entries.some((entry) =>
