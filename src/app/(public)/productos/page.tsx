@@ -18,16 +18,6 @@ import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
-const FIRST_STEP_PATH: Record<string, string> = {
-  gastronomia: '/gastronomia/primer-paso',
-  'moda-showrooms': '/moda/primer-paso',
-  inmobiliarias: '/inmobiliarias/primer-paso',
-  'belleza-salud': '/belleza-y-salud/primer-paso',
-  'comercios-retail': '/retail/primer-paso',
-  'eventos-experiencias': '/eventos/primer-paso',
-  wellness: '/gym-y-yoga/primer-paso',
-}
-
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Más pedidos, una propuesta que se destaque y una experiencia que invite a volver.',
   'moda-showrooms': 'Una marca sólida conecta producto, espacio, comunicación y experiencia.',
