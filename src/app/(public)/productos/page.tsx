@@ -98,7 +98,8 @@ export default async function ProductsPage({
     redirect(`/productos?${params.toString()}`)
   }
 
-  const mode = requestedMode
+  // Keep the legacy mode in the type for downstream compatibility branches.
+  const mode = requestedMode as 'product' | 'objective' | 'situation' | 'combo' | 'rubro' | undefined
   const isSituationMode = mode === 'objective' || mode === 'situation'
   const situationSlug = situacion || intent
   
