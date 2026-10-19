@@ -363,18 +363,19 @@ export default function CartPage() {
                           </div>
                         </div>
 
-                        <div className="rounded-2xl border border-white bg-white p-4">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                            Preparación
-                          </p>
-                          <p className="mt-2 text-sm font-semibold text-gray-900">
-                            Definí si enviás archivo final o si preferís que lo coordinemos.
-                          </p>
-                          <OrderItemOptions item={item} compact />
-                          <OrderItemBrief item={item} compact />
-                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="mt-5 border-t border-gray-200 pt-5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                      Preparación
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      Definí si enviás el archivo final o si necesitás que coordinemos el diseño.
+                    </p>
+                    <OrderItemOptions item={item} />
+                    <OrderItemBrief item={item} />
                   </div>
                 </article>
               ))}
