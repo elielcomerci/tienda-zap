@@ -93,9 +93,9 @@ export default function DiscoveryOfferSection({
   return (
     <section id="recomendacion" className="rounded-2xl border border-gray-200 bg-white px-5 py-7 sm:px-8 sm:py-9">
       <div className="mb-7 max-w-2xl">
-        <h2 className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
-          {needsZAPReview ? 'Estas opciones pueden trabajar juntas' : `Opciones para ${needName.toLowerCase()}`}
-        </h2>
+        <><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C2103F]">Recomendación ZAP</p><h2 className="mt-1 text-xl font-bold tracking-tight text-gray-950 sm:text-2xl">
+          {needsZAPReview ? 'Opciones que pueden trabajar juntas' : offers.length === 1 ? 'Una forma de avanzar' : 'Opciones para avanzar'}
+        </h2></>
         {needsZAPReview && (
           <p className="mt-2 text-sm leading-6 text-gray-600 sm:text-base">
             Podemos ayudarte a definir por dónde empezar.
@@ -128,9 +128,9 @@ export default function DiscoveryOfferSection({
                 : 'Ver producto'
 
           return (
-            <article key={product.id} className="flex min-h-[178px] flex-col rounded-xl border border-gray-200 bg-white p-5 sm:p-6">
-              <h3 className="text-lg font-black tracking-tight text-gray-950 sm:text-xl">{getExplorationProductName(product)}</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-600">{explanation}</p>
+            <article key={product.id} className="flex min-h-[150px] flex-col rounded-xl border border-gray-200/90 bg-white p-4 transition-colors hover:border-gray-300 sm:p-5">
+              <h3 className="text-base font-bold tracking-tight text-gray-950 sm:text-lg">{getExplorationProductName(product)}</h3>
+              <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-gray-600">{explanation}</p>
 
               <Link
                 href={buildProductUrl(product.slug, {
@@ -148,7 +148,7 @@ export default function DiscoveryOfferSection({
         })}
       </div>
 
-      <div className="mt-7 flex flex-col gap-4 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
         <Link
           href={buildProductsUrl({ mode: 'product', businessTypeSlug, situationSlug, needSlug })}
           className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
@@ -156,7 +156,7 @@ export default function DiscoveryOfferSection({
           Ver todos los productos y desarrollos <ArrowRight size={15} />
         </Link>
         <Link href={whatsappUrl || "/"} className="inline-flex items-center gap-2 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]">
-          {needsZAPReview ? '¿Querés evaluar cómo combinarlas? Hablemos' : '¿No sabés cuál elegir? Hablemos'} <ArrowRight size={15} />
+          'Hablemos con ZAP' <ArrowRight size={15} />
         </Link>
       </div>
     </section>
