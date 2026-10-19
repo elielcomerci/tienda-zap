@@ -25,44 +25,62 @@ export default function NeedsSection({
   ].filter(Boolean).join('\n')
   const whatsappUrl = buildWhatsappUrl(undefined, whatsappMessage)
 
+  if (selectedNeedSlug) {
+    const selectedNeed = situation.needs.find((need) => need.slug === selectedNeedSlug)
+    return (
+      <section id="necesidades" className="px-0.5 sm:px-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
+          <p className="text-xs text-gray-500">
+            Necesidad elegida <span className="mx-1 text-gray-300">/</span>
+            <span className="font-semibold text-gray-900">{selectedNeed?.name}</span>
+          </p>
+          <a href="#otras-necesidades" className="text-xs font-semibold text-[#C2103F] hover:text-[#ED164F]">Cambiar</a>
+        </div>
+        <details id="otras-necesidades" className="group mt-3">
+          <summary className="cursor-pointer list-none text-sm font-semibold text-gray-600 hover:text-gray-950">
+            Elegir otra necesidad
+          </summary>
+          <div className="mt-3 grid gap-2.5 md:grid-cols-2 sm:gap-3">
+            {situation.needs.filter((need) => need.slug !== selectedNeedSlug).map((need) => {
+              const params = new URLSearchParams(query)
+              params.set('necesidad', need.slug)
+              return (
+                <Link key={need.id} href={`/productos?${params.toString()}#recomendacion`} className="group flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 transition-colors hover:border-[#ED164F]/40">
+                  <span className="text-sm font-medium text-gray-800">{need.name}</span>
+                  <ArrowRight size={15} className="shrink-0 text-[#ED164F]" />
+                </Link>
+              )
+            })}
+          </div>
+        </details>
+      </section>
+    )
+  }
+
   return (
     <section id="necesidades" className="px-0.5 sm:px-1">
-      <div className="grid gap-3.5 md:grid-cols-2 sm:gap-4">
+      <div className="grid gap-2.5 md:grid-cols-2 sm:gap-3">
         {situation.needs.map((need: DiscoveryNeed) => {
-          const href = new URLSearchParams(query)
-          href.set('necesidad', need.slug)
-          const active = selectedNeedSlug === need.slug
+          const params = new URLSearchParams(query)
+          params.set('necesidad', need.slug)
           return (
             <Link
               key={need.id}
-              href={`/productos?${href.toString()}#recomendacion`}
-              className={`group flex min-h-[128px] flex-col rounded-2xl border p-5 transition-colors sm:p-6 ${active ? 'border-[#ED164F]/60 bg-white' : 'border-gray-200 bg-white hover:border-[#ED164F]/40'}`}
+              href={`/productos?${params.toString()}#recomendacion`}
+              className="group flex min-h-[76px] items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3.5 transition-colors hover:border-[#ED164F]/40 sm:px-5"
             >
-              <div className="flex items-start gap-4">
-                <div className="min-w-0 flex-1">
-                  <p className="text-base font-semibold tracking-tight text-gray-950">{need.name}</p>
-                  {need.description && <p className="mt-2 text-sm leading-6 text-gray-600">{need.description}</p>}
-                </div>
-                <ArrowRight size={18} className="mt-0.5 shrink-0 text-[#ED164F]" />
-              </div>
+              <span className="text-sm font-semibold tracking-tight text-gray-950">{need.name}</span>
+              <ArrowRight size={16} className="shrink-0 text-[#ED164F]" />
             </Link>
           )
         })}
       </div>
-      <div className="mt-5 flex flex-col gap-4 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <Link
-            href={whatsappUrl || '/'}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]"
-          >
-            Contanos qué tenés en mente <ArrowRight size={15} />
-          </Link>
-        </div>
-        <Link
-          href={`/productos?mode=product${businessTypeSlug ? `&rubro=${encodeURIComponent(businessTypeSlug)}` : ''}&situacion=${encodeURIComponent(situation.slug)}`}
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
-        >
-          Explorar todos los productos <ArrowRight size={15} />
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+        <Link href={whatsappUrl || '/'} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2103F] hover:text-[#ED164F]">
+          ¿No encontrás tu caso? Hablemos <ArrowRight size={15} />
+        </Link>
+        <Link href={`/productos?mode=product${businessTypeSlug ? `&rubro=${encodeURIComponent(businessTypeSlug)}` : ''}&situacion=${encodeURIComponent(situation.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#C2103F]">
+          Ver todos los productos <ArrowRight size={15} />
         </Link>
       </div>
     </section>
