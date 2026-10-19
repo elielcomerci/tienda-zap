@@ -36,5 +36,5 @@ export default function ProductRelevanceItem({
     entry.situation.slug === context.situationSlug
   ) ? 1 : context.businessTypeSlug && entries.some((entry) => entry.businessType.slug === context.businessTypeSlug) ? 2 : 3
   const order = exactRank * 1000000 + (matches.length ? Math.min(...matches.map((entry) => entry.order > 0 ? entry.order : 99999)) : sameSituation.length ? Math.min(...sameSituation.map((entry) => entry.order > 0 ? entry.order : 99999)) : sortOrder)
-  return <div style={{ order }} className="contents">{children}</div>
+  return <div style={{ order }} className="min-w-0">{children}</div>
 }
