@@ -12,7 +12,6 @@ import CatalogOrientationFilters from '@/components/public/CatalogOrientationFil
 import IntentionHero from '@/components/public/IntentionHero'
 import NeedsSection from '@/components/public/NeedsSection'
 import DiscoveryOfferSection from '@/components/public/DiscoveryOfferSection'
-import ShareModal from '@/components/public/ShareModal'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
@@ -336,22 +335,13 @@ export default async function ProductsPage({
 
             {selectedSituation && isSituationMode && (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-3 px-0.5 sm:px-1">
+                <div className="px-0.5 sm:px-1">
                   <Link
                     href={rubro ? `/productos?mode=rubro&rubro=${encodeURIComponent(rubro)}` : '/productos'}
                     className="text-sm font-semibold text-gray-500 hover:text-[#C2103F]"
                   >
                     ← Cambiar contexto
                   </Link>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Link
-                      href={buildProductsUrl({ mode: 'product', businessTypeSlug: rubro, situationSlug: selectedSituation.slug, needSlug: selectedNeed?.slug })}
-                      className="text-sm font-bold text-[#C2103F] hover:text-[#ED164F]"
-                    >
-                      Explorar todos los productos →
-                    </Link>
-                    <ShareModal />
-                  </div>
                 </div>
                 <IntentionHero intention={selectedSituation} businessTypeName={selectedBusinessType?.name} compact={Boolean(selectedNeed)} />
                 <NeedsSection situation={selectedSituation} businessTypeSlug={rubro} businessTypeName={selectedBusinessType?.name} selectedNeedSlug={necesidad} />
