@@ -6,8 +6,8 @@ import type { ExplorationContext } from '@/lib/exploration-context'
 import { normalizeExplorationContext } from '@/lib/exploration-context'
 
 const STORAGE_KEY = 'zap_exploration_context_v1'
-type ContextValue = { context: ExplorationContext; ready: boolean; setContext: (next: Partial<ExplorationContext>) => void; clearContext: () => void }
-type ContextSituation = { slug: string; needs?: { slug: string }[] }
+type ContextSituation = { id: string; slug: string; name: string; icon: string | null; description: string | null; needs?: { id: string; slug: string; name: string; description: string | null; _count: { offerEntries: number } }[] }
+type ContextValue = { context: ExplorationContext; ready: boolean; situationsByBusinessType: Record<string, ContextSituation[]>; setContext: (next: Partial<ExplorationContext>) => void; clearContext: () => void }
 const ExplorationContextState = createContext<ContextValue | null>(null)
 
 function validateContext(
@@ -105,7 +105,7 @@ export function ExplorationContextProvider({
     router.replace(suffix ? pathname + '?' + suffix : pathname, { scroll: false })
   }, [pathname, query, router])
 
-  const value = useMemo(() => ({ context, ready, setContext, clearContext }), [context, ready, setContext, clearContext])
+  const value = useMemo(() => ({ context, ready, situationsByBusinessType, setContext, clearContext }), [context, ready, situationsByBusinessType, setContext, clearContext])
   return <ExplorationContextState.Provider value={value}>{children}</ExplorationContextState.Provider>
 }
 
