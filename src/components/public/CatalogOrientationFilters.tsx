@@ -24,8 +24,8 @@ export default function CatalogOrientationFilters({
   query?: string
   catalogType?: 'cosa' | 'desarrollo'
 }) {
-  const { setContext } = useExplorationContext()
-  const selectedNeed = situationSlug && needSlug ? `${situationSlug}::${needSlug}` : ''
+  const { context, setContext } = useExplorationContext()
+  const selectedNeed = context.situationSlug && context.needSlug ? `${context.situationSlug}::${context.needSlug}` : ''
 
   function navigate(nextBusinessType: string, nextNeed: string) {
     const params = new URLSearchParams()
@@ -57,7 +57,7 @@ export default function CatalogOrientationFilters({
     <div className="flex flex-wrap items-center gap-2 pb-1" aria-label="Filtros del catálogo">
       <select
         aria-label="Filtrar por rubro"
-        value={businessTypeSlug || ''}
+        value={context.businessTypeSlug || businessTypeSlug || ''}
         onChange={(event) => navigate(event.target.value, '')}
         className="h-9 max-w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-600 outline-none transition focus:border-[#ED164F] focus:ring-2 focus:ring-[#ED164F]/10"
       >
@@ -70,7 +70,7 @@ export default function CatalogOrientationFilters({
       <select
         aria-label="Filtrar por necesidad"
         value={selectedNeed}
-        onChange={(event) => navigate(businessTypeSlug || '', event.target.value)}
+        onChange={(event) => navigate(context.businessTypeSlug || businessTypeSlug || '', event.target.value)}
         className="h-9 max-w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-600 outline-none transition focus:border-[#ED164F] focus:ring-2 focus:ring-[#ED164F]/10"
       >
         <option value="">Necesidad</option>
