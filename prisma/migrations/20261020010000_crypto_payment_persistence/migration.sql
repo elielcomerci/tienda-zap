@@ -31,6 +31,7 @@ CREATE TABLE "CryptoPayment" (
   "quoteObservedAt" TIMESTAMP(3) NOT NULL,
   "expiresAt" TIMESTAMP(3) NOT NULL,
   "txHash" TEXT,
+  "submittedAt" TIMESTAMP(3),
   "logIndex" INTEGER,
   "blockNumber" BIGINT,
   "confirmations" INTEGER NOT NULL DEFAULT 0,
@@ -46,11 +47,9 @@ CREATE TABLE "CryptoPayment" (
     ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE UNIQUE INDEX "CryptoPayment_chainId_txHash_logIndex_key"
-  ON "CryptoPayment"("chainId", "txHash", "logIndex");
+CREATE UNIQUE INDEX "CryptoPayment_chainId_txHash_key"
+  ON "CryptoPayment"("chainId", "txHash");
 CREATE INDEX "CryptoPayment_orderId_status_idx"
   ON "CryptoPayment"("orderId", "status");
 CREATE INDEX "CryptoPayment_status_expiresAt_idx"
   ON "CryptoPayment"("status", "expiresAt");
-CREATE INDEX "CryptoPayment_chainId_txHash_idx"
-  ON "CryptoPayment"("chainId", "txHash");
