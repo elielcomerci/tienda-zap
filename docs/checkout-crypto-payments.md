@@ -51,7 +51,7 @@ Todos los estados posteriores al envío deben provenir de datos verificados del 
 
 El reconciliador actual es una primera implementación que requiere revisión y pruebas de fallos/reintentos; no se considera todavía un servicio financiero listo para producción.
 
-Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, cotización CriptoYa, endpoints de cotización/registro de hash/estado, y ruta de conciliación del servidor que consulta recibos y eventos ERC-20, verifica importe exacto y espera 20 confirmaciones antes de marcar el pago verificado. Se agregó un cron de Vercel cada minuto. Pendientes: conectar la wallet desde el checkout, validar con RPCs de prueba, probar la migración en una base de prueba, y endurecer/reprobar la finalización idempotente del pedido.
+Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, cotización CriptoYa, endpoints de cotización/registro de hash/estado, y ruta de conciliación del servidor que consulta recibos y eventos ERC-20, verifica importe exacto y espera 20 confirmaciones antes de marcar el pago verificado. Se agregó un Cloudflare Worker con Cron Trigger cada minuto para invocar el endpoint protegido; Vercel Hobby no admite esa frecuencia. Pendientes: conectar la wallet desde el checkout, validar con RPCs de prueba, probar la migración en una base de prueba, y endurecer/reprobar la finalización idempotente del pedido.
 
 ### Etapa 2 — tesorería automática
 
@@ -61,8 +61,8 @@ Queda fuera del primer despliegue: swaps, conversión y transferencia automátic
 
 - Confirmar contrato canónico de USDT para cada red que se quiera habilitar.
 - Verificar World Chain (chainId 480), RPC y explorador en entorno de prueba antes de producción.
-- Configurar secretos `CRON_SECRET` y RPCs `CRYPTO_RPC_URL_8453`, `CRYPTO_RPC_URL_10` y `CRYPTO_RPC_URL_480` en Vercel. Los endpoints RPC deben ser de confianza y permanecer solo en servidor.
-- Confirmar que el plan de Vercel del proyecto permite cron por minuto en producción; las tareas cron no se ejecutan desde una preview como sustituto de producción.
+- Configurar `CHECKOUT_RECONCILE_URL` y el secreto `CRON_SECRET` en el Worker de Cloudflare; configurar `CRON_SECRET` y RPCs `CRYPTO_RPC_URL_8453`, `CRYPTO_RPC_URL_10` y `CRYPTO_RPC_URL_480` en Vercel. Los endpoints RPC deben ser de confianza y permanecer solo en servidor.
+- Desplegar el Worker con Wrangler y comprobar su Cron Trigger cada minuto en Cloudflare.
 - Definir fuente RPC secundaria por red, con límites y observabilidad.
 - Validar en pruebas que CriptoYa devuelve al menos dos cotizaciones frescas para cada activo (especialmente WLD); revisar si la referencia mediana de `totalBid` representa la política comercial deseada. No se agrega margen implícito.
 - Aplicar la migración solo en una base de prueba y validar Prisma Client, creación de cotizaciones y transición de pago antes de producción.
