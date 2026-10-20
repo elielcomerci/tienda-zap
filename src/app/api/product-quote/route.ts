@@ -24,10 +24,14 @@ const quoterConfigInclude = {
 }
 
 export async function POST(request: Request) {
+  let diagnosticProductId: string | undefined
+  let diagnosticSelection: unknown
   try {
     const body = await request.json()
     const productId = typeof body?.productId === 'string' ? body.productId : ''
     const selection = body?.selection
+    diagnosticProductId = productId || undefined
+    diagnosticSelection = selection
 
     if (!productId || !selection || typeof selection !== 'object') {
       return NextResponse.json({ error: 'Falta el producto o la configuración.' }, { status: 400 })
@@ -135,6 +139,16 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No pudimos calcular esta configuración.'
     const consultationRequired = message.startsWith('CONSULT_REQUIRED:') || message.startsWith('No hay costo real cargado')
+
+    // Pricing failures were previously returned to the browser without a server
+    // log, making production quote failures invisible in Vercel observability.
+    // Log product configuration only; this endpoint does not receive customer data.
+    console.error('[product-quote] calculation failed', {
+      productId: diagnosticProductId,
+      selection: diagnosticSelection,
+      message,
+      stack: error instanceof Error ? error.stack : undefined,
+    })
 
     return NextResponse.json(
       { error: consultationRequired ? 'CONSULT_REQUIRED' : message },
