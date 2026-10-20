@@ -182,7 +182,7 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
 }
 
 export async function GET(request: Request) {
-  const secret = process.env.CRYPTO_CRON_SECRET
+  const secret = process.env.CRON_SECRET || process.env.CRYPTO_CRON_SECRET
   const authorization = request.headers.get('authorization')
   if (!secret || authorization !== `Bearer ${secret}`) {
     return Response.json({ error: 'No autorizado.' }, { status: 401 })
