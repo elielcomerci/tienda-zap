@@ -408,7 +408,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.7',
+  schemaVersion: '1.8',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -421,6 +421,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         default: 'plano',
         options: [
           { id: 'plano', label: 'Flyer / Volante plano' },
+          { id: 'diptico', label: 'Díptico' },
+          { id: 'triptico', label: 'Tríptico' },
         ],
       },
       format: {
@@ -431,6 +433,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         options: [
           { id: '10x10', label: '10×10 cm' },
           { id: '10x15', label: '10×15 cm' },
+          { id: '10x20', label: '10×20 cm' },
           { id: '15x21', label: '15×21 cm (A5)' },
           { id: 'a4', label: '21×30 cm (A4)' },
         ],
