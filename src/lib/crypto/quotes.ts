@@ -54,8 +54,8 @@ export async function getCriptoYaSellReferencePrice(
     quotes.push({ price, time })
   }
 
-  if (quotes.length < 3) {
-    throw new Error('CriptoYa no devolvió suficientes cotizaciones recientes para calcular una referencia confiable')
+  if (quotes.length < 2) {
+    throw new Error('CriptoYa no devolvió al menos dos cotizaciones recientes para calcular una referencia confiable')
   }
 
   quotes.sort((a, b) => a.price - b.price)
