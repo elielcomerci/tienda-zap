@@ -168,12 +168,29 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { status: true, paymentType: true },
+      select: { status: true, paymentType: true, paymentId: true },
     })
     if (!order || order.paymentType !== 'CRYPTO') {
       await prisma.cryptoPayment.update({
         where: { id: paymentId },
         data: { status: 'REVIEW', reviewReason: 'La orden vinculada no coincide con un pedido cripto.' },
+      })
+      return
+    }
+
+    // A payment may finish only a pending order or recover its own prior
+    // finalization. Never mark a cancelled order paid or run payment side
+    // effects for an order already settled through another payment.
+    if (order.status === 'CANCELLED' || (order.status !== 'PENDING' && order.paymentId !== paymentId)) {
+      await prisma.cryptoPayment.update({
+        where: { id: paymentId },
+        data: {
+          status: 'REVIEW',
+          reviewReason: order.status === 'CANCELLED'
+            ? 'Se detectó una transferencia para una orden cancelada; requiere revisión manual.'
+            : 'La orden ya no está pendiente y no está vinculada a este pago; requiere revisión manual.',
+          finalizationClaimedAt: null,
+        },
       })
       return
     }
