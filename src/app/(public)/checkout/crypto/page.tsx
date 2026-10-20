@@ -137,7 +137,13 @@ function Content() {
       <h1 className="mt-3 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Tu pago, paso a paso.</h1>
       <p className="mt-3 text-sm leading-7 text-gray-600">La cotización es una referencia de mercado. El pedido queda pendiente hasta verificar la transferencia en la red.</p>
       {loading && <p className="mt-8 flex items-center gap-2 text-sm text-gray-600"><LoaderCircle className="animate-spin" size={18} /> Preparando el pago...</p>}
-      {error && <div role="alert" className="mt-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle size={18} />{error}</div>}
+      {error && <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="flex gap-3"><AlertTriangle size={18} className="mt-0.5 shrink-0" /><p>{error}</p></div>
+        {orderId && !paymentId && !loading && <div className="mt-4 border-t border-red-200 pt-4">
+          <p className="text-xs leading-5 text-red-700">El pedido ya está registrado. Podés reintentar la cotización sin volver a crear la compra.</p>
+          <button type="button" onClick={() => window.location.reload()} className="mt-3 rounded-xl bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">Reintentar cotización</button>
+        </div>}
+      </div>}
       {notice && <p role="status" className="mt-4 rounded-xl bg-violet-50 p-3 text-sm text-violet-900">{notice}</p>}
       {payment && !loading && <div className="mt-8 space-y-5">
         <section className="rounded-2xl border border-gray-200 p-5">
