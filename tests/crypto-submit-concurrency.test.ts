@@ -74,7 +74,17 @@ async function main() {
     assert.equal(paymentState.status, 'TX_SUBMITTED')
     const bodies = await Promise.all(responses.map(response => response.json()))
     assert.equal(bodies.filter((body: any) => body.accepted === true).length, 1)
-    console.log('Crypto submit concurrent-claim regression test passed')
+
+    // A repeated concurrent submission of the same hash should be idempotent.
+    paymentState.status = 'AWAITING_PAYMENT'
+    paymentState.txHash = null
+    paymentState.submittedAt = null
+    const repeated = await Promise.all([POST(request(hashA)), POST(request(hashA))])
+    assert.deepEqual(repeated.map(response => response.status), [200, 200])
+    const repeatedBodies = await Promise.all(repeated.map(response => response.json()))
+    assert.equal(repeatedBodies.every((body: any) => body.accepted === true), true)
+    assert.equal(paymentState.txHash, hashA)
+    console.log('Crypto submit concurrent-claim and idempotency regression tests passed')
   } finally {
     ;(Module as any)._load = originalLoad
   }
