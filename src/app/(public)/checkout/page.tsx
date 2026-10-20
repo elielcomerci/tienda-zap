@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Fragment, useEffect, useRef, useState, Suspense } from 'react'
 import Link from 'next/link'
@@ -42,13 +42,13 @@ const paymentOptions = [
   {
     value: 'TRANSFER',
     label: 'Transferencia',
-    desc: 'Nos envias el comprobante y seguimos',
+    desc: 'Transferís y adjuntás el comprobante',
     icon: Smartphone,
   },
   {
     value: 'CRYPTO',
     label: 'Criptomonedas',
-    desc: 'Pagá con USDC en Base u Optimism, o WLD en World Chain',
+    desc: 'Pagá desde tu wallet con USDC o WLD',
     icon: Coins,
   },
   {
@@ -505,9 +505,8 @@ function CheckoutContent() {
         const result = await response.json()
         if (!response.ok) throw new Error(result.error || 'No pudimos crear el pedido.')
         setOrderCreated(true)
-        clearCart()
-        clearCouponCode()
-        if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
+        // Keep the cart until the crypto quote is successfully created. If quoting fails,
+        // the customer can retry without rebuilding the order.
         router.push(
           `/checkout/crypto?orderId=${encodeURIComponent(result.orderId)}&accessToken=${encodeURIComponent(result.accessToken)}&chainId=${cryptoChainId}&tokenSymbol=${cryptoTokenSymbol}`
         )
@@ -552,51 +551,14 @@ function CheckoutContent() {
           <input type="hidden" {...register('couponCode')} />
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
             <div className="space-y-6">
-              <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-[#FEF1F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C2103F]">
-                    Confirmación ZAP
-                  </span>
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                    {items.length} piezas en el pedido
-                  </span>
-                </div>
-
-                <h1 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-                  Último repaso antes de poner tu pieza en marcha.
-                </h1>
-                <p className="mt-4 max-w-3xl text-base leading-8 text-gray-600">
-                  Confirmamos datos, pago, archivos y detalles para que el trabajo arranque prolijo
-                  y sin dudas importantes.
-                </p>
-
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Paso 1
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Confirmás tus datos y dejás notas si hacen falta.
-                    </p>
+              <section className="rounded-3xl border border-gray-200 bg-white p-5 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ED164F]">Checkout ZAP</p>
+                    <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">Terminá tu compra</h1>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">Revisá el pedido, elegí cómo pagar y dejanos tus datos para continuar.</p>
                   </div>
-                  <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Paso 2
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-900">
-                      Elegís el medio de pago con contexto claro.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                      Paso 3
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-900">
-                      {hasItemsRequiringArtwork
-                        ? 'Dejás archivos o pedís diseño después de confirmar.'
-                        : 'El pedido queda listo para seguir sin pasos extra.'}
-                    </p>
-                  </div>
+                  <p className="text-sm text-gray-500">{items.length} {items.length === 1 ? 'producto' : 'productos'} · <span className="font-semibold text-gray-900">{visibleCheckoutTotal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 })}</span></p>
                 </div>
               </section>
 
@@ -604,6 +566,270 @@ function CheckoutContent() {
                 <div className="mb-6 border-b border-gray-100 pb-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
                     Paso 1
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
+                    Método de pago
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
+                    Mostramos cada opcion con el contexto justo para que no tengas que interpretar
+                    demasiado antes de decidir.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {paymentOptions.filter((option) => option.value !== 'CRYPTO' || process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true').map((option) => {
+                    const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
+
+                    return (
+                      <label
+                        key={option.value}
+                        className={`flex min-h-[132px] items-start gap-4 rounded-[24px] border-2 p-5 transition-all ${
+                          optionDisabled
+                            ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
+                            : paymentType === option.value
+                              ? 'cursor-pointer border-orange-400 bg-[#FEF1F5] shadow-sm shadow-[#ED164F]/10'
+                              : 'cursor-pointer border-gray-200 bg-white hover:border-[#F7638B]/25 hover:bg-[#FEF1F5]/40'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register('paymentType')}
+                          className="sr-only"
+                          disabled={optionDisabled}
+                        />
+
+                        <div
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                            paymentType === option.value && !optionDisabled
+                              ? 'bg-[#ED164F] text-white'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          <option.icon size={20} />
+                        </div>
+
+                        <div>
+                          <p className="text-base font-bold text-gray-900">{option.label}</p>
+                          <p className="mt-2 text-sm leading-7 text-gray-600">
+                            {optionDisabled
+                              ? 'Disponible solo para clientes con sesion iniciada'
+                              : option.desc}
+                          </p>
+                        </div>
+                      </label>
+                    )
+                  })}
+                </div>
+
+                {paymentType === 'CRYPTO' && (
+                  <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/70 p-5">
+                    <h3 className="text-base font-bold text-gray-950">Elegí la red y la moneda</h3>
+                    <p className="mt-1 text-sm leading-6 text-gray-600">
+                      El pago se hace desde tu propia wallet. Revisá la red antes de confirmar la transferencia.
+                    </p>
+                    <div className="mt-4 max-w-sm">
+                      <label htmlFor="crypto-network" className="label">Red y moneda</label>
+                      <select
+                        id="crypto-network"
+                        value={cryptoChainId}
+                        onChange={(event) => {
+                          const nextChainId = Number(event.target.value)
+                          setCryptoChainId(nextChainId)
+                          setCryptoTokenSymbol(nextChainId === 480 ? 'WLD' : 'USDC')
+                        }}
+                        className="input"
+                      >
+                        <option value={8453}>Base · USDC</option>
+                        <option value={10}>Optimism · USDC</option>
+                        <option value={480}>World Chain · WLD</option>
+                      </select>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-gray-500">
+                      La cotización se genera al continuar. El pedido no se considera pagado hasta que la red verifique la transferencia.
+                    </p>
+                  </div>
+                )}
+
+                <details open={Boolean(couponPreview || loadedCouponCode || couponDraft || couponFeedback)} className="rounded-2xl border border-gray-200 bg-white">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-sm font-semibold text-gray-900 marker:hidden">
+                    <span>¿Tenés un cupón?</span>
+                    <span className="text-xs font-medium text-gray-500">Opcional</span>
+                  </summary>
+                  <div className="border-t border-gray-100 px-3 pb-3 pt-1 sm:px-4">
+                <div className="pt-2">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
+                        Cupón opcional
+                      </p>
+                      <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
+                        Aplicá tu código
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
+                        Si tenés un código, podés usarlo antes de confirmar.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-col gap-3 lg:flex-row">
+                    <div className="flex-1">
+                      <label className="label">Código del cupón</label>
+                      <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-[#FEF1F5]">
+                        <input
+                          value={couponDraft}
+                          onChange={(event) => setCouponDraft(event.target.value)}
+                          className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm outline-none"
+                          placeholder="Ej: ZAP-7F3K9Q-X2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setScannerOpen(true)}
+                          className="flex h-12 w-12 shrink-0 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors hover:bg-[#FEF1F5] hover:text-[#ED164F]"
+                          aria-label="Escanear cupon con la camara"
+                          title="Escanear cupon"
+                        >
+                          <ScanLine size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 lg:pt-7">
+                      <button
+                        type="button"
+                        onClick={() => reviewCoupon(couponDraft)}
+                        disabled={couponLoading}
+                        className={`inline-flex min-w-[150px] items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                          couponLoading
+                            ? 'cursor-wait bg-gray-100 text-gray-500'
+                            : 'bg-gray-950 text-white hover:bg-gray-800'
+                        }`}
+                      >
+                        {couponLoading ? 'Revisando...' : 'Cargar cupon'}
+                      </button>
+
+                      {(couponPreview || loadedCouponCode || couponDraft) && (
+                        <button
+                          type="button"
+                          onClick={clearCouponState}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-red-200 hover:text-red-600"
+                        >
+                          <X size={16} />
+                          Limpiar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {couponPreview?.status === 'recognized' && (
+                    <div className="mt-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold text-emerald-950">
+                              {couponPreview.title}
+                            </p>
+                            {couponPreview.normalizedCode && (
+                              <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                {couponPreview.normalizedCode}
+                              </span>
+                            )}
+                          </div>
+                            <p className="mt-1 text-sm leading-7 text-emerald-900">
+                              {couponPreview.detail}
+                            </p>
+                            {couponPreview.presenterName && (
+                              <p className="mt-2 rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-800">
+                                Beneficio acercado por {couponPreview.presenterName}.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                  )}
+
+                  {couponFeedback && (
+                    <div className="mt-4 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                      {couponFeedback}
+                    </div>
+                  )}
+                </div>
+
+                  </div>
+                </details>
+
+                {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
+                  <div className="mt-4 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5]/60 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Confirmás hoy con anticipo y el resto queda acomodado en pagos fijos.
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Aca te mostramos solo lo importante para decidir. El detalle completo queda
+                          aparte, siempre a mano.
+                        </p>
+                      </div>
+
+                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
+                        Ver mas información
+                      </Link>
+                    </div>
+
+                    <details className="mt-3 rounded-2xl border border-[#F7638B]/15 bg-white/80">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
+                        <CircleHelp size={16} className="text-[#ED164F]" />
+                        Resumen rapido de Crédito ZAP
+                      </summary>
+                      <div className="border-t border-[#F7638B]/15 px-4 py-3 text-sm text-gray-600">
+                        Disponible para clientes con cuenta. Simulas el plan, confirmas el pedido y
+                        despues seguís cuotas, comprobantes y estados desde tu panel.
+                      </div>
+                    </details>
+                  </div>
+                )}
+
+                {paymentType === 'ZAP_CREDIT' && creditEligibility?.hasDelinquency && (
+                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
+                      <div>
+                        <p className="font-semibold">Tenés cuotas vencidas en otros créditos</p>
+                        <p className="mt-1 text-amber-800">
+                          La simulación ya incluye el recargo vigente:{' '}
+                          <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
+                          <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
+                          el anticipo.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentType === 'ZAP_CREDIT' && (
+                  <div className="mt-4">
+                    <CheckoutZapCreditConfigurator
+                      totalAmount={total()}
+                      items={items.map((item) => ({
+                        unitPrice: item.price,
+                        quantity: item.quantity,
+                        creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
+                      }))}
+                      eligibility={creditEligibility}
+                      isLoading={isLoadingCreditEligibility}
+                      minimumDownPaymentAmount={estimatedDownPaymentAmount}
+                      minimumDownPaymentPercent={estimatedDownPaymentPercent}
+                      onChange={setZapCreditSelection}
+                    />
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
+                <div className="mb-6 border-b border-gray-100 pb-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
+                    Paso 2
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
                     Tus datos
@@ -708,278 +934,6 @@ function CheckoutContent() {
                         placeholder="Instrucciones especiales, tipo de papel, etc."
                       />
                     </div>
-                  </div>
-                )}
-              </section>
-
-              <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
-                <div className="mb-6 border-b border-gray-100 pb-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                    Paso 2
-                  </p>
-                  <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
-                    Método de pago
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                    Mostramos cada opcion con el contexto justo para que no tengas que interpretar
-                    demasiado antes de decidir.
-                  </p>
-                </div>
-
-                <div className="grid gap-3 lg:grid-cols-3">
-                  {paymentOptions.filter((option) => option.value !== 'CRYPTO' || process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true').map((option) => {
-                    const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
-
-                    return (
-                      <label
-                        key={option.value}
-                        className={`flex min-h-[132px] items-start gap-4 rounded-[24px] border-2 p-5 transition-all ${
-                          optionDisabled
-                            ? 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'
-                            : paymentType === option.value
-                              ? 'cursor-pointer border-orange-400 bg-[#FEF1F5] shadow-sm shadow-[#ED164F]/10'
-                              : 'cursor-pointer border-gray-200 bg-white hover:border-[#F7638B]/25 hover:bg-[#FEF1F5]/40'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          value={option.value}
-                          {...register('paymentType')}
-                          className="sr-only"
-                          disabled={optionDisabled}
-                        />
-
-                        <div
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
-                            paymentType === option.value && !optionDisabled
-                              ? 'bg-[#ED164F] text-white'
-                              : 'bg-gray-100 text-gray-500'
-                          }`}
-                        >
-                          <option.icon size={20} />
-                        </div>
-
-                        <div>
-                          <p className="text-base font-bold text-gray-900">{option.label}</p>
-                          <p className="mt-2 text-sm leading-7 text-gray-600">
-                            {optionDisabled
-                              ? 'Disponible solo para clientes con sesion iniciada'
-                              : option.desc}
-                          </p>
-                        </div>
-                      </label>
-                    )
-                  })}
-                </div>
-
-                {paymentType === 'CRYPTO' && (
-                  <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/70 p-5">
-                    <h3 className="text-base font-bold text-gray-950">Elegí la red y la moneda</h3>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">
-                      El pago se hace desde tu propia wallet. Revisá la red antes de confirmar la transferencia.
-                    </p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="crypto-network" className="label">Red</label>
-                        <select
-                          id="crypto-network"
-                          value={cryptoChainId}
-                          onChange={(event) => {
-                            const nextChainId = Number(event.target.value)
-                            setCryptoChainId(nextChainId)
-                            setCryptoTokenSymbol(nextChainId === 480 ? 'WLD' : 'USDC')
-                          }}
-                          className="input"
-                        >
-                          <option value={8453}>Base</option>
-                          <option value={10}>Optimism</option>
-                          <option value={480}>World Chain</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="crypto-asset" className="label">Moneda</label>
-                        <select
-                          id="crypto-asset"
-                          value={cryptoTokenSymbol}
-                          onChange={(event) => setCryptoTokenSymbol(event.target.value as 'USDC' | 'WLD')}
-                          className="input"
-                        >
-                          {cryptoChainId === 480 ? (
-                            <option value="WLD">WLD</option>
-                          ) : (
-                            <option value="USDC">USDC</option>
-                          )}
-                        </select>
-                      </div>
-                    </div>
-                    <p className="mt-3 text-xs leading-5 text-gray-500">
-                      La cotización se genera al continuar. El pedido no se considera pagado hasta que la red verifique la transferencia.
-                    </p>
-                  </div>
-                )}
-
-                <div className="mt-4 rounded-[28px] border border-gray-200 bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_58%,#f8fafc_100%)] p-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                        Cupón opcional
-                      </p>
-                      <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
-                        Escanea el QR o carga el código sin salir de la confirmación.
-                      </h3>
-                      <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                        Es opcional. Si no usás cupón, podés seguir con el pedido normalmente.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-col gap-3 lg:flex-row">
-                    <div className="flex-1">
-                      <label className="label">Código del cupón</label>
-                      <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-[#FEF1F5]">
-                        <input
-                          value={couponDraft}
-                          onChange={(event) => setCouponDraft(event.target.value)}
-                          className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm outline-none"
-                          placeholder="Ej: ZAP-7F3K9Q-X2"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setScannerOpen(true)}
-                          className="flex h-12 w-12 shrink-0 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors hover:bg-[#FEF1F5] hover:text-[#ED164F]"
-                          aria-label="Escanear cupon con la camara"
-                          title="Escanear cupon"
-                        >
-                          <ScanLine size={18} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 lg:pt-7">
-                      <button
-                        type="button"
-                        onClick={() => reviewCoupon(couponDraft)}
-                        disabled={couponLoading}
-                        className={`inline-flex min-w-[150px] items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
-                          couponLoading
-                            ? 'cursor-wait bg-gray-100 text-gray-500'
-                            : 'bg-gray-950 text-white hover:bg-gray-800'
-                        }`}
-                      >
-                        {couponLoading ? 'Revisando...' : 'Cargar cupon'}
-                      </button>
-
-                      {(couponPreview || loadedCouponCode || couponDraft) && (
-                        <button
-                          type="button"
-                          onClick={clearCouponState}
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-red-200 hover:text-red-600"
-                        >
-                          <X size={16} />
-                          Limpiar
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {couponPreview?.status === 'recognized' && (
-                    <div className="mt-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-semibold text-emerald-950">
-                              {couponPreview.title}
-                            </p>
-                            {couponPreview.normalizedCode && (
-                              <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                                {couponPreview.normalizedCode}
-                              </span>
-                            )}
-                          </div>
-                            <p className="mt-1 text-sm leading-7 text-emerald-900">
-                              {couponPreview.detail}
-                            </p>
-                            {couponPreview.presenterName && (
-                              <p className="mt-2 rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-800">
-                                Beneficio acercado por {couponPreview.presenterName}.
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                  )}
-
-                  {couponFeedback && (
-                    <div className="mt-4 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                      {couponFeedback}
-                    </div>
-                  )}
-                </div>
-
-                {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
-                  <div className="mt-4 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5]/60 p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          Confirmás hoy con anticipo y el resto queda acomodado en pagos fijos.
-                        </p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          Aca te mostramos solo lo importante para decidir. El detalle completo queda
-                          aparte, siempre a mano.
-                        </p>
-                      </div>
-
-                      <Link href="/credito-zap" className="btn-secondary !px-4 !py-2 !text-sm">
-                        Ver mas información
-                      </Link>
-                    </div>
-
-                    <details className="mt-3 rounded-2xl border border-[#F7638B]/15 bg-white/80">
-                      <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-900 marker:hidden">
-                        <CircleHelp size={16} className="text-[#ED164F]" />
-                        Resumen rapido de Crédito ZAP
-                      </summary>
-                      <div className="border-t border-[#F7638B]/15 px-4 py-3 text-sm text-gray-600">
-                        Disponible para clientes con cuenta. Simulas el plan, confirmas el pedido y
-                        despues seguís cuotas, comprobantes y estados desde tu panel.
-                      </div>
-                    </details>
-                  </div>
-                )}
-
-                {paymentType === 'ZAP_CREDIT' && creditEligibility?.hasDelinquency && (
-                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-700" />
-                      <div>
-                        <p className="font-semibold">Tenés cuotas vencidas en otros créditos</p>
-                        <p className="mt-1 text-amber-800">
-                          La simulación ya incluye el recargo vigente:{' '}
-                          <strong>+{creditEligibility.ratePenaltyPercent}%</strong> sobre la tasa y{' '}
-                          <strong>+{creditEligibility.downPaymentPenaltyPercent}</strong> puntos sobre
-                          el anticipo.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentType === 'ZAP_CREDIT' && (
-                  <div className="mt-4">
-                    <CheckoutZapCreditConfigurator
-                      totalAmount={total()}
-                      items={items.map((item) => ({
-                        unitPrice: item.price,
-                        quantity: item.quantity,
-                        creditDownPaymentPercent: item.creditDownPaymentPercent ?? 30,
-                      }))}
-                      eligibility={creditEligibility}
-                      isLoading={isLoadingCreditEligibility}
-                      minimumDownPaymentAmount={estimatedDownPaymentAmount}
-                      minimumDownPaymentPercent={estimatedDownPaymentPercent}
-                      onChange={setZapCreditSelection}
-                    />
                   </div>
                 )}
               </section>

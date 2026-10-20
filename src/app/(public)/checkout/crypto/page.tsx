@@ -2,10 +2,11 @@
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useCartStore } from '@/lib/cart-store'
 import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, Wallet } from 'lucide-react'
 
 type Payment = {
-  paymentsEnabled: boolean; id: string; status: string; chainId: number; networkKey: string; tokenSymbol: string
+  paymentsEnabled: boolean; id: string; orderId: string; status: string; chainId: number; networkKey: string; tokenSymbol: string
   arsAmount: string; tokenAmount: string; amountUnits: string; tokenContract: string
   tokenDecimals: number; recipientAddress: string; quotePriceArs: string; quoteSource: string
   expiresAt: string; txHash: string | null; explorerUrl: string | null; confirmations: number
@@ -32,6 +33,8 @@ export default function CryptoCheckoutPage() {
 
 function Content() {
   const q = useSearchParams()
+  const clearCart = useCartStore((state) => state.clearCart)
+  const clearCouponCode = useCartStore((state) => state.clearCouponCode)
   const orderId = q.get('orderId') ?? ''
   const accessToken = q.get('accessToken') ?? ''
   const paymentId = q.get('paymentId') ?? ''
@@ -72,6 +75,10 @@ function Content() {
         if (!r.ok) throw new Error(data.error || 'No pudimos preparar la cotización.')
         if (cancelled) return
         setPayment(data.payment)
+        // Only empty the cart once a valid quote exists; failed quotes remain recoverable.
+        clearCart()
+        clearCouponCode()
+        localStorage.removeItem('saved_coupon')
         const url = new URL(window.location.href)
         for (const key of ['orderId', 'chainId', 'tokenSymbol']) url.searchParams.delete(key)
         url.searchParams.set('paymentId', data.payment.id)
@@ -81,7 +88,7 @@ function Content() {
     }
     void init()
     return () => { cancelled = true }
-  }, [accessToken, chainId, orderId, paymentId, refresh, tokenSymbol])
+  }, [accessToken, chainId, clearCart, clearCouponCode, orderId, paymentId, refresh, tokenSymbol])
 
   const registerHash = async (id: string, hash: string) => {
     const r = await fetch('/api/checkout/crypto/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: id, accessToken, txHash: hash }) })
@@ -90,6 +97,16 @@ function Content() {
     window.sessionStorage.removeItem(`zap-crypto-tx:${id}`)
     setNotice(data.message || 'Hash recibido; el pago todavía debe ser verificado.')
     await refresh(id)
+  }
+
+  const retryQuote = () => {
+    if (!payment || !accessToken || payment.txHash) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('orderId', payment.orderId)
+    url.searchParams.set('chainId', String(payment.chainId))
+    url.searchParams.set('tokenSymbol', payment.tokenSymbol)
+    url.searchParams.delete('paymentId')
+    window.location.assign(url.toString())
   }
 
   const pay = async () => {
@@ -130,7 +147,13 @@ function Content() {
       <h1 className="mt-3 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Tu pago, paso a paso.</h1>
       <p className="mt-3 text-sm leading-7 text-gray-600">La cotización es una referencia de mercado. El pedido queda pendiente hasta verificar la transferencia en la red.</p>
       {loading && <p className="mt-8 flex items-center gap-2 text-sm text-gray-600"><LoaderCircle className="animate-spin" size={18} /> Preparando el pago...</p>}
-      {error && <div role="alert" className="mt-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle size={18} />{error}</div>}
+      {error && <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="flex gap-3"><AlertTriangle size={18} className="mt-0.5 shrink-0" /><p>{error}</p></div>
+        {orderId && !paymentId && !loading && <div className="mt-4 border-t border-red-200 pt-4">
+          <p className="text-xs leading-5 text-red-700">El pedido ya está registrado. Podés reintentar la cotización sin volver a crear la compra.</p>
+          <button type="button" onClick={() => window.location.reload()} className="mt-3 rounded-xl bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">Reintentar cotización</button>
+        </div>}
+      </div>}
       {notice && <p role="status" className="mt-4 rounded-xl bg-violet-50 p-3 text-sm text-violet-900">{notice}</p>}
       {payment && !loading && <div className="mt-8 space-y-5">
         <section className="rounded-2xl border border-gray-200 p-5">
@@ -143,6 +166,7 @@ function Content() {
           {txHash && <p className="mt-4 break-all text-xs text-gray-600">Hash: <code>{txHash}</code></p>}
           {payment.explorerUrl && <a href={payment.explorerUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-violet-700">Ver transacción <ExternalLink size={14} /></a>}
         </section>
+        {(payment.status === 'EXPIRED' || Date.parse(payment.expiresAt) <= Date.now()) && !payment.txHash && <button type="button" onClick={retryQuote} disabled={busy} className="flex w-full items-center justify-center rounded-2xl border border-gray-300 bg-white px-5 py-4 text-sm font-bold text-gray-900 hover:bg-gray-50 disabled:opacity-50">Generar una nueva cotización</button>}
         {((payment.status === 'AWAITING_PAYMENT' && txHash && !payment.txHash) || (payment.status === 'TX_SUBMITTED' && txHash)) && <button type="button" onClick={() => { setBusy(true); setError(''); void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash. No vuelvas a enviar fondos.')).finally(() => setBusy(false)) }} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-300 bg-violet-50 px-5 py-4 text-sm font-bold text-violet-900 disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <CheckCircle2 size={18} />} {busy ? 'Registrando hash...' : 'Reintentar registro del hash enviado'}</button>}
         {payment.status === 'AWAITING_PAYMENT' && !txHash && (mainnetPaymentsEnabled && payment.paymentsEnabled ? <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button> : <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Transferencias deshabilitadas.</strong> Esta versión está en prueba. No envíes fondos reales; el botón se habilitará únicamente después de autorizar los cobros.</div>)}
       </div>}
