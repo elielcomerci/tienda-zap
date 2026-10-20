@@ -42,13 +42,13 @@ const paymentOptions = [
   {
     value: 'TRANSFER',
     label: 'Transferencia',
-    desc: 'Nos envias el comprobante y seguimos',
+    desc: 'Transferís y adjuntás el comprobante',
     icon: Smartphone,
   },
   {
     value: 'CRYPTO',
     label: 'Criptomonedas',
-    desc: 'Pagá con USDC en Base u Optimism, o WLD en World Chain',
+    desc: 'Pagá desde tu wallet con USDC o WLD',
     icon: Coins,
   },
   {
@@ -576,7 +576,7 @@ function CheckoutContent() {
                   </p>
                 </div>
 
-                <div className="grid gap-3 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {paymentOptions.filter((option) => option.value !== 'CRYPTO' || process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true').map((option) => {
                     const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
 
@@ -628,39 +628,22 @@ function CheckoutContent() {
                     <p className="mt-1 text-sm leading-6 text-gray-600">
                       El pago se hace desde tu propia wallet. Revisá la red antes de confirmar la transferencia.
                     </p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="crypto-network" className="label">Red</label>
-                        <select
-                          id="crypto-network"
-                          value={cryptoChainId}
-                          onChange={(event) => {
-                            const nextChainId = Number(event.target.value)
-                            setCryptoChainId(nextChainId)
-                            setCryptoTokenSymbol(nextChainId === 480 ? 'WLD' : 'USDC')
-                          }}
-                          className="input"
-                        >
-                          <option value={8453}>Base</option>
-                          <option value={10}>Optimism</option>
-                          <option value={480}>World Chain</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="crypto-asset" className="label">Moneda</label>
-                        <select
-                          id="crypto-asset"
-                          value={cryptoTokenSymbol}
-                          onChange={(event) => setCryptoTokenSymbol(event.target.value as 'USDC' | 'WLD')}
-                          className="input"
-                        >
-                          {cryptoChainId === 480 ? (
-                            <option value="WLD">WLD</option>
-                          ) : (
-                            <option value="USDC">USDC</option>
-                          )}
-                        </select>
-                      </div>
+                    <div className="mt-4 max-w-sm">
+                      <label htmlFor="crypto-network" className="label">Red y moneda</label>
+                      <select
+                        id="crypto-network"
+                        value={cryptoChainId}
+                        onChange={(event) => {
+                          const nextChainId = Number(event.target.value)
+                          setCryptoChainId(nextChainId)
+                          setCryptoTokenSymbol(nextChainId === 480 ? 'WLD' : 'USDC')
+                        }}
+                        className="input"
+                      >
+                        <option value={8453}>Base · USDC</option>
+                        <option value={10}>Optimism · USDC</option>
+                        <option value={480}>World Chain · WLD</option>
+                      </select>
                     </div>
                     <p className="mt-3 text-xs leading-5 text-gray-500">
                       La cotización se genera al continuar. El pedido no se considera pagado hasta que la red verifique la transferencia.
