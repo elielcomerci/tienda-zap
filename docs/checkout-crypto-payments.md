@@ -2,7 +2,7 @@
 
 ## Estado de la implementación (2026-10-20)
 
-- La pantalla de checkout ofrece criptomonedas y permite elegir Base + USDC, Optimism + USDC o World Chain + WLD.
+- La opción de criptomonedas en checkout solo aparece con `NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED=true`; permite elegir Base + USDC, Optimism + USDC o World Chain + WLD.
 - La pantalla `/checkout/crypto` solicita una cotización, muestra el importe exacto y puede enviar la transferencia desde una wallet EIP-1193 inyectada.
 - El estado del pago se consulta al servidor; la interfaz no marca una transferencia como pagada solo porque la wallet devolvió un hash.
 - La prueba de esta rama usa una rama aislada de Neon y variables de Vercel limitadas a Preview. No activar cobros reales ni desplegar/activar el Worker de conciliación hasta completar las pruebas de extremo a extremo.
@@ -63,6 +63,14 @@ Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, c
 ### Etapa 2 — tesorería automática
 
 Queda fuera del primer despliegue: swaps, conversión y transferencia automática a Ripio. Requiere un firmante operativo independiente de Rabby, custodia de claves de servidor, límites, gas, idempotencia, auditoría y estrategia de recuperación.
+
+## Banderas de activación
+
+- `NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED`: muestra u oculta el método cripto en el checkout.
+- `NEXT_PUBLIC_CRYPTO_MAINNET_PAYMENTS_ENABLED`: muestra u oculta el botón que envía fondos desde la wallet.
+- `CRYPTO_PAYMENTS_ENABLED`: permite o bloquea el registro de hashes y la conciliación en el servidor.
+
+Mantener las tres desactivadas en producción hasta completar las pruebas de extremo a extremo. La opción visible no debe implicar que los cobros estén habilitados.
 
 ## Pendientes antes de producción
 
