@@ -72,6 +72,7 @@ export function orderConfirmationEmail(data: {
     TRANSFER: 'Transferencia',
     CASH: 'Efectivo',
     ZAP_CREDIT: 'Crédito ZAP',
+    CRYPTO: 'Criptomonedas',
   }
 
   const body = `
