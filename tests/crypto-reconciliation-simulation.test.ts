@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import Module from 'node:module'
 
-type Scenario = 'valid' | 'cancelled' | 'reverted' | 'rpc-error' | 'reorg' | 'reorg-finalize' | 'wrong-amount' | 'duplicate-transfer' | 'low-confirmations' | 'finalize-error'
+type Scenario = 'valid' | 'cancelled' | 'reverted' | 'rpc-error' | 'reorg' | 'reorg-finalize' | 'wrong-amount' | 'duplicate-transfer' | 'low-confirmations' | 'finalize-error' | 'post-settlement-reorg' | 'post-settlement-rpc-error'
 
 const TOKEN = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 const RECIPIENT = '0x1111111111111111111111111111111111111111'
@@ -35,17 +35,28 @@ function reset(nextScenario: Scenario) {
     blockNumber: null,
     blockHash: null,
     confirmations: 0,
+    lastCanonicalCheckAt: null,
+  }
+  if (nextScenario === 'post-settlement-reorg' || nextScenario === 'post-settlement-rpc-error') {
+    payment.status = 'VERIFIED'
+    payment.finalizationCompletedAt = new Date(Date.now() - 10 * 60 * 1000)
+    payment.verifiedAt = new Date(Date.now() - 20 * 60 * 1000)
+    payment.blockNumber = 128n
+    payment.blockHash = BLOCK_HASH
+    payment.lastCanonicalCheckAt = new Date(Date.now() - 10 * 60 * 1000)
   }
   order = {
     status: nextScenario === 'cancelled' ? 'CANCELLED' : 'PENDING',
     paymentType: 'CRYPTO',
-    paymentId: null,
+    paymentId: nextScenario === 'post-settlement-reorg' || nextScenario === 'post-settlement-rpc-error' ? payment.id : null,
   }
+  if (nextScenario === 'post-settlement-reorg' || nextScenario === 'post-settlement-rpc-error') order.status = 'PAID'
 }
 
 const fakePrisma = {
   cryptoPayment: {
     async findMany({ where }: any) {
+      if (where.status === 'VERIFIED' && where.finalizationCompletedAt?.not === null) return payment.status === 'VERIFIED' && payment.finalizationCompletedAt ? [{ ...payment }] : []
       if (where.status === 'VERIFIED') return payment.status === 'VERIFIED' && !payment.finalizationCompletedAt ? [{ ...payment }] : []
       return payment.status === 'TX_SUBMITTED' && payment.txHash ? [{ ...payment }] : []
     },
@@ -66,6 +77,7 @@ const fakePrisma = {
       if (where.status && typeof where.status === 'string' && where.status !== payment.status) return { count: 0 }
       if (where.txHash && where.txHash !== payment.txHash) return { count: 0 }
       if (where.finalizationCompletedAt === null && payment.finalizationCompletedAt !== null) return { count: 0 }
+      if (where.finalizationCompletedAt?.not === null && !payment.finalizationCompletedAt) return { count: 0 }
       if (where.OR && payment.finalizationClaimedAt !== null) {
         const staleBefore = where.OR[1]?.finalizationClaimedAt?.lt
         if (!staleBefore || payment.finalizationClaimedAt >= staleBefore) return { count: 0 }
@@ -121,7 +133,7 @@ async function main() {
     const { GET } = require('../src/app/api/cron/crypto-reconcile/route')
 
     globalThis.fetch = (async (_input: any, init?: RequestInit) => {
-      if (scenario === 'rpc-error') throw new Error('simulated RPC outage')
+      if (scenario === 'rpc-error' || scenario === 'post-settlement-rpc-error') throw new Error('simulated RPC outage')
       const body = JSON.parse(String(init?.body))
       switch (body.method) {
         case 'eth_chainId':
@@ -147,7 +159,7 @@ async function main() {
           return rpcResponse(scenario === 'low-confirmations' ? '0x80' : '0x100')
         case 'eth_getBlockByNumber': {
           canonicalChecks += 1
-          const mismatch = scenario === 'reorg' || (scenario === 'reorg-finalize' && canonicalChecks > 1)
+          const mismatch = scenario === 'reorg' || scenario === 'post-settlement-reorg' || (scenario === 'reorg-finalize' && canonicalChecks > 1)
           return rpcResponse({ hash: mismatch ? `0x${'c'.repeat(64)}` : BLOCK_HASH })
         }
         default:
@@ -245,7 +257,28 @@ async function main() {
     assert.equal(order.status, 'PAID')
     assert.equal(syncCalls, 2, 'retry should execute the previously failed finalization exactly once successfully')
 
-    console.log('Crypto reconciliation simulation tests passed (verified, cancelled order, reverted receipt, RPC outage, wrong amount, duplicate transfer, low confirmations, reorg before and during finalization, recoverable finalization failure)')
+
+    reset('post-settlement-reorg')
+    response = await GET(request())
+    body = await response.json() as any
+    assert.equal(response.status, 200)
+    assert.equal(body.settledReview, 1, 'post-settlement canonicality mismatch must be surfaced')
+    assert.equal(payment.status, 'REVIEW', 'a post-settlement reorg must flag the payment for investigation')
+    assert.equal(order.status, 'PAID', 'post-settlement monitoring must not silently reverse a paid order')
+    assert.match(payment.reviewReason, /ya acreditado/i)
+    assert.ok(payment.lastCanonicalCheckAt instanceof Date)
+
+    reset('post-settlement-rpc-error')
+    const staleCheckAt = payment.lastCanonicalCheckAt.getTime()
+    response = await GET(request())
+    body = await response.json() as any
+    assert.equal(response.status, 200)
+    assert.equal(body.errors, 1, 'post-settlement RPC outage must be reported')
+    assert.equal(payment.status, 'VERIFIED', 'RPC outage must not be misclassified as a reorg')
+    assert.equal(order.status, 'PAID')
+    assert.equal(payment.lastCanonicalCheckAt.getTime(), staleCheckAt, 'RPC failure must leave the check timestamp stale for retry')
+
+    console.log('Crypto reconciliation simulation tests passed (verified, cancelled order, reverted receipt, RPC outage, wrong amount, duplicate transfer, low confirmations, reorg before and during finalization, recoverable finalization failure, post-settlement reorg monitoring, retryable post-settlement RPC outage)')
   } finally {
     globalThis.fetch = oldFetch
     if (oldPaymentsEnabled === undefined) delete process.env.CRYPTO_PAYMENTS_ENABLED
