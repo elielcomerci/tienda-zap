@@ -18,17 +18,18 @@ export async function evaluateSellerIncentivesForOrder(orderId: string) {
     const increment = incentive.goalType === 'SALES_COUNT' ? 1 : order.total
     try {
       await prisma.$transaction(async (tx) => {
-        // The unique order/incentive pair is the durable idempotency guard.
-        await tx.sellerIncentiveOrderContribution.create({
-          data: { orderId, sellerId: order.sellerId!, incentiveId: incentive.id, amount: increment },
-        })
-
         const progress = await tx.sellerIncentiveProgress.upsert({
           where: { sellerId_incentiveId: { sellerId: order.sellerId!, incentiveId: incentive.id } },
           update: {},
           create: { sellerId: order.sellerId!, incentiveId: incentive.id, currentValue: 0, completed: false },
         })
         if (progress.completed) return
+
+        // The unique order/incentive pair is the durable idempotency guard.
+        // Do not record contributions after the incentive has already completed.
+        await tx.sellerIncentiveOrderContribution.create({
+          data: { orderId, sellerId: order.sellerId!, incentiveId: incentive.id, amount: increment },
+        })
 
         const updated = await tx.sellerIncentiveProgress.update({
           where: { id: progress.id },
