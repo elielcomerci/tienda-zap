@@ -1,5 +1,12 @@
 # Checkout cripto de ZAP — implementación
 
+## Estado de la implementación (2026-10-20)
+
+- La pantalla de checkout ofrece criptomonedas y permite elegir Base + USDC, Optimism + USDC o World Chain + WLD.
+- La pantalla `/checkout/crypto` solicita una cotización, muestra el importe exacto y puede enviar la transferencia desde una wallet EIP-1193 inyectada.
+- El estado del pago se consulta al servidor; la interfaz no marca una transferencia como pagada solo porque la wallet devolvió un hash.
+- La prueba de esta rama usa una rama aislada de Neon y variables de Vercel limitadas a Preview. No activar cobros reales ni desplegar/activar el Worker de conciliación hasta completar las pruebas de extremo a extremo.
+
 ## Objetivo
 
 Agregar pagos con USDT, USDC y WLD al checkout existente sin modificar Mercado Pago ni los medios de pago actuales. El cliente firma desde su propia wallet; ZAP recibe en la dirección configurada y verifica el pago desde el servidor.
@@ -66,7 +73,7 @@ Queda fuera del primer despliegue: swaps, conversión y transferencia automátic
 - Definir fuente RPC secundaria por red, con límites y observabilidad.
 - Validar en pruebas que CriptoYa devuelve al menos dos cotizaciones frescas para cada activo (especialmente WLD); revisar si la referencia mediana de `totalBid` representa la política comercial deseada. No se agrega margen implícito.
 - Aplicar la migración solo en una base de prueba y validar Prisma Client, creación de cotizaciones y transición de pago antes de producción.
-- Verificar la integración visual y móvil de WalletConnect con wallets reales.
+- La primera integración del checkout usa wallets EIP-1193 inyectadas en el navegador; falta integrar WalletConnect para conectar wallets móviles sin navegador integrado y probar ambos flujos con wallets reales.
 - Probar transferencias correctas, red/token incorrecto, cantidad insuficiente, repetición de hash, RPC caído, expiración de cotización y reorg antes de habilitar pagos reales.
 - El reconciliador marca para revisión manual recibos revertidos, transferencias ambiguas, contratos/destinatarios no coincidentes o importes incorrectos; los errores RPC quedan reintentables.
 - La confirmación de orden usa una lease de finalización recuperable. Antes de producción hay que probar interrupciones entre la verificación y los efectos secundarios (emails, cupones, comisiones y eventos), para cerrar la ventana de recuperación sin duplicados ni efectos omitidos.
