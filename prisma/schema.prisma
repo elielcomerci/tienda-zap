@@ -1,6 +1,7 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "library"
+  provider        = "prisma-client-js"
+  engineType      = "library"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -1034,6 +1035,7 @@ model CryptoPayment {
   order             Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([chainId, txHash])
+  @@unique([orderId], where: raw("status IN ('QUOTED', 'AWAITING_PAYMENT', 'TX_SUBMITTED', 'DETECTED', 'CONFIRMING', 'VERIFIED', 'REVIEW')"), map: "CryptoPayment_one_active_per_order_key")
   @@index([orderId, status])
   @@index([status, expiresAt])
 }
