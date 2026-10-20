@@ -85,3 +85,8 @@ Mantener las tres desactivadas en producción hasta completar las pruebas de ext
 - Probar transferencias correctas, red/token incorrecto, cantidad insuficiente, repetición de hash, RPC caído, expiración de cotización y reorg antes de habilitar pagos reales.
 - El reconciliador marca para revisión manual recibos revertidos, transferencias ambiguas, contratos/destinatarios no coincidentes o importes incorrectos; los errores RPC quedan reintentables.
 - La confirmación de orden usa una lease de finalización recuperable. Antes de producción hay que probar interrupciones entre la verificación y los efectos secundarios (emails, cupones, comisiones y eventos), para cerrar la ventana de recuperación sin duplicados ni efectos omitidos.
+
+
+### Canonical block verification
+
+A payment is not eligible for automatic settlement based only on confirmation depth. Reconciliation stores the receipt block hash, compares it with the canonical block returned by the configured RPC, and repeats that comparison immediately before finalizing the order. Missing or mismatched block evidence moves the payment to manual review. RPC outages remain retryable and must not be treated as payment failure. Post-settlement reorganization monitoring remains a separate operational control; this check narrows the settlement race but cannot make a probabilistic-finality chain irreversible.
