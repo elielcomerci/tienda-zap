@@ -5,6 +5,10 @@ import { hashOrderPublicAccessToken } from '@/lib/order-access'
 const TX_HASH_PATTERN = /^0x[a-fA-F0-9]{64}$/
 
 export async function POST(request: Request) {
+  if (process.env.CRYPTO_PAYMENTS_ENABLED !== 'true') {
+    return Response.json({ error: 'Los cobros cripto están deshabilitados en este entorno.' }, { status: 503 })
+  }
+
   try {
     const body = await request.json().catch(() => null)
     const paymentId = typeof body?.paymentId === 'string' ? body.paymentId.trim() : ''

@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   CircleHelp,
   CreditCard,
+  Coins,
   Image as ImageIcon,
   ScanLine,
   Smartphone,
@@ -43,6 +44,12 @@ const paymentOptions = [
     label: 'Transferencia',
     desc: 'Nos envias el comprobante y seguimos',
     icon: Smartphone,
+  },
+  {
+    value: 'CRYPTO',
+    label: 'Criptomonedas',
+    desc: 'Pagá con USDC en Base u Optimism, o WLD en World Chain',
+    icon: Coins,
   },
   {
     value: 'ZAP_CREDIT',
@@ -168,6 +175,8 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderCreated, setOrderCreated] = useState(false)
+  const [cryptoChainId, setCryptoChainId] = useState(8453)
+  const [cryptoTokenSymbol, setCryptoTokenSymbol] = useState<'USDC' | 'WLD'>('USDC')
 
   const [couponDraft, setCouponDraft] = useState('')
   const [couponPreview, setCouponPreview] = useState<CouponPreviewState | null>(null)
@@ -250,7 +259,9 @@ function CheckoutContent() {
               ? 'Pagar con MercadoPago'
               : paymentType === 'ZAP_CREDIT'
                 ? 'Solicitar Crédito ZAP'
-                : 'Confirmar pedido'
+                : paymentType === 'CRYPTO'
+                  ? 'Continuar con criptomonedas'
+                  : 'Confirmar pedido'
 
   useEffect(() => {
     if (items.length === 0 && !orderCreated) {
@@ -259,7 +270,11 @@ function CheckoutContent() {
   }, [items.length, router, orderCreated])
 
   useEffect(() => {
-    if (creditEligibility && !creditEligibility.canRequestCredit) {
+    if (
+      creditEligibility &&
+      !creditEligibility.canRequestCredit &&
+      formValues.paymentType === 'ZAP_CREDIT'
+    ) {
       setValue('paymentType', 'MERCADOPAGO')
     }
 
@@ -277,7 +292,7 @@ function CheckoutContent() {
       if (profile.shippingProvince) setValue('shippingProvince', profile.shippingProvince)
       if (profile.shippingPostalCode) setValue('shippingPostalCode', profile.shippingPostalCode)
     }
-  }, [creditEligibility, setValue])
+  }, [creditEligibility, setValue, formValues.paymentType])
 
 
 
@@ -481,7 +496,22 @@ function CheckoutContent() {
     }
 
     try {
-      if (data.paymentType === 'MERCADOPAGO') {
+      if (data.paymentType === 'CRYPTO') {
+        const response = await fetch('/api/ordenes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || 'No pudimos crear el pedido.')
+        setOrderCreated(true)
+        clearCart()
+        clearCouponCode()
+        if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
+        router.push(
+          `/checkout/crypto?orderId=${encodeURIComponent(result.orderId)}&accessToken=${encodeURIComponent(result.accessToken)}&chainId=${cryptoChainId}&tokenSymbol=${cryptoTokenSymbol}`
+        )
+      } else if (data.paymentType === 'MERCADOPAGO') {
         const response = await fetch('/api/checkout/mercadopago', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -697,7 +727,7 @@ function CheckoutContent() {
                 </div>
 
                 <div className="grid gap-3 lg:grid-cols-3">
-                  {paymentOptions.map((option) => {
+                  {paymentOptions.filter((option) => option.value !== 'CRYPTO' || process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true').map((option) => {
                     const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
 
                     return (
@@ -741,6 +771,52 @@ function CheckoutContent() {
                     )
                   })}
                 </div>
+
+                {paymentType === 'CRYPTO' && (
+                  <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/70 p-5">
+                    <h3 className="text-base font-bold text-gray-950">Elegí la red y la moneda</h3>
+                    <p className="mt-1 text-sm leading-6 text-gray-600">
+                      El pago se hace desde tu propia wallet. Revisá la red antes de confirmar la transferencia.
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="crypto-network" className="label">Red</label>
+                        <select
+                          id="crypto-network"
+                          value={cryptoChainId}
+                          onChange={(event) => {
+                            const nextChainId = Number(event.target.value)
+                            setCryptoChainId(nextChainId)
+                            setCryptoTokenSymbol(nextChainId === 480 ? 'WLD' : 'USDC')
+                          }}
+                          className="input"
+                        >
+                          <option value={8453}>Base</option>
+                          <option value={10}>Optimism</option>
+                          <option value={480}>World Chain</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="crypto-asset" className="label">Moneda</label>
+                        <select
+                          id="crypto-asset"
+                          value={cryptoTokenSymbol}
+                          onChange={(event) => setCryptoTokenSymbol(event.target.value as 'USDC' | 'WLD')}
+                          className="input"
+                        >
+                          {cryptoChainId === 480 ? (
+                            <option value="WLD">WLD</option>
+                          ) : (
+                            <option value="USDC">USDC</option>
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-gray-500">
+                      La cotización se genera al continuar. El pedido no se considera pagado hasta que la red verifique la transferencia.
+                    </p>
+                  </div>
+                )}
 
                 <div className="mt-4 rounded-[28px] border border-gray-200 bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_58%,#f8fafc_100%)] p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

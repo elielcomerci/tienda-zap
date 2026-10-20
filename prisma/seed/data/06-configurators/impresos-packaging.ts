@@ -408,7 +408,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.7',
+  schemaVersion: '1.8',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -421,6 +421,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         default: 'plano',
         options: [
           { id: 'plano', label: 'Flyer / Volante plano' },
+          { id: 'diptico', label: 'Díptico' },
+          { id: 'triptico', label: 'Tríptico' },
         ],
       },
       format: {
@@ -431,6 +433,7 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
         options: [
           { id: '10x10', label: '10×10 cm' },
           { id: '10x15', label: '10×15 cm' },
+          { id: '10x20', label: '10×20 cm' },
           { id: '15x21', label: '15×21 cm (A5)' },
           { id: 'a4', label: '21×30 cm (A4)' },
         ],
@@ -992,9 +995,9 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
         '9x9':   { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
         '10x10': { '100': 14022, '200': 25726, '300': 37833, '500': 56876, '1000': 110654 },
       },
-      quoteRecto: {"sin_laca_uv":{"100":{"6x4":3801,"7x5":4868,"9x5":5935,"10x7":8069},"200":{"6x4":6085,"7x5":8219,"9x5":10353,"10x7":14622},"300":{"6x4":8469,"7x5":11670,"9x5":14872,"10x7":21274},"500":{"6x4":13237,"7x5":18573,"9x5":26042,"10x7":37779},"1000":{"6x4":24808,"7x5":34648,"9x5":44726,"10x7":62154}},"laca_uv_brillo":{"100":{"6x4":4212,"7x5":5416,"9x5":6620,"10x7":9028},"200":{"6x4":6770,"7x5":9178,"9x5":11585,"10x7":16401},"300":{"6x4":9428,"7x5":13039,"9x5":16651,"10x7":23875},"500":{"6x4":14743,"7x5":20763,"9x5":29191,"10x7":42708},"1000":{"6x4":27683,"7x5":39029,"9x5":50476,"10x7":70779}}},
+    },
+    quoteRecto: {"sin_laca_uv":{"100":{"6x4":3801,"7x5":4868,"9x5":5935,"10x7":8069},"200":{"6x4":6085,"7x5":8219,"9x5":10353,"10x7":14622},"300":{"6x4":8469,"7x5":11670,"9x5":14872,"10x7":21274},"500":{"6x4":13237,"7x5":18573,"9x5":26042,"10x7":37779},"1000":{"6x4":24808,"7x5":34648,"9x5":44726,"10x7":62154}},"laca_uv_brillo":{"100":{"6x4":4212,"7x5":5416,"9x5":6620,"10x7":9028},"200":{"6x4":6770,"7x5":9178,"9x5":11585,"10x7":16401},"300":{"6x4":9428,"7x5":13039,"9x5":16651,"10x7":23875},"500":{"6x4":14743,"7x5":20763,"9x5":29191,"10x7":42708},"1000":{"6x4":27683,"7x5":39029,"9x5":50476,"10x7":70779}}},
       // Los plazos y urgencias se confirman caso por caso; no se publican ni recargan automáticamente.
-      },
     },
   },
 };
