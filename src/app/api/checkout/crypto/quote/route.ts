@@ -14,6 +14,10 @@ const QUOTE_LIFETIME_MS = 10 * 60 * 1000
 const ALLOWED_SYMBOLS = new Set<CryptoAssetSymbol>(['USDC', 'USDT', 'WLD'])
 
 export async function POST(request: Request) {
+  if (process.env.CRYPTO_PAYMENTS_ENABLED !== 'true') {
+    return Response.json({ error: 'Los pagos cripto están deshabilitados en este entorno.' }, { status: 503 })
+  }
+
   try {
     const body = await request.json().catch(() => null)
     const orderId = typeof body?.orderId === 'string' ? body.orderId.trim() : ''
