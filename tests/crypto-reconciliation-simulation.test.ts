@@ -100,7 +100,6 @@ async function main() {
   const oldFetch = globalThis.fetch
   const oldPaymentsEnabled = process.env.CRYPTO_PAYMENTS_ENABLED
   const oldCronSecret = process.env.CRON_SECRET
-  const oldRpc = process.env.CryptoUnused
   process.env.CRYPTO_PAYMENTS_ENABLED = 'true'
   process.env.CRON_SECRET = 'test-secret'
   process.env.CRYPTO_RPC_URL_8453 = 'https://rpc.simulated.invalid'
@@ -184,7 +183,6 @@ async function main() {
     if (oldCronSecret === undefined) delete process.env.CRON_SECRET
     else process.env.CRON_SECRET = oldCronSecret
     delete process.env.CRYPTO_RPC_URL_8453
-    delete process.env.CryptoUnused
     ;(Module as any)._load = originalLoad
   }
 }
