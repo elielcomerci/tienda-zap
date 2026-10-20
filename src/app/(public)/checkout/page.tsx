@@ -657,7 +657,7 @@ function CheckoutContent() {
                     <span className="text-xs font-medium text-gray-500">Opcional</span>
                   </summary>
                   <div className="border-t border-gray-100 px-3 pb-3 pt-1 sm:px-4">
-                <div className="mt-4 rounded-[28px] border border-gray-200 bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_58%,#f8fafc_100%)] p-5">
+                <div className="pt-2">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
