@@ -7,8 +7,8 @@ import {
 
 assert.deepEqual(
   ENABLED_CRYPTO_PAYMENT_NETWORKS.map((network) => network.chainId),
-  [8453, 10],
-  'only Base and Optimism should be exposed in the first rollout'
+  [8453, 10, 480],
+  'only Base, Optimism and World Chain should be exposed in the first rollout'
 )
 
 assert.equal(getEnabledCryptoAsset(8453, 'USDC')?.asset.contractAddress.toLowerCase(),
@@ -16,7 +16,9 @@ assert.equal(getEnabledCryptoAsset(8453, 'USDC')?.asset.contractAddress.toLowerC
   'Base accepts native Circle USDC'
 )
 assert.equal(getEnabledCryptoAsset(10, 'USDC')?.asset.decimals, 6)
-assert.equal(getEnabledCryptoAsset(10, 'WLD')?.asset.decimals, 18)
+assert.equal(getEnabledCryptoAsset(10, 'WLD'), null, 'Optimism WLD is not enabled in the initial rollout')
+assert.equal(getEnabledCryptoAsset(480, 'WLD')?.asset.contractAddress.toLowerCase(), '0x2cfc85d8e48f8eab294be644d9e25c3030863003')
+assert.equal(getEnabledCryptoAsset(480, 'WLD')?.asset.decimals, 18)
 assert.equal(getEnabledCryptoAsset(10, 'USDT'), null, 'USDT remains disabled pending issuer-contract verification')
 assert.equal(getEnabledCryptoAsset(137, 'USDC'), null, 'Polygon remains disabled in the initial rollout')
 
