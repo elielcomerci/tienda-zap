@@ -1044,6 +1044,7 @@ model CryptoPayment {
   @@unique([orderId], where: raw("status IN ('QUOTED', 'AWAITING_PAYMENT', 'TX_SUBMITTED', 'DETECTED', 'CONFIRMING', 'VERIFIED', 'REVIEW')"), map: "CryptoPayment_one_active_per_order_key")
   @@index([orderId, status])
   @@index([status, expiresAt])
+  @@index([status, lastCanonicalCheckAt])
 }
 
 enum PaymentFrequency {
