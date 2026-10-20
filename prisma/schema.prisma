@@ -1027,6 +1027,7 @@ model CryptoPayment {
   confirmations     Int                 @default(0)
   detectedAt        DateTime?
   verifiedAt        DateTime?
+  finalizationClaimedAt DateTime?
   reviewReason      String?             @db.Text
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
