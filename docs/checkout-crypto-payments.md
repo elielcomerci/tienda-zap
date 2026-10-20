@@ -24,7 +24,7 @@ La lista de `src/lib/crypto/networks.ts` es una allowlist explícita, no una lis
 
 ## Arquitectura y controles obligatorios
 
-1. El servidor calcula la cotización ARS→cripto desde CriptoYa, valida respuesta y antigüedad, y guarda precio, origen, instante, vencimiento, importe ARS, token, red, contrato, decimales y cantidad entera exacta.
+1. El servidor consulta CriptoYa (`/api/{activo}/ARS/1`), descarta cotizaciones con más de 180 segundos, calcula la mediana de `totalBid` entre al menos dos fuentes y redondea la cantidad a unidades enteras hacia arriba. Guarda precio, origen, instante, vencimiento, importe ARS, token, red, contrato, decimales y cantidad exacta. Es una referencia de mercado, no una ejecución ni garantía de liquidación.
 2. La orden existente se crea por el flujo actual y el pago cripto queda en un modelo separado relacionado con la orden.
 3. El frontend conecta wallet con WalletConnect/Reown AppKit + Wagmi/viem, solicita la transferencia a la dirección receptora y muestra el hash enviado.
 4. El backend no confía en el hash del navegador. Verifica chainId, recibo exitoso, contrato allowlisted, evento ERC-20 Transfer, destinatario, cantidad exacta y confirmaciones requeridas.
@@ -49,7 +49,7 @@ Todos los estados posteriores al envío deben provenir de datos verificados del 
 
 ### Etapa 1 — pago y conciliación
 
-Matriz de redes/activos, cotización, persistencia, conexión de wallet, creación de transferencia, verificación on-chain, conciliación periódica, estados visibles, pruebas de idempotencia y documentación operativa.
+Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, utilidades de cotización CriptoYa y endpoint de cotización asociado a una orden pendiente. Pendientes: validar en entorno de prueba, conexión de wallet, creación de transferencia desde el cliente, verificación on-chain, conciliador periódico, estados visibles e idempotencia completa del flujo de órdenes.
 
 ### Etapa 2 — tesorería automática
 
@@ -60,7 +60,7 @@ Queda fuera del primer despliegue: swaps, conversión y transferencia automátic
 - Confirmar contrato canónico de USDT para cada red que se quiera habilitar.
 - Verificar World Chain (chainId 480), RPC y explorador en entorno de prueba antes de producción.
 - Definir fuente RPC primaria y secundaria por red, con límites y observabilidad.
-- Definir la política de cotización CriptoYa (endpoint, volumen de referencia, campo ask/totalAsk y margen si corresponde) sin sumar un margen implícito.
-- Versionar migraciones Prisma y probar la transición de pago en una base de prueba.
+- Validar en pruebas que CriptoYa devuelve al menos dos cotizaciones frescas para cada activo (especialmente WLD); revisar si la referencia mediana de `totalBid` representa la política comercial deseada. No se agrega margen implícito.
+- Aplicar la migración solo en una base de prueba y validar Prisma Client, creación de cotizaciones y transición de pago antes de producción.
 - Verificar la integración visual y móvil de WalletConnect con wallets reales.
 - Probar transferencias correctas, red/token incorrecto, cantidad insuficiente, repetición de hash, RPC caído, expiración de cotización y reorg antes de habilitar pagos reales.
