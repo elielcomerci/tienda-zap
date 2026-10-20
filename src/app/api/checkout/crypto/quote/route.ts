@@ -140,9 +140,15 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+      return Response.json(
+        { error: 'Este pedido ya tiene una cotización o transferencia activa.' },
+        { status: 409 }
+      )
+    }
     console.error('[crypto quote]', error)
     return Response.json(
-      { error: error instanceof Error ? error.message : 'No se pudo cotizar el pago cripto.' },
+      { error: 'No se pudo cotizar el pago cripto. Intentá nuevamente.' },
       { status: 502 }
     )
   }
