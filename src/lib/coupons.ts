@@ -629,13 +629,16 @@ export async function confirmCouponRedemptionForOrder(orderId: string) {
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.couponRedemption.update({
-      where: { orderId },
+    // Claim only a still-reserved redemption. Concurrent retries must not
+    // decrement the coupon's remaining uses more than once.
+    const claimed = await tx.couponRedemption.updateMany({
+      where: { orderId, status: CouponRedemptionStatus.RESERVED },
       data: {
         status: CouponRedemptionStatus.CONFIRMED,
         confirmedAt: new Date(),
       },
     })
+    if (claimed.count === 0) return
 
     await tx.promotionCoupon.update({
       where: { code: redemption.couponCode },
