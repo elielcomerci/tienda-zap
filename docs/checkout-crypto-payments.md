@@ -15,7 +15,8 @@ Es una dirección pública de recepción. Nunca se debe pedir ni almacenar una c
 | Red | Activos habilitados inicialmente | Decisión |
 | --- | --- | --- |
 | Base (8453) | USDC nativo de Circle | Red principal candidata para pagos en stablecoin. |
-| Optimism (10) | USDC nativo de Circle, WLD oficial de World | Permite incluir WLD sin aceptar versiones bridged no verificadas. |
+| Optimism (10) | USDC nativo de Circle | Stablecoin adicional; WLD queda deshabilitado aquí en el primer corte. |
+| World Chain (480) | WLD oficial de World | Red principal para aceptar WLD, con contrato publicado por World. |
 | Polygon PoS (137) | Ninguno en el primer corte | Mantener preparada la matriz, pero no exponer todavía una tercera red. |
 | Optimism / Polygon | USDT deshabilitado inicialmente | Habilitar solo después de verificar el contrato canónico y el activo exacto que ZAP podrá liquidar/usar. |
 
@@ -57,6 +58,7 @@ Queda fuera del primer despliegue: swaps, conversión y transferencia automátic
 ## Pendientes antes de producción
 
 - Confirmar contrato canónico de USDT para cada red que se quiera habilitar.
+- Verificar World Chain (chainId 480), RPC y explorador en entorno de prueba antes de producción.
 - Definir fuente RPC primaria y secundaria por red, con límites y observabilidad.
 - Definir la política de cotización CriptoYa (endpoint, volumen de referencia, campo ask/totalAsk y margen si corresponde) sin sumar un margen implícito.
 - Versionar migraciones Prisma y probar la transición de pago en una base de prueba.
