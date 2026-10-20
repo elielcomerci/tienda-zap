@@ -3,11 +3,11 @@ import { syncOrderStatusAfterPayment } from '@/lib/orders-workflow'
 import { CRYPTO_PAYMENT_NETWORKS } from '@/lib/crypto/networks'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 10
 
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 const REQUIRED_CONFIRMATIONS = 20
-const MAX_PER_RUN = 10
+const MAX_PER_RUN = 4
 const FINALIZATION_LEASE_MS = 2 * 60 * 1000
 
 type RpcLog = {
@@ -57,12 +57,17 @@ async function inspectSubmittedPayment(payment: {
   amountUnits: string
   txHash: string
 }) {
-  const reportedChainId = Number(BigInt(String(await rpc(payment.chainId, 'eth_chainId', []))))
+  const [chainIdResult, receiptResult, currentBlockResult] = await Promise.all([
+    rpc(payment.chainId, 'eth_chainId', []),
+    rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]),
+    rpc(payment.chainId, 'eth_blockNumber', []),
+  ])
+  const reportedChainId = Number(BigInt(String(chainIdResult)))
   if (reportedChainId !== payment.chainId) {
     throw new Error(`El RPC configurado para ${payment.chainId} responde para la red ${reportedChainId}`)
   }
 
-  const receipt = await rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]) as RpcReceipt | null
+  const receipt = receiptResult as RpcReceipt | null
   if (!receipt) return { kind: 'pending' as const }
 
   if (receipt.status !== '0x1') {
@@ -107,7 +112,7 @@ async function inspectSubmittedPayment(payment: {
   }
 
   const blockNumber = BigInt(receipt.blockNumber || '0x0')
-  const currentBlock = BigInt(String(await rpc(payment.chainId, 'eth_blockNumber', [])))
+  const currentBlock = BigInt(String(currentBlockResult))
   const confirmationsBig = currentBlock >= blockNumber ? currentBlock - blockNumber + BigInt(1) : BigInt(0)
   const confirmations = Number(confirmationsBig)
   const logIndex = Number(BigInt(transfer.logIndex || '0x0'))
