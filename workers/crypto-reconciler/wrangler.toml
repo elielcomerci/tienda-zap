@@ -5,5 +5,6 @@ compatibility_date = "2026-10-19"
 [triggers]
 crons = ["* * * * *"]
 
-# Configure CHECKOUT_RECONCILE_URL in vars and CRON_SECRET with:
-# npx wrangler secret put CRON_SECRET
+[vars]
+CHECKOUT_RECONCILE_URL = "https://tienda.zap.com.ar/api/cron/crypto-reconcile"
+# Store CRON_SECRET with: npx wrangler secret put CRON_SECRET
