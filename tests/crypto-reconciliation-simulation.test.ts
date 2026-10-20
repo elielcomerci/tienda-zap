@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import Module from 'node:module'
 
-type Scenario = 'valid' | 'cancelled' | 'reverted' | 'rpc-error' | 'reorg' | 'reorg-finalize' | 'wrong-amount' | 'duplicate-transfer' | 'low-confirmations'
+type Scenario = 'valid' | 'cancelled' | 'reverted' | 'rpc-error' | 'reorg' | 'reorg-finalize' | 'wrong-amount' | 'duplicate-transfer' | 'low-confirmations' | 'finalize-error'
 
 const TOKEN = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 const RECIPIENT = '0x1111111111111111111111111111111111111111'
@@ -46,7 +46,7 @@ function reset(nextScenario: Scenario) {
 const fakePrisma = {
   cryptoPayment: {
     async findMany({ where }: any) {
-      if (where.status === 'VERIFIED') return []
+      if (where.status === 'VERIFIED') return payment.status === 'VERIFIED' && !payment.finalizationCompletedAt ? [{ ...payment }] : []
       return payment.status === 'TX_SUBMITTED' && payment.txHash ? [{ ...payment }] : []
     },
     async findUnique() {
@@ -66,7 +66,10 @@ const fakePrisma = {
       if (where.status && typeof where.status === 'string' && where.status !== payment.status) return { count: 0 }
       if (where.txHash && where.txHash !== payment.txHash) return { count: 0 }
       if (where.finalizationCompletedAt === null && payment.finalizationCompletedAt !== null) return { count: 0 }
-      if (where.OR && payment.finalizationClaimedAt !== null) return { count: 0 }
+      if (where.OR && payment.finalizationClaimedAt !== null) {
+        const staleBefore = where.OR[1]?.finalizationClaimedAt?.lt
+        if (!staleBefore || payment.finalizationClaimedAt >= staleBefore) return { count: 0 }
+      }
       Object.assign(payment, data)
       return { count: 1 }
     },
@@ -89,6 +92,7 @@ const originalLoad = (Module as any)._load
     return {
       syncOrderStatusAfterPayment: async (_orderId: string, paymentId: string) => {
         syncCalls += 1
+        if (scenario === 'finalize-error' && syncCalls === 1) throw new Error('simulated failure before order update')
         order.status = 'PAID'
         order.paymentId = paymentId
       },
@@ -227,7 +231,21 @@ async function main() {
     assert.equal(payment.status, 'REVIEW', 'a reorg between verification and finalization must stop settlement')
     assert.equal(syncCalls, 0, 'finalization must re-check canonicality before side effects')
 
-    console.log('Crypto reconciliation simulation tests passed (verified, cancelled order, reverted receipt, RPC outage, wrong amount, duplicate transfer, low confirmations, reorg before and during finalization)')
+    reset('finalize-error')
+    response = await GET(request())
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'VERIFIED', 'a transient finalization error must preserve verified payment evidence')
+    assert.equal(payment.finalizationCompletedAt, null, 'failed finalization must remain recoverable')
+    assert.equal(order.status, 'PENDING', 'failed side effect must not falsely mark the order paid')
+    payment.finalizationClaimedAt = new Date(Date.now() - 10 * 60 * 1000)
+    response = await GET(request())
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'VERIFIED')
+    assert.ok(payment.finalizationCompletedAt instanceof Date, 'stale finalization lease must be recoverable on a later cron run')
+    assert.equal(order.status, 'PAID')
+    assert.equal(syncCalls, 2, 'retry should execute the previously failed finalization exactly once successfully')
+
+    console.log('Crypto reconciliation simulation tests passed (verified, cancelled order, reverted receipt, RPC outage, wrong amount, duplicate transfer, low confirmations, reorg before and during finalization, recoverable finalization failure)')
   } finally {
     globalThis.fetch = oldFetch
     if (oldPaymentsEnabled === undefined) delete process.env.CRYPTO_PAYMENTS_ENABLED
