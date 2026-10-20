@@ -88,7 +88,7 @@ function Content() {
     }
     void init()
     return () => { cancelled = true }
-  }, [accessToken, chainId, orderId, paymentId, refresh, tokenSymbol])
+  }, [accessToken, chainId, clearCart, clearCouponCode, orderId, paymentId, refresh, tokenSymbol])
 
   const registerHash = async (id: string, hash: string) => {
     const r = await fetch('/api/checkout/crypto/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: id, accessToken, txHash: hash }) })
