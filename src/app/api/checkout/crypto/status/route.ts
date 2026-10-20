@@ -58,6 +58,7 @@ export async function POST(request: Request) {
       payment: {
         paymentsEnabled: process.env.CRYPTO_PAYMENTS_ENABLED === 'true',
         id: payment.id,
+        orderId: payment.orderId,
         status: payment.status,
         chainId: payment.chainId,
         tokenSymbol: payment.tokenSymbol,
