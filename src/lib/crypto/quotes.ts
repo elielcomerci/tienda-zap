@@ -94,19 +94,19 @@ export function calculateTokenAmountUnits(
   priceArs: string,
   decimals: number
 ): bigint {
-  if (arsAmountCents <= 0n || !Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
+  if (arsAmountCents <= BigInt(0) || !Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
     throw new Error('Parámetros de cotización inválidos')
   }
 
   const priceScaled = BigInt(Math.round(Number(priceArs) * 100_000_000))
-  if (priceScaled <= 0n) throw new Error('Cotización inválida')
+  if (priceScaled <= BigInt(0)) throw new Error('Cotización inválida')
 
-  const numerator = arsAmountCents * 1_000_000n * (10n ** BigInt(decimals))
-  return (numerator + priceScaled - 1n) / priceScaled
+  const numerator = arsAmountCents * BigInt(1000000) * (BigInt(10) ** BigInt(decimals))
+  return (numerator + priceScaled - BigInt(1)) / priceScaled
 }
 
 export function formatTokenUnits(units: bigint, decimals: number): string {
-  if (units < 0n || !Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
+  if (units < BigInt(0) || !Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
     throw new Error('Cantidad de token inválida')
   }
 
