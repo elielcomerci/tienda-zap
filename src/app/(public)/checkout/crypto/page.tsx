@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useCartStore } from '@/lib/cart-store'
 import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, Wallet } from 'lucide-react'
 
 type Payment = {
@@ -32,6 +33,8 @@ export default function CryptoCheckoutPage() {
 
 function Content() {
   const q = useSearchParams()
+  const clearCart = useCartStore((state) => state.clearCart)
+  const clearCouponCode = useCartStore((state) => state.clearCouponCode)
   const orderId = q.get('orderId') ?? ''
   const accessToken = q.get('accessToken') ?? ''
   const paymentId = q.get('paymentId') ?? ''
@@ -72,6 +75,10 @@ function Content() {
         if (!r.ok) throw new Error(data.error || 'No pudimos preparar la cotización.')
         if (cancelled) return
         setPayment(data.payment)
+        // Only empty the cart once a valid quote exists; failed quotes remain recoverable.
+        clearCart()
+        clearCouponCode()
+        localStorage.removeItem('saved_coupon')
         const url = new URL(window.location.href)
         for (const key of ['orderId', 'chainId', 'tokenSymbol']) url.searchParams.delete(key)
         url.searchParams.set('paymentId', data.payment.id)
