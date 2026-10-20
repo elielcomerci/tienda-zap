@@ -56,6 +56,7 @@ export async function POST(request: Request) {
     const network = CRYPTO_PAYMENT_NETWORKS.find((candidate) => candidate.chainId === payment.chainId)
     return Response.json({
       payment: {
+        paymentsEnabled: process.env.CRYPTO_PAYMENTS_ENABLED === 'true',
         id: payment.id,
         status: payment.status,
         chainId: payment.chainId,
