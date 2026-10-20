@@ -81,49 +81,54 @@ export async function POST(request: Request) {
     const now = new Date()
     const expiresAt = new Date(now.getTime() + QUOTE_LIFETIME_MS)
 
-    await prisma.cryptoPayment.updateMany({
-      where: {
-        orderId,
-        status: { in: ['QUOTED', 'AWAITING_PAYMENT'] },
-      },
-      data: { status: 'EXPIRED' },
-    })
+    const payment = await prisma.$transaction(async (tx) => {
+      // Expire the previous quote and create its replacement atomically. If a
+      // concurrent request wins the partial unique index, this transaction
+      // rolls back so it cannot expire the winner's active quote.
+      await tx.cryptoPayment.updateMany({
+        where: {
+          orderId,
+          status: { in: ['QUOTED', 'AWAITING_PAYMENT'] },
+        },
+        data: { status: 'EXPIRED' },
+      })
 
-    const payment = await prisma.cryptoPayment.create({
-      data: {
-        orderId,
-        status: 'AWAITING_PAYMENT',
-        arsAmount: (Number(arsAmountCents) / 100).toFixed(2),
-        tokenAmount,
-        amountUnits: amountUnits.toString(),
-        chainId: selected.network.chainId,
-        networkKey: selected.network.key,
-        tokenSymbol,
-        tokenContract: selected.asset.contractAddress,
-        tokenDecimals: selected.asset.decimals,
-        recipientAddress: RECEIVING_ADDRESS,
-        quotePriceArs: price.priceArs,
-        quoteSource: price.source,
-        quoteObservedAt: price.observedAt,
-        expiresAt,
-      },
-      select: {
-        id: true,
-        status: true,
-        arsAmount: true,
-        tokenAmount: true,
-        amountUnits: true,
-        chainId: true,
-        networkKey: true,
-        tokenSymbol: true,
-        tokenContract: true,
-        tokenDecimals: true,
-        recipientAddress: true,
-        quotePriceArs: true,
-        quoteSource: true,
-        quoteObservedAt: true,
-        expiresAt: true,
-      },
+      return tx.cryptoPayment.create({
+        data: {
+          orderId,
+          status: 'AWAITING_PAYMENT',
+          arsAmount: (Number(arsAmountCents) / 100).toFixed(2),
+          tokenAmount,
+          amountUnits: amountUnits.toString(),
+          chainId: selected.network.chainId,
+          networkKey: selected.network.key,
+          tokenSymbol,
+          tokenContract: selected.asset.contractAddress,
+          tokenDecimals: selected.asset.decimals,
+          recipientAddress: RECEIVING_ADDRESS,
+          quotePriceArs: price.priceArs,
+          quoteSource: price.source,
+          quoteObservedAt: price.observedAt,
+          expiresAt,
+        },
+        select: {
+          id: true,
+          status: true,
+          arsAmount: true,
+          tokenAmount: true,
+          amountUnits: true,
+          chainId: true,
+          networkKey: true,
+          tokenSymbol: true,
+          tokenContract: true,
+          tokenDecimals: true,
+          recipientAddress: true,
+          quotePriceArs: true,
+          quoteSource: true,
+          quoteObservedAt: true,
+          expiresAt: true,
+        },
+      })
     })
 
     return Response.json({
