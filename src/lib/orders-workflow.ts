@@ -33,36 +33,39 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
     where: { id: orderId },
     select: {
       id: true,
-      items: {
-        select: {
-          designRequested: true,
-          fileObjectKey: true,
-          fileUrl: true,
-        },
-      },
+      status: true,
+      items: { select: { designRequested: true, fileObjectKey: true, fileUrl: true } },
     },
   })
 
-  if (!order) {
-    throw new Error('Orden no encontrada')
+  if (!order) throw new Error('Orden no encontrada')
+
+  const confirmationKey = `payment-confirmed:${orderId}:${paymentId || 'manual'}`
+  let resultingStatus = order.status
+
+  // Only advance a pending order. Recovery must never roll back a later status.
+  if (order.status === 'PENDING') {
+    resultingStatus = allItemsReadyForProduction(order.items) ? 'PROCESSING' : 'PAID'
+    await prisma.$transaction(async (tx) => {
+      const claimed = await tx.order.updateMany({
+        where: { id: orderId, status: 'PENDING' },
+        data: { status: resultingStatus, ...(paymentId ? { paymentId } : {}) },
+      })
+      if (claimed.count === 0) {
+        const current = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } })
+        if (!current) throw new Error('Orden no encontrada')
+        resultingStatus = current.status
+      }
+    })
   }
 
-  const nextStatus = allItemsReadyForProduction(order.items) ? 'PROCESSING' : 'PAID'
-
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      status: nextStatus,
-      ...(paymentId ? { paymentId } : {}),
-    },
+  // Unique idempotency key allows a retry to repair a missing event without duplicates.
+  await prisma.orderEvent.upsert({
+    where: { idempotencyKey: confirmationKey },
+    create: { orderId, status: resultingStatus, note: 'Pago confirmado', idempotencyKey: confirmationKey },
+    update: {},
   })
 
-  // Log event
-  await prisma.orderEvent.create({
-    data: { orderId, status: nextStatus, note: 'Pago confirmado' },
-  })
-
-  // Send email
   const orderData = await prisma.order.findUnique({
     where: { id: orderId },
     select: { guestEmail: true, guestName: true, user: { select: { email: true, name: true } } },
@@ -71,15 +74,14 @@ export async function syncOrderStatusAfterPayment(orderId: string, paymentId?: s
   const name = orderData?.user?.name || orderData?.guestName || 'Cliente'
   if (email) {
     const template = paymentConfirmedEmail({ customerName: name, orderCode: getOrderDisplayCode(orderId) })
-    sendEmailAsync({ to: email, ...template })
+    sendEmailAsync({ to: email, ...template, idempotencyKey: confirmationKey })
   }
 
   await confirmCouponRedemptionForOrder(orderId)
   await syncOrderSellerCommissions(orderId)
   await evaluateSellerIncentivesForOrder(orderId)
-
   revalidateOrderViews(orderId)
-  return nextStatus
+  return resultingStatus
 }
 
 export async function syncOrderStatusAfterArtworkChange(orderId: string) {

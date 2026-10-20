@@ -35,6 +35,5 @@ Thumbs.db
 .idea/
 
 # Prisma
-prisma/migrations/
 seed_materials.ts
 seed_finishings.ts

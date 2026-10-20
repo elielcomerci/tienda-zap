@@ -14,8 +14,9 @@
     "db:studio": "prisma studio",
     "db:push": "prisma db push",
     "postinstall": "prisma generate",
-    "test": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/configurator-contract.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/configurator-contract.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-networks.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-quotes.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-submit-concurrency.test.ts",
+    "typecheck": "tsc --noEmit",
+    "test:crypto": "export TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts"
   },
   "prisma": {
     "seed": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
@@ -24,7 +25,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@auth/prisma-adapter": "^2.11.1",
+    "@auth/prisma-adapter": "^2.11.3",
     "@aws-sdk/client-s3": "^3.1018.0",
     "@aws-sdk/s3-request-presigner": "^3.1018.0",
     "@hookform/resolvers": "^5.2.2",
@@ -43,9 +44,9 @@
     "geist": "^1.5.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.7.0",
-    "mercadopago": "^2.12.0",
-    "next": "^16.2.1",
-    "next-auth": "^5.0.0-beta.30",
+    "mercadopago": "^3.6.1",
+    "next": "^16.4.2",
+    "next-auth": "^5.0.0-beta.32",
     "pdf-parse": "^2.4.5",
     "pg": "^8.20.0",
     "postcss": "^8.5.8",

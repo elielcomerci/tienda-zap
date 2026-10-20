@@ -1,6 +1,7 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "library"
+  provider        = "prisma-client-js"
+  engineType      = "library"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -44,6 +45,7 @@ model User {
   operationalBusinessAccounts       BusinessAccount[]             @relation("BusinessAccountOperationalSeller")
   sellerProfile                     SellerProfile?
   incentiveProgress                 SellerIncentiveProgress[]
+  incentiveOrderContributions       SellerIncentiveOrderContribution[]
   sellerPayouts                     SellerPayout[]
   sellerCommissionLedgers           SellerCommissionLedger[]      @relation("SellerCommissionSeller")
   clientCommissionLedgers           SellerCommissionLedger[]      @relation("SellerCommissionClient")
@@ -429,6 +431,8 @@ model Order {
   events                OrderEvent[]
   proofs                ProofFile[]
   commissionLedgers     SellerCommissionLedger[]
+  cryptoPayments        CryptoPayment[]
+  sellerIncentiveContributions SellerIncentiveOrderContribution[]
 }
 
 model OrderItem {
@@ -950,12 +954,13 @@ enum ProofStatus {
 }
 
 model OrderEvent {
-  id        String   @id @default(cuid())
-  orderId   String
-  status    String
-  note      String?
-  createdAt DateTime @default(now())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  orderId        String
+  status         String
+  note           String?
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId, createdAt])
 }
@@ -983,10 +988,60 @@ enum ProofFileType {
 }
 
 enum PaymentType {
+  CRYPTO
   MERCADOPAGO
   TRANSFER
   CASH
   ZAP_CREDIT
+}
+
+enum CryptoPaymentStatus {
+  QUOTED
+  AWAITING_PAYMENT
+  TX_SUBMITTED
+  DETECTED
+  CONFIRMING
+  VERIFIED
+  EXPIRED
+  REVIEW
+  CANCELLED
+}
+
+model CryptoPayment {
+  id                String              @id @default(cuid())
+  orderId           String
+  status            CryptoPaymentStatus  @default(QUOTED)
+  arsAmount         Decimal             @db.Decimal(18, 2)
+  tokenAmount       Decimal             @db.Decimal(36, 18)
+  amountUnits       String
+  chainId           Int
+  networkKey        String
+  tokenSymbol       String
+  tokenContract     String
+  tokenDecimals     Int
+  recipientAddress  String
+  quotePriceArs     Decimal             @db.Decimal(30, 12)
+  quoteSource       String
+  quoteObservedAt   DateTime
+  expiresAt         DateTime
+  txHash            String?
+  submittedAt       DateTime?
+  logIndex          Int?
+  blockNumber       BigInt?
+  confirmations     Int                 @default(0)
+  detectedAt        DateTime?
+  verifiedAt        DateTime?
+  finalizationClaimedAt DateTime?
+  finalizationCompletedAt DateTime?
+  reviewReason      String?             @db.Text
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  order             Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([chainId, txHash])
+  @@unique([orderId], where: raw("status IN ('QUOTED', 'AWAITING_PAYMENT', 'TX_SUBMITTED', 'DETECTED', 'CONFIRMING', 'VERIFIED', 'REVIEW')"), map: "CryptoPayment_one_active_per_order_key")
+  @@index([orderId, status])
+  @@index([status, expiresAt])
 }
 
 enum PaymentFrequency {
@@ -1121,6 +1176,7 @@ model SellerIncentive {
   updatedAt    DateTime @updatedAt
 
   sellerProgress SellerIncentiveProgress[]
+  orderContributions SellerIncentiveOrderContribution[]
 }
 
 model SellerIncentiveProgress {
@@ -1136,6 +1192,22 @@ model SellerIncentiveProgress {
   incentive SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
 
   @@unique([sellerId, incentiveId])
+}
+
+model SellerIncentiveOrderContribution {
+  id          String   @id @default(cuid())
+  orderId     String
+  sellerId    String
+  incentiveId String
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  seller    User            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  incentive SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, incentiveId])
+  @@index([sellerId, incentiveId])
 }
 
 model SellerPayout {

@@ -16,10 +16,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  idempotencyKey,
 }: {
   to: string
   subject: string
   html: string
+  idempotencyKey?: string
 }) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('[email] RESEND_API_KEY no configurado, email omitido:', subject)
@@ -35,7 +37,7 @@ export async function sendEmail({
       to,
       subject,
       html,
-    })
+    }, idempotencyKey ? { idempotencyKey } : undefined)
   } catch (error) {
     console.error('[email] Error enviando email:', error)
   }
@@ -44,6 +46,6 @@ export async function sendEmail({
 /**
  * Fire-and-forget email — never blocks the caller.
  */
-export function sendEmailAsync(params: { to: string; subject: string; html: string }) {
+export function sendEmailAsync(params: { to: string; subject: string; html: string; idempotencyKey?: string }) {
   sendEmail(params).catch(() => {})
 }
