@@ -964,7 +964,7 @@ function CheckoutContent() {
                     ${visibleCheckoutTotal.toLocaleString('es-AR')}
                   </p>
                   <p className="mt-1 text-xs text-gray-400">
-                    ${items.length} {items.length === 1 ? 'producto' : 'productos'}
+                    {items.length} {items.length === 1 ? 'producto' : 'productos'}
                   </p>
                 </div>
 
