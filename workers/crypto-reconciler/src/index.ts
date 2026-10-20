@@ -1,3 +1,6 @@
+type ScheduledController = { scheduledTime: number; cron?: string }
+type ExecutionContext = { waitUntil(promise: Promise<unknown>): void }
+
 export interface Env {
   CHECKOUT_RECONCILE_URL: string
   CRON_SECRET: string
