@@ -344,7 +344,7 @@ export const orderCheckoutSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido'),
   email: z.string().email('Email inválido'),
   phone: z.string().min(8, 'Teléfono inválido'),
-  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'ZAP_CREDIT']), // Removed CASH
+  paymentType: z.enum(['MERCADOPAGO', 'TRANSFER', 'ZAP_CREDIT', 'CRYPTO']), // CASH remains disabled
   notes: z.string().optional(),
   couponCode: optionalTextField(4, 'Codigo de cupon inválido'),
 
