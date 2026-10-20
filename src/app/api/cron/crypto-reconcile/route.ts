@@ -7,7 +7,7 @@ export const maxDuration = 60
 
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 const REQUIRED_CONFIRMATIONS = 20
-const MAX_PER_RUN = 40
+const MAX_PER_RUN = 10
 const FINALIZATION_LEASE_MS = 2 * 60 * 1000
 
 type RpcLog = {
@@ -202,21 +202,29 @@ export async function GET(request: Request) {
     },
   })
 
-  for (const payment of pending) {
-    if (!payment.txHash) continue
-    results.checked += 1
-    try {
-      const result = await inspectSubmittedPayment({ ...payment, txHash: payment.txHash })
-      if (result.kind === 'confirming') results.confirming += 1
-      if (result.kind === 'verified') {
-        results.verified += 1
-        await finalizeVerifiedPayment(payment.id, payment.orderId)
+  for (let offset = 0; offset < pending.length; offset += 5) {
+    const batch = pending.slice(offset, offset + 5)
+    const batchResults = await Promise.all(batch.map(async (payment) => {
+      if (!payment.txHash) return { kind: 'pending' as const }
+      try {
+        const result = await inspectSubmittedPayment({ ...payment, txHash: payment.txHash })
+        if (result.kind === 'verified') {
+          await finalizeVerifiedPayment(payment.id, payment.orderId)
+        }
+        return result
+      } catch (error) {
+        // RPC failures are retryable/unknown; never mark the payment as failed.
+        console.error('[crypto reconcile]', payment.id, error)
+        return { kind: 'error' as const }
       }
+    }))
+
+    for (const result of batchResults) {
+      if (result.kind !== 'pending') results.checked += 1
+      if (result.kind === 'confirming') results.confirming += 1
+      if (result.kind === 'verified') results.verified += 1
       if (result.kind === 'review') results.review += 1
-    } catch (error) {
-      // RPC failures are retryable/unknown; never mark the payment as failed.
-      results.errors += 1
-      console.error('[crypto reconcile]', payment.id, error)
+      if (result.kind === 'error') results.errors += 1
     }
   }
 
