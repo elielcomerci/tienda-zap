@@ -270,7 +270,11 @@ function CheckoutContent() {
   }, [items.length, router, orderCreated])
 
   useEffect(() => {
-    if (creditEligibility && !creditEligibility.canRequestCredit) {
+    if (
+      creditEligibility &&
+      !creditEligibility.canRequestCredit &&
+      formValues.paymentType === 'ZAP_CREDIT'
+    ) {
       setValue('paymentType', 'MERCADOPAGO')
     }
 
@@ -288,7 +292,7 @@ function CheckoutContent() {
       if (profile.shippingProvince) setValue('shippingProvince', profile.shippingProvince)
       if (profile.shippingPostalCode) setValue('shippingPostalCode', profile.shippingPostalCode)
     }
-  }, [creditEligibility, setValue])
+  }, [creditEligibility, setValue, formValues.paymentType])
 
 
 
