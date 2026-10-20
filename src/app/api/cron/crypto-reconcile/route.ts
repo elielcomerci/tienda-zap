@@ -219,8 +219,8 @@ export async function GET(request: Request) {
       }
     }))
 
+    results.checked += batch.length
     for (const result of batchResults) {
-      if (result.kind !== 'pending') results.checked += 1
       if (result.kind === 'confirming') results.confirming += 1
       if (result.kind === 'verified') results.verified += 1
       if (result.kind === 'review') results.review += 1
