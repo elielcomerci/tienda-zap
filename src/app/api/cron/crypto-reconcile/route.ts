@@ -203,7 +203,14 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
       })
       return
     }
-    const latestReceipt = await rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]) as RpcReceipt | null
+    // The stored block number is already known. Fetch the receipt and that
+    // canonical block concurrently to avoid two sequential RPC round trips.
+    const [latestReceiptResult, latestCanonicalBlockResult] = await Promise.all([
+      rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]),
+      rpc(payment.chainId, 'eth_getBlockByNumber', ['0x' + payment.blockNumber.toString(16), false]),
+    ])
+    const latestReceipt = latestReceiptResult as RpcReceipt | null
+    const latestCanonicalBlock = latestCanonicalBlockResult as RpcBlock | null
     if (!latestReceipt || latestReceipt.status !== '0x1' || !latestReceipt.blockNumber || !latestReceipt.blockHash || BigInt(latestReceipt.blockNumber) !== payment.blockNumber) {
       await prisma.cryptoPayment.update({
         where: { id: paymentId },
@@ -211,7 +218,6 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
       })
       return
     }
-    const latestCanonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [latestReceipt.blockNumber, false]) as RpcBlock | null
     if (!latestCanonicalBlock?.hash || latestCanonicalBlock.hash.toLowerCase() !== latestReceipt.blockHash.toLowerCase() || latestReceipt.blockHash.toLowerCase() !== payment.blockHash.toLowerCase()) {
       await prisma.cryptoPayment.update({
         where: { id: paymentId },
@@ -270,7 +276,13 @@ async function monitorSettledPayment(payment: {
 }) {
   // RPC outages are deliberately allowed to throw: the caller leaves the
   // payment VERIFIED and the timestamp unchanged so the next cron retries.
-  const receipt = await rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]) as RpcReceipt | null
+  // Query the receipt and its previously stored canonical block in parallel.
+  const [receiptResult, canonicalBlockResult] = await Promise.all([
+    rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]),
+    rpc(payment.chainId, 'eth_getBlockByNumber', ['0x' + payment.blockNumber.toString(16), false]),
+  ])
+  const receipt = receiptResult as RpcReceipt | null
+  const canonicalBlock = canonicalBlockResult as RpcBlock | null
   if (
     !receipt || receipt.status !== '0x1' || !receipt.blockNumber || !receipt.blockHash ||
     BigInt(receipt.blockNumber) !== payment.blockNumber ||
@@ -287,8 +299,11 @@ async function monitorSettledPayment(payment: {
     return 'review' as const
   }
 
-  const canonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [receipt.blockNumber, false]) as RpcBlock | null
-  if (!canonicalBlock?.hash || canonicalBlock.hash.toLowerCase() !== payment.blockHash.toLowerCase()) {
+  if (
+    !canonicalBlock?.hash ||
+    canonicalBlock.hash.toLowerCase() !== payment.blockHash.toLowerCase() ||
+    canonicalBlock.hash.toLowerCase() !== receipt.blockHash.toLowerCase()
+  ) {
     await prisma.cryptoPayment.updateMany({
       where: { id: payment.id, status: 'VERIFIED', finalizationCompletedAt: { not: null } },
       data: {
