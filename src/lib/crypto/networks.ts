@@ -99,7 +99,7 @@ export const CRYPTO_PAYMENT_NETWORKS: readonly CryptoPaymentNetwork[] = [
         contractAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
         decimals: 6,
         issuer: 'Circle',
-        enabled: true,
+        enabled: false,
       },
       USDT: {
         contractAddress: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
