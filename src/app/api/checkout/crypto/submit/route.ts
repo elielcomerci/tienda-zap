@@ -76,24 +76,50 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Ese hash ya está asociado a otro pago.' }, { status: 409 })
     }
 
-    const updated = await prisma.cryptoPayment.update({
-      where: { id: payment.id },
+    const submittedAt = new Date()
+    const claim = await prisma.cryptoPayment.updateMany({
+      where: {
+        id: payment.id,
+        status: 'AWAITING_PAYMENT',
+        txHash: null,
+        expiresAt: { gt: submittedAt },
+      },
       data: {
         txHash,
-        submittedAt: new Date(),
+        submittedAt,
         status: 'TX_SUBMITTED',
       },
-      select: { id: true, status: true, txHash: true, submittedAt: true },
     })
+
+    if (claim.count !== 1) {
+      const current = await prisma.cryptoPayment.findUnique({
+        where: { id: payment.id },
+        select: { status: true, txHash: true, submittedAt: true },
+      })
+
+      // A repeated request with the same hash is idempotent, even if it raced
+      // with the request that first claimed the payment.
+      if (current?.txHash === txHash) {
+        return Response.json({ accepted: true, status: current.status, txHash, submittedAt: current.submittedAt })
+      }
+
+      return Response.json(
+        { error: 'Este pago ya tiene una transacción en seguimiento o la cotización venció.' },
+        { status: 409 }
+      )
+    }
 
     return Response.json({
       accepted: true,
-      status: updated.status,
-      txHash: updated.txHash,
-      submittedAt: updated.submittedAt,
+      status: 'TX_SUBMITTED',
+      txHash,
+      submittedAt,
       message: 'Hash recibido. El pago todavía no está confirmado; estamos verificando la red.',
     })
   } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+      return Response.json({ error: 'Ese hash ya está asociado a otro pago.' }, { status: 409 })
+    }
     console.error('[crypto submit]', error)
     return Response.json({ error: 'No se pudo registrar la transacción. Intentá nuevamente.' }, { status: 500 })
   }
