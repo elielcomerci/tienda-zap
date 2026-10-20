@@ -565,7 +565,7 @@ function CheckoutContent() {
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="mb-6 border-b border-gray-100 pb-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                    Paso 2
+                    Paso 1
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
                     Método de pago
@@ -837,7 +837,7 @@ function CheckoutContent() {
               <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
                 <div className="mb-6 border-b border-gray-100 pb-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
-                    Paso 1
+                    Paso 2
                   </p>
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
                     Tus datos
