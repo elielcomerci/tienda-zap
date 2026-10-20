@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
           shippingPostalCode: data.shippingPostalCode,
 
           status: 'PENDING',
-          paymentType: data.paymentType as 'TRANSFER' | 'ZAP_CREDIT',
+          paymentType: data.paymentType as 'TRANSFER' | 'ZAP_CREDIT' | 'CRYPTO',
           subtotal: pricing.subtotal,
           discountTotal: pricing.discountTotal,
           total: pricing.total,
