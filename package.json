@@ -15,7 +15,8 @@
     "db:push": "prisma db push",
     "postinstall": "prisma generate",
     "test": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/configurator-contract.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-networks.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-quotes.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-submit-concurrency.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:crypto": "export TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts"
   },
   "prisma": {
     "seed": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
