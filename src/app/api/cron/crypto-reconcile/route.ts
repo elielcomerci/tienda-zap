@@ -20,7 +20,12 @@ type RpcLog = {
 type RpcReceipt = {
   status?: string
   blockNumber?: string
+  blockHash?: string
   logs?: RpcLog[]
+}
+
+type RpcBlock = {
+  hash?: string
 }
 
 async function rpc(chainId: number, method: string, params: unknown[]) {
@@ -78,6 +83,24 @@ async function inspectSubmittedPayment(payment: {
     return { kind: 'review' as const }
   }
 
+  // Confirmation depth alone does not prove canonicality. Bind the receipt
+  // to the current canonical block before counting confirmations.
+  if (!receipt.blockNumber || !receipt.blockHash) {
+    await prisma.cryptoPayment.updateMany({
+      where: { id: payment.id, status: { in: ['TX_SUBMITTED', 'DETECTED', 'CONFIRMING'] } },
+      data: { status: 'REVIEW', reviewReason: 'El recibo no informa bloque y hash verificables; requiere revisión manual.' },
+    })
+    return { kind: 'review' as const }
+  }
+  const canonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [receipt.blockNumber, false]) as RpcBlock | null
+  if (!canonicalBlock?.hash || canonicalBlock.hash.toLowerCase() !== receipt.blockHash.toLowerCase()) {
+    await prisma.cryptoPayment.updateMany({
+      where: { id: payment.id, status: { in: ['TX_SUBMITTED', 'DETECTED', 'CONFIRMING'] } },
+      data: { status: 'REVIEW', reviewReason: 'El bloque del recibo no coincide con el bloque canónico de la red.' },
+    })
+    return { kind: 'review' as const }
+  }
+
   const token = payment.tokenContract.toLowerCase()
   const recipientTopic = paddedAddress(payment.recipientAddress)
   const recipientTransfers = (receipt.logs || []).filter((log) =>
@@ -127,6 +150,7 @@ async function inspectSubmittedPayment(payment: {
     data: {
       status: confirmations >= REQUIRED_CONFIRMATIONS ? 'VERIFIED' : 'CONFIRMING',
       blockNumber,
+      blockHash: receipt.blockHash.toLowerCase(),
       logIndex,
       confirmations,
       detectedAt: now,
@@ -142,7 +166,10 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
   const now = new Date()
   const payment = await prisma.cryptoPayment.findUnique({
     where: { id: paymentId },
-    select: { status: true, finalizationClaimedAt: true, finalizationCompletedAt: true },
+    select: {
+      status: true, finalizationClaimedAt: true, finalizationCompletedAt: true,
+      chainId: true, txHash: true, blockNumber: true, blockHash: true,
+    },
   })
   if (!payment || payment.status !== 'VERIFIED' || payment.finalizationCompletedAt) return
 
@@ -166,6 +193,32 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
   if (!claim.count) return
 
   try {
+    // Re-check immediately before any order side effect. A receipt may have
+    // been orphaned after the confirmation threshold was reached.
+    if (!payment.txHash || payment.blockNumber === null || !payment.blockHash) {
+      await prisma.cryptoPayment.update({
+        where: { id: paymentId },
+        data: { status: 'REVIEW', reviewReason: 'Falta evidencia del bloque canónico antes de finalizar el pago.', finalizationClaimedAt: null },
+      })
+      return
+    }
+    const latestReceipt = await rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]) as RpcReceipt | null
+    if (!latestReceipt || latestReceipt.status !== '0x1' || !latestReceipt.blockNumber || !latestReceipt.blockHash || BigInt(latestReceipt.blockNumber) !== payment.blockNumber) {
+      await prisma.cryptoPayment.update({
+        where: { id: paymentId },
+        data: { status: 'REVIEW', reviewReason: 'El recibo ya no coincide con el bloque verificado; requiere revisión manual.', finalizationClaimedAt: null },
+      })
+      return
+    }
+    const latestCanonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [latestReceipt.blockNumber, false]) as RpcBlock | null
+    if (!latestCanonicalBlock?.hash || latestCanonicalBlock.hash.toLowerCase() !== latestReceipt.blockHash.toLowerCase() || latestReceipt.blockHash.toLowerCase() !== payment.blockHash.toLowerCase()) {
+      await prisma.cryptoPayment.update({
+        where: { id: paymentId },
+        data: { status: 'REVIEW', reviewReason: 'El bloque verificado dejó de ser canónico antes de acreditar el pedido.', finalizationClaimedAt: null },
+      })
+      return
+    }
+
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       select: { status: true, paymentType: true, paymentId: true },
