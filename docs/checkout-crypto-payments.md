@@ -49,7 +49,7 @@ Todos los estados posteriores al envío deben provenir de datos verificados del 
 
 ### Etapa 1 — pago y conciliación
 
-Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, utilidades de cotización CriptoYa y endpoint de cotización asociado a una orden pendiente. Pendientes: validar en entorno de prueba, conexión de wallet, creación de transferencia desde el cliente, verificación on-chain, conciliador periódico, estados visibles e idempotencia completa del flujo de órdenes.
+Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, cotización CriptoYa, endpoints de cotización/registro de hash/estado, y ruta de conciliación del servidor que consulta recibos y eventos ERC-20, verifica importe exacto y espera 20 confirmaciones antes de marcar el pago verificado. Se agregó un cron de Vercel cada minuto. Pendientes: conectar la wallet desde el checkout, validar con RPCs de prueba, probar la migración en una base de prueba, y endurecer/reprobar la finalización idempotente del pedido.
 
 ### Etapa 2 — tesorería automática
 
@@ -59,8 +59,12 @@ Queda fuera del primer despliegue: swaps, conversión y transferencia automátic
 
 - Confirmar contrato canónico de USDT para cada red que se quiera habilitar.
 - Verificar World Chain (chainId 480), RPC y explorador en entorno de prueba antes de producción.
-- Definir fuente RPC primaria y secundaria por red, con límites y observabilidad.
+- Configurar secretos `CRON_SECRET` y RPCs `CRYPTO_RPC_URL_8453`, `CRYPTO_RPC_URL_10` y `CRYPTO_RPC_URL_480` en Vercel. Los endpoints RPC deben ser de confianza y permanecer solo en servidor.
+- Confirmar que el plan de Vercel del proyecto permite cron por minuto en producción; las tareas cron no se ejecutan desde una preview como sustituto de producción.
+- Definir fuente RPC secundaria por red, con límites y observabilidad.
 - Validar en pruebas que CriptoYa devuelve al menos dos cotizaciones frescas para cada activo (especialmente WLD); revisar si la referencia mediana de `totalBid` representa la política comercial deseada. No se agrega margen implícito.
 - Aplicar la migración solo en una base de prueba y validar Prisma Client, creación de cotizaciones y transición de pago antes de producción.
 - Verificar la integración visual y móvil de WalletConnect con wallets reales.
 - Probar transferencias correctas, red/token incorrecto, cantidad insuficiente, repetición de hash, RPC caído, expiración de cotización y reorg antes de habilitar pagos reales.
+- El reconciliador marca para revisión manual recibos revertidos, transferencias ambiguas, contratos/destinatarios no coincidentes o importes incorrectos; los errores RPC quedan reintentables.
+- La confirmación de orden usa una lease de finalización recuperable. Antes de producción hay que probar interrupciones entre la verificación y los efectos secundarios (emails, cupones, comisiones y eventos), para cerrar la ventana de recuperación sin duplicados ni efectos omitidos.
