@@ -9,6 +9,7 @@ const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a
 const REQUIRED_CONFIRMATIONS = 20
 const MAX_PER_RUN = 4
 const FINALIZATION_LEASE_MS = 2 * 60 * 1000
+const POST_SETTLEMENT_CHECK_INTERVAL_MS = 5 * 60 * 1000
 
 type RpcLog = {
   address?: string
@@ -251,12 +252,59 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
     await syncOrderStatusAfterPayment(orderId, paymentId)
     await prisma.cryptoPayment.updateMany({
       where: { id: paymentId, status: 'VERIFIED', finalizationCompletedAt: null },
-      data: { finalizationCompletedAt: new Date(), finalizationClaimedAt: null },
+      data: { finalizationCompletedAt: new Date(), finalizationClaimedAt: null, lastCanonicalCheckAt: new Date() },
     })
   } catch (error) {
     console.error('[crypto finalize]', paymentId, error)
     // Leave VERIFIED and the claim timestamp. The lease permits a later retry.
   }
+}
+
+
+async function monitorSettledPayment(payment: {
+  id: string
+  chainId: number
+  txHash: string
+  blockNumber: bigint
+  blockHash: string
+}) {
+  // RPC outages are deliberately allowed to throw: the caller leaves the
+  // payment VERIFIED and the timestamp unchanged so the next cron retries.
+  const receipt = await rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]) as RpcReceipt | null
+  if (
+    !receipt || receipt.status !== '0x1' || !receipt.blockNumber || !receipt.blockHash ||
+    BigInt(receipt.blockNumber) !== payment.blockNumber ||
+    receipt.blockHash.toLowerCase() !== payment.blockHash.toLowerCase()
+  ) {
+    await prisma.cryptoPayment.updateMany({
+      where: { id: payment.id, status: 'VERIFIED', finalizationCompletedAt: { not: null } },
+      data: {
+        status: 'REVIEW',
+        reviewReason: 'El recibo de un pago ya acreditado dejó de coincidir con la evidencia liquidada; investigar posible reorganización. El pedido permanece pagado hasta revisión manual.',
+        lastCanonicalCheckAt: new Date(),
+      },
+    })
+    return 'review' as const
+  }
+
+  const canonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [receipt.blockNumber, false]) as RpcBlock | null
+  if (!canonicalBlock?.hash || canonicalBlock.hash.toLowerCase() !== payment.blockHash.toLowerCase()) {
+    await prisma.cryptoPayment.updateMany({
+      where: { id: payment.id, status: 'VERIFIED', finalizationCompletedAt: { not: null } },
+      data: {
+        status: 'REVIEW',
+        reviewReason: 'El bloque de un pago ya acreditado ya no es canónico. El pedido permanece pagado; requiere investigación manual y conciliación.',
+        lastCanonicalCheckAt: new Date(),
+      },
+    })
+    return 'review' as const
+  }
+
+  await prisma.cryptoPayment.updateMany({
+    where: { id: payment.id, status: 'VERIFIED', finalizationCompletedAt: { not: null } },
+    data: { lastCanonicalCheckAt: new Date() },
+  })
+  return 'ok' as const
 }
 
 export async function GET(request: Request) {
@@ -270,7 +318,7 @@ export async function GET(request: Request) {
     return Response.json({ error: 'No autorizado.' }, { status: 401 })
   }
 
-  const results = { checked: 0, confirming: 0, verified: 0, review: 0, errors: 0 }
+  const results = { checked: 0, confirming: 0, verified: 0, review: 0, errors: 0, settledChecked: 0, settledReview: 0 }
   const pending = await prisma.cryptoPayment.findMany({
     where: {
       status: { in: ['TX_SUBMITTED', 'DETECTED', 'CONFIRMING'] },
@@ -322,6 +370,45 @@ export async function GET(request: Request) {
     } catch (error) {
       results.errors += 1
       console.error('[crypto finalize retry]', payment.id, error)
+    }
+  }
+
+
+  // Periodically re-check already-settled payments. This detects a later
+  // reorg without automatically reversing the order or erasing settlement.
+  const settledCutoff = new Date(Date.now() - POST_SETTLEMENT_CHECK_INTERVAL_MS)
+  const settled = await prisma.cryptoPayment.findMany({
+    where: {
+      status: 'VERIFIED',
+      finalizationCompletedAt: { not: null },
+      txHash: { not: null },
+      blockNumber: { not: null },
+      blockHash: { not: null },
+      OR: [
+        { lastCanonicalCheckAt: null },
+        { lastCanonicalCheckAt: { lt: settledCutoff } },
+      ],
+    },
+    orderBy: { lastCanonicalCheckAt: 'asc' },
+    take: MAX_PER_RUN,
+    select: { id: true, chainId: true, txHash: true, blockNumber: true, blockHash: true },
+  })
+  for (const payment of settled) {
+    if (!payment.txHash || payment.blockNumber === null || !payment.blockHash) continue
+    try {
+      const outcome = await monitorSettledPayment({
+        id: payment.id,
+        chainId: payment.chainId,
+        txHash: payment.txHash,
+        blockNumber: payment.blockNumber,
+        blockHash: payment.blockHash,
+      })
+      results.settledChecked += 1
+      if (outcome === 'review') results.settledReview += 1
+    } catch (error) {
+      // Leave lastCanonicalCheckAt untouched: transient RPC failures retry.
+      results.errors += 1
+      console.error('[crypto settled monitor]', payment.id, error)
     }
   }
 
