@@ -359,13 +359,13 @@ function quoteProviderFinishedCostSelection(
     throw new Error('CONSULT_REQUIRED: Esta cantidad necesita validación comercial antes de ofrecer un precio automático.');
   }
 
-  const approvedSelections = pricing?.consultRequiredSelections;
-  if (Array.isArray(approvedSelections) && approvedSelections.length > 0) {
-    const selectionApproved = approvedSelections.some((rule: any) =>
+  const consultRequiredSelections = pricing?.consultRequiredSelections;
+  if (Array.isArray(consultRequiredSelections) && consultRequiredSelections.length > 0) {
+    const requiresConsult = consultRequiredSelections.some((rule: any) =>
       rule && typeof rule === 'object' &&
       Object.entries(rule).every(([key, value]) => String((selection as any)[key] ?? '') === String(value))
     );
-    if (!selectionApproved) {
+    if (requiresConsult) {
       throw new Error('CONSULT_REQUIRED: Esta combinación necesita validación comercial antes de ofrecer un precio automático.');
     }
   }
