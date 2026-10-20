@@ -142,9 +142,9 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
   const now = new Date()
   const payment = await prisma.cryptoPayment.findUnique({
     where: { id: paymentId },
-    select: { status: true, finalizationClaimedAt: true },
+    select: { status: true, finalizationClaimedAt: true, finalizationCompletedAt: true },
   })
-  if (!payment || payment.status !== 'VERIFIED') return
+  if (!payment || payment.status !== 'VERIFIED' || payment.finalizationCompletedAt) return
 
   if (
     payment.finalizationClaimedAt &&
@@ -155,6 +155,7 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
     where: {
       id: paymentId,
       status: 'VERIFIED',
+      finalizationCompletedAt: null,
       OR: [
         { finalizationClaimedAt: null },
         { finalizationClaimedAt: { lt: new Date(now.getTime() - FINALIZATION_LEASE_MS) } },
@@ -177,9 +178,11 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
       return
     }
 
-    if (order.status === 'PENDING') {
-      await syncOrderStatusAfterPayment(orderId, paymentId)
-    }
+    await syncOrderStatusAfterPayment(orderId, paymentId)
+    await prisma.cryptoPayment.updateMany({
+      where: { id: paymentId, status: 'VERIFIED', finalizationCompletedAt: null },
+      data: { finalizationCompletedAt: new Date(), finalizationClaimedAt: null },
+    })
   } catch (error) {
     console.error('[crypto finalize]', paymentId, error)
     // Leave VERIFIED and the claim timestamp. The lease permits a later retry.
@@ -234,7 +237,7 @@ export async function GET(request: Request) {
   }
 
   const strandedVerified = await prisma.cryptoPayment.findMany({
-    where: { status: 'VERIFIED', order: { status: 'PENDING', paymentType: 'CRYPTO' } },
+    where: { status: 'VERIFIED', finalizationCompletedAt: null, order: { paymentType: 'CRYPTO', status: { not: 'CANCELLED' } } },
     orderBy: { verifiedAt: 'asc' },
     take: MAX_PER_RUN,
     select: { id: true, orderId: true },

@@ -952,12 +952,13 @@ enum ProofStatus {
 }
 
 model OrderEvent {
-  id        String   @id @default(cuid())
-  orderId   String
-  status    String
-  note      String?
-  createdAt DateTime @default(now())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  orderId        String
+  status         String
+  note           String?
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId, createdAt])
 }
@@ -1029,6 +1030,7 @@ model CryptoPayment {
   detectedAt        DateTime?
   verifiedAt        DateTime?
   finalizationClaimedAt DateTime?
+  finalizationCompletedAt DateTime?
   reviewReason      String?             @db.Text
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
@@ -1187,6 +1189,18 @@ model SellerIncentiveProgress {
   incentive SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
 
   @@unique([sellerId, incentiveId])
+}
+
+model SellerIncentiveOrderContribution {
+  id          String   @id @default(cuid())
+  orderId     String
+  sellerId    String
+  incentiveId String
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  @@unique([orderId, incentiveId])
+  @@index([sellerId, incentiveId])
 }
 
 model SellerPayout {
