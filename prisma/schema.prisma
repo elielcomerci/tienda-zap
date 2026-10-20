@@ -429,6 +429,7 @@ model Order {
   events                OrderEvent[]
   proofs                ProofFile[]
   commissionLedgers     SellerCommissionLedger[]
+  cryptoPayments        CryptoPayment[]
 }
 
 model OrderItem {
@@ -983,10 +984,57 @@ enum ProofFileType {
 }
 
 enum PaymentType {
+  CRYPTO
   MERCADOPAGO
   TRANSFER
   CASH
   ZAP_CREDIT
+}
+
+enum CryptoPaymentStatus {
+  QUOTED
+  AWAITING_PAYMENT
+  TX_SUBMITTED
+  DETECTED
+  CONFIRMING
+  VERIFIED
+  EXPIRED
+  REVIEW
+  CANCELLED
+}
+
+model CryptoPayment {
+  id                String              @id @default(cuid())
+  orderId           String
+  status            CryptoPaymentStatus  @default(QUOTED)
+  arsAmount         Decimal             @db.Decimal(18, 2)
+  tokenAmount       Decimal             @db.Decimal(36, 18)
+  amountUnits       String
+  chainId           Int
+  networkKey        String
+  tokenSymbol       String
+  tokenContract     String
+  tokenDecimals     Int
+  recipientAddress  String
+  quotePriceArs     Decimal             @db.Decimal(30, 12)
+  quoteSource       String
+  quoteObservedAt   DateTime
+  expiresAt         DateTime
+  txHash            String?
+  logIndex          Int?
+  blockNumber       BigInt?
+  confirmations     Int                 @default(0)
+  detectedAt        DateTime?
+  verifiedAt        DateTime?
+  reviewReason      String?             @db.Text
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  order             Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([orderId, status])
+  @@index([status, expiresAt])
+  @@index([chainId, txHash])
 }
 
 enum PaymentFrequency {
