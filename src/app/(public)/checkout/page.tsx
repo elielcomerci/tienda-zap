@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Fragment, useEffect, useRef, useState, Suspense } from 'react'
 import Link from 'next/link'
@@ -651,6 +651,12 @@ function CheckoutContent() {
                   </div>
                 )}
 
+                <details open={Boolean(couponPreview || loadedCouponCode || couponDraft || couponFeedback)} className="rounded-2xl border border-gray-200 bg-white">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-sm font-semibold text-gray-900 marker:hidden">
+                    <span>¿Tenés un cupón?</span>
+                    <span className="text-xs font-medium text-gray-500">Opcional</span>
+                  </summary>
+                  <div className="border-t border-gray-100 px-3 pb-3 pt-1 sm:px-4">
                 <div className="mt-4 rounded-[28px] border border-gray-200 bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_58%,#f8fafc_100%)] p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -658,10 +664,10 @@ function CheckoutContent() {
                         Cupón opcional
                       </p>
                       <h3 className="mt-2 text-2xl font-black tracking-tight text-gray-950">
-                        ¿Tenés un cupón?
+                        Aplicá tu código
                       </h3>
                       <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                        Podés aplicarlo ahora o continuar sin descuento.
+                        Si tenés un código, podés usarlo antes de confirmar.
                       </p>
                     </div>
                   </div>
@@ -749,6 +755,9 @@ function CheckoutContent() {
                     </div>
                   )}
                 </div>
+
+                  </div>
+                </details>
 
                 {paymentType === 'ZAP_CREDIT' && !zapCreditDisabled && (
                   <div className="mt-4 rounded-2xl border border-[#F7638B]/25 bg-[#FEF1F5]/60 p-4">
