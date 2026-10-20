@@ -1,22 +1,25 @@
 import assert from 'node:assert/strict'
 import Module from 'node:module'
 
-type Scenario = 'valid' | 'cancelled' | 'reverted' | 'rpc-error'
+type Scenario = 'valid' | 'cancelled' | 'reverted' | 'rpc-error' | 'reorg' | 'reorg-finalize' | 'wrong-amount' | 'duplicate-transfer' | 'low-confirmations'
 
 const TOKEN = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 const RECIPIENT = '0x1111111111111111111111111111111111111111'
 const TX_HASH = `0x${'a'.repeat(64)}`
+const BLOCK_HASH = `0x${'b'.repeat(64)}`
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 const recipientTopic = `0x${RECIPIENT.slice(2).toLowerCase().padStart(64, '0')}`
 
 let scenario: Scenario = 'valid'
 let syncCalls = 0
+let canonicalChecks = 0
 let payment: any
 let order: any
 
 function reset(nextScenario: Scenario) {
   scenario = nextScenario
   syncCalls = 0
+  canonicalChecks = 0
   payment = {
     id: 'payment-simulation',
     orderId: 'order-simulation',
@@ -29,6 +32,8 @@ function reset(nextScenario: Scenario) {
     finalizationClaimedAt: null,
     finalizationCompletedAt: null,
     verifiedAt: null,
+    blockNumber: null,
+    blockHash: null,
     confirmations: 0,
   }
   order = {
@@ -49,6 +54,10 @@ const fakePrisma = {
         status: payment.status,
         finalizationClaimedAt: payment.finalizationClaimedAt,
         finalizationCompletedAt: payment.finalizationCompletedAt,
+        chainId: payment.chainId,
+        txHash: payment.txHash,
+        blockNumber: payment.blockNumber,
+        blockHash: payment.blockHash,
       }
     },
     async updateMany({ where, data }: any) {
@@ -117,15 +126,26 @@ async function main() {
           return rpcResponse({
             status: scenario === 'reverted' ? '0x0' : '0x1',
             blockNumber: '0x80',
+            blockHash: BLOCK_HASH,
             logs: [{
               address: TOKEN,
               topics: [TRANSFER_TOPIC, `0x${'2'.repeat(64)}`, recipientTopic],
-              data: '0xf4240',
+              data: scenario === 'wrong-amount' ? '0xf4241' : '0xf4240',
               logIndex: '0x0',
-            }],
+            }, ...(scenario === 'duplicate-transfer' ? [{
+              address: TOKEN,
+              topics: [TRANSFER_TOPIC, `0x${'3'.repeat(64)}`, recipientTopic],
+              data: '0xf4240',
+              logIndex: '0x1',
+            }] : [])],
           })
         case 'eth_blockNumber':
-          return rpcResponse('0x100')
+          return rpcResponse(scenario === 'low-confirmations' ? '0x80' : '0x100')
+        case 'eth_getBlockByNumber': {
+          canonicalChecks += 1
+          const mismatch = scenario === 'reorg' || (scenario === 'reorg-finalize' && canonicalChecks > 1)
+          return rpcResponse({ hash: mismatch ? `0x${'c'.repeat(64)}` : BLOCK_HASH })
+        }
         default:
           throw new Error(`Unexpected RPC method: ${body.method}`)
       }
@@ -175,7 +195,39 @@ async function main() {
     assert.equal(payment.status, 'TX_SUBMITTED', 'RPC failure is unknown/retryable, not a failed payment')
     assert.equal(syncCalls, 0)
 
-    console.log('Crypto reconciliation simulation tests passed (verified, cancelled order, reverted receipt, RPC outage)')
+    reset('wrong-amount')
+    response = await GET(request())
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'REVIEW', 'a transfer with a mismatched amount must require manual review')
+    assert.equal(syncCalls, 0)
+
+    reset('duplicate-transfer')
+    response = await GET(request())
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'REVIEW', 'multiple matching transfers must not be automatically credited')
+    assert.equal(syncCalls, 0)
+
+    reset('low-confirmations')
+    response = await GET(request())
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'CONFIRMING', 'insufficient confirmations must not settle the order')
+    assert.equal(syncCalls, 0)
+
+    reset('reorg')
+    response = await GET(request())
+    body = await response.json() as any
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'REVIEW', 'receipt in a non-canonical block must not be verified')
+    assert.equal(syncCalls, 0, 'non-canonical receipt must never settle the order')
+
+    reset('reorg-finalize')
+    response = await GET(request())
+    body = await response.json() as any
+    assert.equal(response.status, 200)
+    assert.equal(payment.status, 'REVIEW', 'a reorg between verification and finalization must stop settlement')
+    assert.equal(syncCalls, 0, 'finalization must re-check canonicality before side effects')
+
+    console.log('Crypto reconciliation simulation tests passed (verified, cancelled order, reverted receipt, RPC outage, wrong amount, duplicate transfer, low confirmations, reorg before and during finalization)')
   } finally {
     globalThis.fetch = oldFetch
     if (oldPaymentsEnabled === undefined) delete process.env.CRYPTO_PAYMENTS_ENABLED
