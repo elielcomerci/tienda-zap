@@ -37,6 +37,7 @@ CREATE TABLE "CryptoPayment" (
   "confirmations" INTEGER NOT NULL DEFAULT 0,
   "detectedAt" TIMESTAMP(3),
   "verifiedAt" TIMESTAMP(3),
+  "finalizationClaimedAt" TIMESTAMP(3),
   "reviewReason" TEXT,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL,
