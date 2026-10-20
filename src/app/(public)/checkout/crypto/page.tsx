@@ -135,8 +135,8 @@ function Content() {
           {txHash && <p className="mt-4 break-all text-xs text-gray-600">Hash: <code>{txHash}</code></p>}
           {payment.explorerUrl && <a href={payment.explorerUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-violet-700">Ver transacción <ExternalLink size={14} /></a>}
         </section>
-        {payment.status === 'AWAITING_PAYMENT' && <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button>}
-        {payment.status === 'TX_SUBMITTED' && txHash && <button type="button" onClick={() => void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash.'))} className="w-full rounded-2xl border px-5 py-3 text-sm font-semibold">Reintentar registro del hash</button>}
+        {payment.status === 'AWAITING_PAYMENT' && !txHash && <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button>}
+        {(payment.status === 'TX_SUBMITTED' || (payment.status === 'AWAITING_PAYMENT' && Boolean(txHash))) && txHash && <button type="button" onClick={() => void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash.'))} className="w-full rounded-2xl border px-5 py-3 text-sm font-semibold">Reintentar registro del hash</button>}
       </div>}
     </div>
   </main>
