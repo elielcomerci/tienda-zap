@@ -49,7 +49,7 @@ Todos los estados posteriores al envío deben provenir de datos verificados del 
 
 ### Etapa 1 — pago y conciliación
 
-El reconciliador actual es una primera implementación que requiere revisión y pruebas de fallos/reintentos; no se considera todavía un servicio financiero listo para producción.
+El reconciliador actual es una primera implementación que requiere revisión y pruebas de fallos/reintentos; no se considera todavía un servicio financiero listo para producción. Para respetar el límite de ejecución serverless, procesa hasta cuatro pagos por minuto y consulta los RPC en paralelo por pago.
 
 Ya preparados: matriz de redes/activos, modelo Prisma y migración versionada, cotización CriptoYa, endpoints de cotización/registro de hash/estado, y ruta de conciliación del servidor que consulta recibos y eventos ERC-20, verifica importe exacto y espera 20 confirmaciones antes de marcar el pago verificado. Se agregó un Cloudflare Worker con Cron Trigger cada minuto para invocar el endpoint protegido; Vercel Hobby no admite esa frecuencia. Pendientes: conectar la wallet desde el checkout, validar con RPCs de prueba, probar la migración en una base de prueba, y endurecer/reprobar la finalización idempotente del pedido.
 
