@@ -1034,6 +1034,7 @@ model CryptoPayment {
   verifiedAt        DateTime?
   finalizationClaimedAt DateTime?
   finalizationCompletedAt DateTime?
+  lastCanonicalCheckAt DateTime?
   reviewReason      String?             @db.Text
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
