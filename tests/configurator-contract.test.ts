@@ -172,7 +172,7 @@ test('flyers habilita costos offset y digitales según la matriz disponible', ()
   const config = flyersDesplegablesConfigurator;
   const offset = quoteConfiguratorSelection(
     config as any,
-    { ...defaultSelection(config), foldingType: 'plano', format: '10x15', material: 'ilustracion_115g', printing: '4_4', quantity: 1000 },
+    { ...defaultSelection(config), foldingType: 'plano', format: '10x15', material: 'ilustracion_150g', printing: '4_4', quantity: 1000 },
     { profitMargin: 0 } as any,
   );
   assertQuoteFinancials(offset);
