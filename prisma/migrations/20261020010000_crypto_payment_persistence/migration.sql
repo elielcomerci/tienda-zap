@@ -1,6 +1,4 @@
 -- Crypto checkout persistence. This migration is additive; it does not change existing payment flows.
-ALTER TYPE "PaymentType" ADD VALUE IF NOT EXISTS 'CRYPTO';
-
 CREATE TYPE "CryptoPaymentStatus" AS ENUM (
   'QUOTED',
   'AWAITING_PAYMENT',
