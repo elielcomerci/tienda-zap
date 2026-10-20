@@ -10,6 +10,10 @@ const REQUIRED_CONFIRMATIONS = 20
 const MAX_PER_RUN = 4
 const FINALIZATION_LEASE_MS = 2 * 60 * 1000
 const POST_SETTLEMENT_CHECK_INTERVAL_MS = 5 * 60 * 1000
+const RPC_TIMEOUT_MS = 1800
+const EXECUTION_BUDGET_MS = 8500
+const FINALIZATION_RESERVE_MS = 4000
+const SETTLEMENT_RESERVE_MS = 2200
 
 type RpcLog = {
   address?: string
@@ -29,16 +33,19 @@ type RpcBlock = {
   hash?: string
 }
 
-async function rpc(chainId: number, method: string, params: unknown[]) {
+async function rpc(chainId: number, method: string, params: unknown[], deadlineAt: number) {
   const url = process.env[`CRYPTO_RPC_URL_${chainId}`]
   if (!url) throw new Error(`Falta CRYPTO_RPC_URL_${chainId}`)
+
+  const remainingMs = Math.min(RPC_TIMEOUT_MS, deadlineAt - Date.now())
+  if (remainingMs <= 0) throw new Error('Se agotó el presupuesto de ejecución de la conciliación')
 
   const response = await fetch(url, {
     method: 'POST',
     cache: 'no-store',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(remainingMs),
   })
   if (!response.ok) throw new Error(`RPC ${chainId} HTTP ${response.status}`)
   const payload = await response.json() as { result?: unknown; error?: { message?: string } }
@@ -62,11 +69,11 @@ async function inspectSubmittedPayment(payment: {
   recipientAddress: string
   amountUnits: string
   txHash: string
-}) {
+}, deadlineAt: number) {
   const [chainIdResult, receiptResult, currentBlockResult] = await Promise.all([
-    rpc(payment.chainId, 'eth_chainId', []),
-    rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]),
-    rpc(payment.chainId, 'eth_blockNumber', []),
+    rpc(payment.chainId, 'eth_chainId', [], deadlineAt),
+    rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash], deadlineAt),
+    rpc(payment.chainId, 'eth_blockNumber', [], deadlineAt),
   ])
   const reportedChainId = Number(BigInt(String(chainIdResult)))
   if (reportedChainId !== payment.chainId) {
@@ -93,7 +100,7 @@ async function inspectSubmittedPayment(payment: {
     })
     return { kind: 'review' as const }
   }
-  const canonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [receipt.blockNumber, false]) as RpcBlock | null
+  const canonicalBlock = await rpc(payment.chainId, 'eth_getBlockByNumber', [receipt.blockNumber, false], deadlineAt) as RpcBlock | null
   if (!canonicalBlock?.hash || canonicalBlock.hash.toLowerCase() !== receipt.blockHash.toLowerCase()) {
     await prisma.cryptoPayment.updateMany({
       where: { id: payment.id, status: { in: ['TX_SUBMITTED', 'DETECTED', 'CONFIRMING'] } },
@@ -163,7 +170,7 @@ async function inspectSubmittedPayment(payment: {
   return { kind: updated.count ? (confirmations >= REQUIRED_CONFIRMATIONS ? 'verified' as const : 'confirming' as const) : 'pending' as const }
 }
 
-async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
+async function finalizeVerifiedPayment(paymentId: string, orderId: string, deadlineAt: number) {
   const now = new Date()
   const payment = await prisma.cryptoPayment.findUnique({
     where: { id: paymentId },
@@ -206,8 +213,8 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
     // The stored block number is already known. Fetch the receipt and that
     // canonical block concurrently to avoid two sequential RPC round trips.
     const [latestReceiptResult, latestCanonicalBlockResult] = await Promise.all([
-      rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]),
-      rpc(payment.chainId, 'eth_getBlockByNumber', ['0x' + payment.blockNumber.toString(16), false]),
+      rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash], deadlineAt),
+      rpc(payment.chainId, 'eth_getBlockByNumber', ['0x' + payment.blockNumber.toString(16), false], deadlineAt),
     ])
     const latestReceipt = latestReceiptResult as RpcReceipt | null
     const latestCanonicalBlock = latestCanonicalBlockResult as RpcBlock | null
@@ -273,13 +280,13 @@ async function monitorSettledPayment(payment: {
   txHash: string
   blockNumber: bigint
   blockHash: string
-}) {
+}, deadlineAt: number) {
   // RPC outages are deliberately allowed to throw: the caller leaves the
   // payment VERIFIED and the timestamp unchanged so the next cron retries.
   // Query the receipt and its previously stored canonical block in parallel.
   const [receiptResult, canonicalBlockResult] = await Promise.all([
-    rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash]),
-    rpc(payment.chainId, 'eth_getBlockByNumber', ['0x' + payment.blockNumber.toString(16), false]),
+    rpc(payment.chainId, 'eth_getTransactionReceipt', [payment.txHash], deadlineAt),
+    rpc(payment.chainId, 'eth_getBlockByNumber', ['0x' + payment.blockNumber.toString(16), false], deadlineAt),
   ])
   const receipt = receiptResult as RpcReceipt | null
   const canonicalBlock = canonicalBlockResult as RpcBlock | null
@@ -333,6 +340,7 @@ export async function GET(request: Request) {
     return Response.json({ error: 'No autorizado.' }, { status: 401 })
   }
 
+  const deadlineAt = Date.now() + EXECUTION_BUDGET_MS
   const results = { checked: 0, confirming: 0, verified: 0, review: 0, errors: 0, settledChecked: 0, settledReview: 0 }
   const pending = await prisma.cryptoPayment.findMany({
     where: {
@@ -352,9 +360,9 @@ export async function GET(request: Request) {
     const batchResults = await Promise.all(batch.map(async (payment) => {
       if (!payment.txHash) return { kind: 'pending' as const }
       try {
-        const result = await inspectSubmittedPayment({ ...payment, txHash: payment.txHash })
+        const result = await inspectSubmittedPayment({ ...payment, txHash: payment.txHash }, deadlineAt)
         if (result.kind === 'verified') {
-          await finalizeVerifiedPayment(payment.id, payment.orderId)
+          await finalizeVerifiedPayment(payment.id, payment.orderId, deadlineAt)
         }
         return result
       } catch (error) {
@@ -373,6 +381,10 @@ export async function GET(request: Request) {
     }
   }
 
+  if (deadlineAt - Date.now() < FINALIZATION_RESERVE_MS) {
+    return Response.json({ ok: true, ...results, budgetLimited: true })
+  }
+
   const strandedVerified = await prisma.cryptoPayment.findMany({
     where: { status: 'VERIFIED', finalizationCompletedAt: null, order: { paymentType: 'CRYPTO', status: { not: 'CANCELLED' } } },
     orderBy: { verifiedAt: 'asc' },
@@ -380,8 +392,9 @@ export async function GET(request: Request) {
     select: { id: true, orderId: true },
   })
   for (const payment of strandedVerified) {
+    if (deadlineAt - Date.now() < FINALIZATION_RESERVE_MS) break
     try {
-      await finalizeVerifiedPayment(payment.id, payment.orderId)
+      await finalizeVerifiedPayment(payment.id, payment.orderId, deadlineAt)
     } catch (error) {
       results.errors += 1
       console.error('[crypto finalize retry]', payment.id, error)
@@ -391,6 +404,10 @@ export async function GET(request: Request) {
 
   // Periodically re-check already-settled payments. This detects a later
   // reorg without automatically reversing the order or erasing settlement.
+  if (deadlineAt - Date.now() < SETTLEMENT_RESERVE_MS) {
+    return Response.json({ ok: true, ...results, budgetLimited: true })
+  }
+
   const settledCutoff = new Date(Date.now() - POST_SETTLEMENT_CHECK_INTERVAL_MS)
   const settled = await prisma.cryptoPayment.findMany({
     where: {
@@ -409,6 +426,7 @@ export async function GET(request: Request) {
     select: { id: true, chainId: true, txHash: true, blockNumber: true, blockHash: true },
   })
   for (const payment of settled) {
+    if (deadlineAt - Date.now() < SETTLEMENT_RESERVE_MS) break
     if (!payment.txHash || payment.blockNumber === null || !payment.blockHash) continue
     try {
       const outcome = await monitorSettledPayment({
@@ -417,7 +435,7 @@ export async function GET(request: Request) {
         txHash: payment.txHash,
         blockNumber: payment.blockNumber,
         blockHash: payment.blockHash,
-      })
+      }, deadlineAt)
       results.settledChecked += 1
       if (outcome === 'review') results.settledReview += 1
     } catch (error) {
