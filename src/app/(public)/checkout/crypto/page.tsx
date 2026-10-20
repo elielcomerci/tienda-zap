@@ -60,7 +60,12 @@ function Content() {
       setLoading(true); setError('')
       try {
         if (!accessToken) throw new Error('Falta el acceso al pedido. Volvé al checkout y generá el pago nuevamente.')
-        if (paymentId) { await refresh(paymentId); return }
+        if (paymentId) {
+          const savedHash = window.sessionStorage.getItem(`zap-crypto-tx:${paymentId}`)
+          if (savedHash && /^0x[a-fA-F0-9]{64}$/.test(savedHash)) setTxHash(savedHash)
+          await refresh(paymentId)
+          return
+        }
         if (!orderId || ![8453, 10, 480].includes(chainId) || !((chainId === 480 && tokenSymbol === 'WLD') || (chainId !== 480 && tokenSymbol === 'USDC'))) throw new Error('El pedido, la red o la moneda no son válidos.')
         const r = await fetch('/api/checkout/crypto/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId, accessToken, chainId, tokenSymbol }), cache: 'no-store' })
         const data = await r.json()
@@ -82,6 +87,7 @@ function Content() {
     const r = await fetch('/api/checkout/crypto/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: id, accessToken, txHash: hash }) })
     const data = await r.json()
     if (!r.ok) throw new Error(data.error || 'No pudimos registrar el hash.')
+    window.sessionStorage.removeItem(`zap-crypto-tx:${id}`)
     setNotice(data.message || 'Hash recibido; el pago todavía debe ser verificado.')
     await refresh(id)
   }
@@ -112,6 +118,7 @@ function Content() {
       const hash = await wallet.request({ method: 'eth_sendTransaction', params: [{ from: accounts[0], to: payment.tokenContract, data: '0xa9059cbb' + recipient + amount, value: '0x0' }] }) as string
       if (!/^0x[a-fA-F0-9]{64}$/.test(hash)) throw new Error('La wallet no devolvió un hash válido.')
       setTxHash(hash)
+      window.sessionStorage.setItem(`zap-crypto-tx:${payment.id}`, hash)
       await registerHash(payment.id, hash)
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo enviar la transferencia.') }
     finally { setBusy(false) }
@@ -136,6 +143,7 @@ function Content() {
           {txHash && <p className="mt-4 break-all text-xs text-gray-600">Hash: <code>{txHash}</code></p>}
           {payment.explorerUrl && <a href={payment.explorerUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-violet-700">Ver transacción <ExternalLink size={14} /></a>}
         </section>
+        {payment.status === 'AWAITING_PAYMENT' && txHash && !payment.txHash && <button type="button" onClick={() => { setBusy(true); setError(''); void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash. No vuelvas a enviar fondos.')).finally(() => setBusy(false)) }} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-300 bg-violet-50 px-5 py-4 text-sm font-bold text-violet-900 disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <CheckCircle2 size={18} />} {busy ? 'Registrando hash...' : 'Reintentar registro del hash enviado'}</button>}
         {payment.status === 'AWAITING_PAYMENT' && !txHash && (mainnetPaymentsEnabled ? <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button> : <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Transferencias deshabilitadas.</strong> Esta versión está en prueba. No envíes fondos reales; el botón se habilitará únicamente después de autorizar los cobros.</div>)}
         {(payment.status === 'TX_SUBMITTED' || (payment.status === 'AWAITING_PAYMENT' && Boolean(txHash))) && txHash && <button type="button" onClick={() => void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash.'))} className="w-full rounded-2xl border px-5 py-3 text-sm font-semibold">Reintentar registro del hash</button>}
       </div>}
