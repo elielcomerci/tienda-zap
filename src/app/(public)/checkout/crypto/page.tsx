@@ -99,6 +99,16 @@ function Content() {
     await refresh(id)
   }
 
+  const retryQuote = () => {
+    if (!payment || !accessToken || payment.txHash) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('orderId', payment.orderId)
+    url.searchParams.set('chainId', String(payment.chainId))
+    url.searchParams.set('tokenSymbol', payment.tokenSymbol)
+    url.searchParams.delete('paymentId')
+    window.location.assign(url.toString())
+  }
+
   const pay = async () => {
     if (!payment) return
     setBusy(true); setError(''); setNotice('')
@@ -156,6 +166,7 @@ function Content() {
           {txHash && <p className="mt-4 break-all text-xs text-gray-600">Hash: <code>{txHash}</code></p>}
           {payment.explorerUrl && <a href={payment.explorerUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-violet-700">Ver transacción <ExternalLink size={14} /></a>}
         </section>
+        {(payment.status === 'EXPIRED' || Date.parse(payment.expiresAt) <= Date.now()) && !payment.txHash && <button type="button" onClick={retryQuote} disabled={busy} className="flex w-full items-center justify-center rounded-2xl border border-gray-300 bg-white px-5 py-4 text-sm font-bold text-gray-900 hover:bg-gray-50 disabled:opacity-50">Generar una nueva cotización</button>}
         {((payment.status === 'AWAITING_PAYMENT' && txHash && !payment.txHash) || (payment.status === 'TX_SUBMITTED' && txHash)) && <button type="button" onClick={() => { setBusy(true); setError(''); void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash. No vuelvas a enviar fondos.')).finally(() => setBusy(false)) }} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-300 bg-violet-50 px-5 py-4 text-sm font-bold text-violet-900 disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <CheckCircle2 size={18} />} {busy ? 'Registrando hash...' : 'Reintentar registro del hash enviado'}</button>}
         {payment.status === 'AWAITING_PAYMENT' && !txHash && (mainnetPaymentsEnabled && payment.paymentsEnabled ? <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button> : <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Transferencias deshabilitadas.</strong> Esta versión está en prueba. No envíes fondos reales; el botón se habilitará únicamente después de autorizar los cobros.</div>)}
       </div>}
