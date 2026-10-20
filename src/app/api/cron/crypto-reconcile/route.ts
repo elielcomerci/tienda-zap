@@ -190,6 +190,10 @@ async function finalizeVerifiedPayment(paymentId: string, orderId: string) {
 }
 
 export async function GET(request: Request) {
+  if (process.env.CRYPTO_PAYMENTS_ENABLED !== 'true') {
+    return Response.json({ error: 'La conciliación cripto está deshabilitada en este entorno.' }, { status: 503 })
+  }
+
   const secret = process.env.CRON_SECRET || process.env.CRYPTO_CRON_SECRET
   const authorization = request.headers.get('authorization')
   if (!secret || authorization !== `Bearer ${secret}`) {
