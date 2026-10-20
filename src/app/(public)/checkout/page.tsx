@@ -505,9 +505,8 @@ function CheckoutContent() {
         const result = await response.json()
         if (!response.ok) throw new Error(result.error || 'No pudimos crear el pedido.')
         setOrderCreated(true)
-        clearCart()
-        clearCouponCode()
-        if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
+        // Keep the cart until the crypto quote is successfully created. If quoting fails,
+        // the customer can retry without rebuilding the order.
         router.push(
           `/checkout/crypto?orderId=${encodeURIComponent(result.orderId)}&accessToken=${encodeURIComponent(result.accessToken)}&chainId=${cryptoChainId}&tokenSymbol=${cryptoTokenSymbol}`
         )
