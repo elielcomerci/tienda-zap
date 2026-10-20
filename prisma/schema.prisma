@@ -45,6 +45,7 @@ model User {
   operationalBusinessAccounts       BusinessAccount[]             @relation("BusinessAccountOperationalSeller")
   sellerProfile                     SellerProfile?
   incentiveProgress                 SellerIncentiveProgress[]
+  incentiveOrderContributions       SellerIncentiveOrderContribution[]
   sellerPayouts                     SellerPayout[]
   sellerCommissionLedgers           SellerCommissionLedger[]      @relation("SellerCommissionSeller")
   clientCommissionLedgers           SellerCommissionLedger[]      @relation("SellerCommissionClient")
@@ -431,6 +432,7 @@ model Order {
   proofs                ProofFile[]
   commissionLedgers     SellerCommissionLedger[]
   cryptoPayments        CryptoPayment[]
+  sellerIncentiveContributions SellerIncentiveOrderContribution[]
 }
 
 model OrderItem {
@@ -1174,6 +1176,7 @@ model SellerIncentive {
   updatedAt    DateTime @updatedAt
 
   sellerProgress SellerIncentiveProgress[]
+  orderContributions SellerIncentiveOrderContribution[]
 }
 
 model SellerIncentiveProgress {
@@ -1198,6 +1201,10 @@ model SellerIncentiveOrderContribution {
   incentiveId String
   amount      Float
   createdAt   DateTime @default(now())
+
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  seller    User            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  incentive SellerIncentive @relation(fields: [incentiveId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, incentiveId])
   @@index([sellerId, incentiveId])
