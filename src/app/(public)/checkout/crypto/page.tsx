@@ -37,6 +37,7 @@ function Content() {
   const paymentId = q.get('paymentId') ?? ''
   const chainId = Number(q.get('chainId') ?? 8453)
   const tokenSymbol = (q.get('tokenSymbol') ?? 'USDC').toUpperCase()
+  const mainnetPaymentsEnabled = process.env.NEXT_PUBLIC_CRYPTO_MAINNET_PAYMENTS_ENABLED === 'true'
   const [payment, setPayment] = useState<Payment | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -135,7 +136,7 @@ function Content() {
           {txHash && <p className="mt-4 break-all text-xs text-gray-600">Hash: <code>{txHash}</code></p>}
           {payment.explorerUrl && <a href={payment.explorerUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-violet-700">Ver transacción <ExternalLink size={14} /></a>}
         </section>
-        {payment.status === 'AWAITING_PAYMENT' && !txHash && <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button>}
+        {payment.status === 'AWAITING_PAYMENT' && !txHash && (mainnetPaymentsEnabled ? <button type="button" onClick={() => void pay()} disabled={busy || Date.parse(payment.expiresAt) <= Date.now()} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ED164F] px-5 py-4 text-sm font-bold text-white hover:bg-[#c2103f] disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" size={18} /> : <Wallet size={18} />}{busy ? 'Procesando wallet...' : `Pagar ${payment.tokenAmount} ${payment.tokenSymbol}`}</button> : <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Transferencias deshabilitadas.</strong> Esta versión está en prueba. No envíes fondos reales; el botón se habilitará únicamente después de autorizar los cobros.</div>)}
         {(payment.status === 'TX_SUBMITTED' || (payment.status === 'AWAITING_PAYMENT' && Boolean(txHash))) && txHash && <button type="button" onClick={() => void registerHash(payment.id, txHash).catch(e => setError(e instanceof Error ? e.message : 'No pudimos registrar el hash.'))} className="w-full rounded-2xl border px-5 py-3 text-sm font-semibold">Reintentar registro del hash</button>}
       </div>}
     </div>
