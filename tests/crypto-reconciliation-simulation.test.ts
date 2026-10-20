@@ -41,7 +41,7 @@ function reset(nextScenario: Scenario) {
     payment.status = 'VERIFIED'
     payment.finalizationCompletedAt = new Date(Date.now() - 10 * 60 * 1000)
     payment.verifiedAt = new Date(Date.now() - 20 * 60 * 1000)
-    payment.blockNumber = 128n
+    payment.blockNumber = BigInt(128)
     payment.blockHash = BLOCK_HASH
     payment.lastCanonicalCheckAt = new Date(Date.now() - 10 * 60 * 1000)
   }
