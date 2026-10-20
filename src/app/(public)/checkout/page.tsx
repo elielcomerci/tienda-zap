@@ -36,25 +36,25 @@ const paymentOptions = [
   {
     value: 'MERCADOPAGO',
     label: 'Tarjeta / MercadoPago',
-    desc: 'Pagalo en el momento y dejamos el trabajo en marcha',
+    desc: 'Tarjeta o Mercado Pago',
     icon: CreditCard,
   },
   {
     value: 'TRANSFER',
     label: 'Transferencia',
-    desc: 'Transferís y adjuntás el comprobante',
+    desc: 'Transferencia bancaria',
     icon: Smartphone,
   },
   {
     value: 'CRYPTO',
     label: 'Criptomonedas',
-    desc: 'Pagá desde tu wallet con USDC o WLD',
+    desc: 'USDC o WLD desde tu wallet',
     icon: Coins,
   },
   {
     value: 'ZAP_CREDIT',
     label: 'Crédito ZAP',
-    desc: 'Solo si necesitas financiar este pedido',
+    desc: 'Financiá tu compra',
     icon: Wallet,
   },
 ] as const
@@ -238,9 +238,6 @@ function CheckoutContent() {
     )
   )
   const hasMissingRequiredFields = missingRequiredFields.length > 0
-  const selectedPaymentOption =
-    paymentOptions.find((option) => option.value === paymentType) ?? paymentOptions[0]
-  const SelectedPaymentIcon = selectedPaymentOption.icon
   const previewDiscountAmount = couponPreview?.status === 'recognized' ? couponPreview.discountAmount : 0
   const visibleCheckoutTotal =
     couponPreview?.status === 'recognized' ? couponPreview.finalTotal : total()
@@ -570,9 +567,8 @@ function CheckoutContent() {
                   <h2 className="mt-2 text-3xl font-black tracking-tight text-gray-950">
                     Método de pago
                   </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-600">
-                    Mostramos cada opcion con el contexto justo para que no tengas que interpretar
-                    demasiado antes de decidir.
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                    Elegí cómo querés pagar.
                   </p>
                 </div>
 
@@ -624,10 +620,7 @@ function CheckoutContent() {
 
                 {paymentType === 'CRYPTO' && (
                   <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/70 p-5">
-                    <h3 className="text-base font-bold text-gray-950">Elegí la red y la moneda</h3>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">
-                      El pago se hace desde tu propia wallet. Revisá la red antes de confirmar la transferencia.
-                    </p>
+                    <h3 className="text-sm font-semibold text-gray-950">Red y moneda</h3>
                     <div className="mt-4 max-w-sm">
                       <label htmlFor="crypto-network" className="label">Red y moneda</label>
                       <select
@@ -646,7 +639,7 @@ function CheckoutContent() {
                       </select>
                     </div>
                     <p className="mt-3 text-xs leading-5 text-gray-500">
-                      La cotización se genera al continuar. El pedido no se considera pagado hasta que la red verifique la transferencia.
+                      La cotización se prepara al continuar.
                     </p>
                   </div>
                 )}
@@ -956,82 +949,23 @@ function CheckoutContent() {
               <div className="rounded-[32px] bg-gray-950 p-6 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)]">
                 <div className="border-b border-white/10 pb-5">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F7638B]">
-                    Resumen final
+                    Tu pedido
                   </p>
-                  <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
-                    {hasItemsRequiringArtwork ? 'Pedido y producción' : 'Pedido listo para confirmar'}
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
+                    Resumen
                   </h2>
-                  <p className="mt-2 text-sm leading-7 text-gray-300">
-                    Todo lo importante queda visible antes de confirmar.
-                  </p>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                      Medio elegido
-                    </p>
-                    <div className="mt-2 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-[#F7638B]">
-                        <SelectedPaymentIcon size={18} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{selectedPaymentOption.label}</p>
-                        <p className="text-xs text-gray-400">{selectedPaymentOption.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                      Cupón
-                    </p>
-                    {couponPreview?.normalizedCode ? (
-                      <>
-                        <div className="mt-2 flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-[#F7638B]">
-                            <Tag size={18} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-white">
-                              {couponPreview.normalizedCode}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {previewDiscountAmount > 0
-                                ? `${previewDiscountAmount.toLocaleString('es-AR')} de descuento aplicado`
-                                : 'cargado en esta confirmación'}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="mt-3 text-xs leading-6 text-gray-400">
-                          {previewDiscountAmount > 0
-                            ? 'Este ahorro ya se refleja en el total visible antes de confirmar.'
-                            : 'El cupón quedó registrado, pero no genero descuento para este pedido.'}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="mt-2 text-sm font-semibold text-white">
-                          Sin cupon cargado
-                        </p>
-                        <p className="mt-1 text-xs text-gray-400">
-                          Podés seguir normalmente o cargarlo desde el bloque de pago.
-                        </p>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                      Total visible
-                    </p>
-                    <p className="mt-2 text-3xl font-black text-white">
-                      ${visibleCheckoutTotal.toLocaleString('es-AR')}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-400">
-                      {items.length} linea{items.length === 1 ? '' : 's'} en este pedido
-                    </p>
-                  </div>
+                <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                    Total
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-white">
+                    ${visibleCheckoutTotal.toLocaleString('es-AR')}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    ${items.length} {items.length === 1 ? 'producto' : 'productos'}
+                  </p>
                 </div>
 
                 {hasUnavailableItems && (
