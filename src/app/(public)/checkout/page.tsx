@@ -727,7 +727,7 @@ function CheckoutContent() {
                 </div>
 
                 <div className="grid gap-3 lg:grid-cols-3">
-                  {paymentOptions.map((option) => {
+                  {paymentOptions.filter((option) => option.value !== 'CRYPTO' || process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true').map((option) => {
                     const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
 
                     return (
