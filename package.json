@@ -16,8 +16,7 @@
     "postinstall": "prisma generate",
     "test": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/configurator-contract.test.ts && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts",
     "typecheck": "tsc --noEmit",
-    "test:crypto": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts",
-    "prebuild": "if [ \"$VERCEL_ENV\" = \"preview\" ] && [ \"$VERCEL_GIT_COMMIT_REF\" = \"feat/crypto-checkout-validation-20261020\" ]; then npm test && npm run typecheck; fi"
+    "test:crypto": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts"
   },
   "prisma": {
     "seed": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
