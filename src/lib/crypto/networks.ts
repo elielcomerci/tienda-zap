@@ -15,7 +15,7 @@ export type CryptoAssetSymbol = 'USDC' | 'USDT' | 'WLD'
 
 export type CryptoPaymentNetwork = {
   chainId: number
-  key: 'base' | 'optimism' | 'polygon'
+  key: 'base' | 'optimism' | 'world-chain' | 'polygon'
   name: string
   nativeCurrency: {
     name: string
@@ -40,10 +40,10 @@ export type CryptoPaymentNetwork = {
  * Initial production allowlist.
  *
  * Base: native USDC only.
- * Optimism: native USDC and the official WLD deployment. USDT remains
- * disabled until its canonical contract is independently verified.
- * Polygon: intentionally not enabled yet; it adds another RPC, monitoring,
- * and support surface without enabling WLD.
+ * Optimism: native USDC only. The initial WLD route is World Chain.
+ * World Chain: official WLD deployment. USDT remains disabled until its
+ * canonical contract is independently verified.
+ * Polygon: intentionally not enabled yet.
  */
 export const CRYPTO_PAYMENT_NETWORKS: readonly CryptoPaymentNetwork[] = [
   {
@@ -78,13 +78,28 @@ export const CRYPTO_PAYMENT_NETWORKS: readonly CryptoPaymentNetwork[] = [
         contractAddress: '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
         decimals: 18,
         issuer: 'World',
-        enabled: true,
+        enabled: false,
       },
       USDT: {
         contractAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
         decimals: 6,
         issuer: 'Tether',
         enabled: false,
+      },
+    },
+  },
+  {
+    chainId: 480,
+    key: 'world-chain',
+    name: 'World Chain',
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    explorerUrl: 'https://worldscan.org',
+    assets: {
+      WLD: {
+        contractAddress: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
+        decimals: 18,
+        issuer: 'World',
+        enabled: true,
       },
     },
   },
