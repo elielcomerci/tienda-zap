@@ -148,7 +148,8 @@ test('los valores predeterminados de los cinco configuradores pasan la validaciÃ
 test('los formatos permitidos por tipo de plegado existen en las opciones visibles', () => {
   const config = flyersDesplegablesConfigurator;
   const formatIds = (config.schema.fields as any).format.options.map((option: any) => option.id);
-  for (const [foldingType, formats] of Object.entries(config.compatibility?.allowedFormats || {})) {
+  const allowedFormats = (config.compatibility?.allowedFormats || {}) as Record<string, string[]>;
+  for (const [foldingType, formats] of Object.entries(allowedFormats)) {
     assert.ok((config.schema.fields as any).foldingType.options.some((option: any) => option.id === foldingType));
     for (const format of formats) assert.ok(formatIds.includes(format), `${foldingType}: ${format}`);
   }
