@@ -6,7 +6,7 @@ import { useCartStore } from '@/lib/cart-store'
 import { AlertTriangle, CheckCircle2, Copy, ExternalLink, LoaderCircle, Wallet } from 'lucide-react'
 
 type Payment = {
-  paymentsEnabled: boolean; id: string; status: string; chainId: number; networkKey: string; tokenSymbol: string
+  paymentsEnabled: boolean; id: string; orderId: string; status: string; chainId: number; networkKey: string; tokenSymbol: string
   arsAmount: string; tokenAmount: string; amountUnits: string; tokenContract: string
   tokenDecimals: number; recipientAddress: string; quotePriceArs: string; quoteSource: string
   expiresAt: string; txHash: string | null; explorerUrl: string | null; confirmations: number
