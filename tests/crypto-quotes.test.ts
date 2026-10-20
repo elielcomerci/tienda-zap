@@ -12,12 +12,12 @@ assert.equal(
   'ARS 1,000 at ARS 1,000 per token equals one 6-decimal token'
 )
 assert.equal(
-  calculateTokenAmountUnits(100000n, '3000.00000000', 18),
+  calculateTokenAmountUnits(BigInt('100000'), '3000.00000000', 18),
   BigInt('333333333333333334'),
   'token units round up so the quote never underpays the ARS order amount'
 )
-assert.equal(formatTokenUnits(333333333333333334n, 18), '0.333333333333333334')
-assert.equal(formatTokenUnits(1000000n, 6), '1')
+assert.equal(formatTokenUnits(BigInt('333333333333333334'), 18), '0.333333333333333334')
+assert.equal(formatTokenUnits(BigInt('1000000'), 6), '1')
 assert.throws(() => arsToCents(0))
 assert.throws(() => calculateTokenAmountUnits(BigInt(100), '0', 6))
 
