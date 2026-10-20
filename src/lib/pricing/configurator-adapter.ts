@@ -468,7 +468,7 @@ function quoteProviderFinishedCostSelection(
         throw new Error('CONSULT_REQUIRED: La matriz offset no tiene costos cargados para esas terminaciones adicionales.');
       }
       // Las tarifas offset históricas viven en pricing.tiers; admitir ambas formas del contrato.
-      const tiers = matrix.tiers || pricing.tiers || {};
+      const tiers = matrix.tiers?.clasicas ? matrix.tiers : (pricing.tiers || matrix.tiers || {});
       let offsetCost: unknown;
       if (selection.lamination === 'sin_laminar') {
         offsetCost = tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.[formatKey]?.[String(quantity)];
