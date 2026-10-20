@@ -1021,6 +1021,7 @@ model CryptoPayment {
   quoteObservedAt   DateTime
   expiresAt         DateTime
   txHash            String?
+  submittedAt       DateTime?
   logIndex          Int?
   blockNumber       BigInt?
   confirmations     Int                 @default(0)
@@ -1031,10 +1032,9 @@ model CryptoPayment {
   updatedAt         DateTime            @updatedAt
   order             Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  @@unique([chainId, txHash, logIndex])
+  @@unique([chainId, txHash])
   @@index([orderId, status])
   @@index([status, expiresAt])
-  @@index([chainId, txHash])
 }
 
 enum PaymentFrequency {
