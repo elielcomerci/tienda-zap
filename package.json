@@ -14,9 +14,9 @@
     "db:studio": "prisma studio",
     "db:push": "prisma db push",
     "postinstall": "prisma generate",
-    "test": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/configurator-contract.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-networks.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-quotes.test.ts && ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\",\\\"moduleResolution\\\":\\\"node\\\"}\" tests/crypto-submit-concurrency.test.ts",
+    "test": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/configurator-contract.test.ts && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts",
     "typecheck": "tsc --noEmit",
-    "test:crypto": "export TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts"
+    "test:crypto": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts"
   },
   "prisma": {
     "seed": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
