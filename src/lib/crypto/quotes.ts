@@ -201,13 +201,15 @@ export async function getWarsAnchoredTokenPrice(
     throw new Error('La cotización de wARS o del activo de pago está desactualizada')
   }
 
-  const impliedPriceArs = tokenUsd / warsUsd
-  if (!Number.isFinite(impliedPriceArs) || impliedPriceArs <= 0) {
+  let impliedPriceArs: string
+  try {
+    impliedPriceArs = calculateWarsAnchoredPriceArs(warsUsd, tokenUsd)
+  } catch {
     throw new Error('No se pudo calcular el precio del activo usando wARS como referencia')
   }
 
   return {
-    priceArs: impliedPriceArs.toFixed(8),
+    priceArs: impliedPriceArs,
     warsPriceUsd: warsUsd.toFixed(12),
     tokenPriceUsd: tokenUsd.toFixed(12),
     observedAt: new Date(oldestUpdatedAt * 1000),
