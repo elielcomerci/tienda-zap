@@ -117,3 +117,118 @@ export function formatTokenUnits(units: bigint, decimals: number): string {
   const fraction = digits.slice(-decimals).replace(/0+$/, '')
   return fraction ? `${whole}.${fraction}` : whole
 }
+
+
+const COINGECKO_BASE_URL = 'https://api.coingecko.com/api/v3'
+const MAX_COINGECKO_QUOTE_AGE_SECONDS = 600
+
+type CoinGeckoPriceEntry = {
+  usd?: unknown
+  last_updated_at?: unknown
+}
+
+type CoinGeckoPriceResponse = Record<string, CoinGeckoPriceEntry>
+
+export type WarsAnchoredPrice = {
+  /** ARS-equivalent price per token, inferred from token USD / wARS USD. */
+  priceArs: string
+  warsPriceUsd: string
+  tokenPriceUsd: string
+  observedAt: Date
+  source: 'coingecko-wars-anchor'
+  sourceAssetId: string
+}
+
+/**
+ * Uses CoinGecko's wARS/USD market reference as the ARS anchor.
+ * Since wARS is designed to track ARS, implied ARS/token = token USD / wARS USD.
+ * This is a market-derived reference, not a guaranteed execution price.
+ */
+export async function getWarsAnchoredTokenPrice(
+  symbol: CryptoAssetSymbol
+): Promise<WarsAnchoredPrice> {
+  const assetIds: Record<CryptoAssetSymbol, string> = {
+    USDC: 'usd-coin',
+    USDT: 'tether',
+    WLD: 'worldcoin-wld',
+  }
+  const tokenId = assetIds[symbol]
+  const url = new URL(`${COINGECKO_BASE_URL}/simple/price`)
+  url.searchParams.set('ids', `argentine-peso,${tokenId}`)
+  url.searchParams.set('vs_currencies', 'usd')
+  url.searchParams.set('include_last_updated_at', 'true')
+
+  const headers: Record<string, string> = { accept: 'application/json' }
+  const apiKey = process.env.COINGECKO_DEMO_API_KEY
+  if (apiKey) headers['x-cg-demo-api-key'] = apiKey
+
+  const response = await fetch(url.toString(), {
+    cache: 'no-store',
+    headers,
+    signal: AbortSignal.timeout(6000),
+  })
+  if (!response.ok) {
+    throw new Error(`CoinGecko respondió HTTP ${response.status}`)
+  }
+
+  const payload: unknown = await response.json()
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error('Respuesta inválida de CoinGecko')
+  }
+
+  const data = payload as CoinGeckoPriceResponse
+  const wars = data['argentine-peso']
+  const token = data[tokenId]
+  const warsUsd = Number(wars?.usd)
+  const tokenUsd = Number(token?.usd)
+  const warsUpdatedAt = Number(wars?.last_updated_at)
+  const tokenUpdatedAt = Number(token?.last_updated_at)
+
+  if (![warsUsd, tokenUsd].every((value) => Number.isFinite(value) && value > 0)) {
+    throw new Error('CoinGecko no devolvió precios USD válidos para wARS y el activo seleccionado')
+  }
+  if (![warsUpdatedAt, tokenUpdatedAt].every((value) => Number.isInteger(value) && value > 0)) {
+    throw new Error('CoinGecko no devolvió marcas de tiempo válidas para ambas cotizaciones')
+  }
+
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  const oldestUpdatedAt = Math.min(warsUpdatedAt, tokenUpdatedAt)
+  if (
+    warsUpdatedAt > nowSeconds + 30 ||
+    tokenUpdatedAt > nowSeconds + 30 ||
+    nowSeconds - oldestUpdatedAt > MAX_COINGECKO_QUOTE_AGE_SECONDS
+  ) {
+    throw new Error('La cotización de wARS o del activo de pago está desactualizada')
+  }
+
+  const impliedPriceArs = tokenUsd / warsUsd
+  if (!Number.isFinite(impliedPriceArs) || impliedPriceArs <= 0) {
+    throw new Error('No se pudo calcular el precio del activo usando wARS como referencia')
+  }
+
+  return {
+    priceArs: impliedPriceArs.toFixed(8),
+    warsPriceUsd: warsUsd.toFixed(12),
+    tokenPriceUsd: tokenUsd.toFixed(12),
+    observedAt: new Date(oldestUpdatedAt * 1000),
+    source: 'coingecko-wars-anchor',
+    sourceAssetId: tokenId,
+  }
+}
+
+/** Pure calculation kept separate so the wARS anchor can be tested without network access. */
+export function calculateWarsAnchoredPriceArs(warsPriceUsd: number, tokenPriceUsd: number): string {
+  if (
+    !Number.isFinite(warsPriceUsd) ||
+    !Number.isFinite(tokenPriceUsd) ||
+    warsPriceUsd <= 0 ||
+    tokenPriceUsd <= 0
+  ) {
+    throw new Error('Los precios USD de wARS y del activo deben ser mayores que cero')
+  }
+  const priceArs = tokenPriceUsd / warsPriceUsd
+  if (!Number.isFinite(priceArs) || priceArs <= 0) {
+    throw new Error('No se pudo calcular el precio implícito en ARS')
+  }
+  return priceArs.toFixed(8)
+}
