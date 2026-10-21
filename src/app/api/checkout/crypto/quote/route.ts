@@ -6,7 +6,7 @@ import {
   arsToCents,
   calculateTokenAmountUnits,
   formatTokenUnits,
-  getCriptoYaSellReferencePrice,
+  getWarsAnchoredTokenPrice,
 } from '@/lib/crypto/quotes'
 
 const RECEIVING_ADDRESS = '0x46da5941eF55e27256ED5802BF8521f75D0c6684'
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Este pedido ya tiene una transferencia en seguimiento.' }, { status: 409 })
     }
 
-    const price = await getCriptoYaSellReferencePrice(tokenSymbol as CryptoAssetSymbol)
+    const price = await getWarsAnchoredTokenPrice(tokenSymbol as CryptoAssetSymbol)
     const arsAmountCents = arsToCents(order.total)
     const amountUnits = calculateTokenAmountUnits(
       arsAmountCents,
@@ -143,9 +143,12 @@ export async function POST(request: Request) {
         quotePriceArs: payment.quotePriceArs.toString(),
       },
       marketReference: {
-        source: 'CriptoYa',
-        method: 'mediana de totalBid de cotizaciones recientes',
-        note: 'Referencia de mercado, no una promesa de precio de liquidación.',
+        source: 'CoinGecko',
+        method: 'precio implícito en ARS = precio USD del activo / precio USD de wARS',
+        warsPriceUsd: price.warsPriceUsd,
+        tokenPriceUsd: price.tokenPriceUsd,
+        assetId: price.sourceAssetId,
+        note: 'wARS se usa como referencia del peso; precio de mercado, no una promesa de liquidación.',
       },
     })
   } catch (error) {
