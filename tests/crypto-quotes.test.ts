@@ -3,9 +3,13 @@ import {
   arsToCents,
   calculateTokenAmountUnits,
   formatTokenUnits,
+  calculateWarsAnchoredPriceArs,
 } from '../src/lib/crypto/quotes'
 
 assert.equal(arsToCents(123.45), BigInt(12345))
+assert.equal(calculateWarsAnchoredPriceArs(0.0007, 1.2), '1714.28571429')
+assert.equal(calculateWarsAnchoredPriceArs(0.0007, 1), '1428.57142857')
+assert.throws(() => calculateWarsAnchoredPriceArs(0, 1))
 assert.equal(
   calculateTokenAmountUnits(BigInt(100000), '1000.00000000', 6),
   BigInt(1000000),
