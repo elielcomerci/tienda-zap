@@ -2,10 +2,10 @@ import assert from 'node:assert/strict'
 import {
   arsToCents,
   calculateTokenAmountUnits,
-  formatTokenUnits,
+  formatTokenUnits,\n  calculateWarsAnchoredPriceArs,
 } from '../src/lib/crypto/quotes'
 
-assert.equal(arsToCents(123.45), BigInt(12345))
+assert.equal(arsToCents(123.45), BigInt(12345))\nassert.equal(calculateWarsAnchoredPriceArs(0.0007, 1.2), '1714.28571429')\nassert.equal(calculateWarsAnchoredPriceArs(0.0007, 1), '1428.57142857')\nassert.throws(() => calculateWarsAnchoredPriceArs(0, 1))
 assert.equal(
   calculateTokenAmountUnits(BigInt(100000), '1000.00000000', 6),
   BigInt(1000000),
