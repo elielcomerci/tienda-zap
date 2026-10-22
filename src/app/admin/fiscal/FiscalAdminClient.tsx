@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { Activity, Check, Copy, KeyRound, Plus, RefreshCw, ShieldAlert, ShieldCheck, X } from 'lucide-react'
 
 type ApiKey = {
@@ -182,10 +183,13 @@ export default function FiscalAdminClient() {
             Administrá cuentas y accesos del servicio fiscal. Las credenciales se transmiten desde el servidor; nunca desde el navegador al Worker.
           </p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+        <Link href="/admin/fiscal/controles" className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">Controles de operación</Link>
         <button onClick={() => void loadTenants()} disabled={loading || busy}
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50">
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Actualizar
         </button>
+        </div>
       </header>
 
       {error && <div role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><ShieldAlert size={18} className="mt-0.5 shrink-0" />{error}</div>}
