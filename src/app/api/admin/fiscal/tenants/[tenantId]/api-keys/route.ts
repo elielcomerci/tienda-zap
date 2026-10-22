@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fiscalWorkerRequest, requireFiscalAdmin } from '@/lib/fiscal-worker-admin'
+import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 
@@ -9,6 +10,7 @@ export async function POST(
 ) {
   const denied = await requireFiscalAdmin()
   if (denied) return denied
+  if (!(await isFiscalFeatureEnabled('apiKeyManagement'))) return NextResponse.json({ error: 'La creación de API keys está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
 
   const { tenantId } = await context.params
   if (!tenantId || tenantId.includes('/')) {
