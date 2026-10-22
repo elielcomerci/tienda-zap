@@ -15,7 +15,7 @@ type Invoice = {
   id: string; environment: string; cuit: string; pointOfSale: number; voucherType: number;
   voucherNumber: number | null; result: string | null; cae: string | null;
   caeExpiresAt: string | null; amount: string | null; currency: string | null;
-  jobId: string | null; workerVoucherId?: string | null; invoicePdfUrl: string | null; createdAt: string; payload?: FiscalPdfInvoice['payload'] | null;
+  jobId: string | null; workerVoucherId?: string | null; invoicePdfUrl: string | null; createdAt: string; payload?: (FiscalPdfInvoice['payload'] & { documentSnapshot?: FiscalPdfInvoice['documentSnapshot'] }) | null; documentSnapshot?: FiscalPdfInvoice['documentSnapshot']
 }
 type CertificateInfo = { id: string; environment: string; status: string; cn?: string; expiresAt: string; daysUntilExpiry: number }
 type Props = { accountId?: string; adminMode?: boolean }
@@ -67,7 +67,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   })
   const [preparedEmission, setPreparedEmission] = useState<FiscalEmissionRequest | null>(null)
   const [preparedMode, setPreparedMode] = useState<'validated' | 'uncertain' | null>(null)
-  const [dryRunPreview, setDryRunPreview] = useState<Record<string, unknown> | null>(null)
+  const [emissionPreview, setEmissionPreview] = useState<{ cbteTipo: number; impTotal: number } | null>(null)
   const [activeJobId, setActiveJobId] = useState<string | null>(null)
 
   const scope = useMemo(() => accountId ? `?accountId=${encodeURIComponent(accountId)}` : '', [accountId])
@@ -91,7 +91,10 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       setAccount(accountPayload.account || null)
       setSupportNotes(accountPayload.account?.notes || '')
       setPlatformStatus(accountPayload.account?.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
-      setInvoices(accountPayload.invoices || [])
+      setInvoices((accountPayload.invoices || []).map((invoice: Invoice) => ({
+        ...invoice,
+        documentSnapshot: invoice.documentSnapshot || invoice.payload?.documentSnapshot || null,
+      })))
       setSelectedInvoiceIds([])
       setContributors(contributorPayload.contributors || [])
       const templateResponse = await fetch(api('/api/fiscal/template'), { cache: 'no-store' })
@@ -288,7 +291,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
   async function prepareEmission(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setError(''); setNotice(''); setDryRunPreview(null)
+    setError(''); setNotice(''); setEmissionPreview(null)
     const net = Number(emission.netBase)
     const quantity = 1
     const rate = emission.type === 'C' ? 0 : Number(emission.vatRate)
@@ -365,47 +368,75 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         vatCondition: Number(emission.vatCondition || '5'),
       },
     }
-    setBusy(true)
-    try {
-      const response = await fetch(api('/api/fiscal/invoices/emit?dryRun=true'), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      })
-      const payload = await response.json()
-      if (!response.ok || payload.valid !== true) throw new Error(payload.error?.message || payload.error || payload.message || 'El Worker no validó la solicitud.')
-      setPreparedEmission(body)
-      setPreparedMode('validated')
-      setDryRunPreview(payload.preview || {})
-      setNotice('Validación previa correcta. Todavía no se emitió ninguna factura.')
-    } catch (reason) {
-      setPreparedEmission(null); setPreparedMode(null)
-      setError(reason instanceof Error ? reason.message : 'No se pudo validar la solicitud.')
-    } finally { setBusy(false) }
+    setPreparedEmission(body)
+    setPreparedMode('validated')
+    setEmissionPreview({ cbteTipo: ({ A: 1, B: 6, C: 11, M: 51 } as const)[emission.type], impTotal: total })
+    setNotice('Vista previa lista. Todavía no se envió ninguna solicitud ni se emitió un comprobante.')
   }
 
   async function submitPreparedEmission() {
     if (!preparedEmission) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api('/api/fiscal/invoices/emit'), {
+      const response = await fetch(api('/api/fiscal/invoices/emit?sync=true'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preparedEmission),
       })
       const payload = await response.json().catch(() => ({}))
-      if (payload.jobId) {
+      const voucher = payload.voucher as {
+        id?: string; voucherType?: number; voucherNumber?: number; cae?: string;
+        caeFchVto?: string; issuedAt?: string; documentSnapshot?: FiscalPdfInvoice['documentSnapshot']
+      } | undefined
+      if (payload.jobId && payload.status === 'DONE' && voucher?.cae && voucher.voucherNumber) {
+        const issuedInvoice: Invoice = {
+          id: voucher.id || String(payload.jobId),
+          environment: preparedEmission.contributor.environment,
+          cuit: preparedEmission.contributor.cuit,
+          pointOfSale: preparedEmission.contributor.pointOfSale,
+          voucherType: voucher.voucherType || ({ A: 1, B: 6, C: 11, M: 51 } as const)[preparedEmission.voucher.type],
+          voucherNumber: voucher.voucherNumber,
+          result: 'DONE',
+          cae: voucher.cae,
+          caeExpiresAt: voucher.caeFchVto || null,
+          amount: String(preparedEmission.amounts.total),
+          currency: 'ARS',
+          jobId: String(payload.jobId),
+          workerVoucherId: voucher.id || null,
+          invoicePdfUrl: null,
+          createdAt: voucher.issuedAt || new Date().toISOString(),
+          payload: {
+            voucher: preparedEmission.voucher,
+            amounts: preparedEmission.amounts,
+            items: preparedEmission.items,
+            customer: preparedEmission.customer,
+          },
+          documentSnapshot: voucher.documentSnapshot || null,
+        }
+        setInvoices(current => [issuedInvoice, ...current.filter(invoice => invoice.jobId !== issuedInvoice.jobId)])
         setActiveJobId(String(payload.jobId))
-        setPreparedEmission(null); setPreparedMode(null); setDryRunPreview(null)
-        setNotice(response.ok
-          ? `Solicitud enviada al Worker. Estado inicial: ${payload.status || 'PENDING'}. Consultá el trabajo antes de volver a emitir.`
-          : `El Worker creó el trabajo ${payload.jobId}, pero hubo un problema al registrar el resultado en Tienda ZAP. Consultá el estado; no vuelvas a emitir.`)
-        await load()
+        setPreparedEmission(null); setPreparedMode(null); setEmissionPreview(null)
+        if (featureFlags.pdfExport === true && pdfTemplate) {
+          try {
+            await downloadFiscalInvoicePdf(issuedInvoice as FiscalPdfInvoice, pdfTemplate)
+            setNotice(`ARCA autorizó el comprobante ${issuedInvoice.pointOfSale.toString().padStart(5, '0')}-${issuedInvoice.voucherNumber.toString().padStart(8, '0')}. CAE ${issuedInvoice.cae}; PDF generado en este dispositivo.`)
+          } catch (pdfError) {
+            setNotice(`ARCA autorizó el comprobante ${issuedInvoice.pointOfSale.toString().padStart(5, '0')}-${issuedInvoice.voucherNumber.toString().padStart(8, '0')} (CAE ${issuedInvoice.cae}), pero no se pudo generar el PDF: ${pdfError instanceof Error ? pdfError.message : 'revisá los datos del emisor.'}`)
+          }
+        } else {
+          setNotice(`ARCA autorizó el comprobante ${issuedInvoice.pointOfSale.toString().padStart(5, '0')}-${issuedInvoice.voucherNumber.toString().padStart(8, '0')}. CAE ${issuedInvoice.cae}.`)
+        }
+        return
+      }
+      if (payload.jobId && ['PENDING', 'PROCESSING'].includes(String(payload.status))) {
+        setActiveJobId(String(payload.jobId))
+        setPreparedMode('uncertain')
+        setNotice('La emisión sigue procesándose en el Worker. Conservamos la misma clave idempotente; consultá este trabajo antes de volver a intentar.')
         return
       }
       if (!response.ok) {
         setPreparedMode('validated')
-        throw new Error(payload.error?.message || payload.error || 'El Worker rechazó la emisión. No se creó un trabajo según la respuesta recibida.')
+        throw new Error(payload.error?.message || payload.error || payload.lastError || (payload.jobId ? `El trabajo ${payload.jobId} terminó en ${payload.status || 'error'}. No generes una clave nueva ni repitas la emisión sin revisar el estado.` : 'El Worker rechazó la emisión. No se creó un trabajo según la respuesta recibida.'))
       }
-      setPreparedMode(null); setPreparedEmission(null); setDryRunPreview(null)
-      setNotice('Solicitud procesada. Actualizá el estado del trabajo para confirmar el resultado de ARCA.')
-      await load()
+      throw new Error('El Worker respondió sin un estado final ni una referencia de trabajo. Conservamos la solicitud original para consultar o reintentar con la misma clave idempotente.')
     } catch (reason) {
       if (reason instanceof TypeError) {
         setPreparedMode('uncertain')
@@ -566,6 +597,17 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <button onClick={() => { setSelectedContributor(item); setCertificateInfo(null) }} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40"><UploadCloud size={14} /> Cargar certificado</button>
                 <button onClick={() => void removeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Quitar CUIT</button>
               </div>
+              <details className="mt-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-semibold text-gray-700">Ayuda oficial para {item.environment === 'TEST' ? 'homologación' : 'producción'} de esta CUIT</summary>
+                {item.environment === 'PROD' ? <div className="mt-3 space-y-2 text-xs leading-5 text-gray-600">
+                  <p>En ARCA: generá una clave privada y CSR; en “Administrador de Certificados Digitales” cargá el CSR y descargá el CRT. Después, en “Administrador de Relaciones”, autorizá el alias para el Web Service que vas a usar (por ejemplo, Factura Electrónica). Finalmente, cargá aquí el CRT y la clave privada con “Cargar certificado”. El certificado y la autorización deben corresponder a esta CUIT y al ambiente productivo.</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/landing/default.asp" target="_blank" rel="noreferrer">Portal ARCA ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/documentacion/certificados.asp" target="_blank" rel="noreferrer">Certificados oficiales ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/WSAA.ObtenerCertificado.pdf" target="_blank" rel="noreferrer">Instructivo CSR/certificado ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/ADMINREL.DelegarWS.pdf" target="_blank" rel="noreferrer">Instructivo de autorización ↗</a></div>
+                  <p>Emitir el certificado no autoriza por sí solo `wsfe`. La clave privada debe conservarse protegida; no la compartas por chat ni la subas al repositorio.</p>
+                </div> : <div className="mt-3 space-y-2 text-xs leading-5 text-gray-600">
+                  <p>Para homologación, usá WSASS y un certificado TEST. En WSASS gestioná el certificado y autorizá el Web Service que corresponda para esta CUIT. Esos certificados no sirven en producción.</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/html/introduccion.html" target="_blank" rel="noreferrer">Guía oficial de WSASS ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/WSASS_manual.pdf" target="_blank" rel="noreferrer">Manual WSASS (PDF) ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/documentacion/wsaa.asp" target="_blank" rel="noreferrer">Documentación WSAA ↗</a></div>
+                </div>}
+              </details>
             </article>)}
           </div>}
       </section>
@@ -591,6 +633,17 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
               </select>
             </label>
+            <details className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5">
+              <summary className="cursor-pointer text-xs font-semibold text-sky-950">Guía y enlaces oficiales para {environment === 'TEST' ? 'homologación' : 'producción'}</summary>
+              {environment === 'PROD' ? <div className="mt-2 space-y-2 text-xs leading-5 text-sky-950">
+                <p>El certificado productivo se solicita con CSR en “Administrador de Certificados Digitales”. Después hay que autorizar el alias para cada Web Service desde “Administrador de Relaciones”. La CUIT del certificado debe ser la titular o representante habilitada para este contribuyente.</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold underline" href="https://www.arca.gob.ar/landing/default.asp" target="_blank" rel="noreferrer">Portal ARCA ↗</a><a className="font-semibold underline" href="https://www.arca.gob.ar/ws/documentacion/certificados.asp" target="_blank" rel="noreferrer">Certificados ↗</a><a className="font-semibold underline" href="https://www.arca.gob.ar/ws/WSAA/WSAA.ObtenerCertificado.pdf" target="_blank" rel="noreferrer">Instructivo de certificado ↗</a><a className="font-semibold underline" href="https://www.arca.gob.ar/ws/WSAA/ADMINREL.DelegarWS.pdf" target="_blank" rel="noreferrer">Instructivo de relaciones ↗</a></div>
+                <p>El certificado solo no habilita `wsfe`. La clave privada se conserva protegida y se carga en el siguiente paso.</p>
+              </div> : <div className="mt-2 space-y-2 text-xs leading-5 text-sky-950">
+                <p>Para TEST, obtené el certificado y autorizá el servicio desde WSASS. Los certificados de homologación no se usan en producción.</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold underline" href="https://www.arca.gob.ar/ws/WSASS/html/introduccion.html" target="_blank" rel="noreferrer">Guía WSASS ↗</a><a className="font-semibold underline" href="https://www.arca.gob.ar/ws/WSASS/WSASS_manual.pdf" target="_blank" rel="noreferrer">Manual WSASS ↗</a><a className="font-semibold underline" href="https://www.arca.gob.ar/ws/documentacion/wsaa.asp" target="_blank" rel="noreferrer">Documentación WSAA ↗</a></div>
+              </div>}
+            </details>
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setShowAddContributor(false)} className="rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700">Cancelar</button>
               <button disabled={busy || featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular</button>
@@ -601,6 +654,11 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
       {selectedContributor && <section className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><div className="flex flex-wrap items-center gap-2">{featureFlags.certificateManagement === true && <button type="button" onClick={() => void revokeCertificates()} disabled={busy || !certificateInfo?.active?.some(cert => cert.environment === selectedContributor.environment)} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Revocar certificados</button>}<button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-zap-magenta hover:text-zap-magenta">Cerrar</button></div></div>
+        <details className="mt-4 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2">
+          <summary className="cursor-pointer text-xs font-semibold text-sky-950">Ayuda para obtener y autorizar este certificado</summary>
+          <p className="mt-2 text-xs leading-5 text-sky-950">{selectedContributor.environment === 'PROD' ? 'En producción, generá un CSR y solicitá el certificado en el Administrador de Certificados Digitales. Luego asociá su alias al Web Service en Administrador de Relaciones.' : 'En TEST, generá y autorizá el certificado dentro de WSASS. Los certificados de homologación no sirven en producción.'}</p>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">{selectedContributor.environment === 'PROD' ? <><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/landing/default.asp" target="_blank" rel="noreferrer">Portal ARCA ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/WSAA.ObtenerCertificado.pdf" target="_blank" rel="noreferrer">Guía del certificado ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/ADMINREL.DelegarWS.pdf" target="_blank" rel="noreferrer">Guía de autorización ↗</a></> : <><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/html/introduccion.html" target="_blank" rel="noreferrer">Guía WSASS ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/WSASS_manual.pdf" target="_blank" rel="noreferrer">Manual WSASS ↗</a></>}</div>
+        </details>
         {certificateInfo && <div className="mt-4 space-y-2">
           {(certificateInfo.active || []).concat(certificateInfo.others || []).filter(cert => cert.environment === selectedContributor.environment).map(cert => <div key={cert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-3 text-sm"><div><p className="font-semibold text-gray-800">{cert.cn || 'Certificado'} · {cert.status}</p><p className="text-xs text-gray-500">Vence {date(cert.expiresAt)} · {cert.daysUntilExpiry} días</p></div><div className="flex items-center gap-2"><span className="font-mono text-xs text-gray-500">{cert.environment}</span>{cert.status !== 'ACTIVE' && cert.daysUntilExpiry >= 0 && featureFlags.certificateManagement === true && <button type="button" onClick={() => void activateCertificate(cert)} disabled={busy} className="rounded-full border border-zap-magenta/30 bg-white px-3 py-1.5 text-xs font-semibold text-zap-magenta hover:bg-zap-magenta-subtle disabled:opacity-40">Activar</button>}</div></div>)}
           {!(certificateInfo.active || []).length && !(certificateInfo.others || []).length && <p className="text-sm text-gray-500">No hay certificados cargados para este ambiente.</p>}
@@ -630,7 +688,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         {contributors.length === 0 && <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Primero vinculá una CUIT y completá su autorización fiscal. No se puede emitir sin una CUIT asociada al tenant.</p>}
         <form onSubmit={event => void prepareEmission(event)} onChange={() => {
           if (preparedMode !== 'uncertain') {
-            setPreparedEmission(null); setPreparedMode(null); setDryRunPreview(null)
+            setPreparedEmission(null); setPreparedMode(null); setEmissionPreview(null)
           }
         }} className="mt-5 space-y-5">
           <fieldset disabled={preparedMode === 'uncertain' || busy || contributors.length === 0} className="space-y-5">
@@ -706,19 +764,19 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <p className="mt-1 text-lg font-bold text-gray-900">{money(String(estimatedTotal))}</p>
                 <p className="text-xs text-gray-500">Neto {money(String(estimatedNet))} · IVA {money(String(estimatedVat))}</p>
               </div>
-              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
+              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Preparar vista previa</button>
             </div>
           </fieldset>
         </form>
         {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-zap-magenta px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
         {preparedMode === 'validated' && preparedEmission && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div><p className="font-semibold text-gray-900">Validación previa correcta</p><p className="mt-1 text-sm text-gray-600">El Worker validó el payload sin emitir. Revisá el resumen y confirmá solo si los datos son correctos.</p></div>
+            <div><p className="font-semibold text-gray-900">Comprobante listo para confirmar</p><p className="mt-1 text-sm text-gray-600">Revisá emisor, receptor e importes. Al confirmar, Tienda enviará una sola solicitud de emisión al Worker.</p></div>
             <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
           </div>
           <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
-            <div><p className="text-gray-500">Tipo ARCA</p><p className="font-semibold">{String(dryRunPreview?.cbteTipo ?? '—')} · {emission.type}</p></div>
-            <div><p className="text-gray-500">Total</p><p className="font-semibold">{money(String(dryRunPreview?.impTotal ?? '—'))}</p></div>
+            <div><p className="text-gray-500">Tipo de comprobante</p><p className="font-semibold">{String(emissionPreview?.cbteTipo ?? '—')} · {emission.type}</p></div>
+            <div><p className="text-gray-500">Total calculado</p><p className="font-semibold">{money(String(emissionPreview?.impTotal ?? '—'))}</p></div>
             <div><p className="text-gray-500">Punto de venta</p><p className="font-semibold">{emission.pointOfSale} · {emission.environment}</p></div>
           </div>
           <p className="mt-3 text-xs leading-5 text-gray-600">La numeración definitiva y el CAE dependen de ARCA. Una vez confirmada la emisión, consultá el estado del trabajo antes de repetir cualquier operación.</p>

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         select: {
           id: true, environment: true, cuit: true, pointOfSale: true, voucherType: true,
           voucherNumber: true, result: true, cae: true, caeExpiresAt: true, amount: true,
-          currency: true, jobId: true, invoicePdfUrl: true, payload: true, createdAt: true,
+          currency: true, jobId: true, workerVoucherId: true, invoicePdfUrl: true, payload: true, createdAt: true,
         },
       },
     },

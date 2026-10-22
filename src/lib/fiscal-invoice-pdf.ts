@@ -49,6 +49,13 @@ export type FiscalPdfInvoice = {
   currency?: string | null
   createdAt: string
   payload?: InvoicePayload | null
+  documentSnapshot?: {
+    emitter?: { cuit?: string; razonSocial?: string | null; domicilioFiscal?: string | null; condicionIva?: string | null; inicioActividad?: string | null } | null
+    recipient?: InvoicePayload['customer'] | null
+    items?: InvoicePayload['items'] | null
+    amounts?: InvoicePayload['amounts'] | null
+    invoice?: { concept?: number; date?: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string } | null
+  } | null
 }
 
 export type FiscalPdfTemplate = {
@@ -90,6 +97,36 @@ const money = (value: number) => new Intl.NumberFormat('es-AR', {
   style: 'currency', currency: 'ARS', minimumFractionDigits: 2,
 }).format(value)
 
+function invoicePayload(invoice: FiscalPdfInvoice): InvoicePayload | null {
+  const snapshot = invoice.documentSnapshot
+  if (!snapshot) return invoice.payload ?? null
+  return {
+    voucher: {
+      ...invoice.payload?.voucher,
+      concept: snapshot.invoice?.concept ?? invoice.payload?.voucher?.concept,
+      date: snapshot.invoice?.date ?? invoice.payload?.voucher?.date,
+      serviceFrom: snapshot.invoice?.serviceFrom ?? invoice.payload?.voucher?.serviceFrom,
+      serviceTo: snapshot.invoice?.serviceTo ?? invoice.payload?.voucher?.serviceTo,
+      paymentDueDate: snapshot.invoice?.paymentDueDate ?? invoice.payload?.voucher?.paymentDueDate,
+    },
+    amounts: snapshot.amounts ?? invoice.payload?.amounts,
+    items: snapshot.items ?? invoice.payload?.items,
+    customer: snapshot.recipient ?? invoice.payload?.customer,
+  }
+}
+
+function emitterTemplate(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate): FiscalPdfTemplate {
+  const emitter = invoice.documentSnapshot?.emitter
+  return {
+    ...template,
+    legalName: emitter?.razonSocial || template.legalName,
+    issuerCuit: emitter?.cuit || template.issuerCuit,
+    ivaCondition: emitter?.condicionIva || template.ivaCondition,
+    taxAddress: emitter?.domicilioFiscal || template.taxAddress,
+    startActivity: emitter?.inicioActividad || template.startActivity,
+  }
+}
+
 const printableDate = (value?: string | null) => {
   if (!value) return '—'
   const normalized = /^\d{8}$/.test(value) ? `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}` : value.slice(0, 10)
@@ -98,14 +135,15 @@ const printableDate = (value?: string | null) => {
 }
 
 function validate(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
-  const payload = invoice.payload
+  const payload = invoicePayload(invoice)
+  const fiscalTemplate = emitterTemplate(invoice, template)
   const missing: string[] = []
   if (!['A', 'DONE'].includes(String(invoice.result)) || !invoice.cae || !invoice.caeExpiresAt || !invoice.voucherNumber) missing.push('autorización ARCA, CAE y número de comprobante')
-  if (!/^\d{11}$/.test(template.issuerCuit || '') || template.issuerCuit !== invoice.cuit) missing.push('CUIT emisor coincidente con la plantilla')
-  if (!template.legalName?.trim()) missing.push('razón social fiscal')
-  if (!template.ivaCondition?.trim()) missing.push('condición frente al IVA')
-  if (!template.taxAddress?.trim()) missing.push('domicilio fiscal/comercial declarado del emisor')
-  if (!template.startActivity?.trim()) missing.push('inicio de actividades')
+  if (!/^\d{11}$/.test(fiscalTemplate.issuerCuit || '') || fiscalTemplate.issuerCuit !== invoice.cuit) missing.push('CUIT emisor coincidente con la identidad fiscal guardada')
+  if (!fiscalTemplate.legalName?.trim()) missing.push('razón social fiscal')
+  if (!fiscalTemplate.ivaCondition?.trim()) missing.push('condición frente al IVA')
+  if (!fiscalTemplate.taxAddress?.trim()) missing.push('domicilio fiscal/comercial declarado del emisor')
+  if (!fiscalTemplate.startActivity?.trim()) missing.push('inicio de actividades')
   if (!/^\d{8}$/.test(payload?.voucher?.date || '')) missing.push('fecha de emisión')
   if (typeof payload?.amounts?.total !== 'number' || !Number.isFinite(payload.amounts.total)) missing.push('total fiscal')
   if (typeof payload?.customer?.docType !== 'number' || !payload.customer.docNumber) missing.push('identificación del receptor')
@@ -129,7 +167,7 @@ async function imageUrlToPng(url: string) {
 }
 
 function officialQr(invoice: FiscalPdfInvoice) {
-  const payload = invoice.payload!
+  const payload = invoicePayload(invoice)!
   const qrData = {
     ver: 1,
     fecha: `${payload.voucher!.date!.slice(0, 4)}-${payload.voucher!.date!.slice(4, 6)}-${payload.voucher!.date!.slice(6, 8)}`,
@@ -163,7 +201,8 @@ function effectiveVatBreakdown(payload: InvoicePayload) {
 }
 
 async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: FiscalPdfTemplate, logoData?: string) {
-  const payload = invoice.payload!
+  const payload = invoicePayload(invoice)!
+  const fiscalTemplate = emitterTemplate(invoice, template)
   const pageWidth = doc.internal.pageSize.getWidth()
   const margin = 14
   const right = pageWidth - margin
@@ -184,12 +223,12 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
   doc.setTextColor(25, 25, 25)
-  doc.text(template.legalName || '', textX, y + 4, { maxWidth: right - textX - 42 })
+  doc.text(fiscalTemplate.legalName || '', textX, y + 4, { maxWidth: right - textX - 42 })
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
-  doc.text(`CUIT: ${template.issuerCuit}`, textX, y + 9)
-  doc.text(template.ivaCondition || '', textX, y + 13, { maxWidth: right - textX - 42 })
-  doc.text(`Domicilio: ${template.taxAddress || ''}`, textX, y + 17, { maxWidth: right - textX - 42 })
+  doc.text(`CUIT: ${fiscalTemplate.issuerCuit}`, textX, y + 9)
+  doc.text(fiscalTemplate.ivaCondition || '', textX, y + 13, { maxWidth: right - textX - 42 })
+  doc.text(`Domicilio: ${fiscalTemplate.taxAddress || ''}`, textX, y + 17, { maxWidth: right - textX - 42 })
 
   doc.setDrawColor(180, 180, 180)
   doc.rect(right - 36, y - 1, 36, 24)
@@ -199,7 +238,7 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   doc.setFontSize(7)
   doc.text(voucherName, right - 18, y + 14, { align: 'center' })
   doc.setFont('helvetica', 'normal')
-  doc.text(`Inicio actividades: ${printableDate(template.startActivity)}`, right - 18, y + 19, { align: 'center' })
+  doc.text(`Inicio actividades: ${printableDate(fiscalTemplate.startActivity)}`, right - 18, y + 19, { align: 'center' })
   y += 31
 
   doc.setDrawColor(215, 215, 215)

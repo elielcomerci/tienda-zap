@@ -19,7 +19,7 @@ type EmitResult = {
   jobId?: string
   status?: string
   externalId?: string
-  voucher?: { voucherType?: number; voucherNumber?: number; cae?: string; caeFchVto?: string; issuedAt?: string }
+  voucher?: { id?: string; voucherType?: number; voucherNumber?: number; cae?: string; caeFchVto?: string; issuedAt?: string; documentSnapshot?: unknown }
 }
 
 function voucherCode(type: string | undefined) {
@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
         result: result.status || 'PENDING',
         cae: result.voucher?.cae ?? null,
         caeExpiresAt: parseDate(result.voucher?.caeFchVto),
+        workerVoucherId: result.voucher?.id ?? null,
         amount: typeof body.amounts?.total === 'number' ? body.amounts.total : null,
         jobId: result.jobId,
         requestReference: body.externalId || result.externalId || null,
@@ -94,6 +95,9 @@ export async function POST(request: NextRequest) {
           amounts: body.amounts ?? null,
           items: body.items ?? [],
           customer: body.customer ?? null,
+          documentSnapshot: result.voucher?.documentSnapshot == null
+            ? null
+            : JSON.parse(JSON.stringify(result.voucher.documentSnapshot)),
           status: result.status || 'PENDING',
         },
       },
@@ -103,6 +107,7 @@ export async function POST(request: NextRequest) {
         voucherType: result.voucher?.voucherType ?? undefined,
         cae: result.voucher?.cae ?? undefined,
         caeExpiresAt: parseDate(result.voucher?.caeFchVto) ?? undefined,
+        workerVoucherId: result.voucher?.id ?? undefined,
       },
     })
   } catch (error) {
