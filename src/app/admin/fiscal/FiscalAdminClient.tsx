@@ -177,7 +177,7 @@ export default function FiscalAdminClient() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">Operación · Fiscal</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-zap-magenta">Operación · Fiscal</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">Cuentas fiscales</h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-500">
             Administrá cuentas y accesos del servicio fiscal. Las credenciales se transmiten desde el servidor; nunca desde el navegador al Worker.
@@ -234,7 +234,7 @@ export default function FiscalAdminClient() {
           <label className="text-sm font-medium text-gray-700">Identificador (slug)
             <input required maxLength={60} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={slug} onChange={e => { setSlug(e.target.value); setSlugEdited(true) }} placeholder="comercio-ejemplo" className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-mono text-sm font-normal outline-none focus:border-orange-500" />
           </label>
-          <div className="flex items-end"><button disabled={busy || !name.trim() || !slug.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"><Plus size={16} /> Crear cuenta</button></div>
+          <div className="flex items-end"><button disabled={busy || !name.trim() || !slug.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50"><Plus size={16} /> Crear cuenta</button></div>
         </form>
       </section>
 
