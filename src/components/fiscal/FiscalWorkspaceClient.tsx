@@ -565,7 +565,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             </div>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-sm font-medium text-gray-700">Tipo de documento receptor
-                <select value={emission.docType} onChange={event => setEmission(v => ({ ...v, docType: event.target.value, docNumber: event.target.value === '99' ? '0' : '' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                <select value={emission.docType} onChange={event => setEmission(v => ({ ...v, docType: event.target.value, docNumber: event.target.value === '99' ? '0' : '', vatCondition: event.target.value === '99' ? '5' : v.vatCondition }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
                   <option value="99" disabled={emission.type === 'A' || emission.type === 'M'}>Consumidor final</option><option value="80">CUIT</option><option value="96">DNI</option><option value="86">CUIL</option><option value="87">CDI</option>
                 </select>
               </label>
@@ -576,7 +576,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <input value={emission.customerName} onChange={event => setEmission(v => ({ ...v, customerName: event.target.value }))} maxLength={180} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
               </label>
               <label className="text-sm font-medium text-gray-700">Condición IVA receptor
-                <select value={emission.vatCondition} onChange={event => setEmission(v => ({ ...v, vatCondition: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                <select disabled={emission.docType === '99'} value={emission.docType === '99' ? '5' : emission.vatCondition} onChange={event => setEmission(v => ({ ...v, vatCondition: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal disabled:bg-gray-100">
                   <option value="1">IVA Responsable Inscripto</option><option value="4">IVA Sujeto Exento</option><option value="5">Consumidor Final</option><option value="6">Monotributo</option><option value="13">Monotributo Social</option><option value="15">IVA No Alcanzado</option>
                 </select>
               </label>
