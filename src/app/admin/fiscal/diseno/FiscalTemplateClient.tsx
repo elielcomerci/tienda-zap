@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react'
 import { CheckCircle2, Eye, ImagePlus, LoaderCircle, Save, ShieldAlert, Upload } from 'lucide-react'
 
 type Template = {
+  legalName: string
+  issuerCuit: string
+  ivaCondition: string
+  startActivity: string
+  taxAddress: string
   commercialName: string
   address: string
   locality: string
@@ -19,6 +24,11 @@ type Template = {
 }
 
 const defaults: Template = {
+  legalName: '',
+  issuerCuit: '',
+  ivaCondition: '',
+  startActivity: '',
+  taxAddress: '',
   commercialName: '',
   address: '',
   locality: '',
@@ -33,7 +43,12 @@ const defaults: Template = {
   footerText: 'Gracias por elegirnos.',
 }
 
-const fields: { key: keyof Pick<Template, 'commercialName' | 'address' | 'locality' | 'province' | 'phone' | 'whatsapp' | 'website' | 'footerText'>; label: string; placeholder: string }[] = [
+const fields: { key: keyof Pick<Template, 'legalName' | 'issuerCuit' | 'ivaCondition' | 'startActivity' | 'taxAddress' | 'commercialName' | 'address' | 'locality' | 'province' | 'phone' | 'whatsapp' | 'website' | 'footerText'>; label: string; placeholder: string }[] = [
+  { key: 'legalName', label: 'Razón social / nombre fiscal', placeholder: 'Como figura en ARCA' },
+  { key: 'issuerCuit', label: 'CUIT emisor', placeholder: '11 dígitos, sin guiones' },
+  { key: 'ivaCondition', label: 'Condición frente al IVA', placeholder: 'Responsable inscripto / Monotributista / Exento' },
+  { key: 'startActivity', label: 'Inicio de actividades', placeholder: 'AAAA-MM-DD' },
+  { key: 'taxAddress', label: 'Domicilio fiscal/comercial declarado', placeholder: 'Como figura en ARCA' },
   { key: 'commercialName', label: 'Nombre comercial', placeholder: 'Nombre que verá el cliente' },
   { key: 'address', label: 'Dirección', placeholder: 'Calle y altura' },
   { key: 'locality', label: 'Localidad', placeholder: 'Localidad' },
@@ -156,7 +171,7 @@ export default function FiscalTemplateClient({ accountId }: { accountId?: string
 
           <div className="grid gap-4 sm:grid-cols-2">
             {fields.map(field => (
-              <div key={field.key} className={field.key === 'commercialName' || field.key === 'address' || field.key === 'website' || field.key === 'footerText' ? 'sm:col-span-2' : ''}>
+              <div key={field.key} className={field.key === 'legalName' || field.key === 'taxAddress' || field.key === 'commercialName' || field.key === 'address' || field.key === 'website' || field.key === 'footerText' ? 'sm:col-span-2' : ''}>
                 <Field label={field.label} value={template[field.key]} placeholder={field.placeholder} onChange={value => update(field.key, value)} />
               </div>
             ))}
@@ -198,7 +213,9 @@ export default function FiscalTemplateClient({ accountId }: { accountId?: string
                 <div className="min-w-0">
                   {template.logoUrl && <img src={template.logoUrl} alt="" className="mb-3 max-h-14 max-w-36 object-contain object-left" />}
                   <h3 className="break-words text-lg font-bold text-gray-900">{template.commercialName || 'Nombre comercial'}</h3>
-                  <p className="mt-1 text-xs leading-5 text-gray-500">{[template.address, template.locality, template.province].filter(Boolean).join(' · ') || 'Dirección · Localidad · Provincia'}</p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">{template.legalName || 'Razón social'} · CUIT {template.issuerCuit || '—'}</p>
+              <p className="mt-1 text-xs leading-5 text-gray-500">{template.ivaCondition || 'Condición frente al IVA'} · Inicio {template.startActivity || '—'}</p>
+              <p className="mt-1 text-xs leading-5 text-gray-500">{template.taxAddress || [template.address, template.locality, template.province].filter(Boolean).join(' · ') || 'Domicilio fiscal'}</p>
                   {template.phone && <p className="mt-1 text-xs text-gray-500">Tel. {template.phone}</p>}
                   {template.showWebsite && template.website && <p className="mt-1 break-all text-xs text-gray-500">{template.website}</p>}
                   {template.showWhatsapp && template.whatsapp && <p className="mt-1 text-xs text-gray-500">WhatsApp {template.whatsapp}</p>}
