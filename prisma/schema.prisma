@@ -187,13 +187,19 @@ model SiteSettings {
   metaKeywords           String?
   canonicalUrl           String?
   ogImageUrl             String?
-  fiscalInvoiceTemplate Json?
   googleAnalyticsId      String?
   googleAdsId            String?
   googleTagManagerId     String?
   googleSiteVerification String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+}
+
+model FiscalInvoiceTemplate {
+  id        String   @id @default("site-settings")
+  template  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model FiscalClientAccount {
