@@ -66,7 +66,7 @@ export default function FiscalControlsClient() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link href="/admin/fiscal" className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"><ArrowLeft size={16} /> Cuentas fiscales</Link>
-          <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">Operación · Fiscal</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-zap-magenta">Operación · Fiscal</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">Controles de operación</h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-600">Activá cada capacidad por separado. Los cambios no se aplican hasta guardar y quedan registrados en la auditoría de administración.</p>
         </div>
@@ -90,7 +90,7 @@ export default function FiscalControlsClient() {
                 <p className="mt-1 text-sm text-gray-600">{flag.description}</p>
                 <p className="mt-2 text-xs text-gray-400">{flag.enabled ? 'Habilitada' : 'Deshabilitada'}{flag.updatedAt ? ` · Último cambio: ${new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(flag.updatedAt))}` : ' · Sin cambios guardados'}</p>
               </div>
-              <button type="button" role="switch" aria-checked={flag.enabled} aria-label={flag.label} onClick={() => setFlag(flag.key, !flag.enabled)} className={`relative mt-1 h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${flag.enabled ? 'bg-emerald-600' : 'bg-gray-300'}`}>
+              <button type="button" role="switch" aria-checked={flag.enabled} aria-label={flag.label} onClick={() => setFlag(flag.key, !flag.enabled)} className={`relative mt-1 h-7 w-12 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-zap-magenta focus:ring-offset-2 ${flag.enabled ? 'bg-emerald-600' : 'bg-gray-300'}`}>
                 <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${flag.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
