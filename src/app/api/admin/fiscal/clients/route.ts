@@ -108,6 +108,16 @@ export async function POST(request: NextRequest) {
   })
   if (!user) return NextResponse.json({ error: 'No se encontró el cliente seleccionado.' }, { status: 404 })
 
+  try {
+    // Fail before creating a remote tenant/key if the server-side encryption key is missing.
+    encryptFiscalCredential('preflight')
+  } catch {
+    return NextResponse.json({
+      error: 'Falta configurar FISCAL_CREDENTIALS_ENCRYPTION_KEY en el servidor. No se creó ninguna cuenta.',
+      code: 'FISCAL_CREDENTIALS_ENCRYPTION_NOT_CONFIGURED',
+    }, { status: 503 })
+  }
+
   const existingAccount = await prisma.fiscalClientAccount.findUnique({ where: { userId } })
   if (existingAccount) return NextResponse.json({ error: 'Este cliente ya tiene una cuenta fiscal vinculada.' }, { status: 409 })
 
