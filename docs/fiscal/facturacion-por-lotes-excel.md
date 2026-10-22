@@ -1,6 +1,7 @@
 # Facturación por lotes mediante plantilla Excel
 
 **Estado:** propuesta documentada; pendiente de diseño técnico, contrato confirmado y desarrollo.  
+**Separación funcional:** esta es únicamente la plantilla de carga de datos. El diseño visual del PDF/comprobante se documenta por separado en [diseño visual de comprobantes](diseno-visual-comprobantes.md) y tiene su propio checklist.
 **Proyecto:** `tienda-zap` como interfaz de administración e importación; ZAP Fiscal Worker como autoridad de validación y emisión.  
 **Regla de alcance:** esta documentación no autoriza cambios ni despliegues en `zap-fiscal-core`. Cualquier necesidad nueva del Worker debe documentarse por separado y aprobarse antes de implementarla.
 
