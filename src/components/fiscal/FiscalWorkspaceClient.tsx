@@ -203,7 +203,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     }
   }
 
-  const isInvoiceExportable = (invoice: Invoice) => ['A', 'DONE'].includes(String(invoice.result)) && Boolean(invoice.cae && invoice.voucherNumber)
+  const isInvoiceExportable = (invoice: Invoice) => ['A', 'DONE'].includes(String(invoice.result)) && Boolean(invoice.cae && invoice.voucherNumber && invoice.payload?.voucher?.date && invoice.payload?.amounts?.total !== undefined && invoice.payload?.customer?.docType !== undefined && invoice.payload?.customer?.docNumber && invoice.payload?.items?.length)
   const authorizedInvoices = invoices.filter(isInvoiceExportable)
 
   async function registerExistingInvoice(event: React.FormEvent<HTMLFormElement>) {
