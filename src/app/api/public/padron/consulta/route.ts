@@ -47,18 +47,18 @@ export async function POST(request: NextRequest) {
     return error('La consulta no está disponible en este momento.', 503, 'PUBLIC_PADRON_NOT_CONFIGURED')
   }
 
-  let body: { cuit?: unknown; turnstileToken?: unknown }
+  let body: { cuit?: unknown; turnstileToken?: unknown; consultaId?: unknown }
   try {
     body = await request.json()
   } catch {
     return error('La solicitud debe ser JSON válido.', 400, 'INVALID_JSON')
   }
   if (!body || typeof body !== 'object' || Array.isArray(body) ||
-      Object.keys(body).some(key => !['cuit', 'turnstileToken'].includes(key))) {
+      Object.keys(body).some(key => !['cuit', 'turnstileToken', 'consultaId'].includes(key))) {
     return error('La solicitud contiene campos no admitidos.', 400, 'INVALID_REQUEST')
   }
   if (!validCuit(body.cuit)) return error('Ingresá una CUIT válida de 11 dígitos.', 422, 'INVALID_CUIT')
-  if (typeof body.turnstileToken !== 'string' || body.turnstileToken.length < 10 || body.turnstileToken.length > 2048) {
+  if (body.consultaId !== undefined && (typeof body.consultaId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.consultaId))) {\n    return error('El identificador de consulta no es válido.', 422, 'INVALID_CONSULTA_ID')\n  }\n  if (typeof body.turnstileToken !== 'string' || body.turnstileToken.length < 10 || body.turnstileToken.length > 2048) {
     return error('Completá la verificación de seguridad e intentá nuevamente.', 400, 'TURNSTILE_REQUIRED')
   }
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
   if (!clientIp) return error('No se pudo validar el origen de la solicitud.', 400, 'CLIENT_IP_UNAVAILABLE')
   const visitorHash = createHmac('sha256', backendSecret)
-    .update(`public-padron-v1|${clientIp}|${request.headers.get('user-agent')?.slice(0, 256) ?? ''}`)
+     .update(`public-padron-v1|${clientIp}`)
     .digest('hex')
   const dayKey = argentineDayKey()
 
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     }, { status: 429, headers: { 'Cache-Control': 'no-store', 'Retry-After': '3600' } })
   }
 
-  const consultaId = randomUUID()
+  const consultaId = typeof body.consultaId === 'string' ? body.consultaId : randomUUID()
   try {
     const response = await fetch(WORKER_URL, {
       method: 'POST',
