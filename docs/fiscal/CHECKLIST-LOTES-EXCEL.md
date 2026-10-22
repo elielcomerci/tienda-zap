@@ -1,6 +1,7 @@
 # Checklist de desarrollo — Facturación por lotes Excel
 
 **Estado general:** documentación creada; desarrollo no iniciado.  
+**Alcance:** este checklist cubre exclusivamente carga y emisión por lote. El diseñador visual del comprobante se planifica por separado en [diseño visual](diseno-visual-comprobantes.md) y [su checklist](CHECKLIST-DISENO-COMPROBANTES.md).
 Marcar una tarea como terminada solo con evidencia verificable (commit, prueba, captura o decisión registrada).
 
 ## Fase 0 — Alcance y protección del sistema actual
