@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fiscalWorkerRequest, requireFiscalAdmin } from '@/lib/fiscal-worker-admin'
+import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -13,6 +14,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const denied = await requireFiscalAdmin()
   if (denied) return denied
+  if (!(await isFiscalFeatureEnabled('accountProvisioning'))) return NextResponse.json({ error: 'El alta de cuentas fiscales está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
 
   let body: unknown
   try {
