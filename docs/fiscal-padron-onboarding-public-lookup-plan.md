@@ -81,3 +81,38 @@ Revisión del código actual de `zap-fiscal-core/main`:
 ### Próxima tarea técnica concreta
 
 Auditar cómo el Worker obtiene el certificado de ZAP y qué autorización/delegación real tiene para `ws_sr_padron_a5` en TEST/PROD. Luego diseñar un servicio interno de consulta con identidad de servicio, cuota pública independiente y respuesta reducida. Hasta confirmar la delegación y el contrato, no habilitar consultas públicas en vivo ni afirmar que ZAP puede consultar cualquier CUIT.
+
+
+## Decisión de arquitectura confirmada — 22/10/2026
+
+### Responsabilidades separadas
+
+**tienda-zap controla al visitante público.**
+- La landing recibe el token de Turnstile desde el navegador y lo verifica exclusivamente en el backend de tienda-zap con la clave secreta. El secreto nunca llega al navegador.
+- tienda-zap aplica la cuota diaria por visitante (límite inicial configurable: 4 consultas/día) y los controles de frecuencia/abuso antes de llamar al Worker.
+- El token de Turnstile no se reenvía al Worker. El Worker no implementa ni depende de la validación de Turnstile.
+- La cuota diaria pública de tienda-zap es independiente de las cuotas comerciales del tenant.
+
+**zap-fiscal-core controla el servicio fiscal.**
+- Añadir una vía dedicada exclusivamente backend-to-backend, autenticada con un secreto propio y distinto de las API keys de tenants, el secreto operativo interno y cualquier secreto de provisioning.
+- La CUIT representada de ZAP y el ambiente TEST se fijan en configuración del Worker. La solicitud no puede elegir ni sobrescribirlos.
+- La vía permite únicamente consultar el Padrón mediante el servicio ARCA autorizado; no admite acciones genéricas ni rutas arbitrarias.
+- El Worker aplica cuota global y límites de frecuencia independientes del consumo por tenant, con control de concurrencia y protección frente a fallos de ARCA.
+- La respuesta contiene solo una allowlist explícita de campos aprobados. No devuelve el objeto SOAP completo, secretos, tickets, certificados, trazas ni errores internos.
+- La operación no crea ni vincula tenants, contribuyentes o autorizaciones; tampoco cambia permisos, certificados, puntos de venta, cuotas comerciales ni flags de emisión.
+- La ruta existente tenant-scoped POST /v1/padron/consultas conserva sus autorizaciones y cuotas. La vía pública no debe consumir esa cuota comercial.
+
+### Contrato y seguridad
+- El contrato del servicio recibe únicamente la CUIT a consultar; no acepta del caller la CUIT representada ni el ambiente.
+- El secreto se almacena solo en los entornos backend de tienda-zap y Worker. No se registra en logs ni se expone al navegador.
+- Revisar patrones de autenticación interna existentes antes de decidir si se agrega timestamp/firma HMAC contra replay; no improvisar un protocolo sin tests y rotación documentada.
+- La cuota global debe ser segura ante concurrencia. Configurar límite de frecuencia corto y un circuit breaker o comportamiento equivalente para evitar tormentas de solicitudes cuando ARCA falla.
+- Minimizar la retención de IP y señales antiabuso; nunca registrar tokens Turnstile ni secretos.
+- Una compuerta propia, por ejemplo publicPadronLookup, permanece apagada por defecto hasta verificar delegación ARCA, superar pruebas y revisar el despliegue. Es independiente de padronQuery y de invoiceEmissionTest/invoiceEmissionProd.
+
+### Criterios de aceptación añadidos
+- Turnstile válido, inválido, ausente, expirado y error del proveedor se resuelven en tienda-zap; el Worker no recibe el token ni valida Turnstile.
+- El Worker rechaza secreto ausente/incorrecto, no permite cambiar CUIT representada ni ambiente y solo ejecuta la consulta Padrón.
+- La cuota global del Worker y la cuota diaria por visitante de tienda-zap se aplican de forma independiente y segura ante concurrencia.
+- Una consulta pública no crea ni modifica registros fiscales, vínculos, permisos o estado de emisión.
+- No habilitar consultas a terceros hasta verificar de forma autorizada que la identidad de ZAP está delegada para ws_sr_padron_a5 en el ambiente correspondiente. TEST no demuestra autorización PROD.
