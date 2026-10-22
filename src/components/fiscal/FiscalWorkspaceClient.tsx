@@ -113,18 +113,18 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl)
   }, [pdfPreviewUrl])
 
-  async function revokeContributor(contributor: Contributor) {
+  async function removeContributor(contributor: Contributor) {
     if (featureFlags.contributorManagement !== true) return
     if (!confirm(`¿Quitar la CUIT ${contributor.cuit} de ${contributor.environment === 'TEST' ? 'homologación' : 'producción'} de esta cuenta? Se revocará el vínculo en el Worker, se bloquearán sus permisos y certificados para esta cuenta y dejará de aparecer en la lista. No se elimina la identidad fiscal global ni los comprobantes históricos.`)) return
     setBusy(true); setError(''); setNotice('')
     try {
       const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(contributor.cuit)}?environment=${contributor.environment}`), { method: 'DELETE' })
       const payload = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo revocar la vinculación.')
+      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo quitar la CUIT.')
       setNotice(payload.message || `Se quitó la CUIT ${contributor.cuit} de ${contributor.environment}.`)
       await load()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'No se pudo revocar la vinculación.')
+      setError(reason instanceof Error ? reason.message : 'No se pudo quitar la CUIT.')
     } finally { setBusy(false) }
   }
 
@@ -564,7 +564,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               <div className="mt-3 flex flex-wrap gap-2">
                 <button onClick={() => void loadCertificate(item)} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"><FileKey2 size={14} /> Certificado</button>
                 <button onClick={() => { setSelectedContributor(item); setCertificateInfo(null) }} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40"><UploadCloud size={14} /> Cargar certificado</button>
-                <button onClick={() => void revokeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Quitar CUIT</button>
+                <button onClick={() => void removeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Quitar CUIT</button>
               </div>
             </article>)}
           </div>}
