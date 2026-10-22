@@ -63,21 +63,60 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
   if ('error' in resolved) return resolved.error
 
   const path = segments.join('/')
-  let requiredFlag: FiscalFeatureFlagKey | null = null
-  if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\//.test(path)) requiredFlag = 'wsfeRead'
-  else if (method === 'DELETE' && /^contributors\/[0-9]{11}$/.test(path)) requiredFlag = 'contributorManagement'
-  else if (method === 'POST' && path === 'padron/consultas') requiredFlag = 'padronQuery'
-  else if (method === 'POST' && path === 'invoices/void') requiredFlag = 'invoiceVoid'
-  else if (method === 'POST' && /^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) requiredFlag = 'jobReconciliation'
-  else if (method === 'GET' && path === 'usage') requiredFlag = 'usageVisibility'
-  else if (method === 'POST' && /^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) requiredFlag = 'certificateManagement'
+  const requiredFlags: FiscalFeatureFlagKey[] = []
+  let operationEnvironment: 'TEST' | 'PROD' | null = null
 
-  if (requiredFlag && !(await isFiscalFeatureEnabled(requiredFlag))) {
-    return NextResponse.json({
-      error: 'Esta función fiscal está desactivada por ZAP.',
-      code: 'FISCAL_FEATURE_DISABLED',
-      feature: requiredFlag,
-    }, { status: 423, headers: { 'Cache-Control': 'no-store' } })
+  if (method === 'POST' && path === 'contributors') requiredFlags.push('contributorManagement')
+  else if ((method === 'GET' || method === 'POST' || method === 'DELETE') && /^contributors\\/[0-9]{11}\\/certificate$/.test(path)) requiredFlags.push('certificateManagement')
+  else if (method === 'POST' && /^contributors\\/[0-9]{11}\\/certificate\\/[A-Za-z0-9_-]+\\/activate$/.test(path)) requiredFlags.push('certificateManagement')
+  else if (method === 'GET' && /^contributors\\/[0-9]{11}\\/wsfe\\//.test(path)) requiredFlags.push('wsfeRead')
+  else if (method === 'DELETE' && /^contributors\\/[0-9]{11}$/.test(path)) requiredFlags.push('contributorManagement')
+  else if (method === 'POST' && path === 'padron/consultas') requiredFlags.push('padronQuery')
+  else if (method === 'POST' && path === 'invoices/emit') {
+    try {
+      const payload = await request.clone().json() as { contributor?: { environment?: unknown } }
+      const environment = payload?.contributor?.environment
+      if (environment !== 'TEST' && environment !== 'PROD') {
+        return NextResponse.json({ error: 'La emisión requiere indicar explícitamente el ambiente TEST o PROD.' }, { status: 422 })
+      }
+      operationEnvironment = environment
+      requiredFlags.push(environment === 'TEST' ? 'invoiceEmissionTest' : 'invoiceEmissionProd')
+    } catch {
+      return NextResponse.json({ error: 'La emisión requiere un body JSON válido y un ambiente explícito.' }, { status: 400 })
+    }
+  } else if (method === 'POST' && path === 'invoices/void') {
+    try {
+      const payload = await request.clone().json() as { contributor?: { environment?: unknown }; environment?: unknown }
+      const environment = payload?.contributor?.environment ?? payload?.environment
+      if (environment !== 'TEST' && environment !== 'PROD') {
+        return NextResponse.json({ error: 'La operación requiere indicar explícitamente el ambiente TEST o PROD.' }, { status: 422 })
+      }
+      operationEnvironment = environment
+      requiredFlags.push('invoiceVoid', environment === 'TEST' ? 'invoiceEmissionTest' : 'invoiceEmissionProd')
+    } catch {
+      return NextResponse.json({ error: 'La operación requiere un body JSON válido y un ambiente explícito.' }, { status: 400 })
+    }
+  } else if (method === 'POST' && /^jobs\\/[A-Za-z0-9_-]+\\/reconcile$/.test(path)) requiredFlags.push('jobReconciliation')
+  else if (method === 'GET' && path === 'usage') requiredFlags.push('usageVisibility')
+
+  if (method === 'GET' && /^contributors\\/[0-9]{11}\\/certificate$/.test(path)) {
+    const environment = request.nextUrl.searchParams.get('environment')
+    if (environment !== 'TEST' && environment !== 'PROD') {
+      return NextResponse.json({ error: 'La consulta de certificado requiere ambiente TEST o PROD.' }, { status: 422 })
+    }
+    operationEnvironment = environment
+    requiredFlags.push('certificateManagement')
+  }
+
+  for (const requiredFlag of requiredFlags) {
+    if (!(await isFiscalFeatureEnabled(requiredFlag))) {
+      return NextResponse.json({
+        error: 'Esta función fiscal está desactivada por ZAP.',
+        code: 'FISCAL_FEATURE_DISABLED',
+        feature: requiredFlag,
+        ...(operationEnvironment ? { environment: operationEnvironment } : {}),
+      }, { status: 423, headers: { 'Cache-Control': 'no-store' } })
+    }
   }
 
   const baseUrl = process.env.FISCAL_WORKER_URL?.trim()
