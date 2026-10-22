@@ -105,7 +105,7 @@ export default function FiscalControlsClient() {
         </div>
         <div className="flex gap-2">
           <button onClick={disableAll} disabled={loading || busy || !flags.some(flag => flag.enabled)} className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 disabled:opacity-40"><Power size={15} /> Apagar todo</button>
-          <button onClick={() => void save()} disabled={loading || busy || !dirty} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">{busy ? <LoaderCircle className="animate-spin" size={16} /> : <Save size={16} />} Guardar cambios</button>
+          <button onClick={() => void save()} disabled={loading || busy || !dirty} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">{busy ? <LoaderCircle className="animate-spin" size={16} /> : <Save size={16} />} Guardar cambios</button>
         </div>
       </div>
     </main>
