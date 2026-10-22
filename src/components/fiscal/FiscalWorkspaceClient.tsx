@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { buildFiscalInvoicePdfBlob, downloadFiscalInvoiceBatchPdf, downloadFiscalInvoicePdf, type FiscalPdfInvoice, type FiscalPdfTemplate } from '@/lib/fiscal-invoice-pdf'
+import FiscalBatchImport from '@/components/fiscal/FiscalBatchImport'
 import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, ShieldCheck, UploadCloud } from 'lucide-react'
 
 type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; notes?: string | null; customer?: { name: string | null; email: string; phone: string | null } }
@@ -612,6 +613,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         </div>}
         <p className="mt-3 text-xs leading-5 text-gray-500">El punto de venta debe existir y estar activo en el ambiente elegido. La prevalidación de payload no confirma que el punto de venta esté registrado: el Worker comprueba ese dato al emitir. Homologación y producción son independientes. Esta primera versión emite un solo ítem por comprobante; la carga por lote se desarrollará por separado.</p>
       </section>
+
+      <FiscalBatchImport api={api} contributors={contributors} onComplete={() => { void load() }} />
 
       {adminMode && <section className="rounded-2xl border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-gray-900">Asignar comprobante ya emitido</h2>
