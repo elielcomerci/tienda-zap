@@ -54,7 +54,8 @@ function Field({ label, value, placeholder, onChange }: { label: string; value: 
   )
 }
 
-export default function FiscalTemplateClient() {
+export default function FiscalTemplateClient({ accountId }: { accountId?: string }) {
+  const templateApi = accountId ? `/api/admin/fiscal/template?accountId=${encodeURIComponent(accountId)}` : '/api/admin/fiscal/template'
   const [template, setTemplate] = useState<Template>(defaults)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -64,7 +65,7 @@ export default function FiscalTemplateClient() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/api/admin/fiscal/template', { cache: 'no-store' })
+    fetch(templateApi, { cache: 'no-store' })
       .then(async response => {
         const payload = await response.json()
         if (!response.ok) throw new Error(payload.error || 'No se pudo cargar el diseño.')
@@ -73,7 +74,7 @@ export default function FiscalTemplateClient() {
       .catch(reason => { if (!cancelled) setError(reason instanceof Error ? reason.message : 'No se pudo cargar el diseño.') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [])
+  }, [templateApi])
 
   function update<K extends keyof Template>(key: K, value: Template[K]) {
     setTemplate(current => ({ ...current, [key]: value }))
@@ -116,7 +117,7 @@ export default function FiscalTemplateClient() {
     setError('')
     setNotice('')
     try {
-      const response = await fetch('/api/admin/fiscal/template', {
+      const response = await fetch(templateApi, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(template),
