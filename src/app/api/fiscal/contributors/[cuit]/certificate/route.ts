@@ -16,9 +16,9 @@ export async function GET(request: NextRequest, context: Context) {
 }
 
 export async function POST(request: NextRequest, context: Context) {
-  if (!(await isFiscalFeatureEnabled('certificateManagement'))) return NextResponse.json({ error: 'La gestión de certificados está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
   const access = await resolveFiscalAccount(request)
   if ('response' in access) return access.response
+  if (!(await isFiscalFeatureEnabled('certificateManagement'))) return NextResponse.json({ error: 'La gestión de certificados está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
   const { cuit } = await context.params
   if (!/^\d{11}$/.test(cuit)) return NextResponse.json({ error: 'CUIT inválida.' }, { status: 422 })
 
@@ -48,6 +48,7 @@ export async function DELETE(request: NextRequest, context: Context) {
   if (!(await isFiscalFeatureEnabled('certificateManagement'))) return NextResponse.json({ error: 'La gestión de certificados está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
   const access = await resolveFiscalAccount(request)
   if ('response' in access) return access.response
+  if (!(await isFiscalFeatureEnabled('certificateManagement'))) return NextResponse.json({ error: 'La gestión de certificados está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
   const { cuit } = await context.params
   if (!/^\d{11}$/.test(cuit)) return NextResponse.json({ error: 'CUIT inválida.' }, { status: 422 })
   return fiscalApiRequest(request, `/v1/contributors/${encodeURIComponent(cuit)}/certificate`, access.apiKey)
