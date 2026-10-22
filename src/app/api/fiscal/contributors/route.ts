@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const access = await resolveFiscalAccount(request)
-  if (!(await isFiscalFeatureEnabled('contributorManagement'))) return NextResponse.json({ error: 'La vinculación de CUIT está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
   if ('response' in access) return access.response
+  if (!(await isFiscalFeatureEnabled('contributorManagement'))) return NextResponse.json({ error: 'La vinculación de CUIT está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
 
   let input: Record<string, unknown>
   try {
