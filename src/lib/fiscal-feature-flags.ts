@@ -28,7 +28,12 @@ export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean>
   invoiceEmissionProd: false,
   batchImport: false,
   pdfExport: false,
-  manualInvoiceRegistration: false,\n  wsfeRead: false,\n  padronQuery: false,\n  invoiceVoid: false,\n  jobReconciliation: false,\n  usageVisibility: false,
+  manualInvoiceRegistration: false,
+  wsfeRead: false,
+  padronQuery: false,
+  invoiceVoid: false,
+  jobReconciliation: false,
+  usageVisibility: false,
 }
 
 export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagKey, boolean>> {
