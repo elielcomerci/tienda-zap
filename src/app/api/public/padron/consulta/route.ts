@@ -8,7 +8,6 @@ export const dynamic = 'force-dynamic'
 
 const WORKER_URL = 'https://arca.zap.com.ar/internal/public/padron/consultas'
 const DAILY_LIMIT = 4
-const MAX_CUIT_LENGTH = 11
 
 type TurnstileResponse = { success?: boolean; 'error-codes'?: string[] }
 
