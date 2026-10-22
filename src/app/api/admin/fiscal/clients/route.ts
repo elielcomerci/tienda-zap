@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { encryptFiscalCredential } from '@/lib/fiscal-credentials'
 import { fiscalWorkerRequest } from '@/lib/fiscal-worker-admin'
+import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -84,6 +85,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const denied = await requireAdmin()
   if (denied) return denied
+  if (!(await isFiscalFeatureEnabled('accountProvisioning'))) return NextResponse.json({ error: 'El alta y la vinculación de cuentas fiscales están desactivadas por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
 
   let body: unknown
   try {
