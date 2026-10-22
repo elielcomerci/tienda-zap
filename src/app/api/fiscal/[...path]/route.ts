@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { decryptFiscalCredential } from '@/lib/fiscal-credentials'
+import { isFiscalFeatureEnabled, type FiscalFeatureFlagKey } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -60,6 +61,23 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
 
   const resolved = await resolveAccount(request)
   if ('error' in resolved) return resolved.error
+
+  const path = segments.join('/')
+  let requiredFlag: FiscalFeatureFlagKey | null = null
+  if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\//.test(path)) requiredFlag = 'wsfeRead'
+  else if (method === 'POST' && path === 'padron/consultas') requiredFlag = 'padronQuery'
+  else if (method === 'POST' && path === 'invoices/void') requiredFlag = 'invoiceVoid'
+  else if (method === 'POST' && /^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) requiredFlag = 'jobReconciliation'
+  else if (method === 'GET' && path === 'usage') requiredFlag = 'usageVisibility'
+  else if (method === 'POST' && /^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) requiredFlag = 'certificateManagement'
+
+  if (requiredFlag && !(await isFiscalFeatureEnabled(requiredFlag))) {
+    return NextResponse.json({
+      error: 'Esta función fiscal está desactivada por ZAP.',
+      code: 'FISCAL_FEATURE_DISABLED',
+      feature: requiredFlag,
+    }, { status: 423, headers: { 'Cache-Control': 'no-store' } })
+  }
 
   const baseUrl = process.env.FISCAL_WORKER_URL?.trim()
   if (!baseUrl) return NextResponse.json({ error: 'FISCAL_WORKER_URL no está configurada.' }, { status: 503 })
