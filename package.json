@@ -14,9 +14,11 @@
     "db:studio": "prisma studio",
     "db:push": "prisma db push",
     "postinstall": "prisma generate",
-    "test": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/configurator-contract.test.ts && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts",
+    "test": "node scripts/run-ts-tests.cjs tests/configurator-contract.test.ts tests/checkout-pricing-smoke.test.ts tests/crypto-networks.test.ts tests/crypto-quotes.test.ts tests/crypto-submit-concurrency.test.ts tests/crypto-reconciliation-simulation.test.ts",
     "typecheck": "tsc --noEmit",
-    "test:crypto": "export CRYPTO_PAYMENTS_ENABLED=true TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"rootDir\":\".\",\"ignoreDeprecations\":\"6.0\"}' && ts-node tests/crypto-networks.test.ts && ts-node tests/crypto-quotes.test.ts && ts-node tests/crypto-submit-concurrency.test.ts && ts-node tests/crypto-reconciliation-simulation.test.ts"
+    "test:crypto": "node scripts/run-ts-tests.cjs tests/crypto-networks.test.ts tests/crypto-quotes.test.ts tests/crypto-submit-concurrency.test.ts tests/crypto-reconciliation-simulation.test.ts",
+    "test:integration:pricing": "node scripts/run-ts-tests.cjs tests/pricing-db.integration.test.ts",
+    "prebuild": "node scripts/run-prebuild-tests.cjs"
   },
   "prisma": {
     "seed": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"

@@ -882,6 +882,40 @@ export function quoteTieredUnitTableSelection(
 }
 
 /**
+ * Valida el contrato mínimo que necesita el motor de cotización antes de calcular precios.
+ * Los identificadores de producto/version viven en el modelo Prisma externo; este adapter recibe
+ * el payload normalizado schema + pricing y valida únicamente los campos que consume.
+ */
+export function validateConfiguratorContract(configurator: ConfiguratorVersionPayload): void {
+  const fields = configurator?.schema?.fields;
+  if (!fields || typeof fields !== 'object' || Array.isArray(fields) || Object.keys(fields).length === 0) {
+    throw new Error('Contrato de configurador inválido: schema.fields debe contener al menos un campo.');
+  }
+
+  const pricing = configurator?.pricing;
+  if (!pricing || typeof pricing !== 'object') {
+    throw new Error('Contrato de configurador inválido: falta el objeto pricing.');
+  }
+
+  const engine = pricing.engine;
+  if (engine !== undefined && typeof engine !== 'string') {
+    throw new Error('Contrato de configurador inválido: pricing.engine debe ser texto.');
+  }
+  if (engine === 'STICKER_TABLE' && (!pricing.matrix || typeof pricing.matrix !== 'object')) {
+    throw new Error('Contrato de configurador inválido: STICKER_TABLE requiere pricing.matrix.');
+  }
+  if (engine === 'PROVIDER_FINISHED_COST' && (!pricing.providerFinishedCostMatrix || typeof pricing.providerFinishedCostMatrix !== 'object')) {
+    throw new Error('Contrato de configurador inválido: PROVIDER_FINISHED_COST requiere providerFinishedCostMatrix.');
+  }
+  if (engine === 'TIERED_UNIT_TABLE' && !Array.isArray(pricing.tieredUnitTable?.tiers)) {
+    throw new Error('Contrato de configurador inválido: TIERED_UNIT_TABLE requiere tieredUnitTable.tiers.');
+  }
+  if (engine === 'PRODUCT_QUOTER' && (!pricing.adapter || typeof pricing.adapter !== 'object')) {
+    throw new Error('Contrato de configurador inválido: PRODUCT_QUOTER requiere pricing.adapter.');
+  }
+}
+
+/**
  * Pipeline completo de cotización a través de ConfiguratorVersion:
  * 1. Validación UI y compatibilidad.
  * 2. Si el motor es STICKER_TABLE: cotiza directo contra matriz comercial versionada.
@@ -894,6 +928,8 @@ export function quoteConfiguratorSelection(
   selection: CommercialSelection,
   quoterConfig?: ProductQuoterConfigInput
 ): ProductQuoteResult {
+  validateConfiguratorContract(configurator);
+
   // 1. Validación UI y reglas de compatibilidad
   const { sanitizedSelection, requiredProcesses } = validateCommercialSelection(configurator, selection);
 

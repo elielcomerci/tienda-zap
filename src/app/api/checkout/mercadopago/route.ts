@@ -159,6 +159,14 @@ export async function POST(req: NextRequest) {
       data: { mpPreferenceId: preference.id },
     })
 
+    console.info('[checkout.created]', {
+      checkout_id: order.id,
+      payment_method: 'MERCADOPAGO',
+      quote_id: null,
+      configurator_slug: pricing.resolvedItems.map((item: any) => item.configurationSnapshot?.productSlug ?? 'unknown'),
+      pricing_source: pricing.resolvedItems.map((item: any) => item.configurationSnapshot?.price?.source ?? 'unknown'),
+    })
+
     return Response.json({
       preferenceId: preference.id,
       initPoint: preference.init_point,

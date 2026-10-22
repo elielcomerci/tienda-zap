@@ -55,6 +55,7 @@ function buildConfigurationSnapshot(input: {
     : product.options.map((option: { name: string }) => option.name)
 
   return {
+    productSlug: product.slug,
     version: product.configuratorVersions?.[0]?.schemaVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
     result: product.modality === 'CONSULTAR'
       ? 'GUIDED_REVIEW'
