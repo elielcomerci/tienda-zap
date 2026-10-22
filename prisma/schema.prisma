@@ -1695,3 +1695,15 @@ model ClientWorkFile {
   @@index([workId, createdAt])
   @@index([uploadedById, createdAt])
 }
+
+
+model PublicPadronUsage {
+  visitorHash String   @db.VarChar(64)
+  dayKey      String   @db.VarChar(10)
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@id([visitorHash, dayKey])
+  @@index([dayKey])
+}
