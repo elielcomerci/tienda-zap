@@ -94,6 +94,8 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
 
   try {
     const headers = new Headers({ 'X-Api-Key': resolved.apiKey, Accept: 'application/json' })
+    const idempotencyKey = request.headers.get('Idempotency-Key')
+    if (idempotencyKey) headers.set('Idempotency-Key', idempotencyKey)
     let body: BodyInit | undefined
     if (method !== 'GET' && method !== 'HEAD' && method !== 'DELETE') {
       const contentType = request.headers.get('content-type') || ''
