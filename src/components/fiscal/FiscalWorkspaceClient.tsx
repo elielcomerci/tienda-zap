@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, ShieldCheck, UploadCloud } from 'lucide-react'
 
-type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; customer?: { name: string | null; email: string; phone: string | null } }
+type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; notes?: string | null; customer?: { name: string | null; email: string; phone: string | null } }
 type Contributor = {
   id: string; cuit: string; environment: 'TEST' | 'PROD'; representativeCuit: string;
   razonSocial: string | null; authorizationStatus: string; permissions: Record<string, boolean> | null;
@@ -37,6 +37,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [certificateInfo, setCertificateInfo] = useState<{ active: CertificateInfo[] | null; others: CertificateInfo[] } | null>(null)
   const [certFile, setCertFile] = useState<File | null>(null)
   const [keyFile, setKeyFile] = useState<File | null>(null)
+  const [supportNotes, setSupportNotes] = useState('')
+  const [platformStatus, setPlatformStatus] = useState<'ACTIVE' | 'PAUSED'>('ACTIVE')
   const [manualInvoice, setManualInvoice] = useState({ cuit: '', environment: 'PROD' as 'TEST' | 'PROD', pointOfSale: '1', voucherType: '6', voucherNumber: '', cae: '', caeFchVto: '', amount: '' })
 
   const scope = useMemo(() => accountId ? `?accountId=${encodeURIComponent(accountId)}` : '', [accountId])
@@ -55,6 +57,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       if (!accountResponse.ok) throw new Error(accountPayload.error || 'No se pudo cargar la cuenta fiscal.')
       if (!contributorResponse.ok) throw new Error(contributorPayload.error || 'No se pudieron consultar las CUIT.')
       setAccount(accountPayload.account || null)
+      setSupportNotes(accountPayload.account?.notes || '')
+      setPlatformStatus(accountPayload.account?.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
       setInvoices(accountPayload.invoices || [])
       setContributors(contributorPayload.contributors || [])
     } catch (reason) {
@@ -114,6 +118,23 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     finally { setBusy(false) }
   }
 
+  async function saveSupportSettings(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!accountId || !adminMode) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(`/api/admin/fiscal/clients/${encodeURIComponent(accountId)}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: supportNotes, status: platformStatus }),
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error || 'No se pudieron guardar las notas.')
+      setNotice('Notas y estado de acceso guardados.')
+      await load()
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudieron guardar las notas.') }
+    finally { setBusy(false) }
+  }
+
   async function registerExistingInvoice(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!accountId || !adminMode) return
@@ -156,6 +177,22 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       {notice && <div role="status" className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 size={18} className="mt-0.5 shrink-0" />{notice}</div>}
 
       {adminMode && accountId && <div><a href={`/admin/fiscal/clientes/${encodeURIComponent(accountId)}/diseno`} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">Configurar diseño del comprobante</a></div>}
+
+      {adminMode && accountId && <section className="rounded-2xl border border-gray-200 bg-white p-5">
+        <h2 className="font-semibold text-gray-900">Seguimiento interno de ZAP</h2>
+        <p className="mt-1 text-sm text-gray-500">Notas para el equipo y control de acceso a través de este panel. Pausar acá no suspende directamente el tenant en el Worker.</p>
+        <form onSubmit={event => void saveSupportSettings(event)} className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
+          <label className="block text-sm font-medium text-gray-700">Notas de soporte
+            <textarea rows={3} maxLength={5000} value={supportNotes} onChange={event => setSupportNotes(event.target.value)} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="Pendientes, gestiones, contacto, observaciones internas…" />
+          </label>
+          <label className="block text-sm font-medium text-gray-700">Acceso al panel
+            <select value={platformStatus} onChange={event => setPlatformStatus(event.target.value as 'ACTIVE' | 'PAUSED')} className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 font-normal">
+              <option value="ACTIVE">Activo</option><option value="PAUSED">Pausado</option>
+            </select>
+          </label>
+          <button disabled={busy} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar'}</button>
+        </form>
+      </section>}
 
       <section className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">CUIT vinculadas</p><p className="mt-2 text-3xl font-bold text-gray-900">{contributors.length}</p></div>
