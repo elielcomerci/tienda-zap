@@ -184,7 +184,7 @@ export default function FiscalAdminClient() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-        <Link href="/admin/fiscal/controles" className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">Controles de operación</Link>
+        <Link href="/admin/fiscal/controles" className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark">Controles de operación</Link>
         <button onClick={() => void loadTenants()} disabled={loading || busy}
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50">
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Actualizar
@@ -206,7 +206,7 @@ export default function FiscalAdminClient() {
           </div>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <code className="min-w-0 flex-1 break-all rounded-lg border border-orange-200 bg-white p-3 text-sm text-gray-900">{oneTimeKey.value}</code>
-            <button onClick={() => void copyOneTimeKey()} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white hover:bg-gray-800">
+            <button onClick={() => void copyOneTimeKey()} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-zap-magenta px-4 py-3 text-sm font-semibold text-white hover:bg-zap-magenta-dark">
               {copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copiada' : 'Copiar clave'}
             </button>
           </div>
@@ -256,7 +256,7 @@ export default function FiscalAdminClient() {
               {keyDraft?.tenantId === tenant.id && (
                 <form onSubmit={createApiKey} className="grid gap-2 border-b border-gray-100 bg-gray-50 p-4 sm:grid-cols-[1fr_auto_auto]">
                   <input required maxLength={80} value={keyDraft.label} onChange={e => setKeyDraft(current => current ? { ...current, label: e.target.value } : current)} placeholder="Etiqueta: sitio web, sistema de ventas…" className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500" />
-                  <button disabled={busy || !keyDraft.label.trim()} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Crear clave</button>
+                  <button disabled={busy || !keyDraft.label.trim()} className="rounded-xl bg-zap-magenta px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Crear clave</button>
                   <button type="button" onClick={() => setKeyDraft(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600">Cancelar</button>
                 </form>
               )}
