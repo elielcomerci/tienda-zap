@@ -495,6 +495,117 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         </form>
       </section>}
 
+      <section className="rounded-2xl border border-gray-200 bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-gray-900">Emitir comprobante</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-5 text-gray-500">Primero validamos el contenido con el Worker sin crear un trabajo ni llamar a ARCA. Solo después de revisar el resumen podés confirmar la emisión.</p>
+          </div>
+          {activeJobId && <button type="button" onClick={() => void refreshActiveJob()} disabled={busy} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 disabled:opacity-50"><RefreshCw size={15} /> Consultar último trabajo</button>}
+        </div>
+        {contributors.length === 0 && <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Primero vinculá una CUIT y completá su autorización fiscal. No se puede emitir sin una CUIT asociada al tenant.</p>}
+        <form onSubmit={event => void prepareEmission(event)} onChange={() => {
+          if (preparedMode !== 'uncertain') {
+            setPreparedEmission(null); setPreparedMode(null); setDryRunPreview(null)
+          }
+        }} className="mt-5 space-y-5">
+          <fieldset disabled={preparedMode === 'uncertain' || busy || contributors.length === 0} className="space-y-5">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="text-sm font-medium text-gray-700">Ambiente
+                <select value={emission.environment} onChange={event => setEmission(v => ({ ...v, environment: event.target.value as 'TEST' | 'PROD', cuit: '' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                  <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700">CUIT emisora
+                <select required value={emission.cuit} onChange={event => setEmission(v => ({ ...v, cuit: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-mono text-sm font-normal">
+                  <option value="">Seleccionar CUIT…</option>
+                  {contributors.filter(item => item.environment === emission.environment).map(item => <option key={item.id} value={item.cuit}>{item.cuit}{item.razonSocial ? ` · ${item.razonSocial}` : ''} · ${item.authorizationStatus}</option>)}
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700">Punto de venta
+                <input required type="number" min="1" step="1" value={emission.pointOfSale} onChange={event => setEmission(v => ({ ...v, pointOfSale: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
+              </label>
+              <label className="text-sm font-medium text-gray-700">Tipo de comprobante
+                <select value={emission.type} onChange={event => setEmission(v => {
+                  const type = event.target.value as 'A' | 'B' | 'C' | 'M'
+                  return { ...v, type, docType: type === 'A' || type === 'M' ? '80' : v.docType, docNumber: type === 'A' || type === 'M' ? '' : v.docNumber, vatRate: type === 'C' ? '0' : (v.vatRate === '0' ? '21' : v.vatRate), vatCondition: type === 'C' ? v.vatCondition : v.vatCondition }
+                })} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                  <option value="A">Factura A</option><option value="B">Factura B</option><option value="C">Factura C</option><option value="M">Factura M</option>
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700">Concepto
+                <select value={emission.concept} onChange={event => setEmission(v => ({ ...v, concept: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                  <option value="1">Productos</option><option value="2">Servicios</option><option value="3">Productos y servicios</option>
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700">Fecha de emisión
+                <input required type="date" value={emission.date} onChange={event => setEmission(v => ({ ...v, date: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
+              </label>
+              <label className="text-sm font-medium text-gray-700">Importe neto gravado (ARS)
+                <input required type="number" min="0.01" step="0.01" value={emission.netBase} onChange={event => setEmission(v => ({ ...v, netBase: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" placeholder="Sin IVA" />
+              </label>
+              <label className="text-sm font-medium text-gray-700">Alícuota IVA
+                <select disabled={emission.type === 'C'} value={emission.type === 'C' ? '0' : emission.vatRate} onChange={event => setEmission(v => ({ ...v, vatRate: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal disabled:bg-gray-100">
+                  <option value="0">0%</option><option value="2.5">2,5%</option><option value="5">5%</option><option value="10.5">10,5%</option><option value="21">21%</option><option value="27">27%</option>
+                </select>
+              </label>
+            </div>
+            {(emission.concept === '2' || emission.concept === '3') && <div className="grid gap-3 rounded-xl bg-gray-50 p-4 sm:grid-cols-3">
+              <label className="text-sm font-medium text-gray-700">Servicio desde<input required type="date" value={emission.serviceFrom} onChange={event => setEmission(v => ({ ...v, serviceFrom: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" /></label>
+              <label className="text-sm font-medium text-gray-700">Servicio hasta<input required type="date" value={emission.serviceTo} onChange={event => setEmission(v => ({ ...v, serviceTo: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" /></label>
+              <label className="text-sm font-medium text-gray-700">Vencimiento de pago<input required type="date" value={emission.paymentDueDate} onChange={event => setEmission(v => ({ ...v, paymentDueDate: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" /></label>
+            </div>}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="text-sm font-medium text-gray-700">Tipo de documento receptor
+                <select value={emission.docType} onChange={event => setEmission(v => ({ ...v, docType: event.target.value, docNumber: event.target.value === '99' ? '0' : '' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                  <option value="99" disabled={emission.type === 'A' || emission.type === 'M'}>Consumidor final</option><option value="80">CUIT</option><option value="96">DNI</option><option value="86">CUIL</option><option value="87">CDI</option>
+                </select>
+              </label>
+              <label className="text-sm font-medium text-gray-700">Número de documento
+                <input required disabled={emission.docType === '99'} inputMode="numeric" value={emission.docNumber} onChange={event => setEmission(v => ({ ...v, docNumber: event.target.value.replace(/\D/g, '').slice(0, 11) }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-mono text-sm font-normal disabled:bg-gray-100" placeholder={emission.docType === '96' ? '7 u 8 dígitos' : 'Solo números'} />
+              </label>
+              <label className="text-sm font-medium text-gray-700">Nombre / razón social receptor
+                <input value={emission.customerName} onChange={event => setEmission(v => ({ ...v, customerName: event.target.value }))} maxLength={180} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
+              </label>
+              <label className="text-sm font-medium text-gray-700">Condición IVA receptor
+                <select value={emission.vatCondition} onChange={event => setEmission(v => ({ ...v, vatCondition: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                  <option value="1">IVA Responsable Inscripto</option><option value="4">IVA Sujeto Exento</option><option value="5">Consumidor Final</option><option value="6">Monotributo</option><option value="13">Monotributo Social</option><option value="15">IVA No Alcanzado</option>
+                </select>
+              </label>
+            </div>
+            <label className="block text-sm font-medium text-gray-700">Descripción del producto o servicio
+              <input required maxLength={250} value={emission.description} onChange={event => setEmission(v => ({ ...v, description: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" placeholder="Descripción que identifique la operación" />
+            </label>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-4">
+              <div>
+                <p className="text-xs text-gray-500">Estimación previa · no es autorización fiscal</p>
+                <p className="mt-1 text-lg font-bold text-gray-900">{money(String(roundMoney(Number(emission.netBase || 0) + (emission.type === 'C' ? 0 : roundMoney(Number(emission.netBase || 0) * Number(emission.vatRate || 0) / 100))))}</p>
+                <p className="text-xs text-gray-500">Neto {money(String(Number(emission.netBase || 0)))} · IVA {money(String(emission.type === 'C' ? 0 : roundMoney(Number(emission.netBase || 0) * Number(emission.vatRate || 0) / 100)))}</p>
+              </div>
+              <button disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
+            </div>
+          </fieldset>
+        </form>
+        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy} className="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
+        {preparedMode === 'validated' && preparedEmission && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div><p className="font-semibold text-gray-900">Validación previa correcta</p><p className="mt-1 text-sm text-gray-600">El Worker validó el payload sin emitir. Revisá el resumen y confirmá solo si los datos son correctos.</p></div>
+            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy} className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
+          </div>
+          <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+            <div><p className="text-gray-500">Tipo ARCA</p><p className="font-semibold">{String(dryRunPreview?.cbteTipo ?? '—')} · {emission.type}</p></div>
+            <div><p className="text-gray-500">Total</p><p className="font-semibold">{money(String(dryRunPreview?.impTotal ?? '—'))}</p></div>
+            <div><p className="text-gray-500">Punto de venta</p><p className="font-semibold">{emission.pointOfSale} · {emission.environment}</p></div>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-gray-600">La numeración definitiva y el CAE dependen de ARCA. Una vez confirmada la emisión, consultá el estado del trabajo antes de repetir cualquier operación.</p>
+        </div>}
+        {activeJobId && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 p-4">
+          <div><p className="text-sm font-semibold text-gray-900">Último trabajo fiscal</p><p className="mt-1 break-all font-mono text-xs text-gray-600">{activeJobId}</p></div>
+          <button type="button" onClick={() => void refreshActiveJob()} disabled={busy} className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 disabled:opacity-50">Consultar estado</button>
+        </div>}
+        <p className="mt-3 text-xs leading-5 text-gray-500">El punto de venta debe existir y estar activo en el ambiente elegido. Homologación y producción son independientes. Esta primera versión emite un solo ítem por comprobante; la carga por lote se desarrollará por separado.</p>
+      </section>
+
       {adminMode && <section className="rounded-2xl border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-gray-900">Asignar comprobante ya emitido</h2>
         <p className="mt-1 text-sm leading-5 text-gray-500">Para comprobantes autorizados fuera del panel. Esto registra los datos que ingreses; no consulta ni valida el CAE ante ARCA.</p>
