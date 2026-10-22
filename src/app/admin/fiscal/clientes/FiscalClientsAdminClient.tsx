@@ -147,7 +147,7 @@ export default function FiscalClientsAdminClient() {
             {availableTenants.length === 0 && <span className="mt-1 block text-xs text-amber-700">No hay cuentas disponibles para vincular.</span>}
           </label>}
           <div className="flex flex-wrap items-center gap-3 md:col-span-2">
-            <button type="submit" disabled={busy || loading || !userId || (mode === 'connect' && !tenantId)} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50">
+            <button type="submit" disabled={busy || loading || !userId || (mode === 'connect' && !tenantId)} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">
               {busy ? <LoaderCircle size={16} className="animate-spin" /> : <Link2 size={16} />}
               {busy ? 'Vinculando…' : 'Vincular cuenta'}
             </button>
@@ -170,7 +170,7 @@ export default function FiscalClientsAdminClient() {
               <div className="flex items-center gap-3">
                 <span className={account.status === 'ACTIVE' ? 'rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700' : 'rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700'}>{account.status === 'ACTIVE' ? 'Vinculada' : account.status}</span>
                 <span className="text-sm text-gray-500">{account.invoiceCount} comprobantes</span>
-                <Link href={`/admin/fiscal/clientes/${encodeURIComponent(account.id)}`} className="rounded-xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800">Abrir soporte</Link>
+                <Link href={`/admin/fiscal/clientes/${encodeURIComponent(account.id)}`} className="rounded-xl bg-zap-magenta px-3 py-2 text-xs font-semibold text-white hover:bg-zap-magenta-dark">Abrir soporte</Link>
               </div>
             </article>)}
           </div>
