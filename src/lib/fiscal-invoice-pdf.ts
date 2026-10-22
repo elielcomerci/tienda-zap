@@ -262,9 +262,9 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   doc.setTextColor(50, 50, 50)
   doc.text(`Neto: ${money(amounts.net ?? 0)}`, right, y, { align: 'right' }); y += 5
   if (invoice.voucherType !== 11 && (amounts.vat ?? 0) > 0) {
-    doc.text('IVA discriminado:', right, y, { align: 'right' }); y += 4
+    doc.text(invoice.voucherType === 6 ? 'IVA contenido en el precio final:' : 'IVA discriminado:', right, y, { align: 'right' }); y += 4
     for (const rate of effectiveVatBreakdown(payload)) {
-      doc.text(`IVA ${rate.rate}% sobre ${money(rate.base)}: ${money(rate.amount)}`, right, y, { align: 'right' })
+      doc.text(invoice.voucherType === 6 ? `IVA contenido ${rate.rate}%: ${money(rate.amount)}` : `IVA ${rate.rate}% sobre ${money(rate.base)}: ${money(rate.amount)}`, right, y, { align: 'right' })
       y += 4
     }
   }
