@@ -43,6 +43,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const [pdfPreviewTitle, setPdfPreviewTitle] = useState('Vista previa del comprobante')
   const [loading, setLoading] = useState(true)
+  const [showAddContributor, setShowAddContributor] = useState(false)
   const [featureFlags, setFeatureFlags] = useState<Record<string, boolean>>({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -139,6 +140,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo vincular la CUIT.')
       setNotice(payload.message || 'CUIT vinculada. El acceso queda pendiente hasta completar la autorización fiscal.')
       setCuit(''); setRepresentativeCuit(''); setRazonSocial('')
+      setShowAddContributor(false)
       await load()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudo vincular la CUIT.')
@@ -545,30 +547,15 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
       <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} onSelectPointOfSale={pointOfSale => setEmission(current => ({ ...current, pointOfSale }))} />
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
-          <h2 className="font-semibold text-gray-900">Vincular CUIT</h2>
-          <p className="mt-1 text-sm leading-5 text-gray-500">Cada CUIT y ambiente se autorizan por separado. TEST y producción no comparten puntos de venta ni certificados.</p>
-          <form onSubmit={event => void addContributor(event)} className="mt-4 space-y-3">
-            <label className="block text-sm font-medium text-gray-700">CUIT emisor
-              <input required inputMode="numeric" pattern="\d{11}" maxLength={11} value={cuit} onChange={event => setCuit(event.target.value.replace(/\D/g, '').slice(0,11))} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="11 dígitos" />
-            </label>
-            <label className="block text-sm font-medium text-gray-700">CUIT representante del certificado
-              <input inputMode="numeric" pattern="\d{11}" maxLength={11} value={representativeCuit} onChange={event => setRepresentativeCuit(event.target.value.replace(/\D/g, '').slice(0,11))} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="Si es la misma, dejalo vacío" />
-            </label>
-            <label className="block text-sm font-medium text-gray-700">Razón social
-              <input required value={razonSocial} onChange={event => setRazonSocial(event.target.value)} maxLength={180} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="Tal como figura en ARCA" />
-            </label>
-            <label className="block text-sm font-medium text-gray-700">Ambiente
-              <select value={environment} onChange={event => setEnvironment(event.target.value as 'TEST' | 'PROD')} className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 font-normal">
-                <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
-              </select>
-            </label>
-            <button disabled={busy || featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular CUIT</button>
-          </form>
+      <section className="rounded-2xl border border-gray-200 bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex-1">
+            <h2 className="font-semibold text-gray-900">CUIT y autorización</h2>
+            <p className="mt-1 text-sm text-gray-500">Cada ambiente se gestiona por separado.</p>
+          </div>
+          <button type="button" onClick={() => setShowAddContributor(true)} disabled={featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-40"><Plus size={16} /> Vincular CUIT</button>
         </div>
-
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
+        {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between gap-3"><h2 className="font-semibold text-gray-900">CUIT y autorización</h2><span className="text-xs text-gray-400">{contributors.length} registros</span></div>
           {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
             {contributors.map(item => <article key={item.id} className="rounded-xl border border-gray-200 p-4">
@@ -583,8 +570,36 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               </div>
             </article>)}
           </div>}
-        </div>
       </section>
+
+      {showAddContributor && <div role="dialog" aria-modal="true" aria-labelledby="add-contributor-title" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4">
+        <section className="my-auto w-full max-w-xl rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div><h2 id="add-contributor-title" className="text-lg font-semibold text-gray-900">Vincular CUIT</h2><p className="mt-1 text-sm text-gray-500">Elegí el ambiente correcto. TEST y producción usan certificados y puntos de venta distintos.</p></div>
+            <button type="button" onClick={() => setShowAddContributor(false)} aria-label="Cerrar" className="rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50">Cerrar</button>
+          </div>
+          <form onSubmit={event => void addContributor(event)} className="mt-5 space-y-4">
+            <label className="block text-sm font-medium text-gray-700">CUIT emisor
+              <input required autoFocus inputMode="numeric" pattern="\d{11}" maxLength={11} value={cuit} onChange={event => setCuit(event.target.value.replace(/\D/g, '').slice(0,11))} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="11 dígitos" />
+            </label>
+            <label className="block text-sm font-medium text-gray-700">CUIT representante
+              <input inputMode="numeric" pattern="\d{11}" maxLength={11} value={representativeCuit} onChange={event => setRepresentativeCuit(event.target.value.replace(/\D/g, '').slice(0,11))} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="Si es la misma, dejalo vacío" />
+            </label>
+            <label className="block text-sm font-medium text-gray-700">Razón social
+              <input required value={razonSocial} onChange={event => setRazonSocial(event.target.value)} maxLength={180} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="Tal como figura en ARCA" />
+            </label>
+            <label className="block text-sm font-medium text-gray-700">Ambiente
+              <select value={environment} onChange={event => setEnvironment(event.target.value as 'TEST' | 'PROD')} className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
+              </select>
+            </label>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setShowAddContributor(false)} className="rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700">Cancelar</button>
+              <button disabled={busy || featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular</button>
+            </div>
+          </form>
+        </section>
+      </div>}
 
       {selectedContributor && <section className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><div className="flex flex-wrap items-center gap-2">{featureFlags.certificateManagement === true && <button type="button" onClick={() => void revokeCertificates()} disabled={busy || !certificateInfo?.active?.some(cert => cert.environment === selectedContributor.environment)} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Revocar certificados</button>}<button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-zap-magenta hover:text-zap-magenta">Cerrar</button></div></div>
