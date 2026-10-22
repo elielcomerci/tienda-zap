@@ -556,8 +556,6 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           <button type="button" onClick={() => setShowAddContributor(true)} disabled={featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-40"><Plus size={16} /> Vincular CUIT</button>
         </div>
         {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
-          <div className="flex items-center justify-between gap-3"><h2 className="font-semibold text-gray-900">CUIT y autorización</h2><span className="text-xs text-gray-400">{contributors.length} registros</span></div>
-          {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
             {contributors.map(item => <article key={item.id} className="rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><p className="font-semibold text-gray-900">{item.razonSocial || 'Contribuyente'}</p><p className="mt-1 font-mono text-sm text-gray-600">{item.cuit}</p><p className="mt-1 text-xs text-gray-500">Representante {item.representativeCuit} · {item.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div>
