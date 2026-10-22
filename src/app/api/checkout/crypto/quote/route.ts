@@ -135,6 +135,16 @@ export async function POST(request: Request) {
       })
     })
 
+    console.info('[checkout.quote.created]', {
+      checkout_id: order.id,
+      quote_id: payment.id,
+      payment_method: 'CRYPTO',
+      configurator_slug: null,
+      pricing_source: price.source,
+      chain_id: selected.network.chainId,
+      token_symbol: tokenSymbol,
+    })
+
     return Response.json({
       payment: {
         ...payment,
