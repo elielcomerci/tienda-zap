@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -13,6 +14,7 @@ function isUniqueError(error: unknown) {
 }
 
 export async function POST(request: NextRequest, context: Context) {
+  if (!(await isFiscalFeatureEnabled('manualInvoiceRegistration'))) return NextResponse.json({ error: 'El registro manual de comprobantes está desactivado por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
   const session = await auth()
   if (!session?.user?.id || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 401 })
