@@ -461,7 +461,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     setBusy(true); setError(''); setNotice('')
     try {
       const stableKey = `zap-void-${invoice.workerVoucherId}`
-      const response = await fetch(api('/api/fiscal/invoices/void'), {
+      const response = await fetch(api(`/api/fiscal/invoices/void?environment=${encodeURIComponent(invoice.environment)}`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
