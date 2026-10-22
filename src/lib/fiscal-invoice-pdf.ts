@@ -140,6 +140,19 @@ function officialQr(invoice: FiscalPdfInvoice) {
   return `https://www.afip.gob.ar/fe/qr/?p=${encoded}`
 }
 
+function effectiveVatBreakdown(payload: InvoicePayload) {
+  if (payload.amounts?.vatBreakdown?.length) return payload.amounts.vatBreakdown
+  const grouped = new Map<number, { rate: number; base: number; amount: number }>()
+  for (const item of payload.items || []) {
+    if (typeof item.vatRate !== 'number' || item.vatAmount <= 0) continue
+    const current = grouped.get(item.vatRate) || { rate: item.vatRate, base: 0, amount: 0 }
+    current.base += item.netAmount || 0
+    current.amount += item.vatAmount || 0
+    grouped.set(item.vatRate, current)
+  }
+  return [...grouped.values()].sort((a, b) => a.rate - b.rate)
+}
+
 async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: FiscalPdfTemplate, logoData?: string) {
   const payload = invoice.payload!
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -241,7 +254,7 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   doc.text(`Neto: ${money(amounts.net ?? 0)}`, right, y, { align: 'right' }); y += 5
   if (invoice.voucherType !== 11 && (amounts.vat ?? 0) > 0) {
     doc.text('IVA discriminado:', right, y, { align: 'right' }); y += 4
-    for (const rate of amounts.vatBreakdown || []) {
+    for (const rate of effectiveVatBreakdown(payload)) {
       doc.text(`IVA ${rate.rate}% sobre ${money(rate.base)}: ${money(rate.amount)}`, right, y, { align: 'right' })
       y += 4
     }
