@@ -82,6 +82,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   }, [api])
 
   useEffect(() => { void load() }, [load])
+  useEffect(() => () => {
+    if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl)
+  }, [pdfPreviewUrl])
 
   async function addContributor(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
