@@ -15,6 +15,7 @@ export const FISCAL_FEATURE_FLAGS = {
   invoiceVoid: { key: 'invoiceVoid', label: 'Anulación / Nota de Crédito', description: 'Permite iniciar anulaciones mediante Nota de Crédito cuando el Worker lo admite.' },
   jobReconciliation: { key: 'jobReconciliation', label: 'Conciliación de trabajos', description: 'Permite verificar en ARCA el resultado de trabajos fallidos antes de reintentar.' },
   usageVisibility: { key: 'usageVisibility', label: 'Consumo fiscal', description: 'Permite consultar el consumo registrado por el Worker para una CUIT en producción.' },
+  operationalRecovery: { key: 'operationalRecovery', label: 'Recuperación operativa del Worker', description: 'Permite reintentar trabajos DEAD y webhooks fallidos desde el panel de administración.' },
 } as const
 
 export type FiscalFeatureFlagKey = keyof typeof FISCAL_FEATURE_FLAGS
@@ -34,6 +35,7 @@ export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean>
   invoiceVoid: false,
   jobReconciliation: false,
   usageVisibility: false,
+  operationalRecovery: false,
 }
 
 export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagKey, boolean>> {
