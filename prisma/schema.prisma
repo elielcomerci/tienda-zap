@@ -240,13 +240,13 @@ model FiscalInvoiceRecord {
   cuit              String
   pointOfSale       Int
   voucherType       Int
-  voucherNumber     Int
+  voucherNumber     Int?
   result            String?
   cae               String?
   caeExpiresAt      DateTime?
   amount            Decimal?            @db.Decimal(14, 2)
   currency          String?             @default("PES")
-  jobId             String?
+  jobId             String?            @unique
   requestReference  String?
   invoicePdfUrl     String?
   payload           Json?
