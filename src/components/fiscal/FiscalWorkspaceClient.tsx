@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { downloadFiscalInvoiceBatchPdf, downloadFiscalInvoicePdf, type FiscalPdfInvoice, type FiscalPdfTemplate } from '@/lib/fiscal-invoice-pdf'
 import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, ShieldCheck, UploadCloud } from 'lucide-react'
 
 type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; notes?: string | null; customer?: { name: string | null; email: string; phone: string | null } }
@@ -12,7 +13,7 @@ type Invoice = {
   id: string; environment: string; cuit: string; pointOfSale: number; voucherType: number;
   voucherNumber: number | null; result: string | null; cae: string | null;
   caeExpiresAt: string | null; amount: string | null; currency: string | null;
-  jobId: string | null; invoicePdfUrl: string | null; createdAt: string;
+  jobId: string | null; invoicePdfUrl: string | null; createdAt: string; payload?: FiscalPdfInvoice['payload'] | null;
 }
 type CertificateInfo = { id: string; environment: string; status: string; cn?: string; expiresAt: string; daysUntilExpiry: number }
 type Props = { accountId?: string; adminMode?: boolean }
@@ -25,6 +26,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [account, setAccount] = useState<Account | null>(null)
   const [contributors, setContributors] = useState<Contributor[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [pdfTemplate, setPdfTemplate] = useState<FiscalPdfTemplate | null>(null)
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -60,7 +63,15 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       setSupportNotes(accountPayload.account?.notes || '')
       setPlatformStatus(accountPayload.account?.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
       setInvoices(accountPayload.invoices || [])
+      setSelectedInvoiceIds([])
       setContributors(contributorPayload.contributors || [])
+      const templateResponse = await fetch(api('/api/fiscal/template'), { cache: 'no-store' })
+      if (templateResponse.ok) {
+        const templatePayload = await templateResponse.json()
+        setPdfTemplate(templatePayload.template || null)
+      } else {
+        setPdfTemplate(null)
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudo cargar el espacio fiscal.')
     } finally {
@@ -134,6 +145,44 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudieron guardar las notas.') }
     finally { setBusy(false) }
   }
+
+
+  function toggleInvoiceSelection(invoiceId: string, checked: boolean) {
+    setSelectedInvoiceIds(current => checked
+      ? [...new Set([...current, invoiceId])]
+      : current.filter(id => id !== invoiceId))
+  }
+
+  async function exportInvoicePdf(invoice: Invoice) {
+    setError(''); setNotice('')
+    if (!pdfTemplate) {
+      setError('No se pudo cargar el diseño fiscal. Verificá la configuración de la plantilla y las migraciones antes de exportar.')
+      return
+    }
+    try {
+      await downloadFiscalInvoicePdf(invoice as FiscalPdfInvoice, pdfTemplate)
+      setNotice('PDF generado en este dispositivo.')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo generar el PDF.')
+    }
+  }
+
+  async function exportBatchPdf() {
+    setError(''); setNotice('')
+    if (!pdfTemplate) {
+      setError('No se pudo cargar el diseño fiscal. Verificá la configuración de la plantilla y las migraciones antes de exportar.')
+      return
+    }
+    const selected = invoices.filter(invoice => selectedInvoiceIds.includes(invoice.id))
+    try {
+      await downloadFiscalInvoiceBatchPdf(selected as FiscalPdfInvoice[], pdfTemplate)
+      setNotice(`PDF de lote generado en este dispositivo: ${selected.length} comprobante(s).`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo generar el PDF del lote.')
+    }
+  }
+
+  const authorizedInvoices = invoices.filter(invoice => invoice.result === 'A' && invoice.cae && invoice.voucherNumber)
 
   async function registerExistingInvoice(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -277,8 +326,16 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       </section>}
 
       <section className="rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="flex items-center gap-2"><FileText size={18} className="text-gray-500" /><h2 className="font-semibold text-gray-900">Comprobantes registrados</h2></div>
-        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3">Vencimiento</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3">{date(invoice.caeExpiresAt)}</td></tr>)}</tbody></table></div>}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2"><FileText size={18} className="text-gray-500" /><h2 className="font-semibold text-gray-900">Comprobantes registrados</h2></div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setSelectedInvoiceIds(authorizedInvoices.map(invoice => invoice.id))} disabled={!authorizedInvoices.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Seleccionar autorizadas</button>
+            <button type="button" onClick={() => setSelectedInvoiceIds([])} disabled={!selectedInvoiceIds.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Limpiar</button>
+            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate} className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
+          </div>
+        </div>
+        <p className="mt-2 text-xs leading-5 text-gray-500">La generación del PDF y del QR se ejecuta en este dispositivo. Solo se habilita para comprobantes autorizados con datos fiscales completos; los comprobantes cargados manualmente no se consideran verificados por ARCA.</p>
+        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={invoice.result !== 'A' || !invoice.cae || !invoice.voucherNumber} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={invoice.result !== 'A' || !invoice.cae || !invoice.voucherNumber || !pdfTemplate} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Descargar PDF</button></td></tr>)}</tbody></table></div>}
       </section>
       <p className="flex items-start gap-2 text-xs leading-5 text-gray-500"><ShieldCheck size={15} className="mt-0.5 shrink-0" />La interfaz distingue homologación y producción. La autorización para emitir depende del estado real informado por el Worker y ARCA.</p>
     </div>
