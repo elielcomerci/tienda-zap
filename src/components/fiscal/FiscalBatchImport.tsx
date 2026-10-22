@@ -208,7 +208,7 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
     const next: BatchRow[] = []
     const ids = new Set<string>()
     for (const original of rows) {
-      let row = { ...original, request: undefined, state: 'pending' as const, message: undefined }
+      let row: BatchRow = { ...original, request: undefined }
       if (ids.has(row.input.externalId)) {
         next.push({ ...row, state: 'invalid', message: 'externalId duplicado dentro del lote.' })
         continue
