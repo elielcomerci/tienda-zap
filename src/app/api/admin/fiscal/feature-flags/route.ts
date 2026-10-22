@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest) {
       create: { key, enabled: enabled as boolean, updatedBy: session.user.email || session.user.id },
       update: { enabled: enabled as boolean, updatedBy: session.user.email || session.user.id },
     })))
-    const after = Object.fromEntries(entries.map(([key, enabled]) => [key, enabled]))
+    const after = Object.fromEntries(entries.map(([key, enabled]) => [key, enabled as boolean])) as Record<string, boolean>
     await prisma.adminAuditLog.create({
       data: {
         actorId: session.user.id,
