@@ -7,6 +7,11 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const templateSchema = z.object({
+  legalName: z.string().trim().max(180).default(''),
+  issuerCuit: z.string().trim().regex(/^(|\\d{11})$/).default(''),
+  ivaCondition: z.string().trim().max(100).default(''),
+  startActivity: z.string().trim().max(10).default(''),
+  taxAddress: z.string().trim().max(180).default(''),
   commercialName: z.string().trim().max(120).default(''),
   address: z.string().trim().max(180).default(''),
   locality: z.string().trim().max(100).default(''),
@@ -22,6 +27,11 @@ const templateSchema = z.object({
 })
 
 const defaults = {
+  legalName: '',
+  issuerCuit: '',
+  ivaCondition: '',
+  startActivity: '',
+  taxAddress: '',
   commercialName: '',
   address: '',
   locality: '',
