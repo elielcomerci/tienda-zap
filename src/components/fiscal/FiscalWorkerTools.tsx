@@ -10,7 +10,7 @@ type Contributor = {
   authorizationStatus: string
   permissions: Record<string, boolean> | null
 }
-type Invoice = { id: string; cuit: string; environment: string; jobId: string | null; voucherNumber: number | null; voucherType: number }
+type Invoice = { id: string; cuit: string; environment: string; jobId: string | null; voucherNumber: number | null; voucherType: number; result?: string | null }
 type Props = {
   api: (path: string) => string
   contributors: Contributor[]
