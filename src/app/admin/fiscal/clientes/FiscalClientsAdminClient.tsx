@@ -104,7 +104,7 @@ export default function FiscalClientsAdminClient() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">Fiscal · Atención al cliente</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-zap-magenta">Fiscal · Atención al cliente</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">Clientes fiscales</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-500">Vinculá cada cliente de Tienda ZAP con su cuenta fiscal. La clave de soporte se cifra en el servidor; no se muestra ni se envía al navegador.</p>
         </div>
