@@ -244,6 +244,10 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       setError('Elegí una CUIT vinculada al ambiente seleccionado.')
       return
     }
+    if (selected.authorizationStatus !== 'ACTIVE' || selected.permissions?.canEmit !== true) {
+      setError(`La CUIT no tiene permiso activo para emitir en ${emission.environment}. Estado actual: ${selected.authorizationStatus}. Completá la autorización antes de continuar.`)
+      return
+    }
     if (!Number.isInteger(Number(emission.pointOfSale)) || Number(emission.pointOfSale) < 1) {
       setError('Ingresá un punto de venta válido para esta CUIT y este ambiente.')
       return
@@ -606,7 +610,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           <div><p className="text-sm font-semibold text-gray-900">Último trabajo fiscal</p><p className="mt-1 break-all font-mono text-xs text-gray-600">{activeJobId}</p></div>
           <button type="button" onClick={() => void refreshActiveJob()} disabled={busy} className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 disabled:opacity-50">Consultar estado</button>
         </div>}
-        <p className="mt-3 text-xs leading-5 text-gray-500">El punto de venta debe existir y estar activo en el ambiente elegido. Homologación y producción son independientes. Esta primera versión emite un solo ítem por comprobante; la carga por lote se desarrollará por separado.</p>
+        <p className="mt-3 text-xs leading-5 text-gray-500">El punto de venta debe existir y estar activo en el ambiente elegido. La prevalidación de payload no confirma que el punto de venta esté registrado: el Worker comprueba ese dato al emitir. Homologación y producción son independientes. Esta primera versión emite un solo ítem por comprobante; la carga por lote se desarrollará por separado.</p>
       </section>
 
       {adminMode && <section className="rounded-2xl border border-gray-200 bg-white p-5">
