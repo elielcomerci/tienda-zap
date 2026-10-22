@@ -224,6 +224,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
   const isInvoiceExportable = (invoice: Invoice) => ['A', 'DONE'].includes(String(invoice.result)) && Boolean(invoice.cae && invoice.voucherNumber && invoice.payload?.voucher?.date && invoice.payload?.amounts?.total !== undefined && invoice.payload?.customer?.docType !== undefined && invoice.payload?.customer?.docNumber && invoice.payload?.items?.length)
   const authorizedInvoices = invoices.filter(isInvoiceExportable)
+  const estimatedNet = Number(emission.netBase || 0)
+  const estimatedVat = emission.type === 'C' ? 0 : roundMoney(estimatedNet * Number(emission.vatRate || 0) / 100)
+  const estimatedTotal = roundMoney(estimatedNet + estimatedVat)
 
   const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
   const dateToArca = (value: string) => value ? value.replace(/-/g, '') : ''
@@ -579,8 +582,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-4">
               <div>
                 <p className="text-xs text-gray-500">Estimación previa · no es autorización fiscal</p>
-                <p className="mt-1 text-lg font-bold text-gray-900">{money(String(roundMoney(Number(emission.netBase || 0) + (emission.type === 'C' ? 0 : roundMoney(Number(emission.netBase || 0) * Number(emission.vatRate || 0) / 100))))}</p>
-                <p className="text-xs text-gray-500">Neto {money(String(Number(emission.netBase || 0)))} · IVA {money(String(emission.type === 'C' ? 0 : roundMoney(Number(emission.netBase || 0) * Number(emission.vatRate || 0) / 100)))}</p>
+                <p className="mt-1 text-lg font-bold text-gray-900">{money(String(estimatedTotal))}</p>
+                <p className="text-xs text-gray-500">Neto {money(String(estimatedNet))} · IVA {money(String(estimatedVat))}</p>
               </div>
               <button disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
             </div>
