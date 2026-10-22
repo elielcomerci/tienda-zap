@@ -42,7 +42,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
     [contributors, environment],
   )
   const selected = scopedContributors.find(item => item.cuit === cuit)
-  const reconcilableJobs = invoices.filter(item => item.jobId && item.environment === environment && (!cuit || item.cuit === cuit))
+  const reconcilableJobs = invoices.filter(item => item.jobId && ['FAILED', 'DEAD'].includes(item.result || '') && item.environment === environment && (!cuit || item.cuit === cuit))
   const enabled = (key: string) => flags[key] === true
 
   async function run(title: string, path: string, init?: RequestInit) {
