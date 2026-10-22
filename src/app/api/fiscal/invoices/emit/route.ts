@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveFiscalAccount, fiscalApiRequest } from '@/lib/fiscal-account-access'
+import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -54,6 +55,13 @@ export async function POST(request: NextRequest) {
   }
 
   const dryRun = request.nextUrl.searchParams.get('dryRun') === 'true'
+  const featureEnabled = await isFiscalFeatureEnabled(environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest')
+  if (!featureEnabled) {
+    return NextResponse.json({ error: environment === 'PROD' ? 'La emisión en producción está desactivada por el administrador.' : 'La emisión en homologación está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
+  }
+  if (body.idempotencyKey?.startsWith('zap-batch-') && !(await isFiscalFeatureEnabled('batchImport'))) {
+    return NextResponse.json({ error: 'La importación por lote está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
+  }
   if (typeof body.externalId !== 'string' || !body.externalId.trim() || typeof body.idempotencyKey !== 'string' || !body.idempotencyKey.trim()) {
     return NextResponse.json({ error: 'La solicitud requiere externalId e idempotencyKey.' }, { status: 422 })
   }
