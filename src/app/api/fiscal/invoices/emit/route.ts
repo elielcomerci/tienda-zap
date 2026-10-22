@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 type EmitBody = {
   externalId?: string
+  idempotencyKey?: string
   contributor?: { cuit?: string; pointOfSale?: number; environment?: string }
   voucher?: { type?: string; concept?: number; date?: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string }
   amounts?: { total?: number; net?: number; vat?: number; exempt?: number; nonTaxable?: number; vatBreakdown?: Array<{ rate: number; base: number; amount: number }> }
@@ -52,7 +53,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'La emisión requiere CUIT, punto de venta, ambiente y tipo de factura válido.' }, { status: 422 })
   }
 
-  const response = await fiscalApiRequest(request, '/v1/invoices/emit', access.apiKey, JSON.stringify(body))
+  const dryRun = request.nextUrl.searchParams.get('dryRun') === 'true'
+  if (typeof body.externalId !== 'string' || !body.externalId.trim() || typeof body.idempotencyKey !== 'string' || !body.idempotencyKey.trim()) {
+    return NextResponse.json({ error: 'La solicitud requiere externalId e idempotencyKey.' }, { status: 422 })
+  }
+  const workerPath = dryRun ? '/v1/invoices/emit?dryRun=true' : '/v1/invoices/emit'
+  const response = await fiscalApiRequest(request, workerPath, access.apiKey, JSON.stringify(body))
   if (!response.ok) return response
   const result = await response.clone().json().catch(() => ({})) as EmitResult
   if (!result.jobId) return response
