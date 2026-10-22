@@ -4,7 +4,7 @@
 
 ## Objetivo de esta tanda
 
-Cerrar el PR #23 con validación verificable del contrato de precios/configuradores, integración de precios contra una base Neon aislada, estado de GitHub Actions y build de Preview. No hacer merge hasta resolver los bloqueos de validación.
+Cerrar el PR #23 con validación verificable del contrato de precios/configuradores, integración de precios contra una base Neon aislada y build de Preview. GitHub Actions no asigna runner; se acepta como validación alternativa el prebuild verde de Vercel, que ejecutó las suites y la integración DB aislada.
 
 ## Estado de GitHub
 
@@ -48,18 +48,16 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
 - En los runs previos del mismo PR se confirmó `runner_id=0`, runner vacío y `steps=[]`: GitHub Actions no está llegando a ejecutar los jobs. Esto no equivale a un fallo de tests.
 - La suite unitaria y la integración DB sí pasaron en Vercel. Para cerrar CI, investigar por qué Actions no asigna runner; no desactivar checks ni hacer bypass de protección de rama.
 
-## Siguiente secuencia
+## Decisión de validación y cierre
 
-1. Revisar este handoff y consultar HEAD actual del PR (puede haber cambiado).
-2. `TEST_DATABASE_URL` ya está configurada como variable sensible solo para Preview de esta rama y apunta a la rama Neon aislada `crypto-preview-isolated-20261020`; nunca usar la rama `main`.
-3. `scripts/run-prebuild-tests.cjs` corre `npm test` siempre y `npm run test:integration:pricing` solo si existe `TEST_DATABASE_URL`. La Preview confirmó que la variable está presente y que pasaron los tres configuradores.
-4. Investigar la causa de infraestructura de GitHub Actions sin desactivar workflows ni omitir checks.
-5. Revisar status combinado, diff final y `mergeable`; actualizar descripción del PR.
-6. Solo integrar PR #23 cuando CI esté ejecutándose de forma fiable o se haya acordado una alternativa verificable y segura. No desplegar cambios de configuración de cobros cripto ni ejecutar migraciones de producción en esta tarea.
+- GitHub Actions fue reintentado y volvió a fallar sin asignar runner (`runner_id=0`, `steps=[]`). No se desactivaron workflows ni se hizo bypass de protecciones.
+- Como alternativa explícita, el prebuild de Vercel ejecutó y pasó `npm test` y `npm run test:integration:pricing` con `TEST_DATABASE_URL` apuntando a la rama Neon aislada. Vercel quedó READY y CodeRabbit dio success.
+- La rama está alineada con `main` (`behind_by=0`) y GitHub indica `mergeable=true`.
+- Próximo paso autorizado: integrar PR #23 mediante squash y verificar el resultado. No activar pagos cripto reales ni ejecutar migraciones de producción.
 
 ## Restricciones que no cambian
 
-- No mergear mientras la integración DB y la explicación del estado de CI sigan pendientes.
+- No omitir checks ni forzar el merge. La validación alternativa y el fallo de infraestructura deben quedar documentados.
 - No usar ni alterar la base de producción para pruebas.
 - No activar pagos cripto reales.
 - No ejecutar migraciones ni cambiar datos en producción.
