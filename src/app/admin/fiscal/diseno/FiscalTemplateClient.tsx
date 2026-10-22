@@ -94,15 +94,11 @@ export default function FiscalTemplateClient({ accountId }: { accountId?: string
     }
     setUploading(true)
     try {
-      const prepared = await fetch('/api/admin/fiscal/template/logo-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: file.name, contentType: file.type, sizeBytes: file.size }),
-      })
-      const data = await prepared.json()
-      if (!prepared.ok) throw new Error(data.error || 'No se pudo preparar la subida del logo.')
-      const uploaded = await fetch(data.signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file })
-      if (!uploaded.ok) throw new Error('No se pudo subir el logo al CDN.')
+      const form = new FormData()
+      form.append('file', file, file.name)
+      const uploaded = await fetch('/api/admin/fiscal/template/logo-upload', { method: 'POST', body: form })
+      const data = await uploaded.json()
+      if (!uploaded.ok) throw new Error(data.error || 'No se pudo subir el logo al CDN.')
       update('logoUrl', data.publicUrl)
       setNotice('Logo subido al CDN. Guardá el diseño para conservar los cambios.')
     } catch (reason) {
