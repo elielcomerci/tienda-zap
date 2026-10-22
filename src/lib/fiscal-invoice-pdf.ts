@@ -77,6 +77,7 @@ const voucherNames: Record<number, string> = {
   11: 'FACTURA C',
   51: 'FACTURA M',
 }
+const voucherLetters: Record<number, string> = { 1: 'A', 6: 'B', 11: 'C', 51: 'M' }
 
 const money = (value: number) => new Intl.NumberFormat('es-AR', {
   style: 'currency', currency: 'ARS', minimumFractionDigits: 2,
@@ -96,7 +97,7 @@ function validate(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
   if (!/^\d{11}$/.test(template.issuerCuit || '') || template.issuerCuit !== invoice.cuit) missing.push('CUIT emisor coincidente con la plantilla')
   if (!template.legalName?.trim()) missing.push('razón social fiscal')
   if (!template.ivaCondition?.trim()) missing.push('condición frente al IVA')
-  if (!template.taxAddress?.trim() && !template.address?.trim()) missing.push('domicilio del emisor')
+  if (!template.taxAddress?.trim()) missing.push('domicilio fiscal/comercial declarado del emisor')
   if (!template.startActivity?.trim()) missing.push('inicio de actividades')
   if (!/^\d{8}$/.test(payload?.voucher?.date || '')) missing.push('fecha de emisión')
   if (typeof payload?.amounts?.total !== 'number' || !Number.isFinite(payload.amounts.total)) missing.push('total fiscal')
@@ -180,13 +181,13 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   doc.setFontSize(8)
   doc.text(`CUIT: ${template.issuerCuit}`, textX, y + 9)
   doc.text(template.ivaCondition || '', textX, y + 13, { maxWidth: right - textX - 42 })
-  doc.text(`Domicilio: ${template.taxAddress || template.address || ''}`, textX, y + 17, { maxWidth: right - textX - 42 })
+  doc.text(`Domicilio: ${template.taxAddress || ''}`, textX, y + 17, { maxWidth: right - textX - 42 })
 
   doc.setDrawColor(180, 180, 180)
   doc.rect(right - 36, y - 1, 36, 24)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(15)
-  doc.text(String.fromCharCode(64 + (invoice.voucherType === 1 ? 1 : invoice.voucherType === 6 ? 2 : invoice.voucherType === 11 ? 3 : 4)), right - 18, y + 8, { align: 'center' })
+  doc.text(voucherLetters[invoice.voucherType] || '?', right - 18, y + 8, { align: 'center' })
   doc.setFontSize(7)
   doc.text(voucherName, right - 18, y + 14, { align: 'center' })
   doc.setFont('helvetica', 'normal')
@@ -301,7 +302,7 @@ export async function downloadFiscalInvoicePdf(invoice: FiscalPdfInvoice, templa
   document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
-  URL.revokeObjectURL(url)
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 export async function downloadFiscalInvoiceBatchPdf(invoices: FiscalPdfInvoice[], template: FiscalPdfTemplate) {
