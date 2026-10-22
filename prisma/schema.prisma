@@ -195,6 +195,17 @@ model SiteSettings {
   updatedAt              DateTime @updatedAt
 }
 
+
+model FiscalFeatureFlag {
+  key       String   @id
+  enabled   Boolean  @default(false)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled])
+}
+
 model FiscalInvoiceTemplate {
   id        String              @id @default(cuid())
   accountId String?             @unique
