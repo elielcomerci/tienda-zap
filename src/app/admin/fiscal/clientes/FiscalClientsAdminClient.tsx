@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { Link2, LoaderCircle, RefreshCw, ShieldAlert, UserPlus, Users } from 'lucide-react'
 
 type Customer = { id: string; name: string | null; email: string; phone: string | null; documentId: string | null }
@@ -169,6 +170,7 @@ export default function FiscalClientsAdminClient() {
               <div className="flex items-center gap-3">
                 <span className={account.status === 'ACTIVE' ? 'rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700' : 'rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700'}>{account.status === 'ACTIVE' ? 'Vinculada' : account.status}</span>
                 <span className="text-sm text-gray-500">{account.invoiceCount} comprobantes</span>
+                <Link href={`/admin/fiscal/clientes/${encodeURIComponent(account.id)}`} className="rounded-xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800">Abrir soporte</Link>
               </div>
             </article>)}
           </div>
