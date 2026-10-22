@@ -67,10 +67,10 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
   let operationEnvironment: 'TEST' | 'PROD' | null = null
 
   if (method === 'POST' && path === 'contributors') requiredFlags.push('contributorManagement')
-  else if ((method === 'GET' || method === 'POST' || method === 'DELETE') && /^contributors\\/[0-9]{11}\\/certificate$/.test(path)) requiredFlags.push('certificateManagement')
-  else if (method === 'POST' && /^contributors\\/[0-9]{11}\\/certificate\\/[A-Za-z0-9_-]+\\/activate$/.test(path)) requiredFlags.push('certificateManagement')
-  else if (method === 'GET' && /^contributors\\/[0-9]{11}\\/wsfe\\//.test(path)) requiredFlags.push('wsfeRead')
-  else if (method === 'DELETE' && /^contributors\\/[0-9]{11}$/.test(path)) requiredFlags.push('contributorManagement')
+  else if ((method === 'GET' || method === 'POST' || method === 'DELETE') && /^contributors\/[0-9]{11}\/certificate$/.test(path)) requiredFlags.push('certificateManagement')
+  else if (method === 'POST' && /^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) requiredFlags.push('certificateManagement')
+  else if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\//.test(path)) requiredFlags.push('wsfeRead')
+  else if (method === 'DELETE' && /^contributors\/[0-9]{11}$/.test(path)) requiredFlags.push('contributorManagement')
   else if (method === 'POST' && path === 'padron/consultas') requiredFlags.push('padronQuery')
   else if (method === 'POST' && path === 'invoices/emit') {
     try {
@@ -96,10 +96,10 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
     } catch {
       return NextResponse.json({ error: 'La operación requiere un body JSON válido y un ambiente explícito.' }, { status: 400 })
     }
-  } else if (method === 'POST' && /^jobs\\/[A-Za-z0-9_-]+\\/reconcile$/.test(path)) requiredFlags.push('jobReconciliation')
+  } else if (method === 'POST' && /^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) requiredFlags.push('jobReconciliation')
   else if (method === 'GET' && path === 'usage') requiredFlags.push('usageVisibility')
 
-  if (method === 'GET' && /^contributors\\/[0-9]{11}\\/certificate$/.test(path)) {
+  if (method === 'GET' && /^contributors\/[0-9]{11}\/certificate$/.test(path)) {
     const environment = request.nextUrl.searchParams.get('environment')
     if (environment !== 'TEST' && environment !== 'PROD') {
       return NextResponse.json({ error: 'La consulta de certificado requiere ambiente TEST o PROD.' }, { status: 422 })
