@@ -533,7 +533,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               <option value="ACTIVE">Activo</option><option value="PAUSED">Pausado</option>
             </select>
           </label>
-          <button disabled={busy} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar'}</button>
+          <button disabled={busy} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar'}</button>
         </form>
       </section>}
 
@@ -600,7 +600,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             <input required type="file" accept=".key,.pem,application/x-pem-file" onChange={event => setKeyFile(event.target.files?.[0] || null)} className="mt-1 block w-full rounded-xl border border-gray-200 p-2 text-sm font-normal" />
           </label>
           <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-            <button disabled={busy || !certFile || !keyFile} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <UploadCloud size={16} />} Validar y cargar</button>
+            <button disabled={busy || !certFile || !keyFile} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <UploadCloud size={16} />} Validar y cargar</button>
             <p className="text-xs leading-5 text-gray-500">Los archivos se envían al Worker para validación y cifrado. No se guardan en el navegador ni en el CDN público.</p>
           </div>
         </form>
@@ -693,15 +693,15 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <p className="mt-1 text-lg font-bold text-gray-900">{money(String(estimatedTotal))}</p>
                 <p className="text-xs text-gray-500">Neto {money(String(estimatedNet))} · IVA {money(String(estimatedVat))}</p>
               </div>
-              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
+              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
             </div>
           </fieldset>
         </form>
-        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
+        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-zap-magenta px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
         {preparedMode === 'validated' && preparedEmission && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div><p className="font-semibold text-gray-900">Validación previa correcta</p><p className="mt-1 text-sm text-gray-600">El Worker validó el payload sin emitir. Revisá el resumen y confirmá solo si los datos son correctos.</p></div>
-            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
+            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
           </div>
           <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
             <div><p className="text-gray-500">Tipo ARCA</p><p className="font-semibold">{String(dryRunPreview?.cbteTipo ?? '—')} · {emission.type}</p></div>
@@ -731,7 +731,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           <label className="text-sm font-medium text-gray-700">CAE<input required inputMode="numeric" pattern="\d{14}" maxLength={14} value={manualInvoice.cae} onChange={event => setManualInvoice(v => ({ ...v, cae: event.target.value.replace(/\D/g, '').slice(0,14) }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm font-normal" /></label>
           <label className="text-sm font-medium text-gray-700">Vencimiento CAE<input required type="date" value={manualInvoice.caeFchVto ? `${manualInvoice.caeFchVto.slice(0,4)}-${manualInvoice.caeFchVto.slice(4,6)}-${manualInvoice.caeFchVto.slice(6,8)}` : ''} onChange={event => setManualInvoice(v => ({ ...v, caeFchVto: event.target.value.replace(/-/g, '') }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
           <label className="text-sm font-medium text-gray-700">Total (ARS)<input required type="number" min="0" step="0.01" value={manualInvoice.amount} onChange={event => setManualInvoice(v => ({ ...v, amount: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
-          <div className="sm:col-span-2 lg:col-span-4"><button disabled={busy} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Registrando…' : 'Asignar a esta cuenta'}</button></div>
+          <div className="sm:col-span-2 lg:col-span-4"><button disabled={busy} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Registrando…' : 'Asignar a esta cuenta'}</button></div>
         </form>
       </section>}
 
@@ -741,7 +741,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => setSelectedInvoiceIds(authorizedInvoices.map(invoice => invoice.id))} disabled={!authorizedInvoices.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Seleccionar autorizadas</button>
             <button type="button" onClick={() => setSelectedInvoiceIds([])} disabled={!selectedInvoiceIds.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Limpiar</button>
-            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate || featureFlags.pdfExport !== true} className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
+            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate || featureFlags.pdfExport !== true} className="rounded-lg bg-zap-magenta px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
           </div>
         </div>
         <p className="mt-2 text-xs leading-5 text-gray-500">La generación del PDF y del QR se ejecuta en este dispositivo. Solo se habilita para comprobantes autorizados con datos fiscales completos; los comprobantes cargados manualmente no se consideran verificados por ARCA.</p>
