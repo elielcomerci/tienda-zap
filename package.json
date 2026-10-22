@@ -17,7 +17,8 @@
     "test": "node scripts/run-ts-tests.cjs tests/configurator-contract.test.ts tests/checkout-pricing-smoke.test.ts tests/crypto-networks.test.ts tests/crypto-quotes.test.ts tests/crypto-submit-concurrency.test.ts tests/crypto-reconciliation-simulation.test.ts",
     "typecheck": "tsc --noEmit",
     "test:crypto": "node scripts/run-ts-tests.cjs tests/crypto-networks.test.ts tests/crypto-quotes.test.ts tests/crypto-submit-concurrency.test.ts tests/crypto-reconciliation-simulation.test.ts",
-    "test:integration:pricing": "node scripts/run-ts-tests.cjs tests/pricing-db.integration.test.ts"
+    "test:integration:pricing": "node scripts/run-ts-tests.cjs tests/pricing-db.integration.test.ts",
+    "prebuild": "npm test"
   },
   "prisma": {
     "seed": "ts-node --compilerOptions \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
