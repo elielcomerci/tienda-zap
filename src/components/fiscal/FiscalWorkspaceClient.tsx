@@ -155,6 +155,21 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo consultar el certificado.') }
   }
 
+  async function revokeCertificates() {
+    if (!selectedContributor || !featureFlags.certificateManagement) return
+    if (!confirm(`Se revocarán los certificados activos o pendientes de ${selectedContributor.cuit} en ${selectedContributor.environment}. Esta acción puede impedir nuevas operaciones fiscales. ¿Continuar?`)) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate?environment=${selectedContributor.environment}`), { method: 'DELETE' })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudieron revocar los certificados.')
+      setNotice(payload.message || 'Certificados revocados para este CUIT y ambiente.')
+      await loadCertificate(selectedContributor)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudieron revocar los certificados.')
+    } finally { setBusy(false) }
+  }
+
   async function activateCertificate(certificate: CertificateInfo) {
     if (!selectedContributor || !featureFlags.certificateManagement) return
     if (!confirm('¿Activar este certificado para ' + selectedContributor.cuit + ' en ' + selectedContributor.environment + '? El certificado activo anterior puede quedar revocado.')) return
@@ -572,7 +587,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       </section>
 
       {selectedContributor && <section className="rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="text-sm text-gray-500 hover:text-gray-900">Cerrar</button></div>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><div className="flex flex-wrap items-center gap-2">{featureFlags.certificateManagement === true && <button type="button" onClick={() => void revokeCertificates()} disabled={busy || !certificateInfo?.active?.some(cert => cert.environment === selectedContributor.environment)} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Revocar certificados</button>}<button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-zap-magenta hover:text-zap-magenta">Cerrar</button></div></div>
         {certificateInfo && <div className="mt-4 space-y-2">
           {(certificateInfo.active || []).concat(certificateInfo.others || []).filter(cert => cert.environment === selectedContributor.environment).map(cert => <div key={cert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-3 text-sm"><div><p className="font-semibold text-gray-800">{cert.cn || 'Certificado'} · {cert.status}</p><p className="text-xs text-gray-500">Vence {date(cert.expiresAt)} · {cert.daysUntilExpiry} días</p></div><div className="flex items-center gap-2"><span className="font-mono text-xs text-gray-500">{cert.environment}</span>{cert.status !== 'ACTIVE' && cert.daysUntilExpiry >= 0 && featureFlags.certificateManagement === true && <button type="button" onClick={() => void activateCertificate(cert)} disabled={busy} className="rounded-full border border-zap-magenta/30 bg-white px-3 py-1.5 text-xs font-semibold text-zap-magenta hover:bg-zap-magenta-subtle disabled:opacity-40">Activar</button>}</div></div>)}
           {!(certificateInfo.active || []).length && !(certificateInfo.others || []).length && <p className="text-sm text-gray-500">No hay certificados cargados para este ambiente.</p>}
