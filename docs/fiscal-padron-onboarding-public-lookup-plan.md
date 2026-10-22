@@ -65,3 +65,18 @@ La consulta al Padrón es una capacidad independiente de la emisión de comproba
 3. Confirmar qué datos devuelve ARCA en el código real y elegir la allowlist pública; verificar el requisito de representación/delegación antes de probar CUIT de terceros.
 4. Implementar primero el contrato backend y pruebas de aislamiento/cuotas; luego integrar onboarding y landing.
 5. Mantener emisión y operaciones productivas deshabilitadas; no desplegar hasta que los checks requeridos pasen.
+
+## Hallazgos de la primera pasada técnica — 22/10/2026
+
+Revisión del código actual de `zap-fiscal-core/main`:
+
+- `POST /v1/padron/consultas` está autenticado por tenant y exige que `representedCuit` ya exista como contribuyente vinculado, además de una asociación `tenantContributor` con permiso activo `canQueryPadron`. No sirve directamente para visitantes públicos ni para el onboarding inicial si ZAP aún no está asociado al tenant del cliente.
+- El handler actual guarda la consulta con idempotencia por tenant y, en PROD, reserva/ajusta una unidad de la cuota mensual de Padrón del tenant. TEST no consume esa misma reserva mensual. La cuota pública diaria no debe reutilizarse como cuota de tenant.
+- El Durable Object `FiscalAgent` llama a `getValidToken(..., 'canQueryPadron', 'ws_sr_padron_a5')`. La selección de certificado requiere que esté activo, vigente, corresponda a `holderCuit` y tenga `uploadedByTenantId` igual al tenant solicitante. La identidad de WSAA se separa por ambiente, servicio y huella del certificado.
+- Por lo anterior, no se debe “resolver” el onboarding cambiando solamente `representedCuit`: el flujo actual necesita una identidad/certificado asociado al tenant y permisos explícitos. La consulta de servicio ZAP requiere una ruta y un contexto de autorización diseñados expresamente, sin copiar credenciales de ZAP a cuentas cliente ni relajar el endpoint actual.
+- El cliente SOAP usa el servicio `ws_sr_padron_a5` y consulta los endpoints distintos de homologación y producción. El parser devuelve el objeto completo `personaReturn`; hoy el handler responde con ese objeto en `result`. Una API pública nueva debe aplicar una allowlist explícita de campos antes de responder, en vez de reenviar el objeto completo.
+- `POST /v1/contributors` actualmente aplica defaults para datos registrales faltantes (incluye condición IVA `MONOTRIBUTO` e inicio de actividad `2000-01-01`). El flujo nuevo no debe aceptar esos defaults como datos reales: hay que corregir el contrato/validación o exigir una respuesta Padrón verificada antes de crear un contribuyente nuevo.
+
+### Próxima tarea técnica concreta
+
+Auditar cómo el Worker obtiene el certificado de ZAP y qué autorización/delegación real tiene para `ws_sr_padron_a5` en TEST/PROD. Luego diseñar un servicio interno de consulta con identidad de servicio, cuota pública independiente y respuesta reducida. Hasta confirmar la delegación y el contrato, no habilitar consultas públicas en vivo ni afirmar que ZAP puede consultar cualquier CUIT.
