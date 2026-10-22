@@ -186,6 +186,7 @@ model SiteSettings {
   metaKeywords           String?
   canonicalUrl           String?
   ogImageUrl             String?
+  fiscalInvoiceTemplate Json?
   googleAnalyticsId      String?
   googleAdsId            String?
   googleTagManagerId     String?
