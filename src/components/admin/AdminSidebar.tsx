@@ -129,7 +129,7 @@ export default function AdminSidebar() {
         } lg:translate-x-0`}
       >
         <div className="flex items-center gap-2.5 border-b border-gray-800 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zap-magenta">
             <Zap size={18} className="text-white" />
           </div>
           <div>
@@ -154,7 +154,7 @@ export default function AdminSidebar() {
                     onClick={() => setOpen(false)}
                     className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                       active
-                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                        ? 'bg-zap-magenta text-white shadow-lg shadow-zap-magenta/20'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                     }`}
                   >
