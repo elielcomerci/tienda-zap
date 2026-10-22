@@ -18,7 +18,7 @@ const templateSchema = z.object({
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#ed164f'),
   showWebsite: z.boolean().default(true),
   showWhatsapp: z.boolean().default(true),
-  footerText: z.string().trim().max(180).default('Gracias por elegirnos.').default('Gracias por elegirnos.'),
+  footerText: z.string().trim().max(180).default('Gracias por elegirnos.'),
 })
 
 const defaults = {
