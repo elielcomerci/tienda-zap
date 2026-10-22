@@ -30,6 +30,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags }
   const [voucherType, setVoucherType] = useState('6')
   const [voucherNumber, setVoucherNumber] = useState('')
   const [queryCuit, setQueryCuit] = useState('')
+  const [padronRequestKey, setPadronRequestKey] = useState('')
   const [jobId, setJobId] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -65,6 +66,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags }
   function chooseContributor(nextCuit: string) {
     setCuit(nextCuit)
     setQueryCuit('')
+    setPadronRequestKey('')
     setResult(null)
   }
 
@@ -81,7 +83,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags }
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="text-sm font-medium text-gray-700">Ambiente
-          <select className={inputClass} value={environment} onChange={event => { setEnvironment(event.target.value as 'TEST' | 'PROD'); setCuit(''); setResult(null) }}>
+          <select className={inputClass} value={environment} onChange={event => { setEnvironment(event.target.value as 'TEST' | 'PROD'); setCuit(''); setPadronRequestKey(''); setResult(null) }}>
             <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
           </select>
         </label>
@@ -116,8 +118,12 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags }
         <h3 className="text-sm font-semibold text-gray-900">Consulta de padrón</h3>
         <p className="mt-1 text-sm text-gray-600">La CUIT consultada puede diferir de la CUIT representada. La autorización debe estar activa en el Worker.</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <input className={inputClass + ' mt-0 min-w-[220px] flex-1'} inputMode="numeric" maxLength={11} placeholder="CUIT a consultar" value={queryCuit} onChange={event => setQueryCuit(event.target.value.replace(/\D/g, '').slice(0, 11))} />
-          <button type="button" className={buttonClass} disabled={busy || !cuit || queryCuit.length !== 11} onClick={() => void run('Consulta de padrón', '/api/fiscal/padron/consultas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `padron-${cuit}-${environment}-${queryCuit}-${Date.now()}` }, body: JSON.stringify({ cuit: queryCuit, representedCuit: cuit, environment }) })}>Consultar padrón</button>
+          <input className={inputClass + ' mt-0 min-w-[220px] flex-1'} inputMode="numeric" maxLength={11} placeholder="CUIT a consultar" value={queryCuit} onChange={event => { setQueryCuit(event.target.value.replace(/\D/g, '').slice(0, 11)); setPadronRequestKey('') }} />
+          <button type="button" className={buttonClass} disabled={busy || !cuit || queryCuit.length !== 11} onClick={() => {
+            const key = padronRequestKey || `padron-${crypto.randomUUID()}`
+            setPadronRequestKey(key)
+            void run('Consulta de padrón', '/api/fiscal/padron/consultas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ cuit: queryCuit, representedCuit: cuit, environment }) })
+          }}>Consultar padrón</button>
         </div>
       </div>}
 
@@ -143,7 +149,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags }
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
       {result && <div role="status" className="overflow-hidden rounded-2xl border border-zap-magenta/20 bg-zap-magenta-subtle/40">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zap-magenta/10 px-4 py-3"><h3 className="font-semibold text-gray-900">{result.title}</h3><span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-600">HTTP {result.status}</span></div>
-        <pre className="max-h-80 overflow-auto p-4 text-xs leading-5 text-gray-800">{JSON.stringify(result.body, null, 2)}</pre>
+        <pre className="max-h-80 overflow-auto p-4 text-xs leading-5 text-gray-800">{JSON.stringify(result.title === 'Consumo fiscal' && result.body && typeof result.body === 'object' ? Object.fromEntries(Object.entries(result.body as Record<string, unknown>).filter(([key]) => ['cuit', 'environment', 'periodStart', 'consumed', 'reserved'].includes(key))) : result.body, null, 2)}</pre>
       </div>}
       <p className="text-xs leading-5 text-gray-500">Las respuestas se muestran como información operativa del Worker. Los estados, permisos y autorizaciones de ARCA siguen siendo la fuente de verdad.</p>
     </section>
