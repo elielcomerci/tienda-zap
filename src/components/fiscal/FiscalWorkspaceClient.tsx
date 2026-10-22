@@ -140,6 +140,23 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo consultar el certificado.') }
   }
 
+  async function activateCertificate(certificate: CertificateInfo) {
+    if (!selectedContributor || !featureFlags.certificateManagement) return
+    if (!confirm('¿Activar este certificado para ' + selectedContributor.cuit + ' en ' + selectedContributor.environment + '? El certificado activo anterior puede quedar revocado.')) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate/${encodeURIComponent(certificate.id)}/activate`), {
+        method: 'POST',
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo activar el certificado.')
+      setNotice(payload.message || 'Certificado activado. La autenticación se comprobará en el próximo trabajo.')
+      await loadCertificate(selectedContributor)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo activar el certificado.')
+    } finally { setBusy(false) }
+  }
+
   async function uploadCertificate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!selectedContributor || !certFile || !keyFile) return
@@ -493,7 +510,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       {selectedContributor && <section className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="text-sm text-gray-500 hover:text-gray-900">Cerrar</button></div>
         {certificateInfo && <div className="mt-4 space-y-2">
-          {(certificateInfo.active || []).concat(certificateInfo.others || []).filter(cert => cert.environment === selectedContributor.environment).map(cert => <div key={cert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-3 text-sm"><div><p className="font-semibold text-gray-800">{cert.cn || 'Certificado'} · {cert.status}</p><p className="text-xs text-gray-500">Vence {date(cert.expiresAt)} · {cert.daysUntilExpiry} días</p></div><span className="font-mono text-xs text-gray-500">{cert.environment}</span></div>)}
+          {(certificateInfo.active || []).concat(certificateInfo.others || []).filter(cert => cert.environment === selectedContributor.environment).map(cert => <div key={cert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-3 text-sm"><div><p className="font-semibold text-gray-800">{cert.cn || 'Certificado'} · {cert.status}</p><p className="text-xs text-gray-500">Vence {date(cert.expiresAt)} · {cert.daysUntilExpiry} días</p></div><div className="flex items-center gap-2"><span className="font-mono text-xs text-gray-500">{cert.environment}</span>{cert.status !== 'ACTIVE' && cert.daysUntilExpiry >= 0 && featureFlags.certificateManagement === true && <button type="button" onClick={() => void activateCertificate(cert)} disabled={busy} className="rounded-full border border-zap-magenta/30 bg-white px-3 py-1.5 text-xs font-semibold text-zap-magenta hover:bg-zap-magenta-subtle disabled:opacity-40">Activar</button>}</div></div>)}
           {!(certificateInfo.active || []).length && !(certificateInfo.others || []).length && <p className="text-sm text-gray-500">No hay certificados cargados para este ambiente.</p>}
         </div>}
         <form onSubmit={event => void uploadCertificate(event)} className="mt-4 grid gap-4 md:grid-cols-2">
