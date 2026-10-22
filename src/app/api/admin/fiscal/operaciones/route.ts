@@ -57,7 +57,7 @@ export async function GET() {
   if (results.every(item => !item.ok)) {
     return NextResponse.json({ error: 'No se pudieron consultar las operaciones internas del Worker.', details: { stats: stats.status, wsaa: wsaa.status, deadJobs: deadJobs.status, deadWebhooks: deadWebhooks.status } }, { status: 502 })
   }
-  return NextResponse.json({ stats, wsaa, deadJobs, deadWebhooks, checkedAt: new Date().toISOString() }, { headers: { 'Cache-Control': 'no-store' } })
+  return NextResponse.json({ stats, wsaa, deadJobs, deadWebhooks, recoveryEnabled: await isFiscalFeatureEnabled('operationalRecovery'), checkedAt: new Date().toISOString() }, { headers: { 'Cache-Control': 'no-store' } })
 }
 
 export async function POST(request: NextRequest) {
