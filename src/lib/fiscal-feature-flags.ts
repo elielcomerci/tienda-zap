@@ -1,0 +1,46 @@
+import { prisma } from '@/lib/prisma'
+
+export const FISCAL_FEATURE_FLAGS = {
+  accountProvisioning: { key: 'accountProvisioning', label: 'Alta de cuentas fiscales', description: 'Crear o vincular tenants del Worker desde el panel.' },
+  contributorManagement: { key: 'contributorManagement', label: 'Vinculación de CUIT', description: 'Vincular CUIT y ambientes a una cuenta fiscal.' },
+  certificateManagement: { key: 'certificateManagement', label: 'Certificados', description: 'Cargar o revocar certificados y claves fiscales.' },
+  invoiceEmissionTest: { key: 'invoiceEmissionTest', label: 'Emisión en homologación', description: 'Permite validar y emitir comprobantes en TEST.' },
+  invoiceEmissionProd: { key: 'invoiceEmissionProd', label: 'Emisión en producción', description: 'Permite validar y emitir comprobantes reales en PROD.' },
+  batchImport: { key: 'batchImport', label: 'Importación por lote', description: 'Habilita el flujo de importación TSV en la interfaz.' },
+  pdfExport: { key: 'pdfExport', label: 'Exportación PDF', description: 'Habilita la generación local de PDF desde el panel.' },
+  manualInvoiceRegistration: { key: 'manualInvoiceRegistration', label: 'Registro manual de comprobantes', description: 'Permite registrar en el panel comprobantes emitidos por otros medios.' },
+} as const
+
+export type FiscalFeatureFlagKey = keyof typeof FISCAL_FEATURE_FLAGS
+
+export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean> = {
+  accountProvisioning: false,
+  contributorManagement: false,
+  certificateManagement: false,
+  invoiceEmissionTest: false,
+  invoiceEmissionProd: false,
+  batchImport: false,
+  pdfExport: false,
+  manualInvoiceRegistration: false,
+}
+
+export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagKey, boolean>> {
+  const keys = Object.values(FISCAL_FEATURE_FLAGS).map(flag => flag.key)
+  try {
+    const rows = await prisma.fiscalFeatureFlag.findMany({ where: { key: { in: keys } }, select: { key: true, enabled: true } })
+    const result = { ...DEFAULT_FISCAL_FEATURE_FLAGS }
+    for (const row of rows) {
+      if (row.key in result) result[row.key as FiscalFeatureFlagKey] = row.enabled
+    }
+    return result
+  } catch (error) {
+    // Fail closed if the migration has not been applied or the settings store is unavailable.
+    console.error('[fiscal/feature-flags] read failed; all flags disabled', error instanceof Error ? error.name : 'UnknownError')
+    return { ...DEFAULT_FISCAL_FEATURE_FLAGS }
+  }
+}
+
+export async function isFiscalFeatureEnabled(key: FiscalFeatureFlagKey): Promise<boolean> {
+  const flags = await getFiscalFeatureFlags()
+  return flags[key]
+}
