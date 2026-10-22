@@ -9,7 +9,7 @@ type Context = { params: Promise<{ jobId: string }> }
 type JobResult = {
   jobId?: string
   status?: string
-  voucher?: { voucherType?: number; voucherNumber?: number; cae?: string; caeFchVto?: string; issuedAt?: string }
+  voucher?: { id?: string; voucherType?: number; voucherNumber?: number; cae?: string; caeFchVto?: string; issuedAt?: string }
 }
 
 function parseDate(value: string | undefined) {
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest, context: Context) {
         where: { id: record.id },
         data: {
           result: result.status || record.result,
+          workerVoucherId: result.voucher?.id ?? record.workerVoucherId,
           voucherType: result.voucher?.voucherType ?? record.voucherType,
           voucherNumber: result.voucher?.voucherNumber ?? record.voucherNumber,
           cae: result.voucher?.cae ?? record.cae,
