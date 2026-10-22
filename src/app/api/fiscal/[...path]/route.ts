@@ -65,7 +65,7 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
   const path = segments.join('/')
   let requiredFlag: FiscalFeatureFlagKey | null = null
   if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\//.test(path)) requiredFlag = 'wsfeRead'
-  else if (method === 'POST' && path === 'padron/consultas') requiredFlag = 'padronQuery'
+  else if (method === 'DELETE' && /^contributors\/[0-9]{11}$/.test(path)) requiredFlag = 'contributorManagement'\n  else if (method === 'POST' && path === 'padron/consultas') requiredFlag = 'padronQuery'
   else if (method === 'POST' && path === 'invoices/void') requiredFlag = 'invoiceVoid'
   else if (method === 'POST' && /^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) requiredFlag = 'jobReconciliation'
   else if (method === 'GET' && path === 'usage') requiredFlag = 'usageVisibility'
