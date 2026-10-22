@@ -251,7 +251,7 @@ export default function FiscalAdminClient() {
               </div>
               {keyDraft?.tenantId === tenant.id && (
                 <form onSubmit={createApiKey} className="grid gap-2 border-b border-gray-100 bg-gray-50 p-4 sm:grid-cols-[1fr_auto_auto]">
-                  <input required maxLength={80} value={keyDraft.label} onChange={e => setKeyDraft({ ...keyDraft, label: e.target.value })} placeholder="Etiqueta: sitio web, sistema de ventas…" className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500" />
+                  <input required maxLength={80} value={keyDraft.label} onChange={e => setKeyDraft(current => current ? { ...current, label: e.target.value } : current)} placeholder="Etiqueta: sitio web, sistema de ventas…" className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-500" />
                   <button disabled={busy || !keyDraft.label.trim()} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Crear clave</button>
                   <button type="button" onClick={() => setKeyDraft(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600">Cancelar</button>
                 </form>
