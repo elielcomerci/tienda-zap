@@ -11,6 +11,39 @@ export async function GET(request: NextRequest) {
   const contributors = await prisma.fiscalContributor.findMany({
     where: { accountId: access.account.id },
     orderBy: [{ cuit: 'asc' }, { environment: 'asc' }],
+    take: 200,
+    select: {
+      id: true, cuit: true, environment: true, representativeCuit: true,
+      razonSocial: true, authorizationStatus: true, permissions: true,
+      createdAt: true, updatedAt: true,
+    },
+  })
+
+  // Refresh authorization from the Worker instead of treating the local projection as authoritative.
+  await Promise.all(contributors.map(async item => {
+    try {
+      const response = await fiscalApiRequest(request, `/v1/contributors/${encodeURIComponent(item.cuit)}?environment=${item.environment}`, access.apiKey)
+      if (!response.ok) return
+      const payload = await response.json() as { environments?: Array<{ environment: string; representativeCuit?: string; authorizationStatus?: string; permissions?: unknown; razonSocial?: string }> }
+      const remote = payload.environments?.find(entry => entry.environment === item.environment)
+      if (!remote) return
+      await prisma.fiscalContributor.update({
+        where: { id: item.id },
+        data: {
+          representativeCuit: remote.representativeCuit || item.representativeCuit,
+          authorizationStatus: remote.authorizationStatus || item.authorizationStatus,
+          permissions: remote.permissions as any,
+          razonSocial: remote.razonSocial || item.razonSocial,
+        },
+      })
+    } catch {
+      // Keep the last known projection when the Worker is temporarily unavailable.
+    }
+  }))
+
+  const refreshed = await prisma.fiscalContributor.findMany({
+    where: { accountId: access.account.id },
+    orderBy: [{ cuit: 'asc' }, { environment: 'asc' }],
     select: {
       id: true, cuit: true, environment: true, representativeCuit: true,
       razonSocial: true, authorizationStatus: true, permissions: true,
@@ -18,7 +51,7 @@ export async function GET(request: NextRequest) {
     },
   })
   return NextResponse.json({
-    contributors: contributors.map(item => ({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt.toISOString() })),
+    contributors: refreshed.map(item => ({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt.toISOString() })),
   }, { headers: { 'Cache-Control': 'no-store' } })
 }
 
