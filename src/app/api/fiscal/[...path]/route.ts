@@ -87,7 +87,7 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
   } else if (method === 'POST' && path === 'invoices/void') {
     try {
       const payload = await request.clone().json() as { contributor?: { environment?: unknown }; environment?: unknown }
-      const environment = payload?.contributor?.environment ?? payload?.environment
+      const environment = payload?.contributor?.environment ?? payload?.environment ?? request.nextUrl.searchParams.get('environment')
       if (environment !== 'TEST' && environment !== 'PROD') {
         return NextResponse.json({ error: 'La operación requiere indicar explícitamente el ambiente TEST o PROD.' }, { status: 422 })
       }
