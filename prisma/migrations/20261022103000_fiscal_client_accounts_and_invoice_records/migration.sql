@@ -38,7 +38,7 @@ CREATE UNIQUE INDEX "FiscalClientAccount_userId_key" ON "FiscalClientAccount"("u
 CREATE UNIQUE INDEX "FiscalClientAccount_tenantId_key" ON "FiscalClientAccount"("tenantId");
 CREATE UNIQUE INDEX "FiscalClientAccount_tenantSlug_key" ON "FiscalClientAccount"("tenantSlug");
 CREATE INDEX "FiscalClientAccount_status_createdAt_idx" ON "FiscalClientAccount"("status", "createdAt");
-CREATE UNIQUE INDEX "FiscalInvoiceRecord_environment_cuit_pointOfSale_voucherType_voucherNumber_key" ON "FiscalInvoiceRecord"("environment", "cuit", "pointOfSale", "voucherType", "voucherNumber");
+CREATE UNIQUE INDEX "FiscalInvoiceRecord_invoice_unique" ON "FiscalInvoiceRecord"("environment", "cuit", "pointOfSale", "voucherType", "voucherNumber");
 CREATE INDEX "FiscalInvoiceRecord_accountId_createdAt_idx" ON "FiscalInvoiceRecord"("accountId", "createdAt");
 CREATE INDEX "FiscalInvoiceRecord_accountId_environment_cuit_createdAt_idx" ON "FiscalInvoiceRecord"("accountId", "environment", "cuit", "createdAt");
 CREATE INDEX "FiscalInvoiceRecord_jobId_idx" ON "FiscalInvoiceRecord"("jobId");
