@@ -10,6 +10,11 @@ export const FISCAL_FEATURE_FLAGS = {
   batchImport: { key: 'batchImport', label: 'Importación por lote', description: 'Habilita el flujo de importación TSV en la interfaz.' },
   pdfExport: { key: 'pdfExport', label: 'Exportación PDF', description: 'Habilita la generación local de PDF desde el panel.' },
   manualInvoiceRegistration: { key: 'manualInvoiceRegistration', label: 'Registro manual de comprobantes', description: 'Permite registrar en el panel comprobantes emitidos por otros medios.' },
+  wsfeRead: { key: 'wsfeRead', label: 'Consultas de comprobantes y puntos de venta', description: 'Permite consultar puntos de venta, última numeración y comprobantes directamente en ARCA.' },
+  padronQuery: { key: 'padronQuery', label: 'Consulta de padrón', description: 'Permite consultar datos registrales con autorización activa para la CUIT.' },
+  invoiceVoid: { key: 'invoiceVoid', label: 'Anulación / Nota de Crédito', description: 'Permite iniciar anulaciones mediante Nota de Crédito cuando el Worker lo admite.' },
+  jobReconciliation: { key: 'jobReconciliation', label: 'Conciliación de trabajos', description: 'Permite verificar en ARCA el resultado de trabajos fallidos antes de reintentar.' },
+  usageVisibility: { key: 'usageVisibility', label: 'Consumo fiscal', description: 'Permite consultar el consumo registrado por el Worker para una CUIT en producción.' },
 } as const
 
 export type FiscalFeatureFlagKey = keyof typeof FISCAL_FEATURE_FLAGS
@@ -23,7 +28,7 @@ export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean>
   invoiceEmissionProd: false,
   batchImport: false,
   pdfExport: false,
-  manualInvoiceRegistration: false,
+  manualInvoiceRegistration: false,\n  wsfeRead: false,\n  padronQuery: false,\n  invoiceVoid: false,\n  jobReconciliation: false,\n  usageVisibility: false,
 }
 
 export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagKey, boolean>> {
