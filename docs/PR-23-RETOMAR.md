@@ -1,6 +1,6 @@
 # Handoff técnico — tienda-zap PR #23
 
-Última actualización: 2026-10-22 (UTC)
+Última actualización: 2026-10-22 (UTC), después de la validación de integración
 
 ## Objetivo de esta tanda
 
@@ -12,10 +12,10 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
 - PR: https://github.com/elielcomerci/tienda-zap/pull/23
 - Rama: `fix/test-harness-configurator-contract-20261020`
 - Base: `main`
-- HEAD conocido al escribir esta nota: `8230b3a5f75d4a996abcbd58e64d93e62b1b9e9b`
+- HEAD después del handoff y el runner de prebuild: `64bb728a8d120a6e8acfd428627b651822a4e0c3` (la nota puede quedar un commit atrás si se actualiza)
 - La rama quedó alineada con `main` (sin commits atrasados); GitHub indicó `mergeable=true`, pero el PR continúa en borrador y abierto.
-- Preview de Vercel que pasó build y pruebas unitarias: https://vercel.com/zapagenciacreativa/tienda-zap/Cz5fpqv7w14zcUSBpXuAtvYFVrTL
-- Estado de esa Preview: READY. Next.js compiló y terminó la fase de TypeScript.
+- Preview de Vercel con la integración DB activada: https://vercel.com/zapagenciacreativa/tienda-zap/CGqg6hBUuBn93GEiBghxkR14fZwV
+- Estado observado: READY. Next.js compiló y terminó la fase de TypeScript.
 - `npm test` pasó dentro del prebuild de Vercel: contrato de configuradores (21 pruebas), humo de cotización, allowlist de redes cripto, aritmética de cotizaciones, concurrencia/idempotencia y simulación de conciliación.
 - No tomar los mensajes `stderr` de los casos de fallo simulado de conciliación como fallos de suite si el test final reporta PASS.
 
@@ -44,19 +44,18 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
 
 ## GitHub Actions — bloqueo observado
 
-- En el HEAD `8230b3a5...`, los workflows `Configurator contract tests` y `Client work files checks` terminaron como failure casi instantáneamente, con `runner_id=0`, nombre de runner vacío y `steps=[]`.
-- Eso indica que el job no llegó a ejecutar pasos; no es un resultado de tests fallidos. La suite de configuradores sí pasó en Vercel.
-- Reintentar el job. Si vuelve a fallar sin runner/pasos, registrar el fallo como infraestructura de Actions y no como fallo de código; el merge debe seguir pendiente hasta decidir una validación equivalente aceptable.
+- En el HEAD `64bb728a...`, los workflows `Configurator contract tests` y `Client work files checks` fallaron casi instantáneamente. Se reintentaron ambos y volvieron a fallar sin pasos ejecutados ni URL de logs; el wrapper de jobs devuelve `steps=null`.
+- En los runs previos del mismo PR se confirmó `runner_id=0`, runner vacío y `steps=[]`: GitHub Actions no está llegando a ejecutar los jobs. Esto no equivale a un fallo de tests.
+- La suite unitaria y la integración DB sí pasaron en Vercel. Para cerrar CI, investigar por qué Actions no asigna runner; no desactivar checks ni hacer bypass de protección de rama.
 
 ## Siguiente secuencia
 
 1. Revisar este handoff y consultar HEAD actual del PR (puede haber cambiado).
-2. Confirmar que `TEST_DATABASE_URL` está configurada solo para Preview de esta rama y apunta a Neon `crypto-preview-isolated-20261020`, nunca a la rama `main`.
-3. Hacer que el prebuild ejecute `npm run test:integration:pricing` únicamente cuando `TEST_DATABASE_URL` exista; si no existe, omitirla explícitamente y conservar `npm test`.
-4. Disparar una nueva Preview y verificar el log `Resultado: 3 configuradores activos comprobados contra TEST_DATABASE_URL.`
-5. Reintentar GitHub Actions; confirmar si runner se asigna y si todos los pasos pasan.
-6. Revisar status combinado, diff final y `mergeable`; actualizar descripción del PR.
-7. Solo entonces integrar PR #23. No desplegar cambios de configuración de cobros cripto ni ejecutar migraciones de producción en esta tarea.
+2. `TEST_DATABASE_URL` ya está configurada como variable sensible solo para Preview de esta rama y apunta a la rama Neon aislada `crypto-preview-isolated-20261020`; nunca usar la rama `main`.
+3. `scripts/run-prebuild-tests.cjs` corre `npm test` siempre y `npm run test:integration:pricing` solo si existe `TEST_DATABASE_URL`. La Preview confirmó que la variable está presente y que pasaron los tres configuradores.
+4. Investigar la causa de infraestructura de GitHub Actions sin desactivar workflows ni omitir checks.
+5. Revisar status combinado, diff final y `mergeable`; actualizar descripción del PR.
+6. Solo integrar PR #23 cuando CI esté ejecutándose de forma fiable o se haya acordado una alternativa verificable y segura. No desplegar cambios de configuración de cobros cripto ni ejecutar migraciones de producción en esta tarea.
 
 ## Restricciones que no cambian
 
