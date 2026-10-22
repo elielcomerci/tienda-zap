@@ -42,6 +42,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const [pdfPreviewTitle, setPdfPreviewTitle] = useState('Vista previa del comprobante')
   const [loading, setLoading] = useState(true)
+  const [featureFlags, setFeatureFlags] = useState<Record<string, boolean>>({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -74,12 +75,15 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     setLoading(true)
     setError('')
     try {
-      const [accountResponse, contributorResponse] = await Promise.all([
+      const [accountResponse, contributorResponse, featureResponse] = await Promise.all([
         fetch(api('/api/fiscal/account'), { cache: 'no-store' }),
         fetch(api('/api/fiscal/contributors'), { cache: 'no-store' }),
+        fetch(api('/api/fiscal/feature-flags'), { cache: 'no-store' }).catch(() => null),
       ])
       const accountPayload = await accountResponse.json()
       const contributorPayload = await contributorResponse.json()
+      const featurePayload = featureResponse?.ok ? await featureResponse.json().catch(() => ({})) : {}
+      setFeatureFlags(featurePayload.flags && typeof featurePayload.flags === 'object' ? featurePayload.flags : {})
       if (!accountResponse.ok) throw new Error(accountPayload.error || 'No se pudo cargar la cuenta fiscal.')
       if (!contributorResponse.ok) throw new Error(contributorPayload.error || 'No se pudieron consultar las CUIT.')
       setAccount(accountPayload.account || null)
@@ -590,15 +594,15 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <p className="mt-1 text-lg font-bold text-gray-900">{money(String(estimatedTotal))}</p>
                 <p className="text-xs text-gray-500">Neto {money(String(estimatedNet))} · IVA {money(String(estimatedVat))}</p>
               </div>
-              <button disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
+              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar antes de emitir</button>
             </div>
           </fieldset>
         </form>
-        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy} className="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
+        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
         {preparedMode === 'validated' && preparedEmission && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div><p className="font-semibold text-gray-900">Validación previa correcta</p><p className="mt-1 text-sm text-gray-600">El Worker validó el payload sin emitir. Revisá el resumen y confirmá solo si los datos son correctos.</p></div>
-            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy} className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
+            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
           </div>
           <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
             <div><p className="text-gray-500">Tipo ARCA</p><p className="font-semibold">{String(dryRunPreview?.cbteTipo ?? '—')} · {emission.type}</p></div>
@@ -614,9 +618,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         <p className="mt-3 text-xs leading-5 text-gray-500">El punto de venta debe existir y estar activo en el ambiente elegido. La prevalidación de payload no confirma que el punto de venta esté registrado: el Worker comprueba ese dato al emitir. Homologación y producción son independientes. Esta primera versión emite un solo ítem por comprobante; la carga por lote se desarrollará por separado.</p>
       </section>
 
-      <FiscalBatchImport api={api} contributors={contributors} onComplete={() => { void load() }} />
+      {featureFlags.batchImport === true ? <FiscalBatchImport api={api} contributors={contributors} onComplete={() => { void load() }} /> : <p className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">La importación por lote está desactivada por ZAP.</p>}
 
-      {adminMode && <section className="rounded-2xl border border-gray-200 bg-white p-5">
+      {adminMode && featureFlags.manualInvoiceRegistration === true && <section className="rounded-2xl border border-gray-200 bg-white p-5">
         <h2 className="font-semibold text-gray-900">Asignar comprobante ya emitido</h2>
         <p className="mt-1 text-sm leading-5 text-gray-500">Para comprobantes autorizados fuera del panel. Esto registra los datos que ingreses; no consulta ni valida el CAE ante ARCA.</p>
         <form onSubmit={event => void registerExistingInvoice(event)} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -638,11 +642,11 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => setSelectedInvoiceIds(authorizedInvoices.map(invoice => invoice.id))} disabled={!authorizedInvoices.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Seleccionar autorizadas</button>
             <button type="button" onClick={() => setSelectedInvoiceIds([])} disabled={!selectedInvoiceIds.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Limpiar</button>
-            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate} className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
+            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate || featureFlags.pdfExport !== true} className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
           </div>
         </div>
         <p className="mt-2 text-xs leading-5 text-gray-500">La generación del PDF y del QR se ejecuta en este dispositivo. Solo se habilita para comprobantes autorizados con datos fiscales completos; los comprobantes cargados manualmente no se consideran verificados por ARCA.</p>
-        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={!isInvoiceExportable(invoice)} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><div className="flex gap-2"><button type="button" onClick={() => void previewInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Previsualizar</button><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Descargar PDF</button></div></td></tr>)}</tbody></table></div>}
+        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={!isInvoiceExportable(invoice)} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><div className="flex gap-2"><button type="button" onClick={() => void previewInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Previsualizar</button><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Descargar PDF</button></div></td></tr>)}</tbody></table></div>}
       </section>
       <p className="flex items-start gap-2 text-xs leading-5 text-gray-500"><ShieldCheck size={15} className="mt-0.5 shrink-0" />La interfaz distingue homologación y producción. La autorización para emitir depende del estado real informado por el Worker y ARCA.</p>
       {pdfPreviewUrl && <div role="dialog" aria-modal="true" aria-label={pdfPreviewTitle} className="fixed inset-0 z-50 flex flex-col bg-black/60 p-3 sm:p-8">
