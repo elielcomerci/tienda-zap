@@ -49,10 +49,13 @@ export async function GET() {
   if (denied) return denied
 
   try {
-    const settings = await prisma.fiscalInvoiceTemplate.findUnique({
-      where: { id: 'site-settings' },
-      select: { template: true },
-    })
+    const accountId = new URL(request.url).searchParams.get('accountId')
+    if (accountId && !await prisma.fiscalClientAccount.findUnique({ where: { id: accountId }, select: { id: true } })) {
+      return NextResponse.json({ error: 'No se encontró la cuenta fiscal.' }, { status: 404 })
+    }
+    const settings = accountId
+      ? await prisma.fiscalInvoiceTemplate.findUnique({ where: { accountId }, select: { template: true } })
+      : await prisma.fiscalInvoiceTemplate.findUnique({ where: { id: 'default' }, select: { template: true } })
     const parsed = templateSchema.safeParse(settings?.template ?? defaults)
     return NextResponse.json({ template: parsed.success ? parsed.data : defaults }, {
       headers: { 'Cache-Control': 'no-store' },
@@ -83,11 +86,23 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    await prisma.fiscalInvoiceTemplate.upsert({
-      where: { id: 'site-settings' },
-      create: { id: 'site-settings', template: parsed.data },
-      update: { template: parsed.data },
-    })
+    const accountId = new URL(request.url).searchParams.get('accountId')
+    if (accountId && !await prisma.fiscalClientAccount.findUnique({ where: { id: accountId }, select: { id: true } })) {
+      return NextResponse.json({ error: 'No se encontró la cuenta fiscal.' }, { status: 404 })
+    }
+    if (accountId) {
+      await prisma.fiscalInvoiceTemplate.upsert({
+        where: { accountId },
+        create: { accountId, template: parsed.data },
+        update: { template: parsed.data },
+      })
+    } else {
+      await prisma.fiscalInvoiceTemplate.upsert({
+        where: { id: 'default' },
+        create: { id: 'default', template: parsed.data },
+        update: { template: parsed.data },
+      })
+    }
     return NextResponse.json({ template: parsed.data, saved: true }, {
       headers: { 'Cache-Control': 'no-store' },
     })
