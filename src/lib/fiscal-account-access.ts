@@ -3,7 +3,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { decryptFiscalCredential } from '@/lib/fiscal-credentials'
 
-export async function resolveFiscalAccount(request: NextRequest) {
+export async function resolveFiscalAccount(request: NextRequest, allowPausedRead = false) {
   const session = await auth()
   if (!session?.user?.id || !session.user.role) {
     return { response: NextResponse.json({ error: 'Iniciá sesión para continuar.' }, { status: 401 }) } as const
@@ -19,7 +19,7 @@ export async function resolveFiscalAccount(request: NextRequest) {
     where: isAdmin ? { id: requestedAccountId! } : { userId: session.user.id },
     select: { id: true, userId: true, tenantId: true, encryptedApiKey: true, status: true },
   })
-  if (!account || account.status !== 'ACTIVE') {
+  if (!account || (account.status !== 'ACTIVE' && !(allowPausedRead && account.status === 'PAUSED'))) {
     return { response: NextResponse.json({ error: 'No hay una cuenta fiscal activa vinculada.' }, { status: 404 }) } as const
   }
 
