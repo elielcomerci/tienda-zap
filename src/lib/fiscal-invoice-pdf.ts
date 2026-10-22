@@ -78,6 +78,13 @@ const voucherNames: Record<number, string> = {
   51: 'FACTURA M',
 }
 const voucherLetters: Record<number, string> = { 1: 'A', 6: 'B', 11: 'C', 51: 'M' }
+const receiverVatConditions: Record<number, string> = {
+  1: 'IVA Responsable Inscripto', 4: 'IVA Sujeto Exento', 5: 'Consumidor Final',
+  6: 'Responsable Monotributo', 7: 'Sujeto No Categorizado', 8: 'Proveedor del Exterior',
+  9: 'Cliente del Exterior', 10: 'IVA Liberado – Ley 19.640', 13: 'Monotributista Social',
+  15: 'IVA No Alcanzado', 16: 'Monotributo Trabajador Independiente Promovido',
+}
+const documentTypes: Record<number, string> = { 80: 'CUIT', 86: 'CUIL', 87: 'CDI', 89: 'Libreta de enrolamiento', 90: 'Libreta cívica', 96: 'DNI', 99: 'Consumidor final' }
 
 const money = (value: number) => new Intl.NumberFormat('es-AR', {
   style: 'currency', currency: 'ARS', minimumFractionDigits: 2,
@@ -103,6 +110,7 @@ function validate(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
   if (typeof payload?.amounts?.total !== 'number' || !Number.isFinite(payload.amounts.total)) missing.push('total fiscal')
   if (typeof payload?.customer?.docType !== 'number' || !payload.customer.docNumber) missing.push('identificación del receptor')
   if (!payload?.items?.length) missing.push('detalle de productos o servicios')
+  if (invoice.voucherType === 51) missing.push('leyendas y observaciones obligatorias de Factura M verificadas');
   return missing
 }
 
@@ -203,13 +211,13 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   doc.setFont('helvetica', 'normal')
   doc.text(`Fecha: ${printableDate(payload.voucher?.date)}`, right, y, { align: 'right' })
   y += 6
-  doc.text(`Condición frente al IVA del receptor: ${payload.customer?.vatCondition ?? 'No informada'}`, margin, y)
+  doc.text(`Condición frente al IVA del receptor: ${typeof payload.customer?.vatCondition === 'number' ? receiverVatConditions[payload.customer.vatCondition] || `Código ${payload.customer.vatCondition}` : 'No informada'}`, margin, y)
   y += 6
   doc.setFont('helvetica', 'bold')
   doc.text('RECEPTOR', margin, y)
   doc.setFont('helvetica', 'normal')
   doc.text(payload.customer?.name || 'Consumidor / receptor', margin, y + 5)
-  doc.text(`Documento: tipo ${payload.customer?.docType} · ${payload.customer?.docNumber}`, margin, y + 10)
+  doc.text(`Documento: ${typeof payload.customer?.docType === 'number' ? documentTypes[payload.customer.docType] || `tipo ${payload.customer.docType}` : '—'} · ${payload.customer?.docNumber}`, margin, y + 10)
   y += 18
 
   if (payload.voucher?.concept === 2 || payload.voucher?.concept === 3) {
