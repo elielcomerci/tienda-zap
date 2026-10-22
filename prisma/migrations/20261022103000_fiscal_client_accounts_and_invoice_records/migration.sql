@@ -1,8 +1,3 @@
-ALTER TABLE "User"
-ADD COLUMN IF NOT EXISTS "fiscalClientAccountMarker" BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE "User"
-DROP COLUMN "fiscalClientAccountMarker";
-
 CREATE TABLE "FiscalClientAccount" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
