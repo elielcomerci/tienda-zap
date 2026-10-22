@@ -112,6 +112,21 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl)
   }, [pdfPreviewUrl])
 
+  async function revokeContributor(contributor: Contributor) {
+    if (featureFlags.contributorManagement !== true) return
+    if (!confirm(`¿Revocar la vinculación de ${contributor.cuit} en ${contributor.environment}? Esta acción puede bloquear emisión y consultas para ese ambiente.`)) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(contributor.cuit)}?environment=${contributor.environment}`), { method: 'DELETE' })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo revocar la vinculación.')
+      setNotice(payload.message || `Vinculación de ${contributor.cuit} revocada para ${contributor.environment}.`)
+      await load()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo revocar la vinculación.')
+    } finally { setBusy(false) }
+  }
+
   async function addContributor(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setBusy(true); setError(''); setNotice('')
@@ -520,7 +535,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                 <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
               </select>
             </label>
-            <button disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular CUIT</button>
+            <button disabled={busy || featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular CUIT</button>
           </form>
         </div>
 
@@ -534,7 +549,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button onClick={() => void loadCertificate(item)} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"><FileKey2 size={14} /> Certificado</button>
-                <button onClick={() => { setSelectedContributor(item); setCertificateInfo(null) }} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"><UploadCloud size={14} /> Cargar certificado</button>
+                <button onClick={() => { setSelectedContributor(item); setCertificateInfo(null) }} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40"><UploadCloud size={14} /> Cargar certificado</button>
+                <button onClick={() => void revokeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Revocar vínculo</button>
               </div>
             </article>)}
           </div>}
