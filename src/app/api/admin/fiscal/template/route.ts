@@ -49,11 +49,11 @@ export async function GET() {
   if (denied) return denied
 
   try {
-    const settings = await prisma.siteSettings.findUnique({
+    const settings = await prisma.fiscalInvoiceTemplate.findUnique({
       where: { id: 'site-settings' },
-      select: { fiscalInvoiceTemplate: true },
+      select: { template: true },
     })
-    const parsed = templateSchema.safeParse(settings?.fiscalInvoiceTemplate ?? defaults)
+    const parsed = templateSchema.safeParse(settings?.template ?? defaults)
     return NextResponse.json({ template: parsed.success ? parsed.data : defaults }, {
       headers: { 'Cache-Control': 'no-store' },
     })
@@ -83,10 +83,10 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    await prisma.siteSettings.upsert({
+    await prisma.fiscalInvoiceTemplate.upsert({
       where: { id: 'site-settings' },
-      create: { id: 'site-settings', fiscalInvoiceTemplate: parsed.data },
-      update: { fiscalInvoiceTemplate: parsed.data },
+      create: { id: 'site-settings', template: parsed.data },
+      update: { template: parsed.data },
     })
     return NextResponse.json({ template: parsed.data, saved: true }, {
       headers: { 'Cache-Control': 'no-store' },
