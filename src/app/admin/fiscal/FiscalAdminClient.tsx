@@ -27,8 +27,8 @@ type OneTimeKey = {
   value: string
 }
 
-function formatDate(value: string | null) {
-  if (!value) return 'Sin vencimiento'
+function formatDate(value: string | null, emptyLabel = 'Sin vencimiento') {
+  if (!value) return emptyLabel
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('es-AR', {
     dateStyle: 'medium',
@@ -267,7 +267,7 @@ export default function FiscalAdminClient() {
                       return <tr key={key.id}>
                         <td className="px-4 py-3"><p className="font-medium text-gray-800">{key.label}</p><p className="mt-0.5 text-xs text-gray-400">Creada {formatDate(key.createdAt)}</p></td>
                         <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${state.className}`}>{state.label}</span></td>
-                        <td className="px-4 py-3 text-gray-600">{formatDate(key.lastUsedAt)}</td>
+                        <td className="px-4 py-3 text-gray-600">{formatDate(key.lastUsedAt, 'Nunca')}</td>
                         <td className="px-4 py-3 text-gray-600">{formatDate(key.expiresAt)}</td>
                         <td className="px-4 py-3 text-right">{canRevoke ? <button disabled={busy} onClick={() => void revokeKey(tenant, key)} className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50">Revocar</button> : <span className="inline-flex items-center gap-1 text-xs text-gray-400"><ShieldCheck size={14} /> Sin acción</span>}</td>
                       </tr>
