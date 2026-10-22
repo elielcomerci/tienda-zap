@@ -98,14 +98,17 @@ export async function POST(request: NextRequest) {
   }
 
   const input = body as { userId?: unknown; mode?: unknown; name?: unknown; slug?: unknown; tenantId?: unknown }
-  const userId = typeof input.userId === 'string' ? input.userId.trim() : ''
-  const mode = input.mode === 'connect' ? 'connect' : input.mode === 'create' ? 'create' : ''
-  if (!userId || !mode) {
+  const session = await auth()
+  const mode = input.mode === 'connect' ? 'connect' : input.mode === 'create' ? 'create' : input.mode === 'connect-self' ? 'connect-self' : ''
+  const userId = mode === 'connect-self'
+    ? (session?.user?.id || '')
+    : (typeof input.userId === 'string' ? input.userId.trim() : '')
+  if (!userId || !mode || (mode === 'connect-self' && session?.user?.role !== 'ADMIN')) {
     return NextResponse.json({ error: 'Elegí un cliente y una acción válida.' }, { status: 422 })
   }
 
   const user = await prisma.user.findFirst({
-    where: { id: userId, role: 'CUSTOMER', isBanned: false },
+    where: { id: userId, role: mode === 'connect-self' ? 'ADMIN' : 'CUSTOMER', isBanned: false },
     select: { id: true, name: true, email: true },
   })
   if (!user) return NextResponse.json({ error: 'No se encontró el cliente seleccionado.' }, { status: 404 })
@@ -195,7 +198,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201, headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     // If the local DB write failed, revoke the just-created support key when possible.
-    if (mode === 'connect' && apiKeyId) {
+    if ((mode === 'connect' || mode === 'connect-self') && apiKeyId) {
       await fiscalWorkerRequest(`/internal/tenants/${encodeURIComponent(tenantId)}/api-keys/${encodeURIComponent(apiKeyId)}`, {
         method: 'DELETE', secret: 'provisioning',
       }).catch(() => undefined)
