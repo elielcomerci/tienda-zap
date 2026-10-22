@@ -1,10 +1,10 @@
 # Handoff técnico — tienda-zap PR #23
 
-Última actualización: 2026-10-22 (UTC), después de la validación de integración
+Última actualización: 2026-10-22 (UTC), después del merge
 
 ## Objetivo de esta tanda
 
-Cerrar el PR #23 con validación verificable del contrato de precios/configuradores, integración de precios contra una base Neon aislada y build de Preview. GitHub Actions no asigna runner; se acepta como validación alternativa el prebuild verde de Vercel, que ejecutó las suites y la integración DB aislada.
+El PR #23 ya fue integrado mediante squash. Este handoff conserva la validación, la incidencia de GitHub Actions y la limpieza pendiente de la variable temporal de Preview.
 
 ## Estado de GitHub
 
@@ -12,10 +12,11 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
 - PR: https://github.com/elielcomerci/tienda-zap/pull/23
 - Rama: `fix/test-harness-configurator-contract-20261020`
 - Base: `main`
-- HEAD después del handoff y el runner de prebuild: `9f5812cf7449dedc00c89fe82c4ac0c7f95bfb08`
-- La rama quedó alineada con `main` (sin commits atrasados); GitHub indicó `mergeable=true`, pero el PR continúa en borrador y abierto.
-- Preview de Vercel con la integración DB activada: https://vercel.com/zapagenciacreativa/tienda-zap/3PhC4Gt5w6F7T7i9HkEyHCU4FPKi
-- Estado observado: READY. Next.js compiló y terminó la fase de TypeScript.
+- HEAD del PR antes del merge: `864dceed8fe5fe63e13628f6608deec69c50150a`.
+- Commit de squash integrado en `main`: `c4a4cfd5baa9ba2833d5f2cd5e9e6f107f47a3df`.
+- Estado final: PR #23 cerrado y merged el 2026-10-22. `main` apunta al commit de squash indicado arriba.
+- Preview del último HEAD probado: https://vercel.com/zapagenciacreativa/tienda-zap/HPBgDaDhHZfZ2roNpM9ZCDz93dkv
+- Estado final de la Preview: READY. Next.js compiló y terminó la fase de TypeScript; `npm test` y la integración DB aislada pasaron.
 - `npm test` pasó dentro del prebuild de Vercel: contrato de configuradores (21 pruebas), humo de cotización, allowlist de redes cripto, aritmética de cotizaciones, concurrencia/idempotencia y simulación de conciliación.
 - No tomar los mensajes `stderr` de los casos de fallo simulado de conciliación como fallos de suite si el test final reporta PASS.
 
@@ -39,7 +40,7 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
   - `tags-etiquetas` v1.5 — motor `PROVIDER_FINISHED_COST`
   - `tarjetas-vouchers` v2.1 — motor `PROVIDER_FINISHED_COST`
 - Los tres tienen `schema.fields` de tipo objeto y `pricing` de tipo objeto.
-- Esta consulta SQL de solo lectura confirma presencia/estructura en DB, pero **no reemplaza ejecutar** `npm run test:integration:pricing` mediante Prisma y el motor TypeScript.
+- Además de la consulta de solo lectura, `npm run test:integration:pricing` se ejecutó mediante Prisma y el motor TypeScript en el prebuild de Vercel y pasó para los tres configuradores.
 - Nunca usar `DATABASE_URL` de producción como `TEST_DATABASE_URL`. No copiar connection strings ni secretos a este archivo o a comentarios de PR.
 
 ## GitHub Actions — bloqueo observado
@@ -53,11 +54,12 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
 - GitHub Actions fue reintentado y volvió a fallar sin asignar runner (`runner_id=0`, `steps=[]`). No se desactivaron workflows ni se hizo bypass de protecciones.
 - Como alternativa explícita, el prebuild de Vercel ejecutó y pasó `npm test` y `npm run test:integration:pricing` con `TEST_DATABASE_URL` apuntando a la rama Neon aislada. Vercel quedó READY y CodeRabbit dio success.
 - La rama está alineada con `main` (`behind_by=0`) y GitHub indica `mergeable=true`.
-- Próximo paso autorizado: integrar PR #23 mediante squash y verificar el resultado. No activar pagos cripto reales ni ejecutar migraciones de producción.
+- PR #23 integrado por squash. El commit en `main` es `c4a4cfd5baa9ba2833d5f2cd5e9e6f107f47a3df`.
+- La variable sensible `TEST_DATABASE_URL` se creó solo para Preview de la rama `fix/test-harness-configurator-contract-20261020` y apunta a la rama Neon aislada `crypto-preview-isolated-20261020`. La integración no se usa en producción. La herramienta disponible en esta sesión no ofrece operación de borrado de variables Vercel: **pendiente retirar manualmente `TEST_DATABASE_URL` en Vercel → Project Settings → Environment Variables**, filtrando por esa rama. No copiar ni mostrar su valor.
 
 ## Restricciones que no cambian
 
-- No omitir checks ni forzar el merge. La validación alternativa y el fallo de infraestructura deben quedar documentados.
+- No se omitieron checks ni se forzó el merge: GitHub Actions no asignó runner, y la validación alternativa verde quedó documentada.
 - No usar ni alterar la base de producción para pruebas.
 - No activar pagos cripto reales.
 - No ejecutar migraciones ni cambiar datos en producción.
