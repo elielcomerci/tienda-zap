@@ -12,9 +12,9 @@ Cerrar el PR #23 con validación verificable del contrato de precios/configurado
 - PR: https://github.com/elielcomerci/tienda-zap/pull/23
 - Rama: `fix/test-harness-configurator-contract-20261020`
 - Base: `main`
-- HEAD después del handoff y el runner de prebuild: `64bb728a8d120a6e8acfd428627b651822a4e0c3` (la nota puede quedar un commit atrás si se actualiza)
+- HEAD después del handoff y el runner de prebuild: `9f5812cf7449dedc00c89fe82c4ac0c7f95bfb08`
 - La rama quedó alineada con `main` (sin commits atrasados); GitHub indicó `mergeable=true`, pero el PR continúa en borrador y abierto.
-- Preview de Vercel con la integración DB activada: https://vercel.com/zapagenciacreativa/tienda-zap/CGqg6hBUuBn93GEiBghxkR14fZwV
+- Preview de Vercel con la integración DB activada: https://vercel.com/zapagenciacreativa/tienda-zap/3PhC4Gt5w6F7T7i9HkEyHCU4FPKi
 - Estado observado: READY. Next.js compiló y terminó la fase de TypeScript.
 - `npm test` pasó dentro del prebuild de Vercel: contrato de configuradores (21 pruebas), humo de cotización, allowlist de redes cripto, aritmética de cotizaciones, concurrencia/idempotencia y simulación de conciliación.
 - No tomar los mensajes `stderr` de los casos de fallo simulado de conciliación como fallos de suite si el test final reporta PASS.
