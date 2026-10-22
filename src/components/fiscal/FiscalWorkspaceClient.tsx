@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { buildFiscalInvoicePdfBlob, downloadFiscalInvoiceBatchPdf, downloadFiscalInvoicePdf, type FiscalPdfInvoice, type FiscalPdfTemplate } from '@/lib/fiscal-invoice-pdf'
 import FiscalBatchImport from '@/components/fiscal/FiscalBatchImport'
+import FiscalWorkerTools from '@/components/fiscal/FiscalWorkerTools'
 import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, ShieldCheck, UploadCloud } from 'lucide-react'
 
 type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; notes?: string | null; customer?: { name: string | null; email: string; phone: string | null } }
@@ -446,6 +447,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Comprobantes registrados</p><p className="mt-2 text-3xl font-bold text-gray-900">{invoices.length}</p></div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Estado de la cuenta</p><p className="mt-2 text-lg font-bold text-emerald-700">{account.status === 'ACTIVE' ? 'Activa' : account.status}</p></div>
       </section>
+
+      <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} />
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
