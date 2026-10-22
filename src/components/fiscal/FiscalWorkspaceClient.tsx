@@ -413,7 +413,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">{adminMode ? 'ZAP · Soporte fiscal' : 'Mi cuenta · Fiscal'}</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-zap-magenta">{adminMode ? 'ZAP · Soporte fiscal' : 'Mi cuenta · Fiscal'}</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">{adminMode ? account.customer?.name || account.tenantName : 'Mi cuenta fiscal'}</h1>
           <p className="mt-2 text-sm text-gray-500">{adminMode ? account.customer?.email : 'Administrá tus datos fiscales con asistencia de ZAP.'} · {account.tenantName}</p>
         </div>
