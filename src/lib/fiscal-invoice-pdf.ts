@@ -92,7 +92,7 @@ const printableDate = (value?: string | null) => {
 function validate(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
   const payload = invoice.payload
   const missing: string[] = []
-  if (invoice.result !== 'A' || !invoice.cae || !invoice.caeExpiresAt || !invoice.voucherNumber) missing.push('autorización ARCA, CAE y número de comprobante')
+  if (!['A', 'DONE'].includes(String(invoice.result)) || !invoice.cae || !invoice.caeExpiresAt || !invoice.voucherNumber) missing.push('autorización ARCA, CAE y número de comprobante')
   if (!/^\d{11}$/.test(template.issuerCuit || '') || template.issuerCuit !== invoice.cuit) missing.push('CUIT emisor coincidente con la plantilla')
   if (!template.legalName?.trim()) missing.push('razón social fiscal')
   if (!template.ivaCondition?.trim()) missing.push('condición frente al IVA')
