@@ -29,6 +29,7 @@ import {
   Search,
   FolderOpen,
   CircleDollarSign,
+  ReceiptText,
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -43,6 +44,12 @@ const navSections = [
       { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
       { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
       { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
+    ],
+  },
+  {
+    title: 'Fiscal',
+    items: [
+      { href: '/admin/fiscal', label: 'Cuentas fiscales', icon: ReceiptText },
     ],
   },
   {
