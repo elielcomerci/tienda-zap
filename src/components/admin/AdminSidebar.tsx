@@ -50,6 +50,7 @@ const navSections = [
     title: 'Fiscal',
     items: [
       { href: '/admin/fiscal', label: 'Cuentas fiscales', icon: ReceiptText },
+      { href: '/admin/fiscal/clientes', label: 'Clientes fiscales', icon: Users },
       { href: '/admin/fiscal/diseno', label: 'Diseño de comprobantes', icon: FileText },
     ],
   },
