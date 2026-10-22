@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
     return error('Completá la verificación de seguridad e intentá nuevamente.', 400, 'TURNSTILE_REQUIRED')
   }
 
-  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const clientIp = forwarded || request.headers.get('x-real-ip') || undefined
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',').map(value => value.trim()).filter(Boolean).at(-1)
+  const clientIp = request.headers.get('x-real-ip')?.trim() || forwarded || undefined
   let turnstile: TurnstileResponse
   try {
     const verify = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
