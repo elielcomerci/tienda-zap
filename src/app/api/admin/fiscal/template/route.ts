@@ -44,7 +44,7 @@ async function requireAdmin() {
   return null
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const denied = await requireAdmin()
   if (denied) return denied
 
