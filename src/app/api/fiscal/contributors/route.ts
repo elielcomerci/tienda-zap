@@ -6,7 +6,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const access = await resolveFiscalAccount(request)
+  const access = await resolveFiscalAccount(request, true)
   if ('response' in access) return access.response
   const contributors = await prisma.fiscalContributor.findMany({
     where: { accountId: access.account.id },
