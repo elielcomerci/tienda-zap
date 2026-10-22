@@ -37,6 +37,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [certificateInfo, setCertificateInfo] = useState<{ active: CertificateInfo[] | null; others: CertificateInfo[] } | null>(null)
   const [certFile, setCertFile] = useState<File | null>(null)
   const [keyFile, setKeyFile] = useState<File | null>(null)
+  const [manualInvoice, setManualInvoice] = useState({ cuit: '', environment: 'PROD' as 'TEST' | 'PROD', pointOfSale: '1', voucherType: '6', voucherNumber: '', cae: '', caeFchVto: '', amount: '' })
 
   const scope = useMemo(() => accountId ? `?accountId=${encodeURIComponent(accountId)}` : '', [accountId])
   const api = useCallback((path: string) => `${path}${path.includes('?') ? '&' : '?'}${scope.replace(/^\?/, '')}`.replace(/\?$/, ''), [scope])
@@ -110,6 +111,30 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       await loadCertificate(selectedContributor)
       await load()
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo cargar el certificado.') }
+    finally { setBusy(false) }
+  }
+
+  async function registerExistingInvoice(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!accountId || !adminMode) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(`/api/admin/fiscal/clients/${encodeURIComponent(accountId)}/invoices`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...manualInvoice,
+          pointOfSale: Number(manualInvoice.pointOfSale),
+          voucherType: Number(manualInvoice.voucherType),
+          voucherNumber: Number(manualInvoice.voucherNumber),
+          amount: Number(manualInvoice.amount),
+        }),
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error || 'No se pudo asignar el comprobante.')
+      setNotice(payload.message || 'Comprobante asignado al cliente.')
+      setManualInvoice(current => ({ ...current, voucherNumber: '', cae: '', caeFchVto: '', amount: '' }))
+      await load()
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo asignar el comprobante.') }
     finally { setBusy(false) }
   }
 
@@ -193,6 +218,22 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             <button disabled={busy || !certFile || !keyFile} className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <UploadCloud size={16} />} Validar y cargar</button>
             <p className="text-xs leading-5 text-gray-500">Los archivos se envían al Worker para validación y cifrado. No se guardan en el navegador ni en el CDN público.</p>
           </div>
+        </form>
+      </section>}
+
+      {adminMode && <section className="rounded-2xl border border-gray-200 bg-white p-5">
+        <h2 className="font-semibold text-gray-900">Asignar comprobante ya emitido</h2>
+        <p className="mt-1 text-sm leading-5 text-gray-500">Para comprobantes autorizados fuera del panel. Esto registra los datos que ingreses; no consulta ni valida el CAE ante ARCA.</p>
+        <form onSubmit={event => void registerExistingInvoice(event)} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="text-sm font-medium text-gray-700">CUIT emisor<input required pattern="\d{11}" maxLength={11} value={manualInvoice.cuit} onChange={event => setManualInvoice(v => ({ ...v, cuit: event.target.value.replace(/\D/g, '').slice(0,11) }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm font-normal" /></label>
+          <label className="text-sm font-medium text-gray-700">Ambiente<select value={manualInvoice.environment} onChange={event => setManualInvoice(v => ({ ...v, environment: event.target.value as 'TEST' | 'PROD' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 font-normal"><option value="TEST">TEST</option><option value="PROD">PROD</option></select></label>
+          <label className="text-sm font-medium text-gray-700">Punto de venta<input required type="number" min="1" value={manualInvoice.pointOfSale} onChange={event => setManualInvoice(v => ({ ...v, pointOfSale: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
+          <label className="text-sm font-medium text-gray-700">Tipo<select value={manualInvoice.voucherType} onChange={event => setManualInvoice(v => ({ ...v, voucherType: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 font-normal"><option value="1">Factura A</option><option value="6">Factura B</option><option value="11">Factura C</option><option value="51">Factura M</option></select></label>
+          <label className="text-sm font-medium text-gray-700">Número<input required type="number" min="1" value={manualInvoice.voucherNumber} onChange={event => setManualInvoice(v => ({ ...v, voucherNumber: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
+          <label className="text-sm font-medium text-gray-700">CAE<input required inputMode="numeric" pattern="\d{14}" maxLength={14} value={manualInvoice.cae} onChange={event => setManualInvoice(v => ({ ...v, cae: event.target.value.replace(/\D/g, '').slice(0,14) }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm font-normal" /></label>
+          <label className="text-sm font-medium text-gray-700">Vencimiento CAE<input required type="date" value={manualInvoice.caeFchVto ? `${manualInvoice.caeFchVto.slice(0,4)}-${manualInvoice.caeFchVto.slice(4,6)}-${manualInvoice.caeFchVto.slice(6,8)}` : ''} onChange={event => setManualInvoice(v => ({ ...v, caeFchVto: event.target.value.replace(/-/g, '') }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
+          <label className="text-sm font-medium text-gray-700">Total (ARS)<input required type="number" min="0" step="0.01" value={manualInvoice.amount} onChange={event => setManualInvoice(v => ({ ...v, amount: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
+          <div className="sm:col-span-2 lg:col-span-4"><button disabled={busy} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Registrando…' : 'Asignar a esta cuenta'}</button></div>
         </form>
       </section>}
 
