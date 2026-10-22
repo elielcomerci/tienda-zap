@@ -42,9 +42,12 @@ function allowedPath(segments: string[], method: string) {
   if ((method === 'GET' || method === 'DELETE') && /^contributors\/[0-9]{11}$/.test(path)) return true
   if (['GET', 'POST', 'DELETE'].includes(method) && /^contributors\/[0-9]{11}\/certificate$/.test(path)) return true
   if (method === 'POST' && /^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) return true
+  if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\/points-of-sale$/.test(path)) return true
+  if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\/vouchers\/(?:latest|[0-9]+)$/.test(path)) return true
   if (method === 'POST' && ['invoices/emit', 'invoices/void', 'padron/consultas'].includes(path)) return true
   if (method === 'GET' && path === 'usage') return true
   if (method === 'GET' && /^jobs\/[A-Za-z0-9_-]+$/.test(path)) return true
+  if (method === 'POST' && /^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) return true
   return false
 }
 
