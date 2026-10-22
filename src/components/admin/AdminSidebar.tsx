@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  Activity,
   Briefcase,
   Building2,
   ClipboardList,
@@ -50,6 +51,7 @@ const navSections = [
     title: 'Fiscal',
     items: [
       { href: '/admin/fiscal', label: 'Cuentas fiscales', icon: ReceiptText },
+      { href: '/admin/fiscal/operaciones', label: 'Operaciones fiscales', icon: Activity },
       { href: '/admin/fiscal/clientes', label: 'Clientes fiscales', icon: Users },
       { href: '/admin/fiscal/diseno', label: 'Diseño de comprobantes', icon: FileText },
     ],
