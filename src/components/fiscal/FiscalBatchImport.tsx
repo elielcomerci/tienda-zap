@@ -214,8 +214,8 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
         continue
       }
       ids.add(row.input.externalId)
-      if (row.state === 'invalid' || !row.input.externalId) {
-        next.push({ ...row, state: 'invalid', message: row.message || 'Fila inválida.' })
+      if (original.state === 'invalid' || !row.input.externalId) {
+        next.push({ ...row, state: 'invalid', message: original.message || 'Fila inválida.' })
         continue
       }
       const contributor = contributors.find(item => item.cuit === row.input.cuit && item.environment === row.input.environment)
