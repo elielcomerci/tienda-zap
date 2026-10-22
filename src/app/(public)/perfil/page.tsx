@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { updateProfile } from '@/lib/actions/auth'
 import { signOut } from '@/auth'
 import Link from 'next/link'
-import { User, Package, LogOut, ChevronRight, Wallet, AlertTriangle } from 'lucide-react'
+import { User, Package, LogOut, ChevronRight, Wallet, AlertTriangle, ReceiptText } from 'lucide-react'
 import ClientWorkPortal from '@/components/client-work/ClientWorkPortal'
 
 export const dynamic = 'force-dynamic'
@@ -130,6 +130,19 @@ export default async function PerfilPage({
         {/* Orders */}
         <div className="md:col-span-3 space-y-8">
           {process.env.CLIENT_WORK_FILES_ENABLED === 'true' && <ClientWorkPortal />}
+          <Link
+            href="/perfil/fiscal"
+            className="card mb-4 flex items-center gap-4 p-4 transition-all hover:border-[#F7638B]/25 hover:shadow-sm group"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF1F5] text-[#ED164F]">
+              <ReceiptText size={22} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-bold text-gray-900">Mi cuenta fiscal</h2>
+              <p className="mt-1 text-sm text-gray-500">Configuración de CUIT, certificados y comprobantes con asistencia de ZAP.</p>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-gray-300 transition-colors group-hover:text-[#F7638B]" />
+          </Link>
           <div>
           <Link
             href="/perfil/creditos"

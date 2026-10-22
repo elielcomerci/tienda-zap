@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
+  Activity,
   Briefcase,
   Building2,
   ClipboardList,
@@ -29,6 +30,7 @@ import {
   Search,
   FolderOpen,
   CircleDollarSign,
+  ReceiptText,
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
@@ -43,6 +45,15 @@ const navSections = [
       { href: '/admin/recibos-manuales', label: 'Ventas Manuales', icon: FileText },
       { href: '/admin/creditos', label: 'Créditos', icon: Wallet },
       { href: '/admin/financiacion', label: 'Financiación', icon: Percent },
+    ],
+  },
+  {
+    title: 'Fiscal',
+    items: [
+      { href: '/admin/fiscal', label: 'Cuentas fiscales', icon: ReceiptText },
+      { href: '/admin/fiscal/operaciones', label: 'Operaciones fiscales', icon: Activity },
+      { href: '/admin/fiscal/clientes', label: 'Clientes fiscales', icon: Users },
+      { href: '/admin/fiscal/diseno', label: 'Diseño de comprobantes', icon: FileText },
     ],
   },
   {
@@ -120,7 +131,7 @@ export default function AdminSidebar() {
         } lg:translate-x-0`}
       >
         <div className="flex items-center gap-2.5 border-b border-gray-800 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zap-magenta">
             <Zap size={18} className="text-white" />
           </div>
           <div>
@@ -145,7 +156,7 @@ export default function AdminSidebar() {
                     onClick={() => setOpen(false)}
                     className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                       active
-                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                        ? 'bg-zap-magenta text-white shadow-lg shadow-zap-magenta/20'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                     }`}
                   >

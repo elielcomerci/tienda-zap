@@ -56,6 +56,7 @@ model User {
   clientWorks                      ClientWork[]                  @relation("ClientWorkOwner")
   createdClientWorks               ClientWork[]                  @relation("ClientWorkCreator")
   uploadedClientWorkFiles          ClientWorkFile[]              @relation("ClientWorkFileUploader")
+  fiscalClientAccount               FiscalClientAccount?
 }
 
 model SellerProfile {
@@ -192,6 +193,94 @@ model SiteSettings {
   googleSiteVerification String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+}
+
+
+model FiscalFeatureFlag {
+  key       String   @id
+  enabled   Boolean  @default(false)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+model FiscalInvoiceTemplate {
+  id        String              @id @default(cuid())
+  accountId String?             @unique
+  template  Json
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  account   FiscalClientAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model FiscalClientAccount {
+  id                String                @id @default(cuid())
+  userId            String                @unique
+  tenantId          String                @unique
+  tenantName        String
+  tenantSlug        String                @unique
+  encryptedApiKey   String                @db.Text
+  status            String                @default("ACTIVE")
+  notes             String?               @db.Text
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices          FiscalInvoiceRecord[]
+  contributors      FiscalContributor[]
+  invoiceTemplate   FiscalInvoiceTemplate?
+
+  @@index([status, createdAt])
+}
+
+model FiscalContributor {
+  id                String              @id @default(cuid())
+  accountId         String
+  cuit              String
+  environment       String
+  representativeCuit String
+  razonSocial       String?
+  authorizationStatus String            @default("PENDING")
+  permissions       Json?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  account           FiscalClientAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, cuit, environment])
+  @@index([accountId, authorizationStatus])
+}
+
+model FiscalInvoiceRecord {
+  id                String              @id @default(cuid())
+  accountId         String
+  environment       String
+  cuit              String
+  pointOfSale       Int
+  voucherType       Int
+  voucherNumber     Int?
+  result            String?
+  cae               String?
+  caeExpiresAt      DateTime?
+  amount            Decimal?            @db.Decimal(14, 2)
+  currency          String?             @default("PES")
+  jobId             String?            @unique
+  workerVoucherId   String?
+  requestReference  String?
+  invoicePdfUrl     String?
+  payload           Json?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  account           FiscalClientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([environment, cuit, pointOfSale, voucherType, voucherNumber], map: "FiscalInvoiceRecord_invoice_unique")
+  @@index([accountId, createdAt])
+  @@index([accountId, environment, cuit, createdAt])
+  @@index([jobId])
 }
 
 model AdminAuditLog {
