@@ -69,6 +69,19 @@ export async function POST(request: NextRequest, context: Context) {
       },
       select: { id: true, environment: true, cuit: true, pointOfSale: true, voucherType: true, voucherNumber: true, cae: true, caeExpiresAt: true, amount: true, createdAt: true },
     })
+    await prisma.adminAuditLog.create({
+      data: {
+        actorId: session.user.id,
+        actorEmail: session.user.email || '',
+        action: 'FISCAL_INVOICE_ASSIGNED',
+        entityType: 'FiscalInvoiceRecord',
+        entityId: invoice.id,
+        description: 'Se asignó un comprobante previamente emitido a una cuenta fiscal.',
+        after: { accountId, environment, cuit, pointOfSale, voucherType, voucherNumber, cae, caeFchVto },
+        metadata: { source: 'MANUAL_IMPORT' },
+      },
+    }).catch(error => console.error('[admin/fiscal/invoices] audit failed', error instanceof Error ? error.name : 'UnknownError'))
+
     return NextResponse.json({
       invoice: {
         ...invoice,
