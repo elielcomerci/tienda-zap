@@ -184,7 +184,8 @@ export default function FiscalAdminClient() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-        <Link href="/admin/fiscal/controles" className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark">Controles de operación</Link>
+        <Link href="/admin/fiscal/operaciones" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta"><Activity size={16} /> Operaciones</Link>
+        <Link href="/admin/fiscal/controles" className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark">Controles de operación</Link>
         <button onClick={() => void loadTenants()} disabled={loading || busy}
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50">
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Actualizar
