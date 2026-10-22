@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID, createHmac } from 'node:crypto'
 import { prisma } from '@/lib/prisma'
+import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -40,6 +41,10 @@ function error(message: string, status: number, code: string) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await isFiscalFeatureEnabled('publicPadronLookup'))) {
+    return error('La consulta no está habilitada en este momento.', 404, 'PUBLIC_PADRON_DISABLED')
+  }
+
   const backendSecret = process.env.PUBLIC_PADRON_BACKEND_SECRET
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
   if (!backendSecret || !turnstileSecret) {
