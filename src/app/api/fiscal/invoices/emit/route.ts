@@ -8,8 +8,10 @@ export const dynamic = 'force-dynamic'
 type EmitBody = {
   externalId?: string
   contributor?: { cuit?: string; pointOfSale?: number; environment?: string }
-  voucher?: { type?: string }
-  amounts?: { total?: number }
+  voucher?: { type?: string; concept?: number; date?: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string }
+  amounts?: { total?: number; net?: number; vat?: number; exempt?: number; nonTaxable?: number; vatBreakdown?: Array<{ rate: number; base: number; amount: number }> }
+  items?: Array<{ description: string; quantity: number; unitPrice: number; vatRate?: number; discount?: number }>
+  customer?: { docType: number; docNumber: string; name?: string | null; vatCondition?: number }
 }
 type EmitResult = {
   jobId?: string
@@ -71,9 +73,13 @@ export async function POST(request: NextRequest) {
         amount: typeof body.amounts?.total === 'number' ? body.amounts.total : null,
         jobId: result.jobId,
         requestReference: body.externalId || result.externalId || null,
+        // Store only the fiscal document data needed for the local PDF renderer.
+        // Never persist webhook secrets or API credentials from the request.
         payload: {
-          voucherType: body.voucher?.type || null,
-          concept: null,
+          voucher: body.voucher ?? null,
+          amounts: body.amounts ?? null,
+          items: body.items ?? [],
+          customer: body.customer ?? null,
           status: result.status || 'PENDING',
         },
       },
