@@ -17,6 +17,15 @@ type Invoice = {
 }
 type CertificateInfo = { id: string; environment: string; status: string; cn?: string; expiresAt: string; daysUntilExpiry: number }
 type Props = { accountId?: string; adminMode?: boolean }
+type FiscalEmissionRequest = {
+  externalId: string
+  idempotencyKey: string
+  contributor: { cuit: string; pointOfSale: number; environment: 'TEST' | 'PROD' }
+  voucher: { type: 'A' | 'B' | 'C' | 'M'; concept: number; date: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string }
+  amounts: { total: number; net: number; vat: number; exempt: number; nonTaxable: number; vatBreakdown?: Array<{ rate: number; base: number; amount: number }> }
+  items: Array<{ description: string; quantity: number; unitPrice: number; discountAmount: number; netAmount: number; vatRate: number | null; vatAmount: number; exemptAmount: number; nonTaxableAmount: number; totalAmount: number }>
+  customer: { docType: number; docNumber: string; name?: string; vatCondition?: number }
+}
 
 const money = (value: string | null) => value === null ? '—' : new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(value))
 const date = (value: string | null) => value ? new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium' }).format(new Date(value)) : '—'
@@ -45,6 +54,16 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [supportNotes, setSupportNotes] = useState('')
   const [platformStatus, setPlatformStatus] = useState<'ACTIVE' | 'PAUSED'>('ACTIVE')
   const [manualInvoice, setManualInvoice] = useState({ cuit: '', environment: 'PROD' as 'TEST' | 'PROD', pointOfSale: '1', voucherType: '6', voucherNumber: '', cae: '', caeFchVto: '', amount: '' })
+  const [emission, setEmission] = useState({
+    cuit: '', environment: 'TEST' as 'TEST' | 'PROD', pointOfSale: '1', type: 'B' as 'A' | 'B' | 'C' | 'M',
+    concept: '1', date: '', serviceFrom: '', serviceTo: '', paymentDueDate: '',
+    docType: '99', docNumber: '0', customerName: '', vatCondition: '5',
+    description: '', netBase: '', vatRate: '21',
+  })
+  const [preparedEmission, setPreparedEmission] = useState<FiscalEmissionRequest | null>(null)
+  const [preparedMode, setPreparedMode] = useState<'validated' | 'uncertain' | null>(null)
+  const [dryRunPreview, setDryRunPreview] = useState<Record<string, unknown> | null>(null)
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
 
   const scope = useMemo(() => accountId ? `?accountId=${encodeURIComponent(accountId)}` : '', [accountId])
   const api = useCallback((path: string) => `${path}${path.includes('?') ? '&' : '?'}${scope.replace(/^\?/, '')}`.replace(/\?$/, ''), [scope])
@@ -205,6 +224,151 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
   const isInvoiceExportable = (invoice: Invoice) => ['A', 'DONE'].includes(String(invoice.result)) && Boolean(invoice.cae && invoice.voucherNumber && invoice.payload?.voucher?.date && invoice.payload?.amounts?.total !== undefined && invoice.payload?.customer?.docType !== undefined && invoice.payload?.customer?.docNumber && invoice.payload?.items?.length)
   const authorizedInvoices = invoices.filter(isInvoiceExportable)
+
+  const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
+  const dateToArca = (value: string) => value ? value.replace(/-/g, '') : ''
+
+  async function prepareEmission(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(''); setNotice(''); setDryRunPreview(null)
+    const net = Number(emission.netBase)
+    const quantity = 1
+    const rate = emission.type === 'C' ? 0 : Number(emission.vatRate)
+    const vat = emission.type === 'C' ? 0 : roundMoney(net * rate / 100)
+    const total = roundMoney(net + vat)
+    const selected = contributors.find(item => item.cuit === emission.cuit && item.environment === emission.environment)
+    if (!selected) {
+      setError('Elegí una CUIT vinculada al ambiente seleccionado.')
+      return
+    }
+    if (!Number.isInteger(Number(emission.pointOfSale)) || Number(emission.pointOfSale) < 1) {
+      setError('Ingresá un punto de venta válido para esta CUIT y este ambiente.')
+      return
+    }
+    if (!Number.isFinite(net) || net <= 0 || !Number.isFinite(total)) {
+      setError('Ingresá un importe neto positivo.')
+      return
+    }
+    if (emission.type !== 'C' && ![0, 2.5, 5, 10.5, 21, 27].includes(rate)) {
+      setError('Elegí una alícuota de IVA admitida por el contrato fiscal.')
+      return
+    }
+    if ((emission.type === 'A' || emission.type === 'M') && (emission.docType !== '80' || !/^\d{11}$/.test(emission.docNumber))) {
+      setError('Factura A y M requieren CUIT válida del receptor.')
+      return
+    }
+    if (emission.concept !== '1' && (!emission.serviceFrom || !emission.serviceTo || !emission.paymentDueDate)) {
+      setError('Para servicios o concepto mixto, completá período de servicio y vencimiento de pago.')
+      return
+    }
+    if (!emission.date || !emission.description.trim()) {
+      setError('Completá la fecha y la descripción del comprobante.')
+      return
+    }
+    const item = {
+      description: emission.description.trim(),
+      quantity,
+      unitPrice: total,
+      discountAmount: 0,
+      netAmount: net,
+      vatRate: emission.type === 'C' ? null : rate,
+      vatAmount: vat,
+      exemptAmount: 0,
+      nonTaxableAmount: 0,
+      totalAmount: total,
+    }
+    const body: FiscalEmissionRequest = {
+      externalId: `zap-ui-${crypto.randomUUID()}`,
+      idempotencyKey: crypto.randomUUID(),
+      contributor: { cuit: emission.cuit, pointOfSale: Number(emission.pointOfSale), environment: emission.environment },
+      voucher: {
+        type: emission.type,
+        concept: Number(emission.concept),
+        date: dateToArca(emission.date),
+        ...(emission.concept !== '1' ? {
+          serviceFrom: dateToArca(emission.serviceFrom),
+          serviceTo: dateToArca(emission.serviceTo),
+          paymentDueDate: dateToArca(emission.paymentDueDate),
+        } : {}),
+      },
+      amounts: {
+        total, net, vat, exempt: 0, nonTaxable: 0,
+        ...(emission.type !== 'C' ? { vatBreakdown: net > 0 ? [{ rate, base: net, amount: vat }] : [] } : {}),
+      },
+      items: [item],
+      customer: {
+        docType: Number(emission.docType),
+        docNumber: emission.docType === '99' ? '0' : emission.docNumber,
+        ...(emission.customerName.trim() ? { name: emission.customerName.trim() } : {}),
+        vatCondition: Number(emission.vatCondition || '5'),
+      },
+    }
+    setBusy(true)
+    try {
+      const response = await fetch(api('/api/fiscal/invoices/emit?dryRun=true'), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      })
+      const payload = await response.json()
+      if (!response.ok || payload.valid !== true) throw new Error(payload.error?.message || payload.error || payload.message || 'El Worker no validó la solicitud.')
+      setPreparedEmission(body)
+      setPreparedMode('validated')
+      setDryRunPreview(payload.preview || {})
+      setNotice('Validación previa correcta. Todavía no se emitió ninguna factura.')
+    } catch (reason) {
+      setPreparedEmission(null); setPreparedMode(null)
+      setError(reason instanceof Error ? reason.message : 'No se pudo validar la solicitud.')
+    } finally { setBusy(false) }
+  }
+
+  async function submitPreparedEmission() {
+    if (!preparedEmission) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api('/api/fiscal/invoices/emit'), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preparedEmission),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (payload.jobId) {
+        setActiveJobId(String(payload.jobId))
+        setPreparedEmission(null); setPreparedMode(null); setDryRunPreview(null)
+        setNotice(response.ok
+          ? `Solicitud enviada al Worker. Estado inicial: ${payload.status || 'PENDING'}. Consultá el trabajo antes de volver a emitir.`
+          : `El Worker creó el trabajo ${payload.jobId}, pero hubo un problema al registrar el resultado en Tienda ZAP. Consultá el estado; no vuelvas a emitir.`)
+        await load()
+        return
+      }
+      if (!response.ok) {
+        setPreparedMode('validated')
+        throw new Error(payload.error?.message || payload.error || 'El Worker rechazó la emisión. No se creó un trabajo según la respuesta recibida.')
+      }
+      setPreparedMode(null); setPreparedEmission(null); setDryRunPreview(null)
+      setNotice('Solicitud procesada. Actualizá el estado del trabajo para confirmar el resultado de ARCA.')
+      await load()
+    } catch (reason) {
+      if (reason instanceof TypeError) {
+        setPreparedMode('uncertain')
+        setError('No se pudo confirmar la respuesta de red. Conservamos exactamente la misma solicitud y su clave idempotente: consultá o reintentá esa misma solicitud; no generes otra.')
+      } else if (reason instanceof Error) {
+        setError(reason.message)
+      } else {
+        setError('No se pudo completar la solicitud.')
+      }
+    } finally { setBusy(false) }
+  }
+
+  async function refreshActiveJob() {
+    if (!activeJobId) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api(`/api/fiscal/jobs/${encodeURIComponent(activeJobId)}`), { cache: 'no-store' })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo consultar el trabajo.')
+      setNotice(`Trabajo ${payload.jobId}: ${payload.status}.${payload.voucher?.cae ? ` CAE ${payload.voucher.cae}.` : ''}`)
+      await load()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo consultar el trabajo.')
+    } finally { setBusy(false) }
+  }
 
   async function registerExistingInvoice(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
