@@ -153,7 +153,7 @@ export default function FiscalTemplateClient({ accountId }: { accountId?: string
           <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Configurá la identidad visual y los datos de contacto que acompañan al comprobante. La vista previa es ilustrativa; todavía no emite ni modifica facturas.</p>
         </div>
         <button onClick={() => void save()} disabled={loading || saving || uploading}
-          className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50">
+          className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">
           {saving ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
           {saving ? 'Guardando…' : 'Guardar diseño'}
         </button>
