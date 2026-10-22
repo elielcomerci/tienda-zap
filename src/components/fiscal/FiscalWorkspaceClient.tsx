@@ -543,7 +543,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Estado de la cuenta</p><p className="mt-2 text-lg font-bold text-emerald-700">{account.status === 'ACTIVE' ? 'Activa' : account.status}</p></div>
       </section>
 
-      <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} />
+      <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} onSelectPointOfSale={pointOfSale => setEmission(current => ({ ...current, pointOfSale }))} />
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
