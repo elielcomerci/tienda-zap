@@ -15,7 +15,7 @@ type Invoice = {
   id: string; environment: string; cuit: string; pointOfSale: number; voucherType: number;
   voucherNumber: number | null; result: string | null; cae: string | null;
   caeExpiresAt: string | null; amount: string | null; currency: string | null;
-  jobId: string | null; invoicePdfUrl: string | null; createdAt: string; payload?: FiscalPdfInvoice['payload'] | null;
+  jobId: string | null; workerVoucherId?: string | null; invoicePdfUrl: string | null; createdAt: string; payload?: FiscalPdfInvoice['payload'] | null;
 }
 type CertificateInfo = { id: string; environment: string; status: string; cn?: string; expiresAt: string; daysUntilExpiry: number }
 type Props = { accountId?: string; adminMode?: boolean }
@@ -400,6 +400,40 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     } finally { setBusy(false) }
   }
 
+  async function voidInvoice(invoice: Invoice) {
+    if (!invoice.workerVoucherId || !invoice.cae || !featureFlags.invoiceVoid) return
+    const permission = contributors.find(item => item.cuit === invoice.cuit && item.environment === invoice.environment)
+    if (permission?.permissions?.canVoid !== true || permission.authorizationStatus !== 'ACTIVE') {
+      setError('El Worker no informa permiso activo para anular comprobantes de esta CUIT y ambiente.')
+      return
+    }
+    if (![1, 6, 11].includes(invoice.voucherType)) {
+      setError('El Worker solo admite Nota de Crédito para comprobantes A, B y C en este flujo.')
+      return
+    }
+    if (!confirm(`Se solicitará una Nota de Crédito para anular ${voucherName[invoice.voucherType] || 'el comprobante'} ${invoice.voucherNumber ?? ''}. No se borra el comprobante original. ¿Continuar?`)) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const stableKey = `zap-void-${invoice.workerVoucherId}`
+      const response = await fetch(api('/api/fiscal/invoices/void'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          externalId: stableKey,
+          idempotencyKey: stableKey,
+          originalVoucherId: invoice.workerVoucherId,
+          voidReason: 'Solicitud de anulación desde el panel ZAP',
+        }),
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo iniciar la Nota de Crédito.')
+      if (payload.jobId) setActiveJobId(payload.jobId)
+      setNotice(payload.message || `Solicitud registrada. Trabajo fiscal: ${payload.jobId || 'pendiente'}.`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo iniciar la Nota de Crédito.')
+    } finally { setBusy(false) }
+  }
+
   async function registerExistingInvoice(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!accountId || !adminMode) return
@@ -666,7 +700,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           </div>
         </div>
         <p className="mt-2 text-xs leading-5 text-gray-500">La generación del PDF y del QR se ejecuta en este dispositivo. Solo se habilita para comprobantes autorizados con datos fiscales completos; los comprobantes cargados manualmente no se consideran verificados por ARCA.</p>
-        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={!isInvoiceExportable(invoice)} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><div className="flex gap-2"><button type="button" onClick={() => void previewInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Previsualizar</button><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Descargar PDF</button></div></td></tr>)}</tbody></table></div>}
+        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={!isInvoiceExportable(invoice)} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><div className="flex gap-2"><button type="button" onClick={() => void previewInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Previsualizar</button><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Descargar PDF</button>{featureFlags.invoiceVoid === true && invoice.workerVoucherId && invoice.cae && [1, 6, 11].includes(invoice.voucherType) && <button type="button" onClick={() => void voidInvoice(invoice)} disabled={busy || contributors.find(item => item.cuit === invoice.cuit && item.environment === invoice.environment)?.permissions?.canVoid !== true} className="whitespace-nowrap rounded-full border border-zap-magenta/30 px-3 py-2 text-xs font-semibold text-zap-magenta hover:bg-zap-magenta-subtle disabled:opacity-40">Solicitar NC</button>}</div></td></tr>)}</tbody></table></div>}
       </section>
       <p className="flex items-start gap-2 text-xs leading-5 text-gray-500"><ShieldCheck size={15} className="mt-0.5 shrink-0" />La interfaz distingue homologación y producción. La autorización para emitir depende del estado real informado por el Worker y ARCA.</p>
       {pdfPreviewUrl && <div role="dialog" aria-modal="true" aria-label={pdfPreviewTitle} className="fixed inset-0 z-50 flex flex-col bg-black/60 p-3 sm:p-8">
