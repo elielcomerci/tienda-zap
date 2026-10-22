@@ -10,7 +10,7 @@ type EmitBody = {
   contributor?: { cuit?: string; pointOfSale?: number; environment?: string }
   voucher?: { type?: string; concept?: number; date?: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string }
   amounts?: { total?: number; net?: number; vat?: number; exempt?: number; nonTaxable?: number; vatBreakdown?: Array<{ rate: number; base: number; amount: number }> }
-  items?: Array<{ description: string; quantity: number; unitPrice: number; vatRate?: number; discount?: number }>
+  items?: Array<{ description: string; quantity: number; unitPrice: number; discountAmount?: number; netAmount: number; vatRate?: number | null; vatAmount: number; exemptAmount?: number; nonTaxableAmount?: number; totalAmount: number }>
   customer?: { docType: number; docNumber: string; name?: string | null; vatCondition?: number }
 }
 type EmitResult = {
