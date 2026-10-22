@@ -16,6 +16,7 @@ type Props = {
   contributors: Contributor[]
   invoices: Invoice[]
   flags: Record<string, boolean>
+  onSelectPointOfSale?: (number: string) => void
 }
 type WorkerResult = { title: string; body: unknown; status: number }
 
@@ -23,7 +24,7 @@ const inputClass = 'mt-1 block w-full rounded-xl border border-gray-200 bg-white
 const buttonClass = 'inline-flex items-center justify-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zap-magenta-dark disabled:cursor-not-allowed disabled:opacity-40'
 const secondaryClass = 'inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40'
 
-export default function FiscalWorkerTools({ api, contributors, invoices, flags }: Props) {
+export default function FiscalWorkerTools({ api, contributors, invoices, flags, onSelectPointOfSale }: Props) {
   const [cuit, setCuit] = useState('')
   const [environment, setEnvironment] = useState<'TEST' | 'PROD'>('TEST')
   const [pointOfSale, setPointOfSale] = useState('1')
@@ -147,6 +148,12 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags }
 
       {!enabled('wsfeRead') && !enabled('padronQuery') && !enabled('usageVisibility') && !enabled('jobReconciliation') && <p className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">Estas consultas están desactivadas por ZAP. El administrador puede habilitarlas desde Controles de operación.</p>}
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+      {result?.title === 'Puntos de venta' && result.body && typeof result.body === 'object' && Array.isArray((result.body as { puntosVenta?: unknown[] }).puntosVenta) && <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {((result.body as { puntosVenta: Array<{ nro?: number; activo?: boolean; emisionTipo?: string; fchProceso?: string }> }).puntosVenta).map((point, index) => <div key={`${point.nro ?? 'pv'}-${index}`} className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 p-3">
+          <div><p className="font-semibold text-gray-900">Punto de venta {point.nro ?? '—'}</p><p className="mt-1 text-xs text-gray-500">{point.emisionTipo || 'Tipo de emisión no informado'} · {point.activo ? 'Activo' : 'Inactivo'}</p></div>
+          <button type="button" className={secondaryClass} disabled={!point.activo || !Number.isInteger(point.nro)} onClick={() => { if (Number.isInteger(point.nro)) { setPointOfSale(String(point.nro)); onSelectPointOfSale?.(String(point.nro)) } }}>Usar</button>
+        </div>)}
+      </div>}
       {result && <div role="status" className="overflow-hidden rounded-2xl border border-zap-magenta/20 bg-zap-magenta-subtle/40">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zap-magenta/10 px-4 py-3"><h3 className="font-semibold text-gray-900">{result.title}</h3><span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-600">HTTP {result.status}</span></div>
         <pre className="max-h-80 overflow-auto p-4 text-xs leading-5 text-gray-800">{JSON.stringify(result.title === 'Consumo fiscal' && result.body && typeof result.body === 'object' ? Object.fromEntries(Object.entries(result.body as Record<string, unknown>).filter(([key]) => ['cuit', 'environment', 'periodStart', 'consumed', 'reserved'].includes(key))) : result.body, null, 2)}</pre>
