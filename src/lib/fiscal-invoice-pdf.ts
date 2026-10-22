@@ -282,14 +282,26 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: F
   if (footer) doc.text(footer, margin, Math.min(y + 14, 276), { maxWidth: right - margin - 35 })
 }
 
-export async function downloadFiscalInvoicePdf(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
+export async function buildFiscalInvoicePdfBlob(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
   const missing = validate(invoice, template)
   if (missing.length) throw new Error(`No se puede generar una representación fiscal todavía. Falta completar: ${missing.join(', ')}. Completá y verificá los datos fiscales antes de exportar.`)
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   let logoData: string | undefined
   if (template.logoUrl) logoData = await imageUrlToPng(template.logoUrl)
   await addInvoicePage(doc, invoice, template, logoData)
-  doc.save(`factura-${invoice.pointOfSale.toString().padStart(5, '0')}-${invoice.voucherNumber}.pdf`)
+  return doc.output('blob') as Blob
+}
+
+export async function downloadFiscalInvoicePdf(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate) {
+  const blob = await buildFiscalInvoicePdfBlob(invoice, template)
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = `factura-${invoice.pointOfSale.toString().padStart(5, '0')}-${invoice.voucherNumber}.pdf`
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
 }
 
 export async function downloadFiscalInvoiceBatchPdf(invoices: FiscalPdfInvoice[], template: FiscalPdfTemplate) {
