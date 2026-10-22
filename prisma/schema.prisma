@@ -265,7 +265,7 @@ model FiscalInvoiceRecord {
 
   account           FiscalClientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  @@unique([environment, cuit, pointOfSale, voucherType, voucherNumber])
+  @@unique([environment, cuit, pointOfSale, voucherType, voucherNumber], map: "FiscalInvoiceRecord_invoice_unique")
   @@index([accountId, createdAt])
   @@index([accountId, environment, cuit, createdAt])
   @@index([jobId])
