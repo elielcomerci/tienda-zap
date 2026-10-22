@@ -30,6 +30,7 @@ type FiscalEmissionRequest = {
 const money = (value: string | null) => value === null ? '—' : new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(value))
 const date = (value: string | null) => value ? new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium' }).format(new Date(value)) : '—'
 const voucherName: Record<number, string> = { 1: 'Factura A', 6: 'Factura B', 11: 'Factura C', 51: 'Factura M' }
+const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
 
 export default function FiscalWorkspaceClient({ accountId, adminMode = false }: Props) {
   const [account, setAccount] = useState<Account | null>(null)
@@ -228,7 +229,6 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const estimatedVat = emission.type === 'C' ? 0 : roundMoney(estimatedNet * Number(emission.vatRate || 0) / 100)
   const estimatedTotal = roundMoney(estimatedNet + estimatedVat)
 
-  const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
   const dateToArca = (value: string) => value ? value.replace(/-/g, '') : ''
 
   async function prepareEmission(event: React.FormEvent<HTMLFormElement>) {
