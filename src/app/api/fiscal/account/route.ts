@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     },
   })
 
-  if (!account || account.status !== 'ACTIVE') {
+  if (!account || (!isAdmin && account.status !== 'ACTIVE')) {
     return NextResponse.json({ account: null, invoices: [] }, { headers: { 'Cache-Control': 'no-store' } })
   }
 
