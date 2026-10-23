@@ -37,3 +37,4 @@ Thumbs.db
 # Prisma
 seed_materials.ts
 seed_finishings.ts
+.vercel

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { decryptFiscalCredential } from '@/lib/fiscal-credentials'
 import { fiscalWorkerRequest } from '@/lib/fiscal-worker-admin'
 import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
+import { buildIntegrationApiKeyLabel, getIntegrationKeyInventoryError, type IntegrationApiKeyMetadata } from '@/lib/fiscal-integration-keys'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -64,13 +65,15 @@ export async function POST(request: NextRequest) {
   let body: unknown
   try { body = await request.json() } catch { return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 }) }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'El body debe ser un objeto.' }, { status: 400 })
-  const input = body as { label?: unknown; environment?: unknown; stack?: unknown }
+  const input = body as { label?: unknown; environment?: unknown; stack?: unknown; rotationKeyId?: unknown }
   const label = typeof input.label === 'string' ? input.label.trim() : ''
   const environment = input.environment
   const stack = input.stack
   if (!label || label.length > 80) return NextResponse.json({ error: 'Ingresá un nombre de proyecto de hasta 80 caracteres.' }, { status: 422 })
   if (environment !== 'TEST' && environment !== 'PROD') return NextResponse.json({ error: 'Elegí el ambiente TEST o PROD.' }, { status: 422 })
   if (!['node-typescript', 'python'].includes(String(stack))) return NextResponse.json({ error: 'Este generador todavía no soporta ese stack.' }, { status: 422 })
+  const rotationKeyId = input.rotationKeyId === undefined ? null : typeof input.rotationKeyId === 'string' ? input.rotationKeyId : ''
+  if (rotationKeyId === '') return NextResponse.json({ error: 'La clave que querés reemplazar no es válida.' }, { status: 422 })
   if (!assertProductionWorker()) return NextResponse.json({ error: 'El generador solo valida y crea paquetes contra https://arca.zap.com.ar. Revisá FISCAL_WORKER_URL del servidor.', code: 'FISCAL_WORKER_URL_MISMATCH' }, { status: 503 })
 
   let masterKey: string
@@ -86,12 +89,17 @@ export async function POST(request: NextRequest) {
     if (!inventoryResponse.ok || !Array.isArray(inventory?.apiKeys)) {
       return NextResponse.json({ error: 'No se pudo comprobar el límite de claves de la cuenta.' }, { status: inventoryResponse.status || 502, headers: { 'Cache-Control': 'no-store' } })
     }
-    if (inventory.apiKeys.filter(key => !key.revokedAt && (!key.expiresAt || new Date(key.expiresAt) > new Date())).length >= 10) {
+    const inventoryError = getIntegrationKeyInventoryError(inventory.apiKeys as IntegrationApiKeyMetadata[], rotationKeyId)
+    if (inventoryError === 'ROTATION_KEY_NOT_AVAILABLE') {
+      return NextResponse.json({ error: 'La clave a reemplazar no está activa o no pertenece a una integración del cliente.', code: inventoryError }, { status: 409 })
+    }
+    if (inventoryError === 'API_KEY_LIMIT_REACHED') {
       return NextResponse.json({ error: 'La cuenta alcanzó el máximo de 10 claves activas. Revocá una que ya no uses para continuar.', code: 'API_KEY_LIMIT_REACHED' }, { status: 409, headers: { 'Cache-Control': 'no-store' } })
     }
 
+    const workerLabel = buildIntegrationApiKeyLabel(label, String(stack))
     const createdResponse = await fiscalWorkerRequest(`/internal/tenants/${encodeURIComponent(resolved.account.tenantId)}/api-keys`, {
-      method: 'POST', secret: 'provisioning', body: { label: `Integración: ${label} (${stack})` },
+      method: 'POST', secret: 'provisioning', body: { label: workerLabel },
     })
     const created = await createdResponse.json().catch(() => null) as { apiKey?: { id: string; label: string; value: string; expiresAt?: string | null; shownOnce?: boolean }; error?: unknown } | null
     if (!createdResponse.ok || !created?.apiKey?.value || !created.apiKey.id) {

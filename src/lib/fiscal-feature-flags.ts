@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 export const FISCAL_FEATURE_FLAGS = {
   accountProvisioning: { key: 'accountProvisioning', label: 'Alta de cuentas fiscales', description: 'Crear o vincular tenants del Worker desde el panel.' },
   contributorManagement: { key: 'contributorManagement', label: 'Vinculación de CUIT', description: 'Vincular CUIT y ambientes a una cuenta fiscal.' },
-  apiKeyManagement: { key: 'apiKeyManagement', label: 'Creación de API keys', description: 'Permite emitir nuevas credenciales de acceso al Worker fiscal.' },
+  apiKeyManagement: { key: 'apiKeyManagement', label: 'Claves de integraciones', description: 'Permite crear, validar, rotar y revocar credenciales para conectar proyectos con el Worker fiscal.' },
   certificateManagement: { key: 'certificateManagement', label: 'Certificados', description: 'Cargar o revocar certificados y claves fiscales.' },
   invoiceEmissionTest: { key: 'invoiceEmissionTest', label: 'Emisión en homologación', description: 'Permite validar y emitir comprobantes en TEST.' },
   invoiceEmissionProd: { key: 'invoiceEmissionProd', label: 'Emisión en producción', description: 'Permite validar y emitir comprobantes reales en PROD.' },
