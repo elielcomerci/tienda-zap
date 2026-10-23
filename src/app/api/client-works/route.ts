@@ -6,15 +6,16 @@ import { recordClientWorkActivity } from '@/lib/client-work-audit'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'Trabajos y archivos todavía no está habilitado.' }, { status: 503 })
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Iniciá sesión para ver tus trabajos.' }, { status: 401 })
 
-  const isAdmin = session.user?.role === 'ADMIN'
+  const requestedScope = new URL(request.url).searchParams.get('scope')
+  const isAdminView = session.user?.role === 'ADMIN' && requestedScope === 'admin'
   const works = await prisma.clientWork.findMany({
-    where: isAdmin ? undefined : { userId },
+    where: isAdminView ? undefined : { userId },
     orderBy: [{ updatedAt: 'desc' }],
     include: {
       user: { select: { id: true, name: true, email: true } },

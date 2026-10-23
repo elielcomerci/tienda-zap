@@ -294,7 +294,7 @@ export default async function MiOrdenPage({
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-gray-500">Panel de crédito</span>
-              <Link href={`/perfil/créditos/${order.zapCreditPlan.id}`} className="font-medium text-[#ED164F] hover:underline">
+              <Link href={`/perfil/creditos/${order.zapCreditPlan.id}`} className="font-medium text-[#ED164F] hover:underline">
                 Ver detalle
               </Link>
             </div>

@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { isClientWorkFilesEnabled } from '@/lib/client-work-files'
 import { recordClientWorkActivity } from '@/lib/client-work-audit'
 
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
  * Ensures a customer has a general-purpose work area for sending material to ZAP.
  * This lets customers upload files before an administrator has created a named project.
  */
-export async function POST() {
+export async function POST(request: NextRequest) {
   if (!isClientWorkFilesEnabled()) {
     return NextResponse.json({ error: 'Trabajos y archivos todavía no está habilitado.' }, { status: 503 })
   }
@@ -20,8 +20,9 @@ export async function POST() {
   if (!userId) {
     return NextResponse.json({ error: 'Iniciá sesión para enviar archivos.' }, { status: 401 })
   }
-  if (session.user.role === 'ADMIN') {
-    return NextResponse.json({ error: 'Usá la administración para crear un trabajo para un cliente.' }, { status: 403 })
+  const scope = new URL(request.url).searchParams.get('scope')
+  if (session.user.role === 'ADMIN' && scope !== 'client') {
+    return NextResponse.json({ error: 'El espacio personal requiere scope=client.' }, { status: 403 })
   }
 
   try {

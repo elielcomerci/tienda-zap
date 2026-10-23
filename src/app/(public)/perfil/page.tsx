@@ -8,17 +8,18 @@ import {
   FileText, FolderOpen, KeyRound, LogOut, Package, ReceiptText, Settings2,
   UserRound, Wallet,
 } from 'lucide-react'
-import ClientWorkPortal from '@/components/client-work/ClientWorkPortal'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mi espacio | ZAP Tienda' }
 
 const statusLabel: Record<string, string> = {
-  PENDING: 'Pendiente', PAID: 'Pagado', PROCESSING: 'En producción',
-  READY: 'Listo para retirar', DELIVERED: 'Entregado', CANCELLED: 'Cancelado',
+  PENDING: 'Pendiente', PAID: 'Pagado', PROOF_SENT: 'Prueba enviada',
+  IN_PRODUCTION: 'En producción', PROCESSING: 'En proceso', READY: 'Listo para retirar',
+  DELIVERED: 'Entregado', CANCELLED: 'Cancelado',
 }
 const statusStyle: Record<string, string> = {
   PENDING: 'bg-amber-50 text-amber-700', PAID: 'bg-sky-50 text-sky-700',
+  PROOF_SENT: 'bg-indigo-50 text-indigo-700', IN_PRODUCTION: 'bg-violet-50 text-violet-700',
   PROCESSING: 'bg-violet-50 text-violet-700', READY: 'bg-emerald-50 text-emerald-700',
   DELIVERED: 'bg-gray-100 text-gray-600', CANCELLED: 'bg-rose-50 text-rose-700',
 }
@@ -31,12 +32,13 @@ export default async function PerfilPage({
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const [user, orders, creditsCount, overdueCreditsCount, activeOrders] = await Promise.all([
+  const [user, orders, orderCount, creditsCount, overdueCreditsCount, activeOrders] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.user.id } }),
     prisma.order.findMany({
       where: { userId: session.user.id }, orderBy: { createdAt: 'desc' }, take: 5,
       include: { items: { include: { product: { select: { name: true } } } } },
     }),
+    prisma.order.count({ where: { userId: session.user.id } }),
     prisma.zapCreditPlan.count({ where: { order: { userId: session.user.id } } }),
     prisma.zapCreditInstallment.count({
       where: {
@@ -44,15 +46,15 @@ export default async function PerfilPage({
         plan: { status: { in: ['APPROVED', 'ACTIVE'] }, order: { userId: session.user.id } },
       },
     }),
-    prisma.order.count({ where: { userId: session.user.id, status: { in: ['PAID', 'PROCESSING', 'READY'] } } }),
+    prisma.order.count({ where: { userId: session.user.id, status: { in: ['PAID', 'PROOF_SENT', 'IN_PRODUCTION', 'PROCESSING', 'READY'] } } }),
   ])
   if (!user) redirect('/login')
 
   const { saved, error } = await searchParams
   const firstName = user.name?.trim().split(/\s+/)[0] || 'Hola'
   const areas = [
-    { title: 'Mis servicios', description: 'Explorá servicios, compras y el estado de tus pedidos.', href: '#servicios', icon: BriefcaseBusiness, tint: 'bg-violet-50 text-violet-700', detail: `${orders.length} pedidos` },
-    { title: 'Archivos y mensajes', description: 'Compartí materiales y encontrá las entregas de ZAP.', href: process.env.CLIENT_WORK_FILES_ENABLED === 'true' ? '#archivos' : null, icon: FolderOpen, tint: 'bg-sky-50 text-sky-700', detail: process.env.CLIENT_WORK_FILES_ENABLED === 'true' ? 'Trabajos y archivos' : 'En preparación' },
+    { title: 'Mis servicios', description: 'Explorá servicios, compras y el estado de tus pedidos.', href: '/perfil/servicios', icon: BriefcaseBusiness, tint: 'bg-violet-50 text-violet-700', detail: `${orderCount} pedidos` },
+    { title: 'Archivos y mensajes', description: 'Compartí materiales y encontrá las entregas de ZAP.', href: '/perfil/archivos', icon: FolderOpen, tint: 'bg-sky-50 text-sky-700', detail: process.env.CLIENT_WORK_FILES_ENABLED === 'true' ? 'Trabajos y archivos' : 'En preparación' },
     { title: 'Facturación', description: 'Administrá tus cuentas fiscales y comprobantes.', href: '/perfil/fiscal', icon: ReceiptText, tint: 'bg-rose-50 text-rose-700', detail: 'Abrir área fiscal' },
     { title: 'Integraciones', description: 'Generá claves y archivos de conexión para tus proyectos.', href: '/perfil/integraciones', icon: KeyRound, tint: 'bg-amber-50 text-amber-700', detail: 'API ZAP Fiscal' },
     { title: 'Mi cuenta', description: 'Actualizá tus datos personales y contraseña.', href: '#cuenta', icon: UserRound, tint: 'bg-emerald-50 text-emerald-700', detail: 'Datos y seguridad' },
@@ -76,7 +78,7 @@ export default async function PerfilPage({
             </form>
           </div>
           <div className="relative mt-8 grid grid-cols-2 gap-3 border-t border-white/10 pt-5 sm:max-w-lg">
-            <div><p className="text-2xl font-semibold">{orders.length}</p><p className="mt-1 text-xs text-white/55">Pedidos recientes</p></div>
+            <div><p className="text-2xl font-semibold">{orderCount}</p><p className="mt-1 text-xs text-white/55">Pedidos totales</p></div>
             <div><p className="text-2xl font-semibold">{activeOrders}</p><p className="mt-1 text-xs text-white/55">En curso</p></div>
           </div>
         </section>
@@ -103,11 +105,9 @@ export default async function PerfilPage({
         </section>
 
         <section id="servicios" className="mt-10 scroll-mt-24">
-          <div className="mb-4 flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#ED164F]">Mis servicios</p><h2 className="mt-1 text-xl font-semibold text-gray-950">Pedidos y compras</h2></div><Link href="/productos" className="inline-flex items-center gap-1 text-sm font-semibold text-[#c2103f] hover:underline">Explorar servicios <ArrowRight size={15} /></Link></div>
+          <div className="mb-4 flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#ED164F]">Mis servicios</p><h2 className="mt-1 text-xl font-semibold text-gray-950">Pedidos recientes</h2></div><Link href="/perfil/servicios" className="inline-flex items-center gap-1 text-sm font-semibold text-[#c2103f] hover:underline">Ver historial <ArrowRight size={15} /></Link></div>
           {orders.length === 0 ? <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center"><Package size={30} className="mx-auto text-gray-300" /><p className="mt-3 font-semibold text-gray-800">Todavía no tenés pedidos</p><p className="mt-1 text-sm text-gray-500">Cuando compres un servicio o producto, vas a poder seguirlo desde acá.</p><Link href="/productos" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d81245]">Ver servicios <ArrowRight size={15} /></Link></div> : <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">{orders.slice(0, 4).map(order => <Link key={order.id} href={`/perfil/ordenes/${order.id}`} className="group flex items-center gap-4 border-b border-gray-100 p-4 last:border-0 hover:bg-gray-50 sm:px-5"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-600"><Package size={18} /></span><span className="min-w-0 flex-1"><span className="flex flex-wrap items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyle[order.status] || 'bg-gray-100 text-gray-600'}`}>{statusLabel[order.status] || order.status}</span><span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString('es-AR')}</span></span><span className="mt-1 block truncate text-sm text-gray-700">{order.items.map(item => item.product.name).join(', ')}</span></span><span className="text-right"><span className="block font-semibold text-gray-900">${order.total.toLocaleString('es-AR')}</span><ArrowRight size={16} className="ml-auto mt-1 text-gray-300 group-hover:text-[#ED164F]" /></span></Link>)}</div>}
         </section>
-
-        {process.env.CLIENT_WORK_FILES_ENABLED === 'true' && <section id="archivos" className="mt-10 scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-5 sm:p-7"><div className="mb-6 flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700"><FolderOpen size={20} /></span><div><p className="text-xs font-bold uppercase tracking-[.16em] text-sky-700">Archivos y mensajes</p><h2 className="mt-1 text-xl font-semibold text-gray-950">Trabajos y entregas</h2><p className="mt-1 text-sm text-gray-500">Compartí material con ZAP o descargá los archivos de tus trabajos.</p></div></div><ClientWorkPortal /></section>}
 
         <section id="cuenta" className="mt-10 scroll-mt-24">
           <div className="mb-4"><p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-700">Mi cuenta</p><h2 className="mt-1 text-xl font-semibold text-gray-950">Datos y seguridad</h2></div>

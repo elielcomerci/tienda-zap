@@ -56,6 +56,7 @@ model User {
   clientWorks                      ClientWork[]                  @relation("ClientWorkOwner")
   createdClientWorks               ClientWork[]                  @relation("ClientWorkCreator")
   uploadedClientWorkFiles          ClientWorkFile[]              @relation("ClientWorkFileUploader")
+  sentClientWorkMessages           ClientWorkMessage[]            @relation("ClientWorkMessageSender")
   fiscalClientAccount               FiscalClientAccount?
 }
 
@@ -1670,6 +1671,7 @@ model ClientWork {
   user      User            @relation("ClientWorkOwner", fields: [userId], references: [id], onDelete: Cascade)
   createdBy User            @relation("ClientWorkCreator", fields: [createdById], references: [id])
   files     ClientWorkFile[]
+  messages  ClientWorkMessage[]
 
   @@index([userId, updatedAt])
   @@index([createdById, createdAt])
@@ -1694,4 +1696,18 @@ model ClientWorkFile {
 
   @@index([workId, createdAt])
   @@index([uploadedById, createdAt])
+}
+
+model ClientWorkMessage {
+  id        String   @id @default(cuid())
+  workId    String
+  senderId  String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  work   ClientWork @relation(fields: [workId], references: [id], onDelete: Cascade)
+  sender User       @relation("ClientWorkMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([workId, createdAt])
+  @@index([senderId, createdAt])
 }

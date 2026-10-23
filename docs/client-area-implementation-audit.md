@@ -58,3 +58,15 @@ La prueba valida autenticación del tenant contra la API del Worker y cuenta las
 4. Implementar aprobaciones y solicitudes con historial, permisos de servidor y relaciones con pedidos/proyectos.
 5. Habilitar `apiKeyManagement`, desplegar Worker/Tienda y probar generación, descarga ZIP, llamada de ejemplo y revocación; mantener PHP, Java y C# como pendientes hasta tener ejemplos verificados.
 6. Implementar notificaciones solo cuando exista un flujo real con destino, lectura e historial.
+
+
+## Avance del ?rea de clientes (22/10/2026)
+
+- `/perfil/servicios` es ahora la vista dedicada del historial: filtros por estado, paginaci?n, estados vac?os y acceso al detalle de cada pedido. La consulta siempre filtra por el ID autenticado.
+- `/perfil/archivos` es el destino propio del men?. Respeta `CLIENT_WORK_FILES_ENABLED`; si est? apagado explica c?mo contactar al equipo y si est? activo muestra los trabajos/archivos, sin presentar mensajer?a ni aprobaciones como disponibles.
+- El Inicio enlaza a esos destinos y mantiene solo pedidos recientes.
+- El API de trabajos exige alcance expl?cito `scope=admin` para que un ADMIN lea todos los clientes. Sin ese alcance, tambi?n un ADMIN queda limitado a sus propios trabajos. La consola administrativa usa el alcance global; el portal personal pide `scope=client`.
+- Se corrigi? un enlace de detalle de cr?dito que usaba una ruta con acento, incompatible con la ruta real `/perfil/creditos/[id]`.
+- Verificaci?n: `npm run typecheck` y `git diff --check` pasan. No se despleg?.
+- Se agreg? mensajer?a persistida por trabajo, con lectura y env?o autenticados, l?mite de 4.000 caracteres, y autorizaci?n por propietario; el ADMIN usa alcance global solo desde el portal administrativo. La migraci?n `20261022140000_client_work_messages` est? preparada, pero todav?a no se aplic? a la base.
+- Sigue pendiente para considerar completa la experiencia: notificaciones globales accionables, aprobaciones con historial/versionado, y solicitudes/briefs autenticados. Requieren definir estados y responsables de operaci?n para ZAP.

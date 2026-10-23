@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { FileText, Upload, Download, Trash2, RefreshCw, FolderOpen, Image as ImageIcon } from 'lucide-react'
+import { FileText, Upload, Download, Trash2, RefreshCw, FolderOpen, Image as ImageIcon, MessageSquare, Send } from 'lucide-react'
 
 type PortalUser = { id: string; name: string | null; email: string }
 type PortalFile = {
@@ -12,6 +12,7 @@ type PortalWork = {
   id: string; title: string; description: string | null; createdAt: string; updatedAt: string;
   user?: PortalUser; files: PortalFile[]
 }
+type PortalMessage = { id: string; body: string; createdAt: string; senderId: string; sender: { name: string | null; role: string } }
 const MAX_FILE_BYTES = 150 * 1024 * 1024
 
 function formatSize(size: number) {
@@ -39,13 +40,16 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [note, setNote] = useState('')
+  const [openMessages, setOpenMessages] = useState<string | null>(null)
+  const [messages, setMessages] = useState<Record<string, PortalMessage[]>>({})
+  const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({})
   const replaceInput = useRef<HTMLInputElement>(null)
   const replaceTarget = useRef<{ workId: string; fileId: string } | null>(null)
 
   async function loadWorks() {
     setLoading(true)
     try {
-      const response = await fetch('/api/client-works', { cache: 'no-store' })
+      const response = await fetch('/api/client-works?scope=' + (admin ? 'admin' : 'client'), { cache: 'no-store' })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No pudimos cargar los trabajos.')
       setWorks(data.works || [])
@@ -54,6 +58,37 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
     } finally { setLoading(false) }
   }
   useEffect(() => { void loadWorks() }, [])
+
+  async function toggleMessages(workId: string) {
+    if (openMessages === workId) { setOpenMessages(null); return }
+    setOpenMessages(workId)
+    if (messages[workId]) return
+    setBusy('messages:' + workId); setError('')
+    try {
+      const response = await fetch(`/api/client-works/${workId}/messages?scope=${admin ? 'admin' : 'client'}`, { cache: 'no-store' })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No pudimos cargar los mensajes.')
+      setMessages(current => ({ ...current, [workId]: data.messages || [] }))
+    } catch (e) { setError(e instanceof Error ? e.message : 'No pudimos cargar los mensajes.') }
+    finally { setBusy(null) }
+  }
+
+  async function sendMessage(e: React.FormEvent, workId: string) {
+    e.preventDefault()
+    const body = (messageDrafts[workId] || '').trim()
+    if (!body) return
+    setBusy('send:' + workId); setError(''); setMessage('')
+    try {
+      const response = await fetch(`/api/client-works/${workId}/messages?scope=${admin ? 'admin' : 'client'}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No pudimos enviar el mensaje.')
+      setMessages(current => ({ ...current, [workId]: [...(current[workId] || []), data.message] }))
+      setMessageDrafts(current => ({ ...current, [workId]: '' }))
+    } catch (e) { setError(e instanceof Error ? e.message : 'No pudimos enviar el mensaje.') }
+    finally { setBusy(null) }
+  }
 
   async function createWork(e: React.FormEvent) {
     e.preventDefault()
@@ -77,7 +112,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
     if (!selected.length) return
     setBusy('inbox'); setError(''); setMessage('')
     try {
-      const response = await fetch('/api/client-works/inbox', { method: 'POST' })
+      const response = await fetch('/api/client-works/inbox?scope=client', { method: 'POST' })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No pudimos preparar el espacio para tus archivos.')
       for (const file of selected) {
@@ -220,6 +255,13 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
             <span className="text-xs text-gray-400">PDF, imágenes, audio, video y archivos fuente · hasta 150 MB</span>
           </div>
         </div>
+        <section className="border-b border-gray-100 p-4">
+          <button type="button" onClick={() => void toggleMessages(work.id)} className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#c2103f]"><MessageSquare size={16} /> {openMessages === work.id ? 'Cerrar conversación' : 'Mensajes del trabajo'}</button>
+          {openMessages === work.id && <div className="mt-3">
+            {busy === 'messages:' + work.id ? <p className="py-3 text-sm text-gray-500">Cargando mensajes…</p> : (messages[work.id] || []).length === 0 ? <p className="py-3 text-sm text-gray-500">Todavía no hay mensajes. Usá este espacio para coordinar este trabajo.</p> : <div className="max-h-80 space-y-3 overflow-y-auto py-2">{messages[work.id].map(item => <div key={item.id} className={`max-w-[90%] rounded-xl p-3 text-sm ${item.sender.role === 'ADMIN' ? 'bg-gray-50 text-gray-700' : 'ml-auto bg-[#FEF1F5] text-gray-800'}`}><div className="mb-1 flex items-center justify-between gap-3 text-[11px] text-gray-400"><span>{item.sender.role === 'ADMIN' ? (item.sender.name || 'Equipo ZAP') : 'Vos'}</span><time>{new Date(item.createdAt).toLocaleString('es-AR')}</time></div><p className="whitespace-pre-wrap break-words">{item.body}</p></div>)}</div>}
+            <form onSubmit={e => void sendMessage(e, work.id)} className="mt-3 flex items-end gap-2"><label className="sr-only" htmlFor={'client-work-message-' + work.id}>Escribir un mensaje</label><textarea id={'client-work-message-' + work.id} value={messageDrafts[work.id] || ''} onChange={e => setMessageDrafts(current => ({ ...current, [work.id]: e.target.value }))} maxLength={4000} rows={2} className="input min-h-11 flex-1 resize-y" placeholder="Escribí un mensaje para este trabajo…"/><button disabled={busy === 'send:' + work.id || !(messageDrafts[work.id] || '').trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d81245] disabled:opacity-50"><Send size={15}/><span className="hidden sm:inline">Enviar</span></button></form>
+          </div>}
+        </section>
         <div className="divide-y divide-gray-100">
           {work.files.length === 0 ? <p className="p-4 text-sm text-gray-400">Todavía no hay archivos. Podés subir el primero.</p> :
             work.files.map(file => {
