@@ -38,7 +38,7 @@ export default function FiscalOnboardingClient({ provisioningEnabled }: { provis
         setLookupState('success')
       } else {
         setLookupState('manual')
-        setError('ARCA no devolvió una razón social en homologación. Podés ingresarla manualmente y continuar.')
+        setError('No encontramos la razón social. Podés completarla manualmente y continuar.')
       }
     } catch (reason) {
       setLookupState('manual')
@@ -69,7 +69,7 @@ export default function FiscalOnboardingClient({ provisioningEnabled }: { provis
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-800"><ShieldCheck size={23} /></div>
       <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">NODO ZAP · Cuenta fiscal</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#0F172A]">Empezá con tu CUIT</h1>
-      <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">Consultamos el padrón de homologación para completar la razón social. Después creamos tu espacio NODO y vinculamos la CUIT en TEST.</p>
+      <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">Ingresá tu CUIT para consultar los datos registrales disponibles y crear tu cuenta.</p>
 
       {!provisioningEnabled && <div role="status" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">El alta autoservicio todavía no está habilitada. Tu información no se enviará ni se creará una cuenta hasta que el servicio esté disponible.</div>}
 
@@ -81,7 +81,7 @@ export default function FiscalOnboardingClient({ provisioningEnabled }: { provis
           {lookupState === 'loading' ? <LoaderCircle size={16} className="animate-spin" /> : <Search size={16} />}Consultar padrón
         </button>
 
-        {lookupState === 'success' && <div role="status" className="flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950"><CheckCircle2 size={18} className="mt-0.5 shrink-0" /><div><p className="font-semibold">Datos encontrados en ARCA · Homologación</p>{estadoRegistral && <p className="mt-1">Estado registral: {estadoRegistral}</p>}<p className="mt-1 text-xs text-emerald-800">Revisá la razón social antes de continuar. La consulta no habilita certificados ni permisos de emisión.</p></div></div>}
+        {lookupState === 'success' && <div role="status" className="flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950"><CheckCircle2 size={18} className="mt-0.5 shrink-0" /><div><p className="font-semibold">Datos encontrados</p>{estadoRegistral && <p className="mt-1">Estado registral: {estadoRegistral}</p>}</div></div>}
 
         {(razonSocial || lookupState === 'manual') && <label className="block text-sm font-semibold text-slate-800">Razón social
           <input required maxLength={180} value={razonSocial} onChange={event => { setRazonSocial(event.target.value); setLookupProof('') }} className="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-normal text-slate-950 outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200" />
@@ -89,7 +89,7 @@ export default function FiscalOnboardingClient({ provisioningEnabled }: { provis
 
         {error && <p role="status" className="rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-700">{error}</p>}
 
-        <div className="rounded-xl bg-[#F4F4F1] p-4 text-xs leading-5 text-slate-600">El alta crea un tenant con el plan FREE y una asociación TEST pendiente. Después, esta cuenta debe cargar su propio certificado vigente y completar la autorización de ARCA para el servicio y ambiente que usará. Los certificados de otras cuentas no se comparten. Las claves del Worker permanecen en el servidor.</div>
+        <div className="rounded-xl bg-[#F4F4F1] p-4 text-xs leading-5 text-slate-600">Podrás completar la configuración de facturación después de crear tu cuenta.</div>
 
         <button type="submit" disabled={busy || !provisioningEnabled || cuit.length !== 11 || razonSocial.trim().length === 0} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F172A] px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
           {busy ? <LoaderCircle size={17} className="animate-spin" /> : <ArrowRight size={17} />}Crear mi cuenta NODO
