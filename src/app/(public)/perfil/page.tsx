@@ -1,4 +1,5 @@
 import { auth, signOut } from '@/auth'
+import { PUBLIC_LOGOUT_URL } from '@/lib/public-site-url'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
@@ -56,7 +57,7 @@ export default async function PerfilPage() {
               <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{firstName}, ¿qué necesitás resolver?</h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-white/65">Tus servicios, archivos y gestiones en un solo lugar.</p>
             </div>
-            <form action={async () => { 'use server'; await signOut({ redirectTo: '/' }) }}>
+            <form action={async () => { 'use server'; await signOut({ redirectTo: PUBLIC_LOGOUT_URL }) }}>
               <button type="submit" className="inline-flex items-center gap-2 self-start rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10">
                 <LogOut size={16} /> Cerrar sesión
               </button>

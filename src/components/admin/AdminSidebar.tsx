@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
+import { PUBLIC_LOGOUT_URL } from '@/lib/public-site-url'
 
 const navSections = [
   {
@@ -178,7 +179,7 @@ export default function AdminSidebar() {
             Ver tienda
           </Link>
           <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={() => signOut({ callbackUrl: PUBLIC_LOGOUT_URL })}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-400 transition-all hover:bg-gray-800 hover:text-red-400"
           >
             <LogOut size={18} />

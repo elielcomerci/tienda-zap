@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { PUBLIC_LOGOUT_URL, PUBLIC_SITE_URL } from '@/lib/public-site-url'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
@@ -39,6 +40,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url === PUBLIC_LOGOUT_URL || url === PUBLIC_SITE_URL) return PUBLIC_LOGOUT_URL
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      try {
+        if (new URL(url).origin === baseUrl) return url
+      } catch {
+        return baseUrl
+      }
+      return baseUrl
+    },
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role
