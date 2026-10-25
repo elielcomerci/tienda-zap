@@ -94,6 +94,22 @@ export async function POST(request: NextRequest) {
         // Preserve the Worker's response if it is not JSON.
       }
     }
+    if (response.status === 400) {
+      try {
+        const failure = JSON.parse(text) as { error?: string | { code?: unknown; message?: unknown } }
+        const workerError = failure.error
+        const code = typeof workerError === 'object' && workerError !== null ? workerError.code : undefined
+        const message = typeof workerError === 'object' && workerError !== null ? workerError.message : workerError
+        if (code === 'INVALID_REQUEST' && typeof message === 'string' && /solo admite cuit,\s*environment(?:,| y)\s*turnstileToken/i.test(message)) {
+          return NextResponse.json({
+            error: 'El servicio de consulta fiscal necesita una actualización para completar esta consulta. No se modificó el diseño.',
+            code: 'PADRON_WORKER_INCOMPATIBLE',
+          }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
+        }
+      } catch {
+        // Keep the Worker's safe error response if it does not match a known compatibility failure.
+      }
+    }
     return new NextResponse(text, {
       status: response.status,
       headers: { 'Content-Type': response.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store' },

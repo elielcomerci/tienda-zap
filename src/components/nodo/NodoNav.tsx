@@ -2,17 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ContactRound, FileCheck2, FilePlus2, Gauge, KeyRound, Package, Settings2, Wrench } from 'lucide-react'
+import { Blocks, FileCheck2, FilePlus2, Gauge, Settings2, Wrench } from 'lucide-react'
 
 const links = [
   { label: 'Resumen', href: '/perfil/nodo', icon: Gauge, exact: true },
-  { label: 'Emitir', href: '/perfil/nodo/emitir', icon: FilePlus2 },
+  { label: 'Emitir comprobante', href: '/perfil/nodo/emitir', icon: FilePlus2, exact: true },
+  { label: 'Facturación por lote', href: '/perfil/nodo/emitir/lote', icon: FilePlus2 },
   { label: 'Comprobantes', href: '/perfil/nodo/comprobantes', icon: FileCheck2 },
-  { label: 'Clientes', href: '/perfil/nodo/clientes', icon: ContactRound },
-  { label: 'Productos', href: '/perfil/nodo/productos', icon: Package },
-  { label: 'Integraciones', href: '/perfil/nodo/integraciones', icon: KeyRound },
-  { label: 'Herramientas', href: '/perfil/nodo/herramientas', icon: Wrench },
-  { label: 'Configuración', href: '/perfil/nodo/configuracion', icon: Settings2 },
+  { label: 'Clientes y productos', href: '/perfil/nodo/clientes-productos', icon: Blocks },
+  { label: 'Configuración fiscal', href: '/perfil/nodo/configuracion', icon: Settings2 },
+  { label: 'Avanzado', href: '/perfil/nodo/avanzado', icon: Wrench },
 ]
 
 export default function NodoNav() {

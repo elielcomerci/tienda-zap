@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   })
 
   // Refresh authorization from the Worker instead of treating the local projection as authoritative.
+  const authorizationVerifiedIds = new Set<string>()
   await Promise.all(contributors.map(async item => {
     try {
       const response = await fiscalApiRequest(request, `/v1/contributors/${encodeURIComponent(item.cuit)}?environment=${item.environment}`, access.apiKey)
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
           razonSocial: remote.razonSocial || item.razonSocial,
         },
       })
+      authorizationVerifiedIds.add(item.id)
     } catch {
       // Keep the last known projection when the Worker is temporarily unavailable.
     }
@@ -52,7 +54,12 @@ export async function GET(request: NextRequest) {
     },
   })
   return NextResponse.json({
-    contributors: refreshed.map(item => ({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt.toISOString() })),
+    contributors: refreshed.map(item => ({
+      ...item,
+      authorizationVerified: authorizationVerifiedIds.has(item.id),
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    })),
   }, { headers: { 'Cache-Control': 'no-store' } })
 }
 

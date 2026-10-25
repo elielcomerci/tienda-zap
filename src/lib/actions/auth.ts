@@ -25,19 +25,15 @@ export async function registerUser(formData: FormData): Promise<void> {
     }
   }
 
-  const exists = await prisma.user.findFirst({ 
-    where: { 
-      OR: [
-        { email: parsed.data.email },
-        ...(parsed.data.documentId ? [{ documentId: parsed.data.documentId }] : []),
-      ]
-    } 
+  const exists = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+    select: { id: true, isBanned: true },
   })
   if (exists) {
     if (exists.isBanned) {
       redirect('/registro?error=Cuenta+bloqueada')
     }
-    redirect('/registro?error=Email+o+documento+ya+registrado')
+    redirect(`/registro?error=${encodeURIComponent('Ese email ya tiene una cuenta. Ingresá o recuperá tu contraseña.')}`)
   }
 
   const cookieSellerId = await resolveActiveSellerId((await cookies()).get('zap_seller_ref')?.value)
@@ -129,20 +125,16 @@ export async function registerSeller(formData: FormData): Promise<void> {
     }
   }
 
-  const exists = await prisma.user.findFirst({ 
-    where: { 
-      OR: [
-        { email: parsed.data.email },
-        ...(parsed.data.documentId ? [{ documentId: parsed.data.documentId }] : []),
-      ]
-    } 
+  const exists = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+    select: { id: true, isBanned: true },
   })
   
   if (exists) {
     if (exists.isBanned) {
       redirect('/seller/registro?error=Cuenta+bloqueada')
     }
-    redirect('/seller/registro?error=Email+o+documento+ya+registrado')
+    redirect(`/seller/registro?error=${encodeURIComponent('Ese email ya tiene una cuenta. Ingresá o recuperá tu contraseña.')}`)
   }
 
   const hash = await bcrypt.hash(parsed.data.password, 12)

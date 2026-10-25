@@ -172,7 +172,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
       })
       const saved = await complete.json()
       if (!complete.ok) throw new Error(saved.error || 'No pudimos registrar el archivo.')
-      setMessage(saved.cleanupWarning || (replaceFileId ? 'Archivo reemplazado.' : 'Archivo compartido correctamente.'))
+      setMessage(saved.cleanupWarning || `${file.name}: ${replaceFileId ? 'archivo reemplazado correctamente.' : 'archivo subido y asociado a este trabajo.'}`)
       await loadWorks()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pudimos subir el archivo.')
@@ -207,8 +207,8 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
   return <section className="space-y-5">
     <div className="flex items-start gap-3">
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FEF1F5] text-[#ED164F]"><FolderOpen size={22} /></div>
-      <div><h2 className="text-lg font-bold text-gray-900">{admin ? 'Trabajos y archivos' : 'Mis trabajos y archivos'}</h2>
-        <p className="mt-1 text-sm text-gray-500">{admin ? 'Creá un espacio de trabajo y compartí materiales con cada cliente.' : 'Acá compartimos archivos de trabajo. Podés descargar lo que te enviamos o subir material para ZAP.'}</p>
+      <div><h2 className="text-lg font-bold text-gray-900">{admin ? 'Trabajos y archivos' : 'Tus espacios de trabajo'}</h2>
+        <p className="mt-1 text-sm text-gray-500">{admin ? 'Creá un espacio de trabajo y compartí materiales con cada cliente.' : 'Subí material para ZAP o descargá archivos compartidos. Si ya hay trabajos, cargá cada archivo en el espacio correspondiente.'}</p>
       </div>
     </div>
 
@@ -242,7 +242,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
         <FolderOpen size={30} className="mx-auto mb-3 text-gray-300" />
         <p className="font-medium text-gray-700">{admin ? 'Todavía no hay trabajos.' : 'Todavía no hay trabajos compartidos con tu cuenta.'}</p>
         {!admin && <div className="mt-4">
-          <p className="mb-3 text-sm text-gray-500">Podés enviarnos material ahora. Lo recibiremos en tu espacio de trabajo.</p>
+          <p className="mb-3 text-sm text-gray-500">Podés enviarnos material aunque todavía no haya un trabajo creado. Lo guardaremos en un espacio general y lo organizaremos cuando corresponda.</p>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d81245]">
             <Upload size={16} /> {busy === 'inbox' ? 'Preparando…' : 'Subir archivos para ZAP'}
             <input type="file" multiple className="sr-only" disabled={busy !== null} onChange={e => {
@@ -251,7 +251,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
               if (selected?.length) void uploadToInbox(selected)
             }} />
           </label>
-          <p className="mt-3 text-xs text-gray-400">PDF, imágenes, audio, video y archivos fuente · hasta 150 MB por archivo</p>
+          <p className="mt-3 text-xs leading-5 text-gray-400">PDF, PNG/JPG/JPEG/GIF/WEBP/SVG/TIF/TIFF, MP3/WAV/M4A/MP4/MOV/WEBM, DOC/DOCX/XLS/XLSX/PPT/PPTX/TXT/CSV, ZIP, AI/PSD/EPS/CDR. Hasta 150 MB por archivo.</p>
         </div>}
         {admin && <p className="mt-2 text-sm text-gray-500">Creá un trabajo arriba para compartir archivos con un cliente.</p>}
       </div> :
@@ -272,7 +272,8 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
                 setNote('')
               }} />
             </label>
-            <span className="text-xs text-gray-400">PDF, imágenes, audio, video y archivos fuente · hasta 150 MB</span>
+            <span className="text-xs text-gray-400">PDF, PNG/JPG/JPEG/GIF/WEBP/SVG/TIF/TIFF, MP3/WAV/M4A/MP4/MOV/WEBM, DOC/DOCX/XLS/XLSX/PPT/PPTX/TXT/CSV, ZIP, AI/PSD/EPS/CDR · hasta 150 MB</span>
+            {!admin && <a href={`https://wa.me/541125832323?text=${encodeURIComponent(`Hola, necesito ayuda con el trabajo ${work.id.slice(-8)}.`)}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#c2103f] hover:underline">Consultar sobre este trabajo</a>}
           </div>
         </div>
         <section className="border-b border-gray-100 p-4">

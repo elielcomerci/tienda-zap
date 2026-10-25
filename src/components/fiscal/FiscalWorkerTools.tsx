@@ -18,7 +18,7 @@ type Props = {
   flags: Record<string, boolean>
   onSelectPointOfSale?: (number: string) => void
 }
-type WorkerResult = { title: string; body: unknown; status: number }
+type WorkerResult = { title: string; body: unknown; status: number; cuit: string; environment: 'TEST' | 'PROD'; checkedAt: string }
 
 const inputClass = 'mt-1 block w-full rounded-xl border-0 bg-[#F4F4F1] px-3 py-2.5 text-sm text-gray-900 outline-none ring-1 ring-slate-900/5 transition focus:bg-white focus:ring-1 focus:ring-slate-900/25'
 const buttonClass = 'inline-flex items-center justify-center gap-2 rounded-full bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-px hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40'
@@ -30,6 +30,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
   const [pointOfSale, setPointOfSale] = useState('1')
   const [voucherType, setVoucherType] = useState('6')
   const [voucherNumber, setVoucherNumber] = useState('')
+  const [wsfeQuery, setWsfeQuery] = useState<'points' | 'latest' | 'specific'>('points')
   const [queryCuit, setQueryCuit] = useState('')
   const [padronSource, setPadronSource] = useState<'a13' | 'constancia'>('a13')
   const [padronRequestKey, setPadronRequestKey] = useState('')
@@ -46,7 +47,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
   const reconcilableJobs = invoices.filter(item => item.jobId && ['FAILED', 'DEAD'].includes(item.result || '') && item.environment === environment && (!cuit || item.cuit === cuit))
   const enabled = (key: string) => flags[key] === true
 
-  async function run(title: string, path: string, init?: RequestInit) {
+  async function run(title: string, path: string, init?: RequestInit, subjectCuit = cuit) {
     setBusy(true)
     setError('')
     setResult(null)
@@ -57,7 +58,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
         const message = body?.error?.message || body?.error || body?.message || 'El Worker no pudo completar la consulta.'
         throw new Error(typeof message === 'string' ? message : JSON.stringify(message))
       }
-      setResult({ title, body, status: response.status })
+      setResult({ title, body, status: response.status, cuit: subjectCuit, environment, checkedAt: new Date().toISOString() })
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudo completar la operación fiscal.')
     } finally {
@@ -83,7 +84,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
         <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700"><ShieldCheck size={14} /> Acceso controlado</span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <label className="text-sm font-medium text-gray-700">Ambiente
           <select className={inputClass} value={environment} onChange={event => { setEnvironment(event.target.value as 'TEST' | 'PROD'); setCuit(''); setPadronRequestKey(''); setResult(null) }}>
             <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
@@ -95,26 +96,27 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
             {scopedContributors.map(item => <option key={item.cuit} value={item.cuit}>{item.cuit}{item.razonSocial ? ` · ${item.razonSocial}` : ''}</option>)}
           </select>
         </label>
-        <label className="text-sm font-medium text-gray-700">Punto de venta
-          <input className={inputClass} inputMode="numeric" type="number" min="1" max="99999" value={pointOfSale} onChange={event => setPointOfSale(event.target.value)} />
-        </label>
-        <label className="text-sm font-medium text-gray-700">Tipo de comprobante
-          <select className={inputClass} value={voucherType} onChange={event => setVoucherType(event.target.value)}>
-            <option value="1">Factura A</option><option value="6">Factura B</option><option value="11">Factura C</option><option value="51">Factura M</option>
-          </select>
-        </label>
       </div>
 
       {selected && selected.permissions?.canViewHistory !== true && <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">La cuenta no informa permiso activo de historial para esta CUIT. El Worker puede rechazar las consultas WSFE hasta que se autorice.</p>}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <button type="button" className={secondaryClass} disabled={busy || !cuit || !enabled('wsfeRead')} onClick={() => void run('Puntos de venta', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/points-of-sale?environment=${environment}`)}><Activity size={16} /> Consultar puntos de venta</button>
-        <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !enabled('wsfeRead')} onClick={() => void run('Último comprobante autorizado', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/latest?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}><FileSearch size={16} /> Consultar última numeración</button>
-        <div className="flex gap-2">
-          <input aria-label="Número de comprobante" className={inputClass + ' mt-0 min-w-0'} type="number" min="1" placeholder="N.º comprobante" value={voucherNumber} onChange={event => setVoucherNumber(event.target.value)} />
-          <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !voucherNumber || !enabled('wsfeRead')} onClick={() => void run('Consulta de comprobante', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/${encodeURIComponent(voucherNumber)}?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}>Consultar</button>
+      {enabled('wsfeRead') && <div className="space-y-4 rounded-2xl border border-gray-100 p-4">
+        <div><h3 className="text-sm font-semibold text-gray-900">¿Qué necesitás consultar?</h3><p className="mt-1 text-sm text-gray-600">Son consultas de lectura. No habilitan la emisión de comprobantes.</p></div>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Tipo de consulta WSFE">
+          <button type="button" aria-pressed={wsfeQuery === 'points'} className={wsfeQuery === 'points' ? buttonClass : secondaryClass} onClick={() => { setWsfeQuery('points'); setResult(null) }}>Puntos de venta</button>
+          <button type="button" aria-pressed={wsfeQuery === 'latest'} className={wsfeQuery === 'latest' ? buttonClass : secondaryClass} onClick={() => { setWsfeQuery('latest'); setResult(null) }}>Última numeración</button>
+          <button type="button" aria-pressed={wsfeQuery === 'specific'} className={wsfeQuery === 'specific' ? buttonClass : secondaryClass} onClick={() => { setWsfeQuery('specific'); setResult(null) }}>Consultar comprobante</button>
         </div>
-      </div>
+        {wsfeQuery === 'points' && <button type="button" className={secondaryClass} disabled={busy || !cuit} onClick={() => void run('Puntos de venta', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/points-of-sale?environment=${environment}`)}><Activity size={16} /> Consultar puntos de venta</button>}
+        {wsfeQuery !== 'points' && <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-gray-700">Punto de venta<input className={inputClass} inputMode="numeric" type="number" min="1" max="99999" value={pointOfSale} onChange={event => setPointOfSale(event.target.value)} /></label>
+          <label className="text-sm font-medium text-gray-700">Tipo de comprobante<select className={inputClass} value={voucherType} onChange={event => setVoucherType(event.target.value)}><option value="1">Factura A</option><option value="6">Factura B</option><option value="11">Factura C</option><option value="51">Factura M</option></select></label>
+          {wsfeQuery === 'specific' && <label className="text-sm font-medium text-gray-700">Número de comprobante<input className={inputClass} inputMode="numeric" type="number" min="1" value={voucherNumber} onChange={event => setVoucherNumber(event.target.value)} /></label>}
+          <div className="sm:col-span-2">{wsfeQuery === 'latest'
+            ? <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale} onClick={() => void run('Último comprobante autorizado', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/latest?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}><FileSearch size={16} /> Consultar última numeración</button>
+            : <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !voucherNumber} onClick={() => void run('Consulta de comprobante', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/${encodeURIComponent(voucherNumber)}?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}>Consultar comprobante</button>}</div>
+        </div>}
+      </div>}
 
       {enabled('padronQuery') && <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
         <h3 className="text-sm font-semibold text-gray-900">Consulta de padrón</h3>
@@ -129,7 +131,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
           <button type="button" className={buttonClass} disabled={busy || !cuit || queryCuit.length !== 11} onClick={() => {
             const key = padronRequestKey || `padron-${crypto.randomUUID()}`
             setPadronRequestKey(key)
-            void run('Consulta de padrón', '/api/nodo/padron/consultas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ cuit: queryCuit, representedCuit: cuit, environment, source: padronSource }) })
+            void run('Consulta de padrón', '/api/nodo/padron/consultas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ cuit: queryCuit, representedCuit: cuit, environment, source: padronSource }) }, queryCuit)
           }}>Consultar padrón</button>
         </div>
       </div>}
@@ -139,21 +141,21 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
         <button type="button" className={secondaryClass} disabled={busy || !cuit} onClick={() => void run('Consumo fiscal', `/api/nodo/usage?cuit=${encodeURIComponent(cuit)}`)}><RefreshCw size={15} /> Consultar consumo</button>
       </div>}
 
-      {enabled('jobReconciliation') && <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-100 p-4">
-        <div className="min-w-[220px] flex-1"><label className="text-sm font-medium text-gray-700">Trabajo para conciliar
+      {enabled('jobReconciliation') && <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-100 p-4">
+        <div className="min-w-[220px] flex-1"><h3 className="text-sm font-semibold text-gray-900">Conciliar un trabajo</h3><p className="mt-1 text-sm text-gray-600">Consultá en ARCA el número reservado para una emisión sin resultado claro. Si coincide, se actualiza el registro; no se vuelve a emitir.</p><label className="mt-3 block text-sm font-medium text-gray-700">Trabajo registrado
           <select className={inputClass} value={jobId} onChange={event => setJobId(event.target.value)}>
             <option value="">Seleccionar trabajo…</option>
             {reconcilableJobs.map(item => <option key={item.jobId} value={item.jobId!}>{item.cuit} · {item.jobId} · comprobante {item.voucherNumber ?? 'pendiente'}</option>)}
           </select>
         </label></div>
         <button type="button" className={buttonClass} disabled={busy || !jobId} onClick={() => {
-          if (!confirm('Se consultará a ARCA para conciliar el trabajo. No se emitirá una nueva factura. ¿Continuar?')) return
+          if (!confirm('Se consultará a ARCA el estado del comprobante reservado. No se emitirá una nueva factura. ¿Continuar?')) return
           void run('Conciliación de trabajo', `/api/nodo/jobs/${encodeURIComponent(jobId)}/reconcile`, { method: 'POST' })
-        }}>Conciliar resultado</button>
+        }}>Consultar y actualizar estado</button>
       </div>}
 
       {!enabled('wsfeRead') && !enabled('padronQuery') && !enabled('usageVisibility') && !enabled('jobReconciliation') && <p className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">Estas consultas están desactivadas por ZAP. El administrador puede habilitarlas desde Controles de operación.</p>}
-      {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><p>{error}</p><p className="mt-1 text-xs">Una consulta fallida no confirma por sí sola que ARCA haya denegado el acceso. Puede deberse a conexión, configuración o permisos.</p></div>}
       {result?.title === 'Puntos de venta' && result.body && typeof result.body === 'object' && Array.isArray((result.body as { puntosVenta?: unknown[] }).puntosVenta) && <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {((result.body as { puntosVenta: Array<{ nro?: number; activo?: boolean; emisionTipo?: string; fchProceso?: string }> }).puntosVenta).map((point, index) => <div key={`${point.nro ?? 'pv'}-${index}`} className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 p-3">
           <div><p className="font-semibold text-gray-900">Punto de venta {point.nro ?? '—'}</p><p className="mt-1 text-xs text-gray-500">{point.emisionTipo || 'Tipo de emisión no informado'} · {point.activo ? 'Activo' : 'Inactivo'}</p></div>
@@ -161,7 +163,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
         </div>)}
       </div>}
       {result && <div role="status" className="overflow-hidden rounded-2xl border border-zap-magenta/20 bg-zap-magenta-subtle/40">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zap-magenta/10 px-4 py-3"><h3 className="font-semibold text-gray-900">{result.title}</h3><span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-600">HTTP {result.status}</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zap-magenta/10 px-4 py-3"><div><h3 className="font-semibold text-gray-900">{result.title}</h3><p className="mt-1 text-xs text-gray-600">CUIT {result.cuit} · {result.environment} · {new Date(result.checkedAt).toLocaleString('es-AR')}</p></div><span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-600">HTTP {result.status}</span></div>
         <pre className="max-h-80 overflow-auto p-4 text-xs leading-5 text-gray-800">{JSON.stringify(result.title === 'Consumo fiscal' && result.body && typeof result.body === 'object' ? Object.fromEntries(Object.entries(result.body as Record<string, unknown>).filter(([key]) => ['cuit', 'environment', 'periodStart', 'consumed', 'reserved'].includes(key))) : result.body, null, 2)}</pre>
       </div>}
       <p className="text-xs leading-5 text-gray-500">Las respuestas se muestran como información operativa del Worker. Los estados, permisos y autorizaciones de ARCA siguen siendo la fuente de verdad.</p>

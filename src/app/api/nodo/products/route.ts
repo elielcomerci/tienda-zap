@@ -9,9 +9,10 @@ export const dynamic = 'force-dynamic'
 
 const vatRates = [0, 2.5, 5, 10.5, 21, 27] as const
 const productSchema = z.object({
+  kind: z.enum(['PRODUCT', 'SERVICE']).default('PRODUCT'),
   description: z.string().trim().min(1).max(240),
   unit: z.string().trim().min(1).max(40),
-  unitPrice: z.number().finite().min(0).max(999999999),
+  unitPrice: z.number().finite().min(0.01).max(999999999),
   vatRatePercent: z.number().refine(rate => vatRates.some(allowedRate => allowedRate === rate)).nullable().optional(),
 })
 

@@ -314,8 +314,11 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
         </div>
         <button type="button" onClick={downloadTemplate} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700"><Download size={15} /> Descargar plantilla</button>
       </div>
+      <ol aria-label="Pasos de facturación por lote" className="mt-5 grid gap-2 sm:grid-cols-4">{[
+        { id: 'template', label: '1. Plantilla' }, { id: 'upload', label: '2. Cargar archivo' }, { id: 'review', label: '3. Revisar' }, { id: 'issue', label: '4. Confirmar emisión' },
+      ].map((step, index) => <li key={step.id} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${stage === 'complete' || (index === 0 && stage !== 'empty') || (index === 1 && stage !== 'empty') || (index === 2 && ['validated', 'partial', 'complete'].includes(stage)) || (index === 3 && ['processing', 'partial', 'complete'].includes(stage)) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-gray-200 text-gray-500'}`}>{step.label}</li>)}</ol>
       <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-        <label className="block text-sm font-medium text-gray-700">Archivo TSV exportado desde Excel
+        <label className="block text-sm font-medium text-gray-700">Cargá el archivo completado (TSV)
           <input type="file" accept=".tsv,.txt,text/tab-separated-values" onChange={event => void loadFile(event)} disabled={busy} className="mt-1 block w-full rounded-xl border border-gray-200 p-2 text-sm font-normal" />
         </label>
         {rows.length > 0 && <div className="flex flex-wrap gap-2">
@@ -323,7 +326,8 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
           <button type="button" onClick={() => void submitBatch()} disabled={busy || !['validated', 'partial'].includes(stage) || invalidCount > 0 || validCount === 0} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">{busy ? 'Procesando…' : stage === 'partial' ? 'Reanudar lote' : 'Confirmar emisión del lote'}</button>
         </div>}
       </div>
-      {fileName && <p className="mt-2 text-xs text-gray-500">Archivo: {fileName} · {rows.length} fila(s) · máximo 50 comprobantes por lote.</p>}
+      {fileName && <p className="mt-2 text-xs text-gray-500">Archivo: {fileName} · {rows.length} comprobantes · máximo 50.</p>}
+      {stage !== 'empty' && <p className="rounded-xl bg-blue-50 p-3 text-sm leading-5 text-blue-900">Validar revisa los datos y no emite. Corregí los errores y volvé a validar antes de confirmar. Si reintentás una fila ya enviada, conservá su mismo externalId para evitar duplicados.</p>}
       {error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertCircle size={17} className="mt-0.5 shrink-0" />{error}</div>}
       {notice && <div role="status" className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"><CheckCircle2 size={17} className="mt-0.5 shrink-0" />{notice}</div>}
       {rows.length > 0 && <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[780px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-2 pr-3">Fila</th><th className="pb-2 pr-3">Referencia</th><th className="pb-2 pr-3">CUIT / ambiente</th><th className="pb-2 pr-3">Tipo</th><th className="pb-2 pr-3">Importe estimado</th><th className="pb-2 pr-3">Estado</th><th className="pb-2">Detalle</th></tr></thead><tbody>{rows.map(row => {
@@ -332,7 +336,6 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
         const total = roundMoney(net + roundMoney(net * rate / 100))
         return <tr key={`${row.line}-${row.input.externalId}`} className="border-b border-gray-100 align-top"><td className="py-3 pr-3">{row.line}</td><td className="py-3 pr-3 font-mono text-xs">{row.input.externalId || '—'}</td><td className="py-3 pr-3"><span className="font-mono text-xs">{row.input.cuit}</span><br />{row.input.environment}</td><td className="py-3 pr-3">{row.input.type}</td><td className="py-3 pr-3">{Number.isFinite(total) ? money(total) : '—'}</td><td className="py-3 pr-3">{row.state === 'valid' ? 'Validada' : row.state === 'submitted' ? 'Trabajo creado' : row.state === 'uncertain' ? 'Respuesta incierta' : row.state === 'failed' ? 'Rechazada' : row.state === 'invalid' ? 'Error' : 'Pendiente'}{row.jobId && <p className="mt-1 break-all font-mono text-[10px] text-gray-500">{row.jobId}</p>}</td><td className="py-3 text-xs leading-5 text-gray-600">{row.message || 'Pendiente de validación'}</td></tr>
       })}</tbody></table></div>}
-      <p className="mt-3 text-xs leading-5 text-gray-500">Las claves idempotentes se derivan de externalId para permitir reintentos seguros si se vuelve a cargar el mismo archivo. No cambies externalId al corregir o reintentar una fila ya enviada. Los puntos de venta se verifican al emitir, no en la validación previa. No cargues credenciales ni datos bancarios en esta plantilla.</p>
     </section>
   )
 }

@@ -40,6 +40,7 @@ export default function PublicHeader({
 }) {
   const rawItemCount = useCartStore((state) => state.itemCount())
   const pathname = usePathname()
+  const isAccountArea = pathname.startsWith('/perfil')
   const searchParams = useSearchParams()
   const isProductArea = pathname === '/productos' || pathname.startsWith('/productos/')
   const { context: explorationContext, setContext, clearContext, ready: contextReady } = useExplorationContext()
@@ -152,6 +153,10 @@ export default function PublicHeader({
             <span className="text-2xl font-normal text-gray-800">Tienda</span>
           </Link>
 
+          {isAccountArea ? <div className="flex items-center gap-3">
+            <Link href="/productos" className="text-sm font-semibold text-gray-600 transition hover:text-[#C2103F]">Tienda</Link>
+            <button type="button" onClick={() => void signOut({ callbackUrl: PUBLIC_LOGOUT_URL })} className="rounded-full border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:text-gray-950">Cerrar sesión</button>
+          </div> : <>
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center space-x-8 h-full">
             <ul className="flex items-center space-x-8 h-full">
@@ -305,6 +310,7 @@ export default function PublicHeader({
               />
             </button>
           </div>
+          </>}
         </div>
       </header>
 

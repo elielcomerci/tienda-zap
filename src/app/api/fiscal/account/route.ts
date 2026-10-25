@@ -35,8 +35,12 @@ export async function GET(request: NextRequest) {
     },
   })
 
+  const invoicesCount = account
+    ? await prisma.fiscalInvoiceRecord.count({ where: { accountId: account.id } })
+    : 0
+
   if (!account || (!isAdmin && account.status !== 'ACTIVE')) {
-    return NextResponse.json({ account: null, invoices: [] }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ account: null, invoices: [], invoicesCount: 0 }, { headers: { 'Cache-Control': 'no-store' } })
   }
 
   return NextResponse.json({
@@ -46,6 +50,7 @@ export async function GET(request: NextRequest) {
       createdAt: account.createdAt.toISOString(), updatedAt: account.updatedAt.toISOString(),
       customer: account.user,
     },
+    invoicesCount,
     invoices: account.invoices.map(invoice => ({
       ...invoice,
       amount: invoice.amount?.toString() ?? null,

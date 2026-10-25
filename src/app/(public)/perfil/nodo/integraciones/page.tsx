@@ -1,7 +1,7 @@
-import NodoIntegrationsRoute from '@/components/nodo/NodoIntegrationsRoute'
+import { redirect } from 'next/navigation'
 
-export const metadata = { title: 'Integraciones | NODO ZAP' }
+export const metadata = { title: 'Avanzado | NODO ZAP' }
 
-export default function NodoIntegracionesPage() {
-  return <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10"><NodoIntegrationsRoute /></main>
+export default function NodoIntegracionesLegacyPage() {
+  redirect('/perfil/nodo/avanzado?vista=integraciones')
 }

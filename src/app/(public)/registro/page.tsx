@@ -65,6 +65,7 @@ export default async function RegistroPage({
               Documento (DNI/CUIT) <span className="text-gray-400 font-normal">(opcional)</span>
             </label>
             <input name="documentId" type="text" className="input" placeholder="Opcional para facturación/crédito" />
+            <p className="mt-1 text-xs text-gray-500">El mismo documento puede estar asociado a más de una cuenta. Cada persona ingresa con su propio email.</p>
           </div>
 
           {businessTypes.length > 0 && (

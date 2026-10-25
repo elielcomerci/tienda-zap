@@ -264,6 +264,7 @@ model FiscalSavedCustomer {
 model FiscalSavedProduct {
   id             String   @id @default(cuid())
   accountId      String
+  kind           String   @default("PRODUCT")
   description    String
   unit           String   @default("unidad")
   unitPrice      Decimal  @db.Decimal(14, 2)

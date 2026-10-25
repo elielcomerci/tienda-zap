@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import type { FiscalPdfTemplate } from '@/lib/fiscal-invoice-pdf'
 
@@ -69,9 +69,11 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [padronError, setPadronError] = useState('')
   const [notice, setNotice] = useState('')
   const [padronKey, setPadronKey] = useState('')
   const [padronCuit, setPadronCuit] = useState('')
+  const autoLookupCuit = useRef('')
   const [iibbType, setIibbType] = useState('')
   const [iibbNumber, setIibbNumber] = useState('')
 
@@ -117,7 +119,7 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
     setTemplate(current => current?{ ...current, [key]: value } : current)
   }
 
-  async function queryPadron(source: 'constancia' | 'a13', requestKey: string) {
+  const queryPadron = useCallback(async (source: 'constancia' | 'a13', requestKey: string) => {
     const response = await fetch(api('/api/nodo/onboarding/padron'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey },
@@ -125,12 +127,12 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
       cache: 'no-store',
     })
     return { response, payload: parsePadronPayload(await response.json().catch((): unknown => ({}))) }
-  }
+  }, [api, selectedCuit])
 
-  async function loadIssuerFromPadron() {
+  const loadIssuerFromPadron = useCallback(async (overwriteExisting = true) => {
     if (!selectedCuit) return
     const key = padronCuit === selectedCuit && padronKey?padronKey : `nodo-template-${crypto.randomUUID()}`
-    setPadronKey(key); setPadronCuit(selectedCuit); setBusy(true); setError(''); setNotice('')
+    setPadronKey(key); setPadronCuit(selectedCuit); setBusy(true); setPadronError(''); setNotice('')
     try {
       let { response, payload } = await queryPadron('constancia', `${key}:constancia`)
       if (response.status === 202) {
@@ -155,22 +157,37 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
       }
       setTemplate(current => current?{
         ...current,
-        issuerCuit: selectedCuit,
-        legalName,
-        ...(arcaData.domicilioFiscal?{ taxAddress: arcaData.domicilioFiscal } : {}),
-        ...(arcaData.condicionIva?{ ivaCondition: arcaData.condicionIva } : {}),
-        ...(arcaData.actividades?{ activities: arcaData.actividades } : {}),
+        ...((overwriteExisting || !current.issuerCuit?.trim()) ? { issuerCuit: selectedCuit } : {}),
+        ...((overwriteExisting || !current.legalName?.trim()) ? { legalName } : {}),
+        ...(arcaData.domicilioFiscal && (overwriteExisting || !current.taxAddress?.trim()) ? { taxAddress: arcaData.domicilioFiscal } : {}),
+        ...(arcaData.condicionIva && (overwriteExisting || !current.ivaCondition?.trim()) ? { ivaCondition: arcaData.condicionIva } : {}),
+        ...(arcaData.actividades && (overwriteExisting || !current.activities?.trim()) ? { activities: arcaData.actividades } : {}),
         arcaSource: usedA13?'ARCA_A13' : 'ARCA_CONSTANCIA',
         arcaConsultedAt: payload.consultedAt || new Date().toISOString(),
       } : current)
       setPadronKey(''); setPadronCuit('')
-      setNotice(`Datos actualizados desde ${usedA13 ? 'A13' : 'Constancia de Inscripcion'}${arcaData.estadoRegistral ? ` - Estado registral: ${arcaData.estadoRegistral}` : ''}. Revisa los datos y guarda la plantilla.`)
+      const missingArcaFields = [
+        !arcaData.domicilioFiscal && 'domicilio fiscal',
+        !arcaData.condicionIva && 'condición frente al IVA',
+        !arcaData.actividades && 'actividades declaradas',
+      ].filter((field): field is string => Boolean(field))
+      setNotice(usedA13
+        ? `Consulta realizada por A13${arcaData.estadoRegistral ? ` · Estado registral: ${arcaData.estadoRegistral}` : ''}.${missingArcaFields.length ? ` ARCA no devolvió ${missingArcaFields.join(', ')}; completá esos campos manualmente.` : ''} Revisá y guardá la plantilla.`
+        : `Consulta realizada por Constancia de Inscripción${arcaData.estadoRegistral ? ` · Estado registral: ${arcaData.estadoRegistral}` : ''}.${missingArcaFields.length ? ` ARCA no devolvió ${missingArcaFields.join(', ')}; completá esos campos manualmente.` : ''} Revisá y guardá la plantilla.`)
     } catch (reason) {
-      setError(reason instanceof Error?reason.message : 'No se pudieron traer los datos de ARCA.')
+      setPadronError(reason instanceof Error?reason.message : 'No se pudieron consultar los datos de ARCA.')
     } finally {
       setBusy(false)
     }
-  }
+  }, [api, padronCuit, padronKey, queryPadron, selectedCuit])
+
+  useEffect(() => {
+    if (!template || loading || !selectedCuit) return
+    if (template.issuerCuit === selectedCuit && template.arcaSource) return
+    if (autoLookupCuit.current === selectedCuit) return
+    autoLookupCuit.current = selectedCuit
+    void loadIssuerFromPadron(false)
+  }, [loadIssuerFromPadron, loading, selectedCuit, template])
 
   async function uploadLogo(file: File | undefined) {
     if (!file) return
@@ -213,12 +230,12 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
     <h2 className="font-semibold text-gray-900">Datos del emisor y diseño del PDF</h2>
     <p className="mt-1 text-sm leading-5 text-gray-500">Completá la información comercial que acompaña la representación impresa. Los datos fiscales del comprobante autorizado provienen del Worker y ARCA.</p>
     {loading?<p role="status" className="mt-4 text-sm text-gray-500">Cargando configuración…</p> : !template?<p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error || 'No se pudo cargar la configuración.'}</p> : <form onSubmit={event => void saveTemplate(event)} className="mt-5 space-y-4">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
         <p className="text-sm font-semibold text-slate-800">Traer datos fiscales básicos de ARCA</p>
-        <p className="mt-1 text-xs leading-5 text-slate-600">Se consulta Constancia de Inscripcion. Si falta delegacion, se usa A13. Revisa y edita los datos; el domicilio comercial puede diferir del fiscal. Inicio de actividades e Ingresos Brutos quedan manuales.</p>
+        <p className="mt-1 text-xs leading-5 text-slate-600">Se consulta Constancia de Inscripción; si no está disponible, se usa A13, que devuelve menos datos. Revisá los campos vacíos y completalos. El domicilio comercial puede diferir del fiscal. Inicio de actividades e Ingresos Brutos son manuales.</p>
         <div className="mt-3 flex flex-wrap items-end gap-3">
           <label className="min-w-56 flex-1 text-sm font-medium text-gray-700">CUIT vinculada
-            <select value={selectedCuit} onChange={event => { setSelectedCuit(event.target.value); setPadronKey(''); setPadronCuit('') }} disabled={busy || linkedCuits.length === 0} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+            <select value={selectedCuit} onChange={event => { setSelectedCuit(event.target.value); setPadronKey(''); setPadronCuit(''); setPadronError(''); setNotice('') }} disabled={busy || linkedCuits.length === 0} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
               <option value="">{linkedCuits.length?'Seleccioná una CUIT…' : 'Primero vinculá una CUIT'}</option>
               {linkedCuits.map(contributor => <option key={contributor.cuit} value={contributor.cuit}>{contributor.cuit}{contributor.razonSocial?` / ${contributor.razonSocial}` : ''} / ${contributor.environment}</option>)}
             </select>
@@ -227,10 +244,14 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
             {busy?'Consultando…' : 'Actualizar desde ARCA'}
           </button>
         </div>
-      </div>
+        {padronError && <p role="alert" className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{padronError} La consulta no guarda ni modifica el diseño; podés completar los datos manualmente o volver a intentar.</p>}
+      </section>
       {template.arcaSource && <p className="text-xs text-slate-600">Fuente: {template.arcaSource === 'ARCA_CONSTANCIA' ? 'ARCA / Constancia de Inscripcion' : 'ARCA / A13'}{template.arcaConsultedAt ? ` / Consultado ${new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(template.arcaConsultedAt))}` : ''}</p>}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {fields.map(({ key, label, maxLength }) => <label key={key} className="block text-sm font-medium text-gray-700">{label}
+      <section className="rounded-xl border border-slate-200 p-4">
+        <h3 className="text-sm font-semibold text-gray-900">Datos fiscales</h3>
+        <p className="mt-1 text-xs text-gray-500">Se completan con lo que informa ARCA. Podés corregirlos.</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {fields.filter(({ key }) => ['legalName', 'issuerCuit', 'ivaCondition', 'startActivity', 'activities', 'taxAddress'].includes(key)).map(({ key, label, maxLength }) => <label key={key} className="block text-sm font-medium text-gray-700">{label}
           <input value={String(template[key] ?? '')} maxLength={maxLength} onChange={event => update(key, event.target.value)} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
         </label>)}
         <label className="block text-sm font-medium text-gray-700">Ingresos Brutos (manual)
@@ -247,10 +268,20 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
             update('grossIncomeRegistration', `${type}${event.target.value ? ` / ${event.target.value}` : ''}`)
           }} maxLength={100} placeholder="Numero de inscripcion" className="mt-2 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />}
         </label>
+        </div>
+      </section>
+      <section className="rounded-xl border border-slate-200 p-4">
+        <h3 className="text-sm font-semibold text-gray-900">Datos comerciales</h3>
+        <p className="mt-1 text-xs text-gray-500">Completá cómo querés que aparezca tu negocio en el PDF.</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {fields.filter(({ key }) => !['legalName', 'issuerCuit', 'ivaCondition', 'startActivity', 'activities', 'taxAddress'].includes(key)).map(({ key, label, maxLength }) => <label key={key} className="block text-sm font-medium text-gray-700">{label}
+          <input value={String(template[key] ?? '')} maxLength={maxLength} onChange={event => update(key, event.target.value)} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
+        </label>)}
         <label className="block text-sm font-medium text-gray-700">Color de marca
           <input type="color" value={template.primaryColor || '#ed164f'} onChange={event => update('primaryColor', event.target.value)} className="mt-1 block h-10 w-full rounded-lg border border-gray-200 bg-white p-1" />
         </label>
-      </div>
+        </div>
+      </section>
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-gray-800">Diseno de factura y vista previa</legend>
         <div className="grid gap-3 md:grid-cols-3">
