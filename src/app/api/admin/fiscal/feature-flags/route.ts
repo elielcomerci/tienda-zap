@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest) {
   const { session } = authResult
   try {
     const current = await prisma.fiscalFeatureFlag.findMany({ where: { key: { in: entries.map(([key]) => key) } }, select: { key: true, enabled: true } })
-    const before = Object.fromEntries(entries.map(([key]) => [key, current.find(row => row.key === key)?.enabled ?? false]))
+    const before = Object.fromEntries(entries.map(([key]) => [key, current.find(row => row.key === key)?.enabled ?? DEFAULT_FISCAL_FEATURE_FLAGS[key as FiscalFeatureFlagKey]]))
     await prisma.$transaction(entries.map(([key, enabled]) => prisma.fiscalFeatureFlag.upsert({
       where: { key },
       create: { key, enabled: enabled as boolean, updatedBy: session.user.email || session.user.id },

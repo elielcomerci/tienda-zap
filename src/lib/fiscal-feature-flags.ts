@@ -21,6 +21,24 @@ export const FISCAL_FEATURE_FLAGS = {
 export type FiscalFeatureFlagKey = keyof typeof FISCAL_FEATURE_FLAGS
 
 export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean> = {
+  accountProvisioning: true,
+  contributorManagement: true,
+  apiKeyManagement: true,
+  certificateManagement: true,
+  invoiceEmissionTest: true,
+  invoiceEmissionProd: false,
+  batchImport: true,
+  pdfExport: true,
+  manualInvoiceRegistration: false,
+  wsfeRead: true,
+  padronQuery: true,
+  invoiceVoid: true,
+  jobReconciliation: true,
+  usageVisibility: true,
+  operationalRecovery: false,
+}
+
+const FAIL_CLOSED_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean> = {
   accountProvisioning: false,
   contributorManagement: false,
   apiKeyManagement: false,
@@ -48,9 +66,9 @@ export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagK
     }
     return result
   } catch (error) {
-    // Fail closed if the migration has not been applied or the settings store is unavailable.
+    // Fail closed whenever the settings store is unavailable.
     console.error('[fiscal/feature-flags] read failed; all flags disabled', error instanceof Error ? error.name : 'UnknownError')
-    return { ...DEFAULT_FISCAL_FEATURE_FLAGS }
+    return { ...FAIL_CLOSED_FISCAL_FEATURE_FLAGS }
   }
 }
 

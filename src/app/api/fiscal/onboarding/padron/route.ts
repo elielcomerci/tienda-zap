@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   const session = await auth()
-  if (!session?.user?.id || session.user.role !== 'CUSTOMER') {
+  if (!session?.user?.id || !['CUSTOMER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Iniciá sesión como cliente para continuar.' }, { status: 401 })
   }
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { isBanned: true } })

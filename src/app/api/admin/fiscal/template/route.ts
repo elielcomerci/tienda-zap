@@ -1,52 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { DEFAULT_FISCAL_INVOICE_TEMPLATE, fiscalInvoiceTemplateSchema } from '@/lib/fiscal-invoice-template'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-const templateSchema = z.object({
-  legalName: z.string().trim().max(180).default(''),
-  issuerCuit: z.string().trim().regex(/^(|\d{11})$/).default(''),
-  ivaCondition: z.string().trim().max(100).default(''),
-  grossIncomeRegistration: z.string().trim().max(120).default(''),
-  startActivity: z.string().trim().max(10).default(''),
-  taxAddress: z.string().trim().max(180).default(''),
-  commercialName: z.string().trim().max(120).default(''),
-  address: z.string().trim().max(180).default(''),
-  locality: z.string().trim().max(100).default(''),
-  province: z.string().trim().max(100).default(''),
-  phone: z.string().trim().max(40).default(''),
-  whatsapp: z.string().trim().max(40).default(''),
-  website: z.string().trim().max(200).default(''),
-  logoUrl: z.string().trim().max(500).refine(value => !value || value.startsWith('https://media.zap.com.ar/'), 'El logo debe estar alojado en media.zap.com.ar.').default(''),
-  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#ed164f'),
-  showWebsite: z.boolean().default(true),
-  showWhatsapp: z.boolean().default(true),
-  footerText: z.string().trim().max(180).default('Gracias por elegirnos.'),
-})
-
-const defaults = {
-  legalName: '',
-  issuerCuit: '',
-  ivaCondition: '',
-  grossIncomeRegistration: '',
-  startActivity: '',
-  taxAddress: '',
-  commercialName: '',
-  address: '',
-  locality: '',
-  province: '',
-  phone: '',
-  whatsapp: '',
-  website: '',
-  logoUrl: '',
-  primaryColor: '#ed164f',
-  showWebsite: true,
-  showWhatsapp: true,
-  footerText: 'Gracias por elegirnos.',
-}
 
 async function requireAdmin() {
   const session = await auth()
@@ -68,8 +26,8 @@ export async function GET(request: NextRequest) {
     const settings = accountId
       ? await prisma.fiscalInvoiceTemplate.findUnique({ where: { accountId }, select: { template: true } })
       : await prisma.fiscalInvoiceTemplate.findUnique({ where: { id: 'default' }, select: { template: true } })
-    const parsed = templateSchema.safeParse(settings?.template ?? defaults)
-    return NextResponse.json({ template: parsed.success ? parsed.data : defaults }, {
+    const parsed = fiscalInvoiceTemplateSchema.safeParse(settings?.template ?? DEFAULT_FISCAL_INVOICE_TEMPLATE)
+    return NextResponse.json({ template: parsed.success ? parsed.data : DEFAULT_FISCAL_INVOICE_TEMPLATE }, {
       headers: { 'Cache-Control': 'no-store' },
     })
   } catch (error) {
@@ -89,7 +47,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 })
   }
 
-  const parsed = templateSchema.safeParse(body)
+  const parsed = fiscalInvoiceTemplateSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({
       error: 'Revisá los campos del diseño.',
