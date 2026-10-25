@@ -19,6 +19,10 @@ export const fiscalInvoiceTemplateSchema = z.object({
   showWebsite: z.boolean().default(true),
   showWhatsapp: z.boolean().default(true),
   footerText: z.string().trim().max(180).default('Gracias por elegirnos.'),
+  arcaSource: z.enum(['ARCA_CONSTANCIA', 'ARCA_A13', '']).default(''),
+  arcaConsultedAt: z.string().trim().max(40).default(''),
+  activities: z.string().trim().max(250).default(''),
+  designVariant: z.enum(['classic', 'modern', 'editorial']).default('classic'),
 })
 
 export const DEFAULT_FISCAL_INVOICE_TEMPLATE = {
@@ -40,6 +44,10 @@ export const DEFAULT_FISCAL_INVOICE_TEMPLATE = {
   showWebsite: true,
   showWhatsapp: true,
   footerText: 'Gracias por elegirnos.',
+  arcaSource: '',
+  arcaConsultedAt: '',
+  activities: '',
+  designVariant: 'classic',
 } satisfies z.input<typeof fiscalInvoiceTemplateSchema>
 
 export type FiscalInvoiceTemplateInput = z.infer<typeof fiscalInvoiceTemplateSchema>

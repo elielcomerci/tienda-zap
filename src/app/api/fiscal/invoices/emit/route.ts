@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveFiscalAccount, fiscalApiRequest } from '@/lib/fiscal-account-access'
 import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
+import { DEFAULT_FISCAL_INVOICE_TEMPLATE, fiscalInvoiceTemplateSchema } from '@/lib/fiscal-invoice-template'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -55,6 +56,12 @@ export async function POST(request: NextRequest) {
   }
 
   const dryRun = request.nextUrl.searchParams.get('dryRun') === 'true'
+  const [currentTemplate, defaultTemplate] = await Promise.all([
+    prisma.fiscalInvoiceTemplate.findUnique({ where: { accountId: access.account.id }, select: { template: true } }),
+    prisma.fiscalInvoiceTemplate.findUnique({ where: { id: 'default' }, select: { template: true } }),
+  ])
+  const parsedTemplate = fiscalInvoiceTemplateSchema.safeParse(currentTemplate?.template ?? defaultTemplate?.template ?? DEFAULT_FISCAL_INVOICE_TEMPLATE)
+  const pdfTemplateSnapshot = parsedTemplate.success ? parsedTemplate.data : DEFAULT_FISCAL_INVOICE_TEMPLATE
   const featureEnabled = await isFiscalFeatureEnabled(environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest')
   if (!featureEnabled) {
     return NextResponse.json({ error: environment === 'PROD' ? 'La emisión en producción está desactivada por el administrador.' : 'La emisión en homologación está desactivada por el administrador.', code: 'FISCAL_FEATURE_DISABLED' }, { status: 423 })
@@ -98,6 +105,7 @@ export async function POST(request: NextRequest) {
           documentSnapshot: result.voucher?.documentSnapshot == null
             ? null
             : JSON.parse(JSON.stringify(result.voucher.documentSnapshot)),
+          pdfTemplateSnapshot,
           status: result.status || 'PENDING',
         },
       },

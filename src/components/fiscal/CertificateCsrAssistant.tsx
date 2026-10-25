@@ -56,7 +56,7 @@ export default function CertificateCsrAssistant({ contributor }: { contributor: 
   const prefix = 'nodo-zap-' + cuit + '-' + contributor.environment.toLowerCase()
 
   return <details className="mt-4 rounded-xl border border-violet-200 bg-violet-50/60 p-3">
-    <summary className="cursor-pointer text-sm font-semibold text-violet-950">Asistente NODO ZAP para generar CSR (PKCS#10)</summary>
+    <summary className="cursor-pointer text-sm font-semibold text-violet-950">¿Todavía no tenés certificado? Generar clave y CSR</summary>
     <div className="mt-3 space-y-4 text-sm leading-6 text-gray-700">
       <p>Genera en este navegador una clave RSA de 2048 bits y su solicitud PKCS#10. La clave privada no se envia a Tienda ZAP ni al Worker.</p>
       <div className="grid gap-3 sm:grid-cols-2">

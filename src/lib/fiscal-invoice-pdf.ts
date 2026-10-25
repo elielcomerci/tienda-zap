@@ -59,6 +59,7 @@ export type FiscalPdfInvoice = {
     amounts?: InvoicePayload['amounts'] | null
     invoice?: { concept?: number; date?: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string; saleCondition?: string } | null
   } | null
+  pdfTemplateSnapshot?: FiscalPdfTemplate | null
 }
 
 export type FiscalPdfTemplate = {
@@ -80,6 +81,10 @@ export type FiscalPdfTemplate = {
   showWebsite?: boolean
   showWhatsapp?: boolean
   footerText?: string
+  arcaSource?: 'ARCA_CONSTANCIA' | 'ARCA_A13' | ''
+  arcaConsultedAt?: string
+  activities?: string
+  designVariant?: 'classic' | 'modern' | 'editorial'
 }
 
 const voucherNames: Record<number, string> = {
@@ -122,6 +127,7 @@ function invoicePayload(invoice: FiscalPdfInvoice): InvoicePayload | null {
 }
 
 function emitterTemplate(invoice: FiscalPdfInvoice, template: FiscalPdfTemplate): FiscalPdfTemplate {
+  template = invoice.pdfTemplateSnapshot ?? template
   const emitter = invoice.documentSnapshot?.emitter
   const commercialAddress = [template.address, template.locality, template.province].filter(value => value?.trim()).join(', ')
   return {
@@ -215,20 +221,38 @@ function effectiveVatBreakdown(payload: InvoicePayload) {
   return [...grouped.values()].sort((a, b) => a.rate - b.rate)
 }
 
-async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, template: FiscalPdfTemplate, logoData?: string) {
+async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, currentTemplate: FiscalPdfTemplate, logoData?: string) {
+  const template = invoice.pdfTemplateSnapshot ?? currentTemplate
   const payload = invoicePayload(invoice)!
   const fiscalTemplate = emitterTemplate(invoice, template)
   const pageWidth = doc.internal.pageSize.getWidth()
   const margin = 14
   const right = pageWidth - margin
-  const accent = /^#[0-9a-fA-F]{6}$/.test(template.primaryColor || '') ? template.primaryColor! : '#ed164f'
+  const variantAccent: Record<NonNullable<FiscalPdfTemplate['designVariant']>, string> = {
+    classic: template.primaryColor || '#ed164f',
+    modern: '#0f766e',
+    editorial: '#7c3aed',
+  }
+  const accent = /^#[0-9a-fA-F]{6}$/.test(variantAccent[template.designVariant || 'classic']) ? variantAccent[template.designVariant || 'classic'] : '#ed164f'
   const rgb = [parseInt(accent.slice(1, 3), 16), parseInt(accent.slice(3, 5), 16), parseInt(accent.slice(5, 7), 16)] as [number, number, number]
   const voucherName = voucherNames[invoice.voucherType] || `COMPROBANTE TIPO ${invoice.voucherType}`
   let y = 16
 
   doc.setDrawColor(...rgb)
-  doc.setLineWidth(1.1)
-  doc.line(margin, y, right, y)
+  if (template.designVariant === 'modern') {
+    doc.setFillColor(...rgb)
+    doc.rect(margin, y - 3, right - margin, 3, 'F')
+  } else if (template.designVariant === 'editorial') {
+    doc.setLineWidth(2.2)
+    doc.line(margin, y, right, y)
+    doc.setLineWidth(0.5)
+    doc.line(margin, y + 2, right, y + 2)
+    doc.setFillColor(...rgb)
+    doc.rect(6, y, 2, 265, 'F')
+  } else {
+    doc.setLineWidth(1.1)
+    doc.line(margin, y, right, y)
+  }
   y += 7
 
   if (logoData) doc.addImage(logoData, 'PNG', margin, y + 3, 17, 12, undefined, 'FAST')

@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
   let body: unknown
   try { body = await request.json() } catch { return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 }) }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'Datos inválidos.' }, { status: 400 })
-  const input = body as { cuit?: unknown }
+  const input = body as { cuit?: unknown; source?: unknown }
+  const source = input.source === undefined ? 'a13' : input.source
+  if (source !== 'a13' && source !== 'constancia') return NextResponse.json({ error: 'El servicio debe ser Constancia de Inscripción o A13.' }, { status: 422 })
   const cuit = typeof input.cuit === 'string' ? input.cuit.replace(/\D/g, '') : ''
   const idempotencyKey = request.headers.get('Idempotency-Key')?.trim() ?? ''
   if (!isValidFiscalCuit(cuit)) return NextResponse.json({ error: 'Ingresá una CUIT válida de 11 dígitos.' }, { status: 422 })
@@ -41,8 +43,8 @@ export async function POST(request: NextRequest) {
         'X-Nodo-Client-IP': `customer-${clientKey}`,
         'Idempotency-Key': idempotencyKey,
       },
-      // Onboarding uses ZAP's server configured platform tenant and production A13 authorization.
-      body: JSON.stringify({ cuit, environment: 'PROD' }),
+      // The server uses ZAP's platform identity; callers cannot choose the represented CUIT.
+      body: JSON.stringify({ cuit, environment: 'PROD', source }),
       cache: 'no-store',
       signal: AbortSignal.timeout(30_000),
     })
