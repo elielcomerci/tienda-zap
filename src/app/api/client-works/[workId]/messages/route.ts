@@ -31,6 +31,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     take: 200,
     select: { id: true, body: true, createdAt: true, senderId: true, sender: { select: { name: true, role: true } } },
   })
+  const incomingMessageIds = messages.filter(message => message.senderId !== access.userId).map(message => message.id)
+  if (incomingMessageIds.length) {
+    await prisma.clientWorkMessageRead.createMany({
+      data: incomingMessageIds.map(messageId => ({ messageId, userId: access.userId })),
+      skipDuplicates: true,
+    })
+  }
   return NextResponse.json({ messages: messages.reverse() }, { headers: { 'Cache-Control': 'private, no-store' } })
 }
 

@@ -21,7 +21,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json()
     const work = await prisma.clientWork.findUnique({ where: { id: workId }, select: { id: true, userId: true } })
     if (!work) return NextResponse.json({ error: 'Trabajo no encontrado.' }, { status: 404 })
-    if (session.user.role !== 'ADMIN' && work.userId !== actorId) {
+    const adminScope = session.user.role === 'ADMIN' && request.nextUrl.searchParams.get('scope') === 'admin'
+    if (!adminScope && work.userId !== actorId) {
       return NextResponse.json({ error: 'No tenés acceso a este trabajo.' }, { status: 403 })
     }
 
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           sizeBytes: sizeBytes, objectKey: finalObjectKey,
           previousObjectKey: existing.objectKey, cleanupError: null, note, uploadedById: actorId,
         },
-        select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, uploadedById: true },
+        select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, updatedAt: true, uploadedById: true },
       })
     } else {
       file = await prisma.clientWorkFile.create({
@@ -89,7 +90,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           workId, uploadedById: actorId, fileName: validation.fileName,
           contentType: validation.contentType, sizeBytes: sizeBytes, objectKey: finalObjectKey, note,
         },
-        select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, uploadedById: true },
+        select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, updatedAt: true, uploadedById: true },
+      })
+    }
+
+    if (existing) {
+      await prisma.clientWorkFileApproval.updateMany({
+        where: { fileId: file.id, status: 'PENDING', fileUpdatedAt: { not: file.updatedAt } },
+        data: { status: 'SUPERSEDED', activeKey: null, respondedAt: new Date() },
       })
     }
 

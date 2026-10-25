@@ -32,6 +32,7 @@ export function ProductBaseForm({ title, action, product, categories = [], relat
         <label className="block text-sm font-medium">Qué es<textarea name="whatIs" defaultValue={product?.whatIs || ''} className="input mt-1 min-h-20 w-full" /></label>
         <label className="block text-sm font-medium">Para qué sirve<textarea name="purpose" defaultValue={product?.purpose || ''} className="input mt-1 min-h-20 w-full" /></label>
         <label className="block text-sm font-medium">Nota de consulta<textarea name="consultationNote" defaultValue={product?.consultationNote || ''} className="input mt-1 min-h-20 w-full" /></label>
+        <label className="block text-sm font-medium">IVA del precio final (%)<input name="vatRatePercent" type="number" min="0" max="100" step="0.01" defaultValue={product?.vatRatePercent ?? ''} className="input mt-1 w-full" placeholder="Dejá vacío si está pendiente" /><span className="mt-1 block text-xs font-normal text-gray-500">Se usa para la factura automática. El precio publicado se interpreta como importe final con IVA incluido; si queda vacío, la orden requiere emisión manual.</span></label>
         <ProductImagesManager initialImages={product?.images || []} />
       </section>
       <section className="space-y-3 border-t border-gray-100 pt-5">

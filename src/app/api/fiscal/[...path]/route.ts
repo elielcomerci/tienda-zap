@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { decryptFiscalCredential } from '@/lib/fiscal-credentials'
+import { getFiscalWorkerBaseUrl } from '@/lib/fiscal-worker-config'
 import { isFiscalFeatureEnabled, type FiscalFeatureFlagKey } from '@/lib/fiscal-feature-flags'
 
 export const runtime = 'nodejs'
@@ -40,6 +41,8 @@ async function resolveAccount(request: NextRequest) {
 function allowedPath(segments: string[], method: string) {
   const path = segments.join('/')
   if (method === 'POST' && path === 'contributors') return true
+  if (method === 'POST' && /^contributors\/[0-9]{11}\/wsfe\/connection-check$/.test(path)) return true
+  if (method === 'POST' && /^contributors\/[0-9]{11}\/padron\/connection-check$/.test(path)) return true
   if ((method === 'GET' || method === 'DELETE') && /^contributors\/[0-9]{11}$/.test(path)) return true
   if (['GET', 'POST', 'DELETE'].includes(method) && /^contributors\/[0-9]{11}\/certificate$/.test(path)) return true
   if (method === 'POST' && /^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) return true
@@ -67,6 +70,23 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
   let operationEnvironment: 'TEST' | 'PROD' | null = null
 
   if (method === 'POST' && path === 'contributors') requiredFlags.push('contributorManagement')
+  else if (method === 'POST' && /^contributors\/[0-9]{11}\/wsfe\/connection-check$/.test(path)) {
+    const environment = request.nextUrl.searchParams.get('environment')
+    if (environment !== 'TEST' && environment !== 'PROD') {
+      return NextResponse.json({ error: 'La validación requiere indicar TEST o PROD.' }, { status: 422 })
+    }
+    operationEnvironment = environment
+    requiredFlags.push('wsfeRead')
+  }
+  else if (method === 'POST' && /^contributors\/[0-9]{11}\/padron\/connection-check$/.test(path)) {
+    const environment = request.nextUrl.searchParams.get('environment')
+    const source = request.nextUrl.searchParams.get('source')
+    if ((environment !== 'TEST' && environment !== 'PROD') || (source !== 'a13' && source !== 'constancia')) {
+      return NextResponse.json({ error: 'La validación requiere indicar ambiente y servicio de padrón.' }, { status: 422 })
+    }
+    operationEnvironment = environment
+    requiredFlags.push('padronQuery')
+  }
   else if ((method === 'GET' || method === 'POST' || method === 'DELETE') && /^contributors\/[0-9]{11}\/certificate$/.test(path)) requiredFlags.push('certificateManagement')
   else if (method === 'POST' && /^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) requiredFlags.push('certificateManagement')
   else if (method === 'GET' && /^contributors\/[0-9]{11}\/wsfe\//.test(path)) requiredFlags.push('wsfeRead')
@@ -97,7 +117,7 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
       return NextResponse.json({ error: 'La operación requiere un body JSON válido y un ambiente explícito.' }, { status: 400 })
     }
   } else if (method === 'POST' && /^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) requiredFlags.push('jobReconciliation')
-  else if (method === 'GET' && path === 'usage') requiredFlags.push('usageVisibility')
+  // Usage is account entitlement information and remains visible regardless of optional fiscal tools.
 
   if (method === 'GET' && /^contributors\/[0-9]{11}\/certificate$/.test(path)) {
     const environment = request.nextUrl.searchParams.get('environment')
@@ -119,7 +139,7 @@ async function proxy(request: NextRequest, { params }: FiscalPathParams) {
     }
   }
 
-  const baseUrl = process.env.FISCAL_WORKER_URL?.trim()
+  const baseUrl = getFiscalWorkerBaseUrl()
   if (!baseUrl) return NextResponse.json({ error: 'FISCAL_WORKER_URL no está configurada.' }, { status: 503 })
 
   let target: URL

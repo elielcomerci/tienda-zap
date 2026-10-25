@@ -5,7 +5,7 @@ import { buildFiscalInvoicePdfBlob, downloadFiscalInvoiceBatchPdf, downloadFisca
 import FiscalBatchImport from '@/components/fiscal/FiscalBatchImport'
 import FiscalWorkerTools from '@/components/fiscal/FiscalWorkerTools'
 import CertificateCsrAssistant from '@/components/fiscal/CertificateCsrAssistant'
-import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, ShieldCheck, UploadCloud } from 'lucide-react'
+import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, Search, ShieldCheck, UploadCloud } from 'lucide-react'
 
 type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; notes?: string | null; customer?: { name: string | null; email: string; phone: string | null } }
 type Contributor = {
@@ -19,25 +19,38 @@ type Invoice = {
   jobId: string | null; workerVoucherId?: string | null; invoicePdfUrl: string | null; createdAt: string; payload?: (FiscalPdfInvoice['payload'] & { documentSnapshot?: FiscalPdfInvoice['documentSnapshot'] }) | null; documentSnapshot?: FiscalPdfInvoice['documentSnapshot']
 }
 type CertificateInfo = { id: string; environment: string; status: string; cn?: string; expiresAt: string; daysUntilExpiry: number }
-type Props = { accountId?: string; adminMode?: boolean }
+type SavedCustomer = { id: string; name: string; documentType: string | null; documentNumber: string | null; vatCondition: string | null; address: string | null }
+type SavedProduct = { id: string; description: string; unit: string; unitPrice: string; vatRatePercent: string | null }
+export type FiscalWorkspaceSection = 'all' | 'summary' | 'emit' | 'invoices' | 'settings' | 'tools'
+type Props = { accountId?: string; adminMode?: boolean; section?: FiscalWorkspaceSection }
+type Usage = { plan: string; planVersion: number; periodStart: string; invoices: { included: number | null; consumed: number; reserved: number; remaining: number | null; overage: number }; padron: { included: number | null; consumed: number; reserved: number; remaining: number | null; overage: number }; requests: { included: number | null; consumed: number; reserved: number; remaining: number | null; overage: number }; linkedCuits: number; maxCuits: number | null }
 type FiscalEmissionRequest = {
   externalId: string
   idempotencyKey: string
   contributor: { cuit: string; pointOfSale: number; environment: 'TEST' | 'PROD' }
-  voucher: { type: 'A' | 'B' | 'C' | 'M'; concept: number; date: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string }
-  amounts: { total: number; net: number; vat: number; exempt: number; nonTaxable: number; vatBreakdown?: Array<{ rate: number; base: number; amount: number }> }
+  voucher: { type: 'A' | 'B' | 'C' | 'M'; concept: number; date: string; serviceFrom?: string; serviceTo?: string; paymentDueDate?: string; saleCondition?: string }
+  amounts: { total: number; net: number; vat: number; exempt: number; nonTaxable: number; otherNationalIndirectTaxes?: number; vatBreakdown?: Array<{ rate: number; base: number; amount: number }> }
   items: Array<{ description: string; quantity: number; unitPrice: number; discountAmount: number; netAmount: number; vatRate: number | null; vatAmount: number; exemptAmount: number; nonTaxableAmount: number; totalAmount: number }>
-  customer: { docType: number; docNumber: string; name?: string; vatCondition?: number }
+  customer: { docType: number; docNumber: string; name?: string; address?: string; vatCondition?: number }
 }
 
 const money = (value: string | null) => value === null ? '—' : new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(value))
 const date = (value: string | null) => value ? new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium' }).format(new Date(value)) : '—'
 const voucherName: Record<number, string> = { 1: 'Factura A', 6: 'Factura B', 11: 'Factura C', 51: 'Factura M' }
 const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
+const surfaceShadow = "ring-1 ring-slate-900/5 shadow-[0_1px_2px_0_rgba(15,23,42,0.03),0_8px_16px_-4px_rgba(15,23,42,0.04)]"
 
-export default function FiscalWorkspaceClient({ accountId, adminMode = false }: Props) {
+function UsageMetric({ title, included, consumed, reserved, remaining, overage }: { title: string; included: number | null; consumed: number; reserved: number; remaining: number | null; overage: number }) {
+  const format = (value: number | null) => value === null ? 'Sin limite' : new Intl.NumberFormat('es-AR').format(value)
+  return <div className="rounded-xl bg-[#F4F4F1] p-4"><p className="text-sm text-gray-500">{title}</p><p className="mt-2 text-xl font-bold tabular-nums text-gray-900">{format(consumed)}{reserved ? ` + ${format(reserved)} reservados` : ''}</p><p className="mt-1 text-xs text-gray-500">Incluidos {format(included)} - disponibles {format(remaining)}</p>{overage > 0 && <p className="mt-2 text-xs font-semibold text-amber-800">Excedente registrado: {format(overage)}. El servicio continúa.</p>}</div>
+}
+
+export default function FiscalWorkspaceClient({ accountId, adminMode = false, section = 'all' }: Props) {
   const [account, setAccount] = useState<Account | null>(null)
   const [contributors, setContributors] = useState<Contributor[]>([])
+  const [usage, setUsage] = useState<Usage | null>(null)
+  const [savedCustomers, setSavedCustomers] = useState<SavedCustomer[]>([])
+  const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [pdfTemplate, setPdfTemplate] = useState<FiscalPdfTemplate | null>(null)
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([])
@@ -52,6 +65,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [cuit, setCuit] = useState('')
   const [representativeCuit, setRepresentativeCuit] = useState('')
   const [razonSocial, setRazonSocial] = useState('')
+  const [padronLookup, setPadronLookup] = useState<{ cuit: string; key: string; status: 'idle' | 'loading' | 'pending' | 'success' | 'manual'; message: string; estado?: string }>({ cuit: '', key: '', status: 'idle', message: '' })
   const [environment, setEnvironment] = useState<'TEST' | 'PROD'>('TEST')
   const [selectedContributor, setSelectedContributor] = useState<Contributor | null>(null)
   const [certificateInfo, setCertificateInfo] = useState<{ active: CertificateInfo[] | null; others: CertificateInfo[] } | null>(null)
@@ -63,8 +77,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   const [emission, setEmission] = useState({
     cuit: '', environment: 'TEST' as 'TEST' | 'PROD', pointOfSale: '1', type: 'B' as 'A' | 'B' | 'C' | 'M',
     concept: '1', date: '', serviceFrom: '', serviceTo: '', paymentDueDate: '',
-    docType: '99', docNumber: '0', customerName: '', vatCondition: '5',
-    description: '', netBase: '', vatRate: '21',
+    docType: '99', docNumber: '0', customerName: '', customerAddress: '', vatCondition: '5', saleCondition: 'Contado',
+    description: '', netBase: '', vatRate: '21', otherNationalIndirectTaxes: '0',
   })
   const [preparedEmission, setPreparedEmission] = useState<FiscalEmissionRequest | null>(null)
   const [preparedMode, setPreparedMode] = useState<'validated' | 'uncertain' | null>(null)
@@ -78,10 +92,13 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     setLoading(true)
     setError('')
     try {
-      const [accountResponse, contributorResponse, featureResponse] = await Promise.all([
-        fetch(api('/api/fiscal/account'), { cache: 'no-store' }),
-        fetch(api('/api/fiscal/contributors'), { cache: 'no-store' }),
-        fetch(api('/api/fiscal/feature-flags'), { cache: 'no-store' }).catch(() => null),
+      const [accountResponse, contributorResponse, featureResponse, usageResponse, customersResponse, productsResponse] = await Promise.all([
+        fetch(api('/api/nodo/account'), { cache: 'no-store' }),
+        fetch(api('/api/nodo/contributors'), { cache: 'no-store' }),
+        fetch(api('/api/nodo/feature-flags'), { cache: 'no-store' }).catch(() => null),
+        fetch(api('/api/nodo/usage'), { cache: 'no-store' }).catch(() => null),
+        fetch(api('/api/nodo/customers'), { cache: 'no-store' }).catch(() => null),
+        fetch(api('/api/nodo/products'), { cache: 'no-store' }).catch(() => null),
       ])
       const accountPayload = await accountResponse.json()
       const contributorPayload = await contributorResponse.json()
@@ -98,7 +115,13 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       })))
       setSelectedInvoiceIds([])
       setContributors(contributorPayload.contributors || [])
-      const templateResponse = await fetch(api('/api/fiscal/template'), { cache: 'no-store' })
+      const customersPayload = customersResponse?.ok ? await customersResponse.json().catch(() => ({})) : {}
+      const productsPayload = productsResponse?.ok ? await productsResponse.json().catch(() => ({})) : {}
+      setSavedCustomers(Array.isArray(customersPayload.customers) ? customersPayload.customers : [])
+      setSavedProducts(Array.isArray(productsPayload.products) ? productsPayload.products : [])
+      if (usageResponse?.ok) setUsage(await usageResponse.json().catch(() => null))
+      else setUsage(null)
+      const templateResponse = await fetch(api('/api/nodo/template'), { cache: 'no-store' })
       if (templateResponse.ok) {
         const templatePayload = await templateResponse.json()
         setPdfTemplate(templatePayload.template || null)
@@ -122,7 +145,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (!confirm(`¿Quitar la CUIT ${contributor.cuit} de ${contributor.environment === 'TEST' ? 'homologación' : 'producción'} de esta cuenta? Se revocará el vínculo en el Worker, se bloquearán sus permisos y certificados para esta cuenta y dejará de aparecer en la lista. No se elimina la identidad fiscal global ni los comprobantes históricos.`)) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(contributor.cuit)}?environment=${contributor.environment}`), { method: 'DELETE' })
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}?environment=${contributor.environment}`), { method: 'DELETE' })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo quitar la CUIT.')
       setNotice(payload.message || `Se quitó la CUIT ${contributor.cuit} de ${contributor.environment}.`)
@@ -134,9 +157,13 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
   async function addContributor(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (padronLookup.cuit !== cuit || !['success', 'manual'].includes(padronLookup.status)) {
+      setError('Consultá el padrón para esta CUIT o completá la consulta manual antes de vincularla.')
+      return
+    }
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api('/api/fiscal/contributors'), {
+      const response = await fetch(api('/api/nodo/contributors'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cuit, representativeCuit: representativeCuit || cuit, razonSocial, environment }),
       })
@@ -151,14 +178,69 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     } finally { setBusy(false) }
   }
 
+  async function lookupContributorPadron() {
+    if (!/^\d{11}$/.test(cuit)) return
+    const key = padronLookup.status === 'pending' && padronLookup.cuit === cuit && padronLookup.key
+      ? padronLookup.key
+      : `nodo-contributor-${crypto.randomUUID()}`
+    setPadronLookup({ cuit, key, status: 'loading', message: '' })
+    setRazonSocial('')
+    setError('')
+    try {
+      const response = await fetch('/api/nodo/onboarding/padron', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+        body: JSON.stringify({ cuit }), cache: 'no-store',
+      })
+      const payload = await response.json().catch(() => ({})) as {
+        success?: boolean; data?: { razonSocial?: string; estadoRegistral?: string }; retryAfterSeconds?: number;
+        error?: string | { message?: string }
+      }
+      if (response.status === 202) {
+        setPadronLookup({ cuit, key, status: 'pending', message: `Consulta en curso. Reintentá en ${payload.retryAfterSeconds || 5} segundos.` })
+        return
+      }
+      if (!response.ok) throw new Error(typeof payload.error === 'string' ? payload.error : payload.error?.message || 'No se pudo consultar el padrón.')
+      if (!payload.data?.razonSocial) {
+        setPadronLookup({ cuit, key: '', status: 'manual', message: 'ARCA no devolvió una razón social en homologación. Podés completarla manualmente.' })
+        return
+      }
+      setRazonSocial(payload.data.razonSocial)
+      setPadronLookup({ cuit, key: '', status: 'success', message: `Datos consultados en homologación${payload.data.estadoRegistral ? ` · Estado: ${payload.data.estadoRegistral}` : ''}.` })
+    } catch (reason) {
+      setPadronLookup({ cuit, key: '', status: 'manual', message: `${reason instanceof Error ? reason.message : 'No se pudo consultar el padrón.'} Podés completar la razón social manualmente.` })
+    }
+  }
+
   async function loadCertificate(contributor: Contributor) {
     setSelectedContributor(contributor); setCertificateInfo(null); setError(''); setNotice('')
     try {
-      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(contributor.cuit)}/certificate?environment=${contributor.environment}`), { cache: 'no-store' })
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/certificate?environment=${contributor.environment}`), { cache: 'no-store' })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo consultar el certificado.')
       setCertificateInfo(payload)
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo consultar el certificado.') }
+  }
+
+  async function checkArcaConnection(contributor: Contributor) {
+    if (featureFlags.wsfeRead !== true) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/wsfe/connection-check?environment=${contributor.environment}`), { method: 'POST' })
+      const payload = await response.json().catch(() => ({})) as { error?: string | { code?: string; message?: string; details?: Array<{ code?: string | number; message?: string }> }; puntosVenta?: unknown[] }
+      if (!response.ok) {
+        const error = payload.error
+        const summary = typeof error === 'string' ? error : error?.message || 'No se pudo validar la conexión con ARCA.'
+        const details = typeof error === 'object' ? error.details?.map(item => `${item.code ?? 'ARCA'}: ${item.message || 'sin detalle'}`).join(' · ') : ''
+        throw new Error(details ? `${summary} (${details})` : summary)
+      }
+      const count = payload.puntosVenta?.length ?? 0
+      setNotice(count > 0
+        ? `Conexión validada con ARCA en ${contributor.environment}. ARCA informó ${count} puntos de venta.`
+        : `Conexión y autorización WSFE validadas en ${contributor.environment}. ARCA no informó puntos de venta; revisá ese dato antes de emitir.`)
+      await load()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo validar la conexión con ARCA.')
+    } finally { setBusy(false) }
   }
 
   async function revokeCertificates() {
@@ -166,7 +248,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (!confirm(`Se revocarán los certificados activos o pendientes de ${selectedContributor.cuit} en ${selectedContributor.environment}. Esta acción puede impedir nuevas operaciones fiscales. ¿Continuar?`)) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate?environment=${selectedContributor.environment}`), { method: 'DELETE' })
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate?environment=${selectedContributor.environment}`), { method: 'DELETE' })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudieron revocar los certificados.')
       setNotice(payload.message || 'Certificados revocados para este CUIT y ambiente.')
@@ -181,7 +263,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (!confirm('¿Activar este certificado para ' + selectedContributor.cuit + ' en ' + selectedContributor.environment + '? El certificado activo anterior puede quedar revocado.')) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate/${encodeURIComponent(certificate.id)}/activate`), {
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate/${encodeURIComponent(certificate.id)}/activate`), {
         method: 'POST',
       })
       const payload = await response.json()
@@ -202,7 +284,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       form.append('cert', certFile, certFile.name)
       form.append('key', keyFile, keyFile.name)
       form.append('environment', selectedContributor.environment)
-      const response = await fetch(api(`/api/fiscal/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate`), { method: 'POST', body: form })
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(selectedContributor.cuit)}/certificate`), { method: 'POST', body: form })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo validar el certificado.')
       setNotice(payload.message || 'Certificado recibido. Revisá el estado y la fecha de vencimiento.')
@@ -315,12 +397,31 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       setError('Ingresá un importe neto positivo.')
       return
     }
+    if (Number(emission.vatCondition) === 5 && total >= 10_000_000 && (!['86', '87', '96'].includes(emission.docType) || !emission.docNumber || emission.docNumber === '0')) {
+      setError('Para una operación desde $10.000.000, ingresá el DNI, CUIL o CDI del consumidor final.')
+      return
+    }
     if (emission.type !== 'C' && ![0, 2.5, 5, 10.5, 21, 27].includes(rate)) {
       setError('Elegí una alícuota de IVA admitida por el contrato fiscal.')
       return
     }
+    if (emission.type !== 'C' && emission.vatRate === '') {
+      setError('El ítem seleccionado no tiene una alícuota de IVA definida. Confirmala antes de emitir.')
+      return
+    }
+    if (['B', 'C'].includes(emission.type) && Number(emission.vatCondition) === 5) {
+      const indirectTaxes = Number(emission.otherNationalIndirectTaxes)
+      if (!Number.isFinite(indirectTaxes) || indirectTaxes < 0 || Math.round(indirectTaxes * 100) !== indirectTaxes * 100) {
+        setError('Ingresá un importe válido de otros impuestos nacionales indirectos, incluidos en el precio.')
+        return
+      }
+    }
     if ((emission.type === 'A' || emission.type === 'M') && (emission.docType !== '80' || !/^\d{11}$/.test(emission.docNumber))) {
       setError('Factura A y M requieren CUIT válida del receptor.')
+      return
+    }
+    if ((emission.type === 'A' || emission.type === 'M') && !emission.customerAddress.trim()) {
+      setError('Factura A y M requieren el domicilio comercial del receptor para generar la representación en PDF.')
       return
     }
     if (emission.concept !== '1' && (!emission.serviceFrom || !emission.serviceTo || !emission.paymentDueDate)) {
@@ -351,6 +452,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         type: emission.type,
         concept: Number(emission.concept),
         date: dateToArca(emission.date),
+        saleCondition: emission.saleCondition,
         ...(emission.concept !== '1' ? {
           serviceFrom: dateToArca(emission.serviceFrom),
           serviceTo: dateToArca(emission.serviceTo),
@@ -359,6 +461,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
       },
       amounts: {
         total, net, vat, exempt: 0, nonTaxable: 0,
+        ...(['B', 'C'].includes(emission.type) && Number(emission.vatCondition) === 5 ? { otherNationalIndirectTaxes: Number(emission.otherNationalIndirectTaxes) } : {}),
         ...(emission.type !== 'C' ? { vatBreakdown: net > 0 ? [{ rate, base: net, amount: vat }] : [] } : {}),
       },
       items: [item],
@@ -366,6 +469,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         docType: Number(emission.docType),
         docNumber: emission.docType === '99' ? '0' : emission.docNumber,
         ...(emission.customerName.trim() ? { name: emission.customerName.trim() } : {}),
+        ...(emission.customerAddress.trim() ? { address: emission.customerAddress.trim() } : {}),
         vatCondition: Number(emission.vatCondition || '5'),
       },
     }
@@ -379,7 +483,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (!preparedEmission) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api('/api/fiscal/invoices/emit?sync=true'), {
+      const response = await fetch(api('/api/nodo/invoices/emit?sync=true'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preparedEmission),
       })
       const payload = await response.json().catch(() => ({}))
@@ -454,7 +558,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (!activeJobId) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api(`/api/fiscal/jobs/${encodeURIComponent(activeJobId)}`), { cache: 'no-store' })
+      const response = await fetch(api(`/api/nodo/jobs/${encodeURIComponent(activeJobId)}`), { cache: 'no-store' })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo consultar el trabajo.')
       setNotice(`Trabajo ${payload.jobId}: ${payload.status}.${payload.voucher?.cae ? ` CAE ${payload.voucher.cae}.` : ''}`)
@@ -468,7 +572,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     if (!invoice.jobId) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(api(`/api/fiscal/jobs/${encodeURIComponent(invoice.jobId)}`), { cache: 'no-store' })
+      const response = await fetch(api(`/api/nodo/jobs/${encodeURIComponent(invoice.jobId)}`), { cache: 'no-store' })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo actualizar desde el Worker.')
       setNotice(`Estado actualizado desde el Worker: ${payload.status}.`)
@@ -493,7 +597,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
     setBusy(true); setError(''); setNotice('')
     try {
       const stableKey = `zap-void-${invoice.workerVoucherId}`
-      const response = await fetch(api(`/api/fiscal/invoices/void?environment=${encodeURIComponent(invoice.environment)}`), {
+      const response = await fetch(api(`/api/nodo/invoices/void?environment=${encodeURIComponent(invoice.environment)}`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -537,13 +641,13 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
   }
 
   if (loading) return <div className="mx-auto max-w-7xl p-8 text-sm text-gray-500">Cargando espacio fiscal…</div>
-  if (!account) return <div className="mx-auto max-w-4xl p-8"><div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8"><h1 className="text-xl font-bold text-gray-900">Cuenta fiscal todavía no vinculada</h1><p className="mt-2 text-sm leading-6 text-gray-600">{adminMode ? 'Esta cuenta no tiene un vínculo fiscal activo. Volvé a Clientes fiscales y asigná una cuenta del Worker.' : 'Estamos preparando tu espacio fiscal. Contactá a ZAP para vincular tu cuenta y ayudarte con la configuración inicial.'}</p></div></div>
+  if (!account) return <div className="mx-auto max-w-4xl p-8"><div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8"><h1 className="text-xl font-bold tabular-nums text-gray-900">Cuenta fiscal todavía no vinculada</h1><p className="mt-2 text-sm leading-6 text-gray-600">{adminMode ? 'Esta cuenta no tiene un vínculo fiscal activo. Volvé a Clientes fiscales y asigná una cuenta del Worker.' : 'Estamos preparando tu espacio fiscal. Contactá a ZAP para vincular tu cuenta y ayudarte con la configuración inicial.'}</p></div></div>
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 text-[#0F172A] tabular-nums sm:p-6 lg:p-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-zap-magenta">{adminMode ? 'ZAP · Soporte fiscal' : 'Mi cuenta · Fiscal'}</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-800">{adminMode ? 'ZAP · Soporte fiscal' : 'Mi cuenta · Fiscal'}</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">{adminMode ? account.customer?.name || account.tenantName : 'Mi cuenta fiscal'}</h1>
           <p className="mt-2 text-sm text-gray-500">{adminMode ? account.customer?.email : 'Administrá tus datos fiscales con asistencia de ZAP.'} · {account.tenantName}</p>
         </div>
@@ -555,7 +659,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
       {adminMode && accountId && <div><a href={`/admin/fiscal/clientes/${encodeURIComponent(accountId)}/diseno`} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">Configurar diseño del comprobante</a></div>}
 
-      {adminMode && accountId && <section className="rounded-2xl border border-gray-200 bg-white p-5">
+      {adminMode && accountId && <section className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
         <h2 className="font-semibold text-gray-900">Seguimiento interno de ZAP</h2>
         <p className="mt-1 text-sm text-gray-500">Notas para el equipo y control de acceso a través de este panel. Pausar acá no suspende directamente el tenant en el Worker.</p>
         <form onSubmit={event => void saveSupportSettings(event)} className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
@@ -567,27 +671,38 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               <option value="ACTIVE">Activo</option><option value="PAUSED">Pausado</option>
             </select>
           </label>
-          <button disabled={busy} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar'}</button>
+          <button disabled={busy} className="rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar'}</button>
         </form>
       </section>}
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">CUIT vinculadas</p><p className="mt-2 text-3xl font-bold text-gray-900">{contributors.length}</p></div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Comprobantes registrados</p><p className="mt-2 text-3xl font-bold text-gray-900">{invoices.length}</p></div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-sm text-gray-500">Estado de la cuenta</p><p className="mt-2 text-lg font-bold text-emerald-700">{account.status === 'ACTIVE' ? 'Activa' : account.status}</p></div>
-      </section>
+      {(section === 'all' || section === 'summary') && <section className="grid gap-4 sm:grid-cols-3">
+        <div className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}><p className="text-sm text-gray-500">CUIT vinculadas</p><p className="mt-2 text-3xl font-bold text-gray-900">{contributors.length}</p></div>
+        <div className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}><p className="text-sm text-gray-500">Comprobantes registrados</p><p className="mt-2 text-3xl font-bold text-gray-900">{invoices.length}</p></div>
+        <div className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}><p className="text-sm text-gray-500">Estado de la cuenta</p><p className="mt-2 text-lg font-bold text-emerald-700">{account.status === 'ACTIVE' ? 'Activa' : account.status}</p></div>
+      </section>}
 
-      <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} onSelectPointOfSale={pointOfSale => setEmission(current => ({ ...current, pointOfSale }))} />
+      {(section === 'all' || section === 'summary') && <section aria-labelledby="fiscal-usage-heading" className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 id="fiscal-usage-heading" className="font-semibold text-gray-900">Plan y consumo</h2><p className="mt-1 text-sm text-gray-500">Cuotas mensuales compartidas por la cuenta fiscal - {usage ? `${usage.plan} | periodo ${date(usage.periodStart)}` : 'No se pudo consultar el Worker'}</p></div><button type="button" onClick={() => void load()} disabled={loading || busy} className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 disabled:opacity-50">Actualizar consumo</button></div>
+        {usage && <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <UsageMetric title="Comprobantes incluidos" included={usage.invoices.included} consumed={usage.invoices.consumed} reserved={usage.invoices.reserved} remaining={usage.invoices.remaining} overage={usage.invoices.overage} />
+          <UsageMetric title="Consultas de padron" included={usage.padron.included} consumed={usage.padron.consumed} reserved={usage.padron.reserved} remaining={usage.padron.remaining} overage={usage.padron.overage} />
+          <div className="rounded-xl bg-[#F4F4F1] p-4"><p className="text-sm text-gray-500">CUIT vinculadas</p><p className="mt-2 text-xl font-bold tabular-nums text-gray-900">{usage.linkedCuits} / {usage.maxCuits === null ? 'Sin limite' : usage.maxCuits}</p></div>
+          <UsageMetric title="Requests de otros servicios" included={usage.requests.included} consumed={usage.requests.consumed} reserved={0} remaining={usage.requests.remaining} overage={usage.requests.overage} />
+        </div>}
+        <p className="mt-3 text-xs text-gray-500">Al superar los comprobantes, consultas de padrón o requests incluidos, el servicio continúa y el excedente se registra por separado. Esta vista no calcula cargos adicionales: las tarifas y la regularización se definirán antes de cobrarlos. El rate limit por minuto es un control operativo independiente.</p>
+      </section>}
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5">
+      {(section === 'all' || section === 'tools') && <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} onSelectPointOfSale={pointOfSale => setEmission(current => ({ ...current, pointOfSale }))} />}
+
+      {(section === 'all' || section === 'settings') && <section className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex-1">
             <h2 className="font-semibold text-gray-900">CUIT y autorización</h2>
             <p className="mt-1 text-sm text-gray-500">Cada ambiente se gestiona por separado.</p>
           </div>
-          <button type="button" onClick={() => setShowAddContributor(true)} disabled={featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-40"><Plus size={16} /> Vincular CUIT</button>
+          <button type="button" onClick={() => { setCuit(''); setRepresentativeCuit(''); setRazonSocial(''); setPadronLookup({ cuit: '', key: '', status: 'idle', message: '' }); setError(''); setShowAddContributor(true) }} disabled={featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40"><Plus size={16} /> Vincular CUIT</button>
         </div>
-        {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
+        {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-[#F4F4F1] p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
             {contributors.map(item => <article key={item.id} className="rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><p className="font-semibold text-gray-900">{item.razonSocial || 'Contribuyente'}</p><p className="mt-1 font-mono text-sm text-gray-600">{item.cuit}</p><p className="mt-1 text-xs text-gray-500">Representante {item.representativeCuit} · {item.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div>
@@ -595,7 +710,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button onClick={() => void loadCertificate(item)} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"><FileKey2 size={14} /> Certificado</button>
-                <button onClick={() => { setSelectedContributor(item); setCertificateInfo(null) }} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40"><UploadCloud size={14} /> Cargar certificado</button>
+                <button onClick={() => { setSelectedContributor(item); setCertificateInfo(null) }} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40"><UploadCloud size={14} /> Cargar certificado</button>
                 <button onClick={() => void removeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Quitar CUIT</button>
               </div>
               <details className="mt-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
@@ -611,9 +726,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               </details>
             </article>)}
           </div>}
-      </section>
+      </section>}
 
-      {showAddContributor && <div role="dialog" aria-modal="true" aria-labelledby="add-contributor-title" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4">
+      {showAddContributor && (section === 'all' || section === 'settings') && <div role="dialog" aria-modal="true" aria-labelledby="add-contributor-title" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4">
         <section className="my-auto w-full max-w-xl rounded-2xl bg-white p-5 shadow-xl sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div><h2 id="add-contributor-title" className="text-lg font-semibold text-gray-900">Vincular CUIT</h2><p className="mt-1 text-sm text-gray-500">Elegí el ambiente correcto. TEST y producción usan certificados y puntos de venta distintos.</p></div>
@@ -621,8 +736,12 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           </div>
           <form onSubmit={event => void addContributor(event)} className="mt-5 space-y-4">
             <label className="block text-sm font-medium text-gray-700">CUIT emisor
-              <input required autoFocus inputMode="numeric" pattern="\d{11}" maxLength={11} value={cuit} onChange={event => setCuit(event.target.value.replace(/\D/g, '').slice(0,11))} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="11 dígitos" />
+              <input required autoFocus inputMode="numeric" pattern="\d{11}" maxLength={11} value={cuit} onChange={event => { const value = event.target.value.replace(/\D/g, '').slice(0,11); setCuit(value); setRazonSocial(''); setPadronLookup({ cuit: '', key: '', status: 'idle', message: '' }) }} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="11 dígitos" />
             </label>
+            <div>
+              <button type="button" onClick={() => void lookupContributorPadron()} disabled={busy || cuit.length !== 11 || padronLookup.status === 'loading'} className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40">{padronLookup.status === 'loading' ? <LoaderCircle size={14} className="animate-spin" /> : <Search size={14} />}Consultar padrón en homologación</button>
+              {padronLookup.cuit === cuit && padronLookup.message && <p role="status" className={`mt-2 text-xs ${padronLookup.status === 'success' ? 'text-emerald-700' : 'text-amber-800'}`}>{padronLookup.message}</p>}
+            </div>
             <label className="block text-sm font-medium text-gray-700">CUIT representante
               <input inputMode="numeric" pattern="\d{11}" maxLength={11} value={representativeCuit} onChange={event => setRepresentativeCuit(event.target.value.replace(/\D/g, '').slice(0,11))} className="mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2.5 font-normal" placeholder="Si es la misma, dejalo vacío" />
             </label>
@@ -647,14 +766,14 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             </details>
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setShowAddContributor(false)} className="rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700">Cancelar</button>
-              <button disabled={busy || featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white hover:bg-zap-magenta-dark disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular</button>
+              <button disabled={busy || featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <Plus size={16} />} Vincular</button>
             </div>
           </form>
         </section>
       </div>}
 
-      {selectedContributor && <section className="rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><div className="flex flex-wrap items-center gap-2">{featureFlags.certificateManagement === true && <button type="button" onClick={() => void revokeCertificates()} disabled={busy || !certificateInfo?.active?.some(cert => cert.environment === selectedContributor.environment)} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Revocar certificados</button>}<button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-zap-magenta hover:text-zap-magenta">Cerrar</button></div></div>
+      {selectedContributor && (section === 'all' || section === 'settings') && <section className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Certificado digital</h2><p className="mt-1 text-sm text-gray-500">CUIT {selectedContributor.cuit} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><div className="flex flex-wrap items-center gap-2">{featureFlags.wsfeRead === true && <button type="button" onClick={() => void checkArcaConnection(selectedContributor)} disabled={busy || selectedContributor.permissions?.canManageCert !== true || !certificateInfo?.active?.some(cert => cert.environment === selectedContributor.environment)} className="rounded-full border border-slate-900/20 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-100 disabled:opacity-40">Validar conexión y habilitar WSFE</button>}{featureFlags.certificateManagement === true && <button type="button" onClick={() => void revokeCertificates()} disabled={busy || !certificateInfo?.active?.some(cert => cert.environment === selectedContributor.environment)} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Revocar certificados</button>}<button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-slate-400 hover:text-slate-900">Cerrar</button></div></div>
         <details className="mt-4 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2">
           <summary className="cursor-pointer text-xs font-semibold text-sky-950">Ayuda para obtener y autorizar este certificado</summary>
           <p className="mt-2 text-xs leading-5 text-sky-950">{selectedContributor.environment === 'PROD' ? 'En producción, generá un CSR y solicitá el certificado en el Administrador de Certificados Digitales. Luego asociá su alias al Web Service en Administrador de Relaciones.' : 'En TEST, generá y autorizá el certificado dentro de WSASS. Los certificados de homologación no sirven en producción.'}</p>
@@ -662,7 +781,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
         </details>
         <CertificateCsrAssistant key={selectedContributor.id + selectedContributor.environment} contributor={selectedContributor} />
         {certificateInfo && <div className="mt-4 space-y-2">
-          {(certificateInfo.active || []).concat(certificateInfo.others || []).filter(cert => cert.environment === selectedContributor.environment).map(cert => <div key={cert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-3 text-sm"><div><p className="font-semibold text-gray-800">{cert.cn || 'Certificado'} · {cert.status}</p><p className="text-xs text-gray-500">Vence {date(cert.expiresAt)} · {cert.daysUntilExpiry} días</p></div><div className="flex items-center gap-2"><span className="font-mono text-xs text-gray-500">{cert.environment}</span>{cert.status !== 'ACTIVE' && cert.daysUntilExpiry >= 0 && featureFlags.certificateManagement === true && <button type="button" onClick={() => void activateCertificate(cert)} disabled={busy} className="rounded-full border border-zap-magenta/30 bg-white px-3 py-1.5 text-xs font-semibold text-zap-magenta hover:bg-zap-magenta-subtle disabled:opacity-40">Activar</button>}</div></div>)}
+          {(certificateInfo.active || []).concat(certificateInfo.others || []).filter(cert => cert.environment === selectedContributor.environment).map(cert => <div key={cert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-3 text-sm"><div><p className="font-semibold text-gray-800">{cert.cn || 'Certificado'} · {cert.status}</p><p className="text-xs text-gray-500">Vence {date(cert.expiresAt)} · {cert.daysUntilExpiry} días</p></div><div className="flex items-center gap-2"><span className="font-mono text-xs text-gray-500">{cert.environment}</span>{cert.status !== 'ACTIVE' && cert.daysUntilExpiry >= 0 && featureFlags.certificateManagement === true && <button type="button" onClick={() => void activateCertificate(cert)} disabled={busy} className="rounded-full border border-slate-900/20 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-100 disabled:opacity-40">Activar</button>}</div></div>)}
           {!(certificateInfo.active || []).length && !(certificateInfo.others || []).length && <p className="text-sm text-gray-500">No hay certificados cargados para este ambiente.</p>}
         </div>}
         <form onSubmit={event => void uploadCertificate(event)} className="mt-4 grid gap-4 md:grid-cols-2">
@@ -673,13 +792,13 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             <input required type="file" accept=".key,.pem,application/x-pem-file" onChange={event => setKeyFile(event.target.files?.[0] || null)} className="mt-1 block w-full rounded-xl border border-gray-200 p-2 text-sm font-normal" />
           </label>
           <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-            <button disabled={busy || !certFile || !keyFile} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <UploadCloud size={16} />} Validar y cargar</button>
+            <button disabled={busy || !certFile || !keyFile} className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <UploadCloud size={16} />} Validar y cargar</button>
             <p className="text-xs leading-5 text-gray-500">Los archivos se envían al Worker para validación y cifrado. No se guardan en el navegador ni en el CDN público.</p>
           </div>
         </form>
       </section>}
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5">
+      <section className={`rounded-2xl bg-white p-5 ${surfaceShadow} ${section !== 'all' && section !== 'emit' ? 'hidden' : ''}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="font-semibold text-gray-900">Emitir comprobante</h2>
@@ -694,6 +813,14 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           }
         }} className="mt-5 space-y-5">
           <fieldset disabled={preparedMode === 'uncertain' || busy || contributors.length === 0} className="space-y-5">
+            {savedProducts.length > 0 && <label className="block max-w-xl text-sm font-medium text-gray-700">Cargar producto o servicio guardado
+              <select defaultValue="" onChange={event => {
+                const item = savedProducts.find(saved => saved.id === event.target.value)
+                if (item) setEmission(value => ({ ...value, description: item.description, netBase: item.unitPrice, vatRate: item.vatRatePercent ?? '' }))
+              }} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                <option value="">Elegir un ítem…</option>{savedProducts.map(item => <option key={item.id} value={item.id}>{item.description} · ${Number(item.unitPrice).toLocaleString('es-AR')} · IVA {item.vatRatePercent === null ? 'sin definir' : `${item.vatRatePercent}%`}</option>)}
+              </select>
+            </label>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-sm font-medium text-gray-700">Ambiente
                 <select value={emission.environment} onChange={event => setEmission(v => ({ ...v, environment: event.target.value as 'TEST' | 'PROD', cuit: '' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
@@ -722,6 +849,11 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                   <option value="1">Productos</option><option value="2">Servicios</option><option value="3">Productos y servicios</option>
                 </select>
               </label>
+              <label className="text-sm font-medium text-gray-700">Condición de venta
+                <select value={emission.saleCondition} onChange={event => setEmission(v => ({ ...v, saleCondition: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                  <option>Contado</option><option>Cuenta corriente</option><option>Tarjeta de crédito</option><option>Transferencia</option><option>Mercado Pago</option>
+                </select>
+              </label>
               <label className="text-sm font-medium text-gray-700">Fecha de emisión
                 <input required type="date" value={emission.date} onChange={event => setEmission(v => ({ ...v, date: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
               </label>
@@ -733,12 +865,32 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
                   <option value="0">0%</option><option value="2.5">2,5%</option><option value="5">5%</option><option value="10.5">10,5%</option><option value="21">21%</option><option value="27">27%</option>
                 </select>
               </label>
+              {['B', 'C'].includes(emission.type) && Number(emission.vatCondition) === 5 && <label className="text-sm font-medium text-gray-700">Otros impuestos nacionales indirectos (incluidos en el precio)
+                <input required type="number" min="0" step="0.01" value={emission.otherNationalIndirectTaxes} onChange={event => setEmission(v => ({ ...v, otherNationalIndirectTaxes: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" />
+              </label>}
             </div>
-            {(emission.concept === '2' || emission.concept === '3') && <div className="grid gap-3 rounded-xl bg-gray-50 p-4 sm:grid-cols-3">
+            {(emission.concept === '2' || emission.concept === '3') && <div className="grid gap-3 rounded-xl bg-[#F4F4F1] p-4 sm:grid-cols-3">
               <label className="text-sm font-medium text-gray-700">Servicio desde<input required type="date" value={emission.serviceFrom} onChange={event => setEmission(v => ({ ...v, serviceFrom: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" /></label>
               <label className="text-sm font-medium text-gray-700">Servicio hasta<input required type="date" value={emission.serviceTo} onChange={event => setEmission(v => ({ ...v, serviceTo: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" /></label>
               <label className="text-sm font-medium text-gray-700">Vencimiento de pago<input required type="date" value={emission.paymentDueDate} onChange={event => setEmission(v => ({ ...v, paymentDueDate: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal" /></label>
             </div>}
+            {savedCustomers.length > 0 && <label className="block max-w-xl text-sm font-medium text-gray-700">Cargar cliente guardado
+              <select defaultValue="" onChange={event => {
+                const item = savedCustomers.find(saved => saved.id === event.target.value)
+                if (!item) return
+                const docTypes: Record<string, string> = { CUIT: '80', CUIL: '86', DNI: '96', CONSUMIDOR_FINAL: '99' }
+                const docType = item.documentType ? docTypes[item.documentType] : undefined
+                setEmission(value => ({
+                  ...value,
+                  ...(docType ? { docType, docNumber: docType === '99' ? '0' : item.documentNumber || '' } : {}),
+                  customerName: item.name,
+                  customerAddress: item.address || '',
+                  vatCondition: docType === '99' ? '5' : item.vatCondition || value.vatCondition,
+                }))
+              }} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
+                <option value="">Elegir cliente…</option>{savedCustomers.map(item => <option key={item.id} value={item.id}>{item.name}{item.documentNumber ? ` · ${item.documentNumber}` : ''}</option>)}
+              </select>
+            </label>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-sm font-medium text-gray-700">Tipo de documento receptor
                 <select value={emission.docType} onChange={event => setEmission(v => ({ ...v, docType: event.target.value, docNumber: event.target.value === '99' ? '0' : '', vatCondition: event.target.value === '99' ? '5' : v.vatCondition }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
@@ -751,6 +903,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
               <label className="text-sm font-medium text-gray-700">Nombre / razón social receptor
                 <input value={emission.customerName} onChange={event => setEmission(v => ({ ...v, customerName: event.target.value }))} maxLength={180} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
               </label>
+              <label className="text-sm font-medium text-gray-700">Domicilio comercial receptor
+                <input value={emission.customerAddress} onChange={event => setEmission(v => ({ ...v, customerAddress: event.target.value }))} maxLength={180} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" />
+              </label>
               <label className="text-sm font-medium text-gray-700">Condición IVA receptor
                 <select disabled={emission.docType === '99'} value={emission.docType === '99' ? '5' : emission.vatCondition} onChange={event => setEmission(v => ({ ...v, vatCondition: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal disabled:bg-gray-100">
                   <option value="1">IVA Responsable Inscripto</option><option value="4">IVA Sujeto Exento</option><option value="5">Consumidor Final</option><option value="6">Monotributo</option><option value="13">Monotributo Social</option><option value="15">IVA No Alcanzado</option>
@@ -760,21 +915,21 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
             <label className="block text-sm font-medium text-gray-700">Descripción del producto o servicio
               <input required maxLength={250} value={emission.description} onChange={event => setEmission(v => ({ ...v, description: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2.5 font-normal" placeholder="Descripción que identifique la operación" />
             </label>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gray-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#F4F4F1] p-4">
               <div>
                 <p className="text-xs text-gray-500">Estimación previa · no es autorización fiscal</p>
                 <p className="mt-1 text-lg font-bold text-gray-900">{money(String(estimatedTotal))}</p>
                 <p className="text-xs text-gray-500">Neto {money(String(estimatedNet))} · IVA {money(String(estimatedVat))}</p>
               </div>
-              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Preparar vista previa</button>
+              <button disabled={busy || featureFlags[emission.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Preparar vista previa</button>
             </div>
           </fieldset>
         </form>
-        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-zap-magenta px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
+        {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda congelada con su misma clave idempotente. Reintentá exactamente esa solicitud; no cambies sus datos ni generes una nueva.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
         {preparedMode === 'validated' && preparedEmission && <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div><p className="font-semibold text-gray-900">Comprobante listo para confirmar</p><p className="mt-1 text-sm text-gray-600">Revisá emisor, receptor e importes. Al confirmar, Tienda enviará una sola solicitud de emisión al Worker.</p></div>
-            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
+            <button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Confirmar emisión</button>
           </div>
           <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
             <div><p className="text-gray-500">Tipo de comprobante</p><p className="font-semibold">{String(emissionPreview?.cbteTipo ?? '—')} · {emission.type}</p></div>
@@ -792,7 +947,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
 
       {featureFlags.batchImport === true ? <FiscalBatchImport api={api} contributors={contributors} onComplete={() => { void load() }} /> : <p className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">La importación por lote está desactivada por ZAP.</p>}
 
-      {adminMode && featureFlags.manualInvoiceRegistration === true && <section className="rounded-2xl border border-gray-200 bg-white p-5">
+      {adminMode && featureFlags.manualInvoiceRegistration === true && <section className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
         <h2 className="font-semibold text-gray-900">Asignar comprobante ya emitido</h2>
         <p className="mt-1 text-sm leading-5 text-gray-500">Para comprobantes autorizados fuera del panel. Esto registra los datos que ingreses; no consulta ni valida el CAE ante ARCA.</p>
         <form onSubmit={event => void registerExistingInvoice(event)} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -804,21 +959,21 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false }: 
           <label className="text-sm font-medium text-gray-700">CAE<input required inputMode="numeric" pattern="\d{14}" maxLength={14} value={manualInvoice.cae} onChange={event => setManualInvoice(v => ({ ...v, cae: event.target.value.replace(/\D/g, '').slice(0,14) }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm font-normal" /></label>
           <label className="text-sm font-medium text-gray-700">Vencimiento CAE<input required type="date" value={manualInvoice.caeFchVto ? `${manualInvoice.caeFchVto.slice(0,4)}-${manualInvoice.caeFchVto.slice(4,6)}-${manualInvoice.caeFchVto.slice(6,8)}` : ''} onChange={event => setManualInvoice(v => ({ ...v, caeFchVto: event.target.value.replace(/-/g, '') }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
           <label className="text-sm font-medium text-gray-700">Total (ARS)<input required type="number" min="0" step="0.01" value={manualInvoice.amount} onChange={event => setManualInvoice(v => ({ ...v, amount: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 font-normal" /></label>
-          <div className="sm:col-span-2 lg:col-span-4"><button disabled={busy} className="rounded-xl bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Registrando…' : 'Asignar a esta cuenta'}</button></div>
+          <div className="sm:col-span-2 lg:col-span-4"><button disabled={busy} className="rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Registrando…' : 'Asignar a esta cuenta'}</button></div>
         </form>
       </section>}
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5">
+      <section className={`rounded-2xl bg-white p-5 ${surfaceShadow} ${section !== 'all' && section !== 'invoices' ? 'hidden' : ''}`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2"><FileText size={18} className="text-gray-500" /><h2 className="font-semibold text-gray-900">Comprobantes registrados</h2></div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => setSelectedInvoiceIds(authorizedInvoices.map(invoice => invoice.id))} disabled={!authorizedInvoices.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Seleccionar autorizadas</button>
             <button type="button" onClick={() => setSelectedInvoiceIds([])} disabled={!selectedInvoiceIds.length} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Limpiar</button>
-            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate || featureFlags.pdfExport !== true} className="rounded-lg bg-zap-magenta px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
+            <button type="button" onClick={() => void exportBatchPdf()} disabled={!selectedInvoiceIds.length || !pdfTemplate || featureFlags.pdfExport !== true} className="rounded-lg bg-[#0F172A] px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Descargar lote PDF</button>
           </div>
         </div>
         <p className="mt-2 text-xs leading-5 text-gray-500">La generación del PDF y del QR se ejecuta en este dispositivo. Solo se habilita para comprobantes autorizados con datos fiscales completos; los comprobantes cargados manualmente no se consideran verificados por ARCA.</p>
-        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={!isInvoiceExportable(invoice)} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><div className="flex gap-2"><button type="button" onClick={() => void previewInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Previsualizar</button><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40">Descargar PDF</button>{invoice.jobId && !invoice.workerVoucherId && <button type="button" onClick={() => void refreshInvoiceStatus(invoice)} disabled={busy} className="whitespace-nowrap rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40">Actualizar ARCA</button>}{featureFlags.invoiceVoid === true && invoice.workerVoucherId && invoice.cae && [1, 6, 11].includes(invoice.voucherType) && <button type="button" onClick={() => void voidInvoice(invoice)} disabled={busy || contributors.find(item => item.cuit === invoice.cuit && item.environment === invoice.environment)?.permissions?.canVoid !== true} className="whitespace-nowrap rounded-full border border-zap-magenta/30 px-3 py-2 text-xs font-semibold text-zap-magenta hover:bg-zap-magenta-subtle disabled:opacity-40">Solicitar NC</button>}</div></td></tr>)}</tbody></table></div>}
+        {invoices.length === 0 ? <p className="mt-4 rounded-xl bg-[#F4F4F1] p-4 text-sm text-gray-500">Las facturas emitidas desde este panel aparecerán acá con su CAE y vencimiento.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1040px] text-left text-sm"><thead><tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><th className="pb-3 pr-3">PDF</th><th className="pb-3 pr-4">Fecha</th><th className="pb-3 pr-4">Comprobante</th><th className="pb-3 pr-4">CUIT</th><th className="pb-3 pr-4">Ambiente</th><th className="pb-3 pr-4">Total</th><th className="pb-3 pr-4">CAE</th><th className="pb-3 pr-4">Vencimiento</th><th className="pb-3">Acción</th></tr></thead><tbody>{invoices.map(invoice => <tr key={invoice.id} className="border-b border-gray-100"><td className="py-3 pr-3"><input aria-label={`Seleccionar ${voucherName[invoice.voucherType] || 'comprobante'} ${invoice.voucherNumber ?? ''}`} type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} disabled={!isInvoiceExportable(invoice)} onChange={event => toggleInvoiceSelection(invoice.id, event.target.checked)} /></td><td className="py-3 pr-4 text-gray-600">{date(invoice.createdAt)}</td><td className="py-3 pr-4 font-medium text-gray-900">{voucherName[invoice.voucherType] || `Tipo ${invoice.voucherType}`} {invoice.voucherNumber ?? 'Pendiente'}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cuit}</td><td className="py-3 pr-4">{invoice.environment}</td><td className="py-3 pr-4">{money(invoice.amount)}</td><td className="py-3 pr-4 font-mono text-xs">{invoice.cae || '—'}</td><td className="py-3 pr-4">{date(invoice.caeExpiresAt)}</td><td className="py-3"><div className="flex gap-2"><button type="button" onClick={() => void previewInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40">Previsualizar</button><button type="button" onClick={() => void exportInvoicePdf(invoice)} disabled={!isInvoiceExportable(invoice) || !pdfTemplate || featureFlags.pdfExport !== true} className="whitespace-nowrap rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40">Descargar PDF</button>{invoice.jobId && !invoice.workerVoucherId && <button type="button" onClick={() => void refreshInvoiceStatus(invoice)} disabled={busy} className="whitespace-nowrap rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40">Actualizar ARCA</button>}{featureFlags.invoiceVoid === true && invoice.workerVoucherId && invoice.cae && [1, 6, 11].includes(invoice.voucherType) && <button type="button" onClick={() => void voidInvoice(invoice)} disabled={busy || contributors.find(item => item.cuit === invoice.cuit && item.environment === invoice.environment)?.permissions?.canVoid !== true} className="whitespace-nowrap rounded-full border border-slate-900/20 px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-100 disabled:opacity-40">Solicitar NC</button>}</div></td></tr>)}</tbody></table></div>}
       </section>
       <p className="flex items-start gap-2 text-xs leading-5 text-gray-500"><ShieldCheck size={15} className="mt-0.5 shrink-0" />La interfaz distingue homologación y producción. La autorización para emitir depende del estado real informado por el Worker y ARCA.</p>
       {pdfPreviewUrl && <div role="dialog" aria-modal="true" aria-label={pdfPreviewTitle} className="fixed inset-0 z-50 flex flex-col bg-black/60 p-3 sm:p-8">

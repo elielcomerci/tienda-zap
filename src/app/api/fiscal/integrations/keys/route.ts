@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { decryptFiscalCredential } from '@/lib/fiscal-credentials'
 import { fiscalWorkerRequest } from '@/lib/fiscal-worker-admin'
 import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
+import { getFiscalWorkerBaseUrl } from '@/lib/fiscal-worker-config'
 import { buildIntegrationApiKeyLabel, getIntegrationKeyInventoryError, type IntegrationApiKeyMetadata } from '@/lib/fiscal-integration-keys'
 
 export const runtime = 'nodejs'
@@ -26,7 +27,7 @@ async function resolveAccount() {
 async function featureDisabled() { return !(await isFiscalFeatureEnabled('apiKeyManagement')) }
 
 function assertProductionWorker() {
-  const configured = process.env.FISCAL_WORKER_URL?.trim()
+  const configured = getFiscalWorkerBaseUrl()
   if (!configured) return false
   try { return new URL(configured).origin === 'https://arca.zap.com.ar' } catch { return false }
 }

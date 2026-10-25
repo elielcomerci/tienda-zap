@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { decryptFiscalCredential } from '@/lib/fiscal-credentials'
+import { getFiscalWorkerBaseUrl } from '@/lib/fiscal-worker-config'
 
 export async function resolveFiscalAccount(request: NextRequest, allowPausedRead = false) {
   const session = await auth()
@@ -32,7 +33,7 @@ export async function resolveFiscalAccount(request: NextRequest, allowPausedRead
 }
 
 export async function fiscalApiRequest(request: NextRequest, path: string, apiKey: string, body?: BodyInit) {
-  const baseUrl = process.env.FISCAL_WORKER_URL?.trim()
+  const baseUrl = getFiscalWorkerBaseUrl()
   if (!baseUrl) return NextResponse.json({ error: 'FISCAL_WORKER_URL no está configurada.' }, { status: 503 })
   const url = new URL(path, baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
   for (const [key, value] of request.nextUrl.searchParams.entries()) {

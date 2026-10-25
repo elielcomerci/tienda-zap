@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { getFiscalWorkerBaseUrl, getFiscalWorkerSecret } from '@/lib/fiscal-worker-config'
 
 type WorkerSecret = 'internal' | 'provisioning'
 
@@ -19,10 +20,8 @@ export async function fiscalWorkerRequest(
     body?: unknown
   }
 ) {
-  const baseUrl = process.env.FISCAL_WORKER_URL?.trim()
-  const secret = options.secret === 'internal'
-    ? process.env.FISCAL_WORKER_INTERNAL_SECRET
-    : process.env.FISCAL_WORKER_PROVISIONING_SECRET
+  const baseUrl = getFiscalWorkerBaseUrl()
+  const secret = getFiscalWorkerSecret(options.secret)
 
   if (!baseUrl || !secret) {
     return NextResponse.json({

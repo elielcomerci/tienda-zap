@@ -20,9 +20,9 @@ type Props = {
 }
 type WorkerResult = { title: string; body: unknown; status: number }
 
-const inputClass = 'mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-zap-magenta focus:ring-2 focus:ring-zap-magenta-subtle'
-const buttonClass = 'inline-flex items-center justify-center gap-2 rounded-full bg-zap-magenta px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zap-magenta-dark disabled:cursor-not-allowed disabled:opacity-40'
-const secondaryClass = 'inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-zap-magenta hover:text-zap-magenta disabled:opacity-40'
+const inputClass = 'mt-1 block w-full rounded-xl border-0 bg-[#F4F4F1] px-3 py-2.5 text-sm text-gray-900 outline-none ring-1 ring-slate-900/5 transition focus:bg-white focus:ring-1 focus:ring-slate-900/25'
+const buttonClass = 'inline-flex items-center justify-center gap-2 rounded-full bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-px hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40'
+const secondaryClass = 'inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 ring-1 ring-slate-900/10 transition hover:ring-slate-900/25 hover:text-slate-900 disabled:opacity-40'
 
 export default function FiscalWorkerTools({ api, contributors, invoices, flags, onSelectPointOfSale }: Props) {
   const [cuit, setCuit] = useState('')
@@ -31,6 +31,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
   const [voucherType, setVoucherType] = useState('6')
   const [voucherNumber, setVoucherNumber] = useState('')
   const [queryCuit, setQueryCuit] = useState('')
+  const [padronSource, setPadronSource] = useState<'a13' | 'constancia'>('a13')
   const [padronRequestKey, setPadronRequestKey] = useState('')
   const [jobId, setJobId] = useState('')
   const [busy, setBusy] = useState(false)
@@ -72,14 +73,14 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
   }
 
   return (
-    <section className="space-y-5 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+    <section className="space-y-5 rounded-3xl bg-white p-5 ring-1 ring-slate-900/5 shadow-[0_1px_2px_0_rgba(15,23,42,0.03),0_8px_16px_-4px_rgba(15,23,42,0.04)] sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zap-magenta">Herramientas conectadas</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">Herramientas conectadas</p>
           <h2 className="mt-1 text-xl font-semibold tracking-tight text-gray-950">Consultas a ARCA</h2>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">Consultá datos del Worker antes de operar. Cada acción respeta los permisos de la CUIT y del ambiente; una consulta exitosa no autoriza por sí sola una emisión.</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-zap-magenta-subtle px-3 py-1.5 text-xs font-semibold text-zap-magenta-dark"><ShieldCheck size={14} /> Acceso controlado</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700"><ShieldCheck size={14} /> Acceso controlado</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -107,30 +108,35 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
       {selected && selected.permissions?.canViewHistory !== true && <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">La cuenta no informa permiso activo de historial para esta CUIT. El Worker puede rechazar las consultas WSFE hasta que se autorice.</p>}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <button type="button" className={secondaryClass} disabled={busy || !cuit || !enabled('wsfeRead')} onClick={() => void run('Puntos de venta', `/api/fiscal/contributors/${encodeURIComponent(cuit)}/wsfe/points-of-sale?environment=${environment}`)}><Activity size={16} /> Consultar puntos de venta</button>
-        <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !enabled('wsfeRead')} onClick={() => void run('Último comprobante autorizado', `/api/fiscal/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/latest?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}><FileSearch size={16} /> Consultar última numeración</button>
+        <button type="button" className={secondaryClass} disabled={busy || !cuit || !enabled('wsfeRead')} onClick={() => void run('Puntos de venta', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/points-of-sale?environment=${environment}`)}><Activity size={16} /> Consultar puntos de venta</button>
+        <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !enabled('wsfeRead')} onClick={() => void run('Último comprobante autorizado', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/latest?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}><FileSearch size={16} /> Consultar última numeración</button>
         <div className="flex gap-2">
           <input aria-label="Número de comprobante" className={inputClass + ' mt-0 min-w-0'} type="number" min="1" placeholder="N.º comprobante" value={voucherNumber} onChange={event => setVoucherNumber(event.target.value)} />
-          <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !voucherNumber || !enabled('wsfeRead')} onClick={() => void run('Consulta de comprobante', `/api/fiscal/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/${encodeURIComponent(voucherNumber)}?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}>Consultar</button>
+          <button type="button" className={secondaryClass} disabled={busy || !cuit || !pointOfSale || !voucherNumber || !enabled('wsfeRead')} onClick={() => void run('Consulta de comprobante', `/api/nodo/contributors/${encodeURIComponent(cuit)}/wsfe/vouchers/${encodeURIComponent(voucherNumber)}?environment=${environment}&pointOfSale=${encodeURIComponent(pointOfSale)}&voucherType=${voucherType}`)}>Consultar</button>
         </div>
       </div>
 
       {enabled('padronQuery') && <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
         <h3 className="text-sm font-semibold text-gray-900">Consulta de padrón</h3>
-        <p className="mt-1 text-sm text-gray-600">La CUIT consultada puede diferir de la CUIT representada. La autorización debe estar activa en el Worker.</p>
+        <p className="mt-1 text-sm text-gray-600">La CUIT consultada puede diferir de la representada. La delegación de ARCA se valida para cada servicio y ambiente.</p>
         <div className="mt-3 flex flex-wrap gap-2">
+          <select aria-label="Servicio de padrón" className={inputClass + ' mt-0'} value={padronSource} onChange={event => { setPadronSource(event.target.value as 'a13' | 'constancia'); setPadronRequestKey(''); setResult(null) }}>
+            <option value="a13">Padrón A13</option>
+            <option value="constancia">Constancia de Inscripción</option>
+          </select>
           <input className={inputClass + ' mt-0 min-w-[220px] flex-1'} inputMode="numeric" maxLength={11} placeholder="CUIT a consultar" value={queryCuit} onChange={event => { setQueryCuit(event.target.value.replace(/\D/g, '').slice(0, 11)); setPadronRequestKey('') }} />
+          <button type="button" className={secondaryClass} disabled={busy || !cuit || selected?.permissions?.canManageCert !== true || !enabled('padronQuery')} onClick={() => void run('Validación de acceso al padrón', `/api/nodo/contributors/${encodeURIComponent(cuit)}/padron/connection-check?environment=${environment}&source=${padronSource}`, { method: 'POST' })}>Validar acceso</button>
           <button type="button" className={buttonClass} disabled={busy || !cuit || queryCuit.length !== 11} onClick={() => {
             const key = padronRequestKey || `padron-${crypto.randomUUID()}`
             setPadronRequestKey(key)
-            void run('Consulta de padrón', '/api/fiscal/padron/consultas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ cuit: queryCuit, representedCuit: cuit, environment }) })
+            void run('Consulta de padrón', '/api/nodo/padron/consultas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ cuit: queryCuit, representedCuit: cuit, environment, source: padronSource }) })
           }}>Consultar padrón</button>
         </div>
       </div>}
 
       {environment === 'PROD' && enabled('usageVisibility') && <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 p-4">
         <div><h3 className="text-sm font-semibold text-gray-900">Consumo fiscal</h3><p className="mt-1 text-sm text-gray-600">Consulta el consumo informado por el Worker para la CUIT seleccionada en producción.</p></div>
-        <button type="button" className={secondaryClass} disabled={busy || !cuit} onClick={() => void run('Consumo fiscal', `/api/fiscal/usage?cuit=${encodeURIComponent(cuit)}`)}><RefreshCw size={15} /> Consultar consumo</button>
+        <button type="button" className={secondaryClass} disabled={busy || !cuit} onClick={() => void run('Consumo fiscal', `/api/nodo/usage?cuit=${encodeURIComponent(cuit)}`)}><RefreshCw size={15} /> Consultar consumo</button>
       </div>}
 
       {enabled('jobReconciliation') && <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-100 p-4">
@@ -142,7 +148,7 @@ export default function FiscalWorkerTools({ api, contributors, invoices, flags, 
         </label></div>
         <button type="button" className={buttonClass} disabled={busy || !jobId} onClick={() => {
           if (!confirm('Se consultará a ARCA para conciliar el trabajo. No se emitirá una nueva factura. ¿Continuar?')) return
-          void run('Conciliación de trabajo', `/api/fiscal/jobs/${encodeURIComponent(jobId)}/reconcile`, { method: 'POST' })
+          void run('Conciliación de trabajo', `/api/nodo/jobs/${encodeURIComponent(jobId)}/reconcile`, { method: 'POST' })
         }}>Conciliar resultado</button>
       </div>}
 

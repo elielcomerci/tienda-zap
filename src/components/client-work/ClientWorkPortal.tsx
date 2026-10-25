@@ -5,8 +5,9 @@ import { FileText, Upload, Download, Trash2, RefreshCw, FolderOpen, Image as Ima
 
 type PortalUser = { id: string; name: string | null; email: string }
 type PortalFile = {
-  id: string; fileName: string; contentType: string; sizeBytes: number; note: string | null;
+  id: string; fileName: string; contentType: string; sizeBytes: number; note: string | null; updatedAt: string;
   createdAt: string; uploadedById: string; cleanupError?: string | null; uploadedBy?: { name: string | null; role: string }
+  approvals?: Array<{ id: string; status: 'PENDING' | 'APPROVED' | 'CHANGES_REQUESTED' | 'SUPERSEDED'; response: string | null; fileUpdatedAt: string; requestedAt: string; respondedAt: string | null; requestedBy: { name: string | null }; respondedBy: { name: string | null } | null }>
 }
 type PortalWork = {
   id: string; title: string; description: string | null; createdAt: string; updatedAt: string;
@@ -43,6 +44,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
   const [openMessages, setOpenMessages] = useState<string | null>(null)
   const [messages, setMessages] = useState<Record<string, PortalMessage[]>>({})
   const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({})
+  const [approvalResponses, setApprovalResponses] = useState<Record<string, string>>({})
   const replaceInput = useRef<HTMLInputElement>(null)
   const replaceTarget = useRef<{ workId: string; fileId: string } | null>(null)
 
@@ -69,6 +71,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No pudimos cargar los mensajes.')
       setMessages(current => ({ ...current, [workId]: data.messages || [] }))
+      window.dispatchEvent(new Event('client-work-unread-refresh'))
     } catch (e) { setError(e instanceof Error ? e.message : 'No pudimos cargar los mensajes.') }
     finally { setBusy(null) }
   }
@@ -87,6 +90,22 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
       setMessages(current => ({ ...current, [workId]: [...(current[workId] || []), data.message] }))
       setMessageDrafts(current => ({ ...current, [workId]: '' }))
     } catch (e) { setError(e instanceof Error ? e.message : 'No pudimos enviar el mensaje.') }
+    finally { setBusy(null) }
+  }
+
+  async function submitApproval(workId: string, file: PortalFile, action: 'request' | 'approve' | 'changes') {
+    setBusy('approval:' + file.id); setError(''); setMessage('')
+    try {
+      const response = await fetch(`/api/client-works/${workId}/files/${file.id}/approvals?scope=${admin ? 'admin' : 'client'}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(action === 'request' ? {} : { status: action === 'approve' ? 'APPROVED' : 'CHANGES_REQUESTED', response: approvalResponses[file.id] || '' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No pudimos actualizar la aprobación.')
+      setApprovalResponses(current => ({ ...current, [file.id]: '' }))
+      setMessage(action === 'request' ? 'Solicitud de aprobación enviada.' : action === 'approve' ? 'Entrega aprobada.' : 'Solicitud de cambios enviada al equipo.')
+      await loadWorks()
+    } catch (e) { setError(e instanceof Error ? e.message : 'No pudimos actualizar la aprobación.') }
     finally { setBusy(null) }
   }
 
@@ -132,7 +151,8 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
     }
     setBusy(workId + (replaceFileId || '')); setError(''); setMessage('')
     try {
-      const prep = await fetch('/api/client-works/' + workId + '/files/presign', {
+      const scope = admin ? 'admin' : 'client'
+      const prep = await fetch('/api/client-works/' + workId + '/files/presign?scope=' + scope, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileName: file.name, contentType: file.type || 'application/octet-stream', sizeBytes: file.size, replaceFileId }),
       })
@@ -142,7 +162,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
         method: 'PUT', headers: { 'Content-Type': upload.contentType }, body: file,
       })
       if (!put.ok) throw new Error('La transferencia al almacenamiento falló. El archivo anterior se conserva.')
-      const complete = await fetch('/api/client-works/' + workId + '/files/complete', {
+      const complete = await fetch('/api/client-works/' + workId + '/files/complete?scope=' + scope, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           objectKey: upload.objectKey, fileName: upload.fileName,
@@ -162,7 +182,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
   async function retryCleanup(file: PortalFile) {
     setBusy(file.id); setError(''); setMessage('')
     try {
-      const response = await fetch('/api/client-works/files/' + file.id + '/cleanup', { method: 'POST' })
+      const response = await fetch('/api/client-works/files/' + file.id + '/cleanup?scope=admin', { method: 'POST' })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No pudimos limpiar el archivo anterior.')
       setMessage('Limpieza de almacenamiento completada.')
@@ -175,7 +195,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
     if (!confirm('¿Borrar definitivamente ' + file.fileName + '?')) return
     setBusy(file.id); setError(''); setMessage('')
     try {
-      const response = await fetch('/api/client-works/files/' + file.id, { method: 'DELETE' })
+      const response = await fetch('/api/client-works/files/' + file.id + '?scope=' + (admin ? 'admin' : 'client'), { method: 'DELETE' })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No pudimos borrar el archivo.')
       setMessage('Archivo eliminado del almacenamiento.')
@@ -266,7 +286,8 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
           {work.files.length === 0 ? <p className="p-4 text-sm text-gray-400">Todavía no hay archivos. Podés subir el primero.</p> :
             work.files.map(file => {
               const kind = previewKind(file)
-              const previewUrl = '/api/client-works/files/' + file.id + '/download?inline=1'
+              const currentApproval = file.approvals?.find(approval => approval.fileUpdatedAt === file.updatedAt)
+              const previewUrl = '/api/client-works/files/' + file.id + '/download?inline=1&scope=' + (admin ? 'admin' : 'client')
               return <div key={file.id} className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 text-gray-400">{kind === 'image' ? <ImageIcon size={20} /> : <FileText size={20} />}</div>
@@ -274,10 +295,19 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
                     <p className="break-words text-sm font-semibold text-gray-900">{file.fileName}</p>
                     <p className="mt-1 text-xs text-gray-500">{formatSize(file.sizeBytes)} · {new Date(file.createdAt).toLocaleDateString('es-AR')} · {file.uploadedBy?.name || (file.uploadedById ? 'Compartido' : '')}</p>
                     {file.note && <p className="mt-1 whitespace-pre-wrap text-sm text-gray-600">{file.note}</p>}
+                    {file.approvals?.map(approval => <div key={approval.id} className="mt-2 rounded-lg bg-gray-50 p-2.5 text-xs text-gray-600">
+                      <p className="font-semibold">{approval.status === 'SUPERSEDED' || approval.fileUpdatedAt !== file.updatedAt ? 'Solicitud reemplazada por una nueva versión' : approval.status === 'PENDING' ? 'Aprobación pendiente' : approval.status === 'APPROVED' ? 'Entrega aprobada' : 'Cambios solicitados'} · {new Date(approval.requestedAt).toLocaleDateString('es-AR')}</p>
+                      {approval.response && <p className="mt-1 whitespace-pre-wrap">{approval.response}</p>}
+                    </div>)}
+                    {admin && file.uploadedBy?.role === 'ADMIN' && currentApproval?.status !== 'PENDING' && <button type="button" disabled={busy !== null} onClick={() => void submitApproval(work.id, file, 'request')} className="mt-2 rounded-lg border border-violet-200 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:opacity-50">Solicitar aprobación al cliente</button>}
+                    {!admin && file.uploadedBy?.role === 'ADMIN' && currentApproval?.status === 'PENDING' && <div className="mt-3 space-y-2">
+                      <label className="block text-xs font-medium text-gray-600">Si pedís cambios, describilos<textarea value={approvalResponses[file.id] || ''} onChange={e => setApprovalResponses(current => ({ ...current, [file.id]: e.target.value }))} maxLength={2000} rows={2} className="input mt-1 w-full" /></label>
+                      <div className="flex flex-wrap gap-2"><button type="button" disabled={busy !== null} onClick={() => void submitApproval(work.id, file, 'approve')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">Aprobar entrega</button><button type="button" disabled={busy !== null || !(approvalResponses[file.id] || '').trim()} onClick={() => void submitApproval(work.id, file, 'changes')} className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-50 disabled:opacity-50">Solicitar cambios</button></div>
+                    </div>}
                     {admin && file.cleanupError && <p className="mt-1 text-xs text-amber-700">Quedó un archivo anterior pendiente de borrar. Usá el botón de reintento.</p>}
                   </div>
                   <div className="flex shrink-0 gap-1">
-                    <a title="Descargar" href={'/api/client-works/files/' + file.id + '/download'} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"><Download size={17} /></a>
+                    <a title="Descargar" href={'/api/client-works/files/' + file.id + '/download?scope=' + (admin ? 'admin' : 'client')} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"><Download size={17} /></a>
                     <button title="Reemplazar" type="button" disabled={busy !== null} onClick={() => {
                       replaceTarget.current = { workId: work.id, fileId: file.id }
                       replaceInput.current?.click()

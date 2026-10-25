@@ -12,7 +12,7 @@ function getMercadoPagoClient() {
   return new MercadoPagoConfig({ accessToken })
 }
 
-async function handleInstallmentPayment(installmentId: string, mpPaymentId: string) {
+async function handleInstallmentPayment(installmentId: string, mpPaymentId: string, amount: number, currency: string) {
   const installment = await prisma.zapCreditInstallment.findUnique({
     where: { id: installmentId },
     select: {
@@ -31,6 +31,11 @@ async function handleInstallmentPayment(installmentId: string, mpPaymentId: stri
 
   if (!installment) {
     console.warn(`[webhook] Cuota ${installmentId} no encontrada`)
+    return
+  }
+
+  if (currency !== 'ARS' || Math.round(installment.amount * 100) !== Math.round(amount * 100)) {
+    console.warn('[webhook] Cuota con importe o moneda diferente', { installmentId, paymentId: mpPaymentId })
     return
   }
 
@@ -81,6 +86,34 @@ async function handleInstallmentPayment(installmentId: string, mpPaymentId: stri
   revalidatePath(`/admin/ordenes/${installment.plan.orderId}`)
 }
 
+async function handleOrderPayment(orderId: string, paymentId: string, amount: number, currency: string) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      paymentType: true,
+      total: true,
+      zapCreditPlan: { select: { downPaymentAmount: true } },
+    },
+  })
+  if (!order) {
+    console.warn('[webhook] Orden externa no encontrada', { orderId, paymentId })
+    return
+  }
+
+  const expectedAmount = order.paymentType === 'ZAP_CREDIT'
+    ? order.zapCreditPlan?.downPaymentAmount
+    : order.paymentType === 'MERCADOPAGO'
+      ? order.total
+      : null
+  if (expectedAmount === null || expectedAmount === undefined || currency !== 'ARS' ||
+      Math.round(expectedAmount * 100) !== Math.round(amount * 100)) {
+    console.warn('[webhook] Pago con importe, moneda o medio diferente', { orderId, paymentId })
+    return
+  }
+
+  await syncOrderStatusAfterPayment(orderId, paymentId)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -95,17 +128,17 @@ export async function POST(req: NextRequest) {
         if (ref.startsWith('installment:')) {
           // Pago de cuota ZAP Credit via MercadoPago
           const installmentId = ref.slice('installment:'.length)
-          await handleInstallmentPayment(installmentId, String(payment.id))
+          await handleInstallmentPayment(installmentId, String(payment.id), payment.transaction_amount, payment.currency_id)
         } else {
           // Pago de orden normal
-          await syncOrderStatusAfterPayment(ref, String(payment.id))
+          await handleOrderPayment(ref, String(payment.id), payment.transaction_amount, payment.currency_id)
         }
       }
     }
 
     return Response.json({ ok: true })
   } catch (error) {
-    console.error('Webhook error:', error)
-    return Response.json({ ok: true })
+    console.error('[webhook] processing failed', error instanceof Error ? error.name : 'UnknownError')
+    return Response.json({ ok: false }, { status: 500 })
   }
 }

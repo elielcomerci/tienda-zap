@@ -20,6 +20,7 @@ import {
 import { syncOrderSellerCommissions } from '@/lib/seller-commissions'
 import { sendEmailAsync } from '@/lib/email'
 import { orderReadyEmail } from '@/lib/email-templates'
+import { OrderInvoiceEmissionError, requestOrderInvoice } from '@/lib/order-invoice-emission'
 
 async function requireAdmin() {
   const session = await auth()
@@ -28,6 +29,9 @@ async function requireAdmin() {
 
 export async function updateOrderStatus(id: string, status: string) {
   await requireAdmin()
+  const existingOrder = await prisma.order.findUnique({ where: { id }, select: { status: true } })
+  if (!existingOrder) throw new Error('Orden no encontrada')
+  const justDelivered = status === 'DELIVERED' && existingOrder.status !== 'DELIVERED'
   await prisma.order.update({
     where: { id },
     data: { status: status as any },
@@ -43,6 +47,16 @@ export async function updateOrderStatus(id: string, status: string) {
   }
 
   await syncOrderSellerCommissions(id)
+
+  if (justDelivered) {
+    try {
+      const result = await requestOrderInvoice(id)
+      if (result.needsBillingDetails) console.info('[orders.delivered] invoice deferred: billing details missing', { orderId: id })
+    } catch (error) {
+      const code = error instanceof OrderInvoiceEmissionError ? `HTTP_${error.status}` : 'UnknownError'
+      console.error('[orders.delivered] invoice request failed', { orderId: id, code })
+    }
+  }
 
   if (status === 'PAID' || status === 'DELIVERED') {
     await evaluateSellerIncentivesForOrder(id)

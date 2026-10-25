@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
+import { getFiscalWorkerBaseUrl, getFiscalWorkerSecret } from '@/lib/fiscal-worker-config'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -15,9 +16,9 @@ async function requireAdmin() {
 }
 
 function workerConfig() {
-  const base = process.env.FISCAL_WORKER_URL?.trim()
-  const secret = process.env.FISCAL_WORKER_INTERNAL_SECRET?.trim()
-  if (!base || !secret) return null
+  const base = getFiscalWorkerBaseUrl()
+  const secret = getFiscalWorkerSecret('internal')
+  if (!secret) return null
   try {
     return { base: new URL(base), secret }
   } catch {
