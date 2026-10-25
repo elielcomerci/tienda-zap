@@ -28,6 +28,11 @@ export async function POST(request: NextRequest) {
   if (!isValidFiscalCuit(cuit)) return NextResponse.json({ error: 'Ingresá una CUIT válida de 11 dígitos.' }, { status: 422 })
   if (!/^[A-Za-z0-9._:-]{1,100}$/.test(idempotencyKey)) return NextResponse.json({ error: 'Falta una clave de consulta válida.' }, { status: 422 })
 
+  const linkedContributor = await prisma.fiscalContributor.findFirst({
+    where: { cuit, account: { userId: session.user.id, status: 'ACTIVE' } },
+    select: { id: true },
+  })
+
   const baseUrl = getFiscalWorkerBaseUrl()
   const secret = process.env.PUBLIC_PADRON_BACKEND_SECRET?.trim()
   if (!baseUrl || !secret) return NextResponse.json({ error: 'La consulta de padrón no está configurada en el servidor.' }, { status: 503 })
@@ -71,7 +76,7 @@ export async function POST(request: NextRequest) {
     const text = await response.text()
     if (response.ok) {
       try {
-        const payload = JSON.parse(text) as { success?: boolean; source?: string; data?: { cuit?: string; razonSocial?: string; estadoRegistral?: string } }
+        const payload = JSON.parse(text) as { success?: boolean; source?: string; data?: { cuit?: string; razonSocial?: string; estadoRegistral?: string; domicilioFiscal?: string; condicionIva?: string; actividades?: string } }
         if (payload.success && payload.data?.cuit === cuit && payload.data.razonSocial?.trim()) {
           const proof = signFiscalPadronResult({
             userId: session.user.id,
@@ -80,7 +85,10 @@ export async function POST(request: NextRequest) {
             estadoRegistral: payload.data.estadoRegistral?.slice(0, 120),
           })
           if (!proof) return NextResponse.json({ error: 'La validación segura del padrón no está configurada.' }, { status: 503 })
-          return NextResponse.json({ ...payload, ...(usedA13CompatibilityFallback ? { source: 'ARCA_A13' } : {}), proof }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
+          const data = linkedContributor
+            ? payload.data
+            : { cuit: payload.data.cuit, razonSocial: payload.data.razonSocial, estadoRegistral: payload.data.estadoRegistral }
+          return NextResponse.json({ ...payload, data, ...(usedA13CompatibilityFallback ? { source: 'ARCA_A13' } : {}), proof }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
         }
       } catch {
         // Preserve the Worker's safe response shape when it is not a successful lookup.
@@ -88,8 +96,14 @@ export async function POST(request: NextRequest) {
     }
     if (response.ok && usedA13CompatibilityFallback) {
       try {
-        const payload = JSON.parse(text) as Record<string, unknown>
-        return NextResponse.json({ ...payload, source: 'ARCA_A13' }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
+        const payload = JSON.parse(text) as { data?: { cuit?: unknown; razonSocial?: unknown; estadoRegistral?: unknown; domicilioFiscal?: unknown; condicionIva?: unknown; actividades?: unknown }; [key: string]: unknown }
+        const sourceData = payload.data
+        const data = sourceData && typeof sourceData.cuit === 'string'
+          ? linkedContributor
+            ? sourceData
+            : { cuit: sourceData.cuit, razonSocial: sourceData.razonSocial, estadoRegistral: sourceData.estadoRegistral }
+          : undefined
+        return NextResponse.json({ ...payload, ...(data ? { data } : {}), source: 'ARCA_A13' }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
       } catch {
         // Preserve the Worker's response if it is not JSON.
       }

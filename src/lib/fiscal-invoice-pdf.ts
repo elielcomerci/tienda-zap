@@ -221,7 +221,7 @@ function effectiveVatBreakdown(payload: InvoicePayload) {
   return [...grouped.values()].sort((a, b) => a.rate - b.rate)
 }
 
-async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, currentTemplate: FiscalPdfTemplate, logoData?: string) {
+async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, currentTemplate: FiscalPdfTemplate, logoData?: string, preview = false) {
   const template = invoice.pdfTemplateSnapshot ?? currentTemplate
   const payload = invoicePayload(invoice)!
   const fiscalTemplate = emitterTemplate(invoice, template)
@@ -391,14 +391,21 @@ async function addInvoicePage(doc: jsPDF, invoice: FiscalPdfInvoice, currentTemp
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(50, 50, 50)
-  doc.text(`CAE: ${invoice.cae}`, margin, y)
-  doc.text(`Vencimiento CAE: ${printableDate(invoice.caeExpiresAt)}`, margin, y + 5)
-  doc.text('Comprobante Autorizado', margin, y + 10)
-  const qrUrl = officialQr(invoice)
-  const qrData = await QRCode.toDataURL(qrUrl, { errorCorrectionLevel: 'M', margin: 1, width: 160 })
-  doc.addImage(qrData, 'PNG', right - 28, y - 2, 27, 27)
-  doc.setFontSize(7)
-  doc.text('Código QR fiscal ARCA', right - 14, y + 28, { align: 'center' })
+  if (preview) {
+    doc.setFont('helvetica', 'bold')
+    doc.text('VISTA PREVIA · SIN EMITIR', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text('La factura se autoriza al emitirla desde NODO ZAP.', margin, y + 5)
+  } else {
+    doc.text(`CAE: ${invoice.cae}`, margin, y)
+    doc.text(`Vencimiento CAE: ${printableDate(invoice.caeExpiresAt)}`, margin, y + 5)
+    doc.text('Comprobante Autorizado', margin, y + 10)
+    const qrUrl = officialQr(invoice)
+    const qrData = await QRCode.toDataURL(qrUrl, { errorCorrectionLevel: 'M', margin: 1, width: 160 })
+    doc.addImage(qrData, 'PNG', right - 28, y - 2, 27, 27)
+    doc.setFontSize(7)
+    doc.text('Código QR fiscal ARCA', right - 14, y + 28, { align: 'center' })
+  }
   doc.setFontSize(8)
   const footer = [template.footerText, template.showWebsite ? template.website : '', template.showWhatsapp ? template.whatsapp : ''].filter(Boolean).join(' · ')
   if (footer) doc.text(footer, margin, Math.min(y + 14, 276), { maxWidth: right - margin - 35 })
@@ -411,6 +418,27 @@ export async function buildFiscalInvoicePdfBlob(invoice: FiscalPdfInvoice, templ
   let logoData: string | undefined
   if (template.logoUrl) logoData = await imageUrlToPng(template.logoUrl)
   await addInvoicePage(doc, invoice, template, logoData)
+  return doc.output('blob') as Blob
+}
+
+export async function buildFiscalInvoicePreviewBlob(template: FiscalPdfTemplate, cuit: string) {
+  const today = new Date().toISOString().slice(0, 10).replaceAll('-', '')
+  const invoice: FiscalPdfInvoice = {
+    id: 'draft-preview', environment: 'TEST', cuit, pointOfSale: 1, voucherType: 6,
+    voucherNumber: 1, result: null, cae: null, caeExpiresAt: null, amount: '12100',
+    currency: 'ARS', createdAt: new Date().toISOString(),
+    payload: {
+      voucher: { concept: 1, date: today, saleCondition: 'Contado' },
+      amounts: { total: 12100, net: 10000, vat: 2100, exempt: 0, nonTaxable: 0, vatBreakdown: [{ rate: 21, base: 10000, amount: 2100 }] },
+      items: [{ description: 'Producto de ejemplo', quantity: 1, unit: 'unidad', unitPrice: 10000, netAmount: 10000, vatRate: 21, vatAmount: 2100, totalAmount: 12100 }],
+      customer: { docType: 99, docNumber: '0', name: 'Consumidor final', vatCondition: 5 },
+    },
+    documentSnapshot: { emitter: { cuit, razonSocial: template.legalName || 'Razón social' } },
+  }
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  let logoData: string | undefined
+  if (template.logoUrl) logoData = await imageUrlToPng(template.logoUrl)
+  await addInvoicePage(doc, invoice, template, logoData, true)
   return doc.output('blob') as Blob
 }
 
