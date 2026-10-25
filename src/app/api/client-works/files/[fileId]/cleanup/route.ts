@@ -2,13 +2,13 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { deleteR2Object, getR2PrivateBucketName } from '@/lib/r2'
 import { isClientWorkFilesEnabled } from '@/lib/client-work-files'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { recordClientWorkActivity } from '@/lib/client-work-audit'
 
-export async function POST(_request: Request, { params }: { params: Promise<{ fileId: string }> }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ fileId: string }> }) {
   if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'Trabajos y archivos todavía no está habilitado.' }, { status: 503 })
   const session = await auth()
-  if (!session?.user?.id || session.user.role !== 'ADMIN') {
+  if (!session?.user?.id || session.user.role !== 'ADMIN' || request.nextUrl.searchParams.get('scope') !== 'admin') {
     return NextResponse.json({ error: 'Solo administración puede reintentar la limpieza.' }, { status: 403 })
   }
   const { fileId } = await params

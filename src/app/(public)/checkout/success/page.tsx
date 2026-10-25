@@ -13,11 +13,14 @@ import { getPaymentFrequencyLabel } from '@/lib/financing-calculator'
 import { getOrderForViewer } from '@/lib/orders'
 import OrderFileUploader from '@/components/public/OrderFileUploader'
 import OrderReceiptUploader from '@/components/public/OrderReceiptUploader'
+import TransferPaymentVerifier from '@/components/public/TransferPaymentVerifier'
+import OrderBillingModal from '@/components/public/OrderBillingModal'
 import ResumePaymentButton from '@/components/public/ResumePaymentButton'
 import BriefReferenceUploader from '@/components/public/BriefReferenceUploader'
 import OrderItemBriefSummary from '@/components/orders/OrderItemBriefSummary'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,6 +73,19 @@ export default async function CheckoutSuccessPage({
       </div>
     )
   }
+  const approvalEvent = order.status === 'DELIVERED' && !order.paymentId
+    ? await prisma.orderEvent.findFirst({
+        where: { orderId: order.id, status: { in: ['PAID', 'PROCESSING', 'IN_PRODUCTION', 'PROOF_SENT', 'READY'] } },
+        select: { id: true },
+      })
+    : null
+  const orderCanBeInvoiced = order.status === 'DELIVERED' && (Boolean(order.paymentId) || Boolean(approvalEvent))
+  const invoiceRecord = orderCanBeInvoiced
+    ? await prisma.fiscalInvoiceRecord.findFirst({
+        where: { requestReference: order.id },
+        select: { jobId: true, result: true, voucherNumber: true, cae: true },
+      })
+    : null
 
   const orderCode = getOrderDisplayCode(order.id)
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
@@ -170,6 +186,29 @@ export default async function CheckoutSuccessPage({
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
           <div className="space-y-6">
+            {orderCanBeInvoiced && (
+              <OrderBillingModal
+                orderId={order.id}
+                accessToken={token}
+                initial={{
+                  cuit: order.documentId ?? '',
+                  name: order.billingName ?? '',
+                  address: order.billingAddress ?? '',
+                  city: order.billingCity ?? '',
+                  province: order.billingProvince ?? '',
+                }}
+                initialVoucherType={order.billingVoucherType === 'A' || order.billingVoucherType === 'C' ? order.billingVoucherType : order.billingVoucherType === 'B' ? 'B' : null}
+                initialVatCondition={order.billingVatCondition}
+                initialVatConditionConfirmed={Boolean(order.billingVatConfirmedAt)}
+                hasServiceItems={order.items.some(item => item.isService)}
+                initialServiceDates={{
+                  serviceFrom: order.billingServiceFrom?.toISOString().slice(0, 10) ?? '',
+                  serviceTo: order.billingServiceTo?.toISOString().slice(0, 10) ?? '',
+                  paymentDueDate: order.billingPaymentDueDate?.toISOString().slice(0, 10) ?? '',
+                }}
+                initialInvoice={invoiceRecord}
+              />
+            )}
             <section className="rounded-[32px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] sm:p-8">
               <div className="mb-6 border-b border-gray-100 pb-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ED164F]">
@@ -302,10 +341,22 @@ export default async function CheckoutSuccessPage({
                         Hace la transferencia y envianos el comprobante con tu número de orden:
                         <strong> #{orderCode}</strong>.
                       </p>
+                      {process.env.NEXT_PUBLIC_TRANSFER_ALIAS && process.env.NEXT_PUBLIC_TRANSFER_ACCOUNT_NUMBER ? (
+                        <dl className="mt-4 grid gap-2 rounded-2xl border border-[#F7638B]/20 bg-white p-4 text-sm sm:grid-cols-2">
+                          <div><dt className="text-xs text-gray-500">Alias</dt><dd className="font-semibold text-gray-950">{process.env.NEXT_PUBLIC_TRANSFER_ALIAS}</dd></div>
+                          <div><dt className="text-xs text-gray-500">CBU / CVU</dt><dd className="break-all font-semibold text-gray-950">{process.env.NEXT_PUBLIC_TRANSFER_ACCOUNT_NUMBER}</dd></div>
+                          {process.env.NEXT_PUBLIC_TRANSFER_ACCOUNT_HOLDER && <div><dt className="text-xs text-gray-500">Titular</dt><dd className="font-semibold text-gray-950">{process.env.NEXT_PUBLIC_TRANSFER_ACCOUNT_HOLDER}</dd></div>}
+                          {process.env.NEXT_PUBLIC_TRANSFER_TAX_ID && <div><dt className="text-xs text-gray-500">CUIT</dt><dd className="font-semibold text-gray-950">{process.env.NEXT_PUBLIC_TRANSFER_TAX_ID}</dd></div>}
+                        </dl>
+                      ) : (
+                        <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Los datos bancarios todavía no están configurados. Contactá a ZAP antes de transferir.</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="mt-5 space-y-3">
+                    {order.documentId && <TransferPaymentVerifier orderId={order.id} accessToken={token} />}
+                    {!order.documentId && <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Para validar automáticamente, necesitamos el mismo DNI o CUIT que usaste como titular de la cuenta desde la que transferiste. Contactanos para completar el pago de este pedido.</p>}
                     {receiptWhatsappUrl && (
                       <a
                         href={receiptWhatsappUrl}

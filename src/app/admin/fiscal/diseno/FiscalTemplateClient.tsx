@@ -7,6 +7,7 @@ type Template = {
   legalName: string
   issuerCuit: string
   ivaCondition: string
+  grossIncomeRegistration: string
   startActivity: string
   taxAddress: string
   commercialName: string
@@ -27,6 +28,7 @@ const defaults: Template = {
   legalName: '',
   issuerCuit: '',
   ivaCondition: '',
+  grossIncomeRegistration: '',
   startActivity: '',
   taxAddress: '',
   commercialName: '',
@@ -43,14 +45,15 @@ const defaults: Template = {
   footerText: 'Gracias por elegirnos.',
 }
 
-const fields: { key: keyof Pick<Template, 'legalName' | 'issuerCuit' | 'ivaCondition' | 'startActivity' | 'taxAddress' | 'commercialName' | 'address' | 'locality' | 'province' | 'phone' | 'whatsapp' | 'website' | 'footerText'>; label: string; placeholder: string }[] = [
+const fields: { key: keyof Pick<Template, 'legalName' | 'issuerCuit' | 'ivaCondition' | 'grossIncomeRegistration' | 'startActivity' | 'taxAddress' | 'commercialName' | 'address' | 'locality' | 'province' | 'phone' | 'whatsapp' | 'website' | 'footerText'>; label: string; placeholder: string }[] = [
   { key: 'legalName', label: 'Razón social / nombre fiscal', placeholder: 'Como figura en ARCA' },
   { key: 'issuerCuit', label: 'CUIT emisor', placeholder: '11 dígitos, sin guiones' },
   { key: 'ivaCondition', label: 'Condición frente al IVA', placeholder: 'Responsable inscripto / Monotributista / Exento' },
+  { key: 'grossIncomeRegistration', label: 'Ingresos Brutos', placeholder: 'Número de inscripción o “No contribuyente”' },
   { key: 'startActivity', label: 'Inicio de actividades', placeholder: 'AAAA-MM-DD' },
-  { key: 'taxAddress', label: 'Domicilio fiscal/comercial declarado', placeholder: 'Como figura en ARCA' },
+  { key: 'taxAddress', label: 'Domicilio fiscal declarado', placeholder: 'Como figura en ARCA' },
   { key: 'commercialName', label: 'Nombre comercial', placeholder: 'Nombre que verá el cliente' },
-  { key: 'address', label: 'Dirección', placeholder: 'Calle y altura' },
+  { key: 'address', label: 'Domicilio comercial', placeholder: 'Calle y altura' },
   { key: 'locality', label: 'Localidad', placeholder: 'Localidad' },
   { key: 'province', label: 'Provincia', placeholder: 'Provincia' },
   { key: 'phone', label: 'Teléfono', placeholder: '+54 11 …' },
@@ -214,15 +217,16 @@ export default function FiscalTemplateClient({ accountId }: { accountId?: string
                   {template.logoUrl && <img src={template.logoUrl} alt="" className="mb-3 max-h-14 max-w-36 object-contain object-left" />}
                   <h3 className="break-words text-lg font-bold text-gray-900">{template.commercialName || 'Nombre comercial'}</h3>
                   <p className="mt-1 text-xs leading-5 text-gray-500">{template.legalName || 'Razón social'} · CUIT {template.issuerCuit || '—'}</p>
-              <p className="mt-1 text-xs leading-5 text-gray-500">{template.ivaCondition || 'Condición frente al IVA'} · Inicio {template.startActivity || '—'}</p>
-              <p className="mt-1 text-xs leading-5 text-gray-500">{template.taxAddress || [template.address, template.locality, template.province].filter(Boolean).join(' · ') || 'Domicilio fiscal'}</p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">{template.ivaCondition || 'Condición frente al IVA'} · Ingresos Brutos {template.grossIncomeRegistration || '—'}</p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">Inicio {template.startActivity || '—'}</p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">Domicilio comercial: {[template.address, template.locality, template.province].filter(Boolean).join(' · ') || 'completá el domicilio comercial'}</p>
                   {template.phone && <p className="mt-1 text-xs text-gray-500">Tel. {template.phone}</p>}
                   {template.showWebsite && template.website && <p className="mt-1 break-all text-xs text-gray-500">{template.website}</p>}
                   {template.showWhatsapp && template.whatsapp && <p className="mt-1 text-xs text-gray-500">WhatsApp {template.whatsapp}</p>}
                 </div>
                 <div className="shrink-0 border border-gray-300 px-3 py-2 text-center">
                   <div className="text-xl font-bold text-gray-900">B</div>
-                  <div className="text-[9px] uppercase tracking-wide text-gray-500">Ejemplo</div>
+                  <div className="text-[9px] uppercase tracking-wide text-gray-500">COD. 006</div>
                 </div>
               </div>
               <div className="mt-5 flex items-start justify-between gap-3">
@@ -231,7 +235,7 @@ export default function FiscalTemplateClient({ accountId }: { accountId?: string
               </div>
               <div className="mt-5 rounded-lg p-3 text-xs" style={{ backgroundColor: `${template.primaryColor}12` }}>
                 <p className="font-semibold text-gray-900">Datos fiscales de ejemplo</p>
-                <p className="mt-1 leading-5 text-gray-600">Razón social, CUIT, condición frente al IVA y QR fiscal se incorporarán desde los datos verificados de la emisión. No se editan desde este diseñador.</p>
+                <p className="mt-1 leading-5 text-gray-600">Ejemplo: Régimen de Transparencia Fiscal al Consumidor (Ley 27.743) · IVA contenido: $ 1.735,54 · Otros impuestos nacionales indirectos: $ 0,00</p>
               </div>
               <table className="mt-5 w-full text-left text-xs">
                 <thead><tr style={{ backgroundColor: template.primaryColor, color: '#fff' }}><th className="px-2 py-2 font-semibold">Descripción</th><th className="px-2 py-2 text-right font-semibold">Cant.</th><th className="px-2 py-2 text-right font-semibold">Importe</th></tr></thead>

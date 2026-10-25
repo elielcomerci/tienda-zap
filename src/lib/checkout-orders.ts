@@ -48,8 +48,9 @@ function buildConfigurationSnapshot(input: {
   unitPrice: number
   quantity: number
   priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo'
+  vatRatePercent: number | null
 }) {
-  const { product, selectedOptions, unitPrice, quantity, priceSource } = input
+  const { product, selectedOptions, unitPrice, quantity, priceSource, vatRatePercent } = input
   const inferredBlocks = product.quoterConfig
     ? ['material', 'size', 'quantity', 'finishing']
     : product.options.map((option: { name: string }) => option.name)
@@ -74,6 +75,15 @@ function buildConfigurationSnapshot(input: {
       source: priceSource,
       currency: 'ARS',
     },
+    tax: vatRatePercent === null
+      ? null
+      : {
+          treatment: 'INCLUDED',
+          ratePercent: vatRatePercent,
+          grossAmount: unitPrice * quantity,
+          netAmount: Number(((unitPrice * quantity) / (1 + vatRatePercent / 100)).toFixed(2)),
+          vatAmount: Number((unitPrice * quantity - (unitPrice * quantity) / (1 + vatRatePercent / 100)).toFixed(2)),
+        },
   }
 }
 
@@ -181,6 +191,7 @@ export async function resolveCheckoutOrderItems(
 
     let unitPrice = product.price
     let priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo' = 'base'
+    let vatRatePercent: number | null = product.vatRatePercent
     if (product.quoterConfig) {
       const materialName = selectedMap.get('Material')
       const sizeLabel = selectedMap.get('Medida')
@@ -212,6 +223,7 @@ export async function resolveCheckoutOrderItems(
 
       unitPrice = quote.totalPrice
       priceSource = 'quote'
+      vatRatePercent = quote.vatRatePercent ?? product.vatRatePercent
     } else if (product.variants.length > 0) {
       const matchingVariant = product.variants.find((variant) =>
         matchesVariant(selectedOptions, variant)
@@ -254,6 +266,7 @@ export async function resolveCheckoutOrderItems(
         unitPrice,
         quantity: item.quantity,
         priceSource,
+        vatRatePercent,
       }),
       selectedOptions: selectedOptions.length > 0
         ? {

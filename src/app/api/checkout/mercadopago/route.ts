@@ -138,26 +138,43 @@ export async function POST(req: NextRequest) {
             currency_id: 'ARS',
           }))
 
-    const preference = await new Preference(client).create({
-      body: {
-        items: mercadoPagoItems,
-        payer: { email: data.email },
-        external_reference: order.id,
-        back_urls: {
-          success: successUrl.toString(),
-          failure: failureUrl.toString(),
-          pending: pendingUrl.toString(),
+    let preference: Awaited<ReturnType<Preference['create']>>
+    try {
+      preference = await new Preference(client).create({
+        body: {
+          items: mercadoPagoItems,
+          payer: { email: data.email },
+          external_reference: order.id,
+          back_urls: {
+            success: successUrl.toString(),
+            failure: failureUrl.toString(),
+            pending: pendingUrl.toString(),
+          },
+          notification_url: notificationUrl.toString(),
+          auto_return: 'approved',
         },
-        notification_url: notificationUrl.toString(),
-        auto_return: 'approved',
-      },
-    })
+      })
 
-    // Guardar preferenceId para poder recuperar el link de pago sin crear orden duplicada
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { mpPreferenceId: preference.id },
-    })
+      // Guardar preferenceId para poder recuperar el link de pago sin crear orden duplicada.
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { mpPreferenceId: preference.id },
+      })
+    } catch (error) {
+      // La orden y el cupón ya están reservados. Devolvemos acceso de recuperación para
+      // que el cliente retome este mismo pedido desde la pantalla de pago pendiente.
+      console.error('[checkout.preference_failed]', {
+        checkout_id: order.id,
+        error: error instanceof Error ? error.name : 'UnknownError',
+      })
+      return Response.json({
+        error: 'No pudimos abrir MercadoPago. Tu pedido quedó guardado y podés volver a intentar el pago.',
+        recoverable: true,
+        orderId: order.id,
+        accessToken: publicAccessToken,
+        successQuery,
+      }, { status: 502 })
+    }
 
     console.info('[checkout.created]', {
       checkout_id: order.id,

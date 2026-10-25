@@ -400,6 +400,14 @@ export const orderCheckoutSchema = z.object({
     })
   }
 
+  if (data.paymentType === 'TRANSFER' && !data.documentId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['documentId'],
+      message: 'El DNI o CUIT del titular de la cuenta de origen es necesario para validar la transferencia.',
+    })
+  }
+
   const billingFields = [
     ['billingAddress', data.billingAddress],
     ['billingCity', data.billingCity],

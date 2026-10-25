@@ -22,7 +22,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const work = await prisma.clientWork.findUnique({ where: { id: workId }, select: { id: true, userId: true } })
     if (!work) return NextResponse.json({ error: 'Trabajo no encontrado.' }, { status: 404 })
-    if (session.user.role !== 'ADMIN' && work.userId !== userId) {
+    const adminScope = session.user.role === 'ADMIN' && request.nextUrl.searchParams.get('scope') === 'admin'
+    if (!adminScope && work.userId !== userId) {
       return NextResponse.json({ error: 'No tenés acceso a este trabajo.' }, { status: 403 })
     }
 

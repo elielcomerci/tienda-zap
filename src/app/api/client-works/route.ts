@@ -23,8 +23,12 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         select: {
           id: true, fileName: true, contentType: true, sizeBytes: true,
-          note: true, createdAt: true, uploadedById: true, cleanupError: true,
+          note: true, createdAt: true, updatedAt: true, uploadedById: true, cleanupError: true,
           uploadedBy: { select: { name: true, role: true } },
+          approvals: {
+            orderBy: { requestedAt: 'desc' }, take: 20,
+            include: { requestedBy: { select: { name: true } }, respondedBy: { select: { name: true } } },
+          },
         },
       },
     },

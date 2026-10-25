@@ -9,6 +9,7 @@ const defaults = {
   legalName: '',
   issuerCuit: '',
   ivaCondition: '',
+  grossIncomeRegistration: '',
   startActivity: '',
   taxAddress: '',
   commercialName: '',

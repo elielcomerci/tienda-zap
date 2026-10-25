@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: '/productos/bonos-para-lavaderos', destination: '/productos/talonarios-formularios', permanent: true }]
   },
+  async rewrites() {
+    return {
+      afterFiles: [{ source: '/api/nodo/:path*', destination: '/api/fiscal/:path*' }],
+    }
+  },
   images: {
     remotePatterns: [
       {

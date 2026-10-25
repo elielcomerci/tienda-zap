@@ -59,6 +59,21 @@ const paymentOptions = [
   },
 ] as const
 
+const transferDetails = {
+  alias: process.env.NEXT_PUBLIC_TRANSFER_ALIAS?.trim() ?? '',
+  accountHolder: process.env.NEXT_PUBLIC_TRANSFER_ACCOUNT_HOLDER?.trim() ?? '',
+  taxId: process.env.NEXT_PUBLIC_TRANSFER_TAX_ID?.trim() ?? '',
+  accountNumber: process.env.NEXT_PUBLIC_TRANSFER_ACCOUNT_NUMBER?.trim() ?? '',
+}
+const transferConfigured = Boolean(transferDetails.alias && transferDetails.accountNumber)
+const checkoutPaymentOptions = paymentOptions.filter((option) => {
+  if (option.value === 'MERCADOPAGO') return Boolean(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY?.trim())
+  if (option.value === 'CRYPTO') return process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true'
+  if (option.value === 'TRANSFER') return transferConfigured
+  return true
+})
+const defaultPaymentType = checkoutPaymentOptions.find((option) => option.value !== 'ZAP_CREDIT')?.value ?? 'ZAP_CREDIT'
+
 type CustomerFieldConfig = {
   name:
     | 'name'
@@ -222,7 +237,7 @@ function CheckoutContent() {
     formState: { errors },
   } = useForm<OrderCheckoutData>({
     resolver: zodResolver(orderCheckoutSchema) as Resolver<OrderCheckoutData>,
-    defaultValues: { paymentType: 'MERCADOPAGO' },
+    defaultValues: { paymentType: defaultPaymentType },
   })
 
   const formValues = watch()
@@ -231,6 +246,7 @@ function CheckoutContent() {
   const authenticatedUser = Boolean(creditEligibility?.authenticated)
   const isFieldRequired = (fieldName: CustomerFieldConfig['name']) =>
     basicFieldNames.has(fieldName) ||
+    (paymentType === 'TRANSFER' && fieldName === 'documentId') ||
     (paymentType === 'ZAP_CREDIT' && creditExtraFieldNames.has(fieldName))
   const missingRequiredFields = customerSections.flatMap((section) =>
     section.fields.filter(
@@ -514,6 +530,14 @@ function CheckoutContent() {
           body: JSON.stringify(payload),
         })
         const result = await response.json()
+        if (!response.ok && result.recoverable && result.successQuery) {
+          setOrderCreated(true)
+          clearCart()
+          clearCouponCode()
+          if (typeof window !== 'undefined') localStorage.removeItem('saved_coupon')
+          router.push(`/checkout/success?${result.successQuery}`)
+          return
+        }
         if (!response.ok) throw new Error(result.error)
         setOrderCreated(true)
         clearCart()
@@ -598,6 +622,8 @@ function CheckoutContent() {
                         <p className="mt-1 text-sm text-amber-800">
                           {paymentType === 'ZAP_CREDIT'
                             ? 'Para moverlo con Crédito ZAP necesitamos completar documento, facturación y envio.'
+                            : paymentType === 'TRANSFER'
+                              ? 'Para validar la transferencia necesitamos el DNI o CUIT del titular de la cuenta de origen.'
                             : 'Solo te pedimos lo minimo que falta para dejarlo bien cargado.'}
                         </p>
                       </div>
@@ -684,7 +710,7 @@ function CheckoutContent() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {paymentOptions.filter((option) => option.value !== 'CRYPTO' || process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true').map((option) => {
+                  {checkoutPaymentOptions.map((option) => {
                     const optionDisabled = option.value === 'ZAP_CREDIT' && zapCreditDisabled
 
                     return (

@@ -17,7 +17,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       include: { work: { select: { userId: true } } },
     })
     if (!file) return NextResponse.json({ error: 'Archivo no encontrado.' }, { status: 404 })
-    if (session.user.role !== 'ADMIN' && file.work.userId !== userId) {
+    const adminScope = session.user.role === 'ADMIN' && request.nextUrl.searchParams.get('scope') === 'admin'
+    if (!adminScope && file.work.userId !== userId) {
       return NextResponse.json({ error: 'No tenés acceso a este archivo.' }, { status: 403 })
     }
     const inline = request.nextUrl.searchParams.get('inline') === '1' && isSafeInlineClientFile(file)

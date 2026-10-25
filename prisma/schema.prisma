@@ -57,6 +57,9 @@ model User {
   createdClientWorks               ClientWork[]                  @relation("ClientWorkCreator")
   uploadedClientWorkFiles          ClientWorkFile[]              @relation("ClientWorkFileUploader")
   sentClientWorkMessages           ClientWorkMessage[]            @relation("ClientWorkMessageSender")
+  readClientWorkMessages            ClientWorkMessageRead[]         @relation("ClientWorkMessageReadUser")
+  requestedClientWorkApprovals      ClientWorkFileApproval[]         @relation("ClientWorkApprovalRequester")
+  respondedClientWorkApprovals      ClientWorkFileApproval[]         @relation("ClientWorkApprovalResponder")
   fiscalClientAccount               FiscalClientAccount?
 }
 
@@ -232,9 +235,45 @@ model FiscalClientAccount {
   user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   invoices          FiscalInvoiceRecord[]
   contributors      FiscalContributor[]
+  savedCustomers    FiscalSavedCustomer[]
+  savedProducts     FiscalSavedProduct[]
   invoiceTemplate   FiscalInvoiceTemplate?
 
   @@index([status, createdAt])
+}
+
+model FiscalSavedCustomer {
+  id             String   @id @default(cuid())
+  accountId      String
+  name           String
+  documentType   String?
+  documentNumber String?
+  vatCondition   String?
+  address        String?
+  email          String?
+  phone          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  account FiscalClientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, name])
+  @@index([accountId, documentNumber])
+}
+
+model FiscalSavedProduct {
+  id             String   @id @default(cuid())
+  accountId      String
+  description    String
+  unit           String   @default("unidad")
+  unitPrice      Decimal  @db.Decimal(14, 2)
+  vatRatePercent Decimal? @db.Decimal(5, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  account FiscalClientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, description])
 }
 
 model FiscalContributor {
@@ -257,7 +296,7 @@ model FiscalContributor {
 
 model FiscalInvoiceRecord {
   id                String              @id @default(cuid())
-  accountId         String
+  accountId         String?
   environment       String
   cuit              String
   pointOfSale       Int
@@ -276,7 +315,7 @@ model FiscalInvoiceRecord {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
-  account           FiscalClientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account           FiscalClientAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([environment, cuit, pointOfSale, voucherType, voucherNumber], map: "FiscalInvoiceRecord_invoice_unique")
   @@index([accountId, createdAt])
@@ -344,6 +383,7 @@ model Product {
   slug                     String              @unique
   description              String?
   price                    Float               @default(0)
+  vatRatePercent           Float?
   priceFrom                Float?
   catalogType              CatalogType          @default(COSA)
   modality                 ProductModality
@@ -506,6 +546,13 @@ model Order {
   billingAddress        String?
   billingCity           String?
   billingProvince       String?
+  billingName           String?
+  billingVoucherType    String?
+  billingVatCondition   Int?
+  billingVatConfirmedAt DateTime?
+  billingServiceFrom    DateTime?
+  billingServiceTo      DateTime?
+  billingPaymentDueDate DateTime?
   documentId            String?
   shippingAddress       String?
   shippingCity          String?
@@ -522,7 +569,22 @@ model Order {
   proofs                ProofFile[]
   commissionLedgers     SellerCommissionLedger[]
   cryptoPayments        CryptoPayment[]
+  transferPaymentReconciliation TransferPaymentReconciliation?
   sellerIncentiveContributions SellerIncentiveOrderContribution[]
+}
+
+model TransferPaymentReconciliation {
+  id                      String   @id @default(cuid())
+  orderId                 String   @unique
+  mercadoPagoPaymentId    String   @unique
+  transactionId           String   @unique
+  referenceSuffix         String
+  transferDate            DateTime @db.Date
+  matchedAt               DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([transferDate])
 }
 
 model OrderItem {
@@ -1037,6 +1099,13 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum ClientWorkApprovalStatus {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+  SUPERSEDED
+}
+
 enum ProofStatus {
   PENDING
   APPROVED
@@ -1131,7 +1200,7 @@ model CryptoPayment {
   order             Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([chainId, txHash])
-  @@unique([orderId], where: raw("status IN ('QUOTED', 'AWAITING_PAYMENT', 'TX_SUBMITTED', 'DETECTED', 'CONFIRMING', 'VERIFIED', 'REVIEW')"), map: "CryptoPayment_one_active_per_order_key")
+  @@unique([orderId], where: raw("(status = ANY (ARRAY['QUOTED'::\"CryptoPaymentStatus\", 'AWAITING_PAYMENT'::\"CryptoPaymentStatus\", 'TX_SUBMITTED'::\"CryptoPaymentStatus\", 'DETECTED'::\"CryptoPaymentStatus\", 'CONFIRMING'::\"CryptoPaymentStatus\", 'VERIFIED'::\"CryptoPaymentStatus\", 'REVIEW'::\"CryptoPaymentStatus\"]))"), map: "CryptoPayment_one_active_per_order_key")
   @@index([orderId, status])
   @@index([status, expiresAt])
   @@index([status, lastCanonicalCheckAt])
@@ -1693,6 +1762,7 @@ model ClientWorkFile {
 
   work       ClientWork @relation(fields: [workId], references: [id], onDelete: Cascade)
   uploadedBy User       @relation("ClientWorkFileUploader", fields: [uploadedById], references: [id])
+  approvals  ClientWorkFileApproval[]
 
   @@index([workId, createdAt])
   @@index([uploadedById, createdAt])
@@ -1707,7 +1777,42 @@ model ClientWorkMessage {
 
   work   ClientWork @relation(fields: [workId], references: [id], onDelete: Cascade)
   sender User       @relation("ClientWorkMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+  reads  ClientWorkMessageRead[]
 
   @@index([workId, createdAt])
   @@index([senderId, createdAt])
+}
+
+model ClientWorkMessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message ClientWorkMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User               @relation("ClientWorkMessageReadUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId, readAt])
+}
+
+
+model ClientWorkFileApproval {
+  id            String                   @id @default(cuid())
+  fileId        String
+  requestedById String
+  respondedById String?
+  status        ClientWorkApprovalStatus @default(PENDING)
+  activeKey     String?                  @unique
+  fileUpdatedAt DateTime
+  response      String?                  @db.Text
+  requestedAt   DateTime                 @default(now())
+  respondedAt   DateTime?
+
+  file        ClientWorkFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  requestedBy User           @relation("ClientWorkApprovalRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  respondedBy User?          @relation("ClientWorkApprovalResponder", fields: [respondedById], references: [id], onDelete: SetNull)
+
+  @@index([fileId, requestedAt])
+  @@index([status, requestedAt])
 }

@@ -91,6 +91,12 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
   if (modality === 'CONFIGURABLE' && !engine) throw new Error('Un Product Base configurable necesita un motor.')
   if (modality !== 'CONFIGURABLE' && engine) throw new Error('Sólo un Product Base configurable puede tener motor.')
 
+  const vatRateInput = String(formData.get('vatRatePercent') ?? '').trim()
+  const vatRatePercent = vatRateInput ? Number(vatRateInput) : null
+  if (vatRatePercent !== null && (!Number.isFinite(vatRatePercent) || vatRatePercent < 0 || vatRatePercent > 100)) {
+    throw new Error('La alícuota de IVA debe estar entre 0 y 100%.')
+  }
+
   return {
     name: String(formData.get('name') || '').trim(),
     description: String(formData.get('description') || '').trim() || null,
@@ -98,6 +104,7 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
     modality,
     engine,
     price: Number(formData.get('price') || 0),
+    vatRatePercent,
     priceFrom: null,
     active: formData.get('active') !== 'false',
     images: productImages(formData, fallbackImages),

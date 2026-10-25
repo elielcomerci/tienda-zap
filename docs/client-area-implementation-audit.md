@@ -6,29 +6,29 @@ Este inventario contrasta el mapa funcional acordado con las rutas y componentes
 
 El menú del Área de Clientes contiene seis entradas: **Inicio**, **Mis servicios**, **Archivos y mensajes**, **Facturación**, **Integraciones** y **Mi cuenta**. Créditos y beneficios se ubica dentro de Mi cuenta. La campana de notificaciones queda como acceso global cuando exista un sistema de avisos.
 
-Inicio muestra pedidos reales y su estado. Integraciones ahora tiene una página de trabajo en `/perfil/integraciones`; no altera los menús públicos de la tienda ni las consolas internas de ZAP.
+Inicio muestra pedidos reales y su estado. Integraciones ahora tiene una página de trabajo en `/perfil/nodo/integraciones`; no altera los menús públicos de la tienda ni las consolas internas de ZAP.
 
 ## Cobertura actual
 
 | Área del mapa | Estado | Implementación actual | Falta principal |
 |---|---|---|---|
 | Inicio y pendientes | Parcial | `/perfil` muestra pedidos recientes y pedidos en curso, sin métricas inventadas. | Tareas pendientes, proyectos, avisos relevantes y accesos contextuales. |
-| Mi negocio | Parcial | La cuenta fiscal y sus contribuyentes se gestionan desde `/perfil/fiscal`. | Perfil comercial separado de identidad fiscal, selector multiempresa, usuarios y permisos. |
+| Mi negocio | Parcial | La cuenta fiscal y sus contribuyentes se gestionan desde `/perfil/nodo/configuracion`. | Perfil comercial separado de identidad fiscal, selector multiempresa, usuarios y permisos. |
 | Servicios | Parcial | Catálogo público y acceso a pedidos. | Contratos, alcance, vigencia, consumos y cambios del servicio. |
 | Tienda y pedidos | Parcial | Catálogo, compra y seguimiento de pedidos existentes. | Presupuestos completos, cronología comercial, repetir pedido y relación con proyectos. |
 | Mis proyectos | Parcial | `ClientWorkPortal` ofrece espacios de trabajo y archivos compartidos. | Etapas, tareas, responsables, dependencias y actividad del proyecto. |
 | Solicitudes y briefs | Parcial | Hay formularios y consultas de producto fuera del portal. | Solicitudes autenticadas, borradores, seguimiento y briefs guardados. |
-| Revisiones y aprobaciones | No disponible | No hay un flujo de aprobación con versiones y registro de conformidad. | Versionado, comentario, aprobar, solicitar cambios y auditoría de quién decidió. |
+| Revisiones y aprobaciones | Implementadas localmente; despliegue por verificar | Portal y API permiten solicitar aprobación, aprobar o pedir cambios; el historial se vincula a la versión del archivo y reemplazos superan solicitudes anteriores. | Confirmar migración en Neon y probar roles, historial, reemplazo de archivo y estados en Tienda desplegada. |
 | Mensajes y soporte | Parcial | El portal permite compartir archivos; el contacto general deriva a WhatsApp. | Conversaciones o tickets con contexto, estado, responsable e historial. |
-| Facturación | Parcial | `/perfil/fiscal` vincula CUIT/certificados, emite contra el Worker y mantiene un historial local. | UX cotidiana simplificada, pruebas de múltiples CUIT, conciliación accesible, uso del plan y despliegue probado del flujo revisado. |
-| Integraciones API | Parcial, implementación local | `/perfil/integraciones` ofrece generadores Node.js/TypeScript y Python, paquete ZIP con `.env`, clave propia por integración, validación autenticada contra `https://arca.zap.com.ar` y revocación/listado de metadatos. PHP, Java y C# quedan marcados pendientes. | Aplicar/deployar Worker con listado interno de claves; habilitar `apiKeyManagement`; probar desde Tienda desplegada; agregar expiración y límites por permisos si el producto lo requiere. |
+| Facturación | Parcial | `/perfil/nodo/configuracion` vincula CUIT/certificados, emite contra el Worker y mantiene un historial local. | UX cotidiana simplificada, pruebas de múltiples CUIT, conciliación accesible, uso del plan y despliegue probado del flujo revisado. |
+| Integraciones API | Parcial, implementación local | `/perfil/nodo/integraciones` ofrece generadores Node.js/TypeScript y Python, paquete ZIP con `.env`, clave propia por integración, validación autenticada contra `https://arca.zap.com.ar` y revocación/listado de metadatos. PHP, Java y C# quedan marcados pendientes. | `apiKeyManagement` está apagada por defecto; verificar Worker y flag en el entorno desplegado, luego probar desde Tienda creación, descarga, validación, rotación y revocación. |
 | Créditos y beneficios | Parcial | `/perfil/creditos` muestra planes, cuotas y comprobantes vinculados. | Saldo y movimientos de beneficios con reglas definidas, sin presentarlos como dinero. |
 | Notificaciones | No disponible | No existe una bandeja de notificaciones accionables para cliente. | Avisos con destino, lectura, historial y preferencias. |
 | Mi cuenta y seguridad | Parcial | Nombre/teléfono y cambio de contraseña en `/perfil`. | Recuperación completa, sesiones, preferencias, privacidad y gestión de acceso a negocios. |
 
 ## Emisión fiscal desde el navegador
 
-La pantalla arma y valida localmente la vista previa. La confirmación realiza una sola petición de navegador a `POST /api/fiscal/invoices/emit?sync=true`; la ruta autenticada de Tienda reenvía una petición al Worker con la clave fiscal descifrada en el servidor. El navegador nunca recibe esa clave ni certificados.
+La pantalla arma y valida localmente la vista previa. La confirmación realiza una sola petición de navegador a `POST /api/nodo/invoices/emit?sync=true`; la ruta autenticada de Tienda reenvía una petición al Worker con la clave fiscal descifrada en el servidor. El navegador nunca recibe esa clave ni certificados.
 
 El Worker vuelve a validar autorización, contribuyente, ambiente, punto de venta e importes; aplica idempotencia, reutiliza la autorización fiscal vigente, contacta a ARCA y persiste el comprobante canónico con su snapshot. Si termina dentro de la espera síncrona, la respuesta incluye CAE, número, vencimiento y snapshot. Si excede el límite de 10 segundos, devuelve una referencia al trabajo pendiente; Tienda conserva la misma clave idempotente y no muestra éxito fiscal antes de tener la respuesta autorizada.
 
@@ -70,3 +70,15 @@ La prueba valida autenticación del tenant contra la API del Worker y cuenta las
 - Verificaci?n: `npm run typecheck` y `git diff --check` pasan. No se despleg?.
 - Se agreg? mensajer?a persistida por trabajo, con lectura y env?o autenticados, l?mite de 4.000 caracteres, y autorizaci?n por propietario; el ADMIN usa alcance global solo desde el portal administrativo. La migraci?n `20261022140000_client_work_messages` est? preparada, pero todav?a no se aplic? a la base.
 - Sigue pendiente para considerar completa la experiencia: notificaciones globales accionables, aprobaciones con historial/versionado, y solicitudes/briefs autenticados. Requieren definir estados y responsables de operaci?n para ZAP.
+
+
+### Siguiente avance
+
+- La migracion `20261022140000_client_work_messages` se aplico a Neon el 22/10/2026.
+- La migración `20261022143000_client_work_message_reads_and_approvals` agrega recibos de lectura por usuario, contador de mensajes nuevos y aprobaciones con historial por entrega. La aprobación queda vinculada al `updatedAt` de la versión entregada; al reemplazar el archivo, las solicitudes pendientes anteriores se marcan reemplazadas. La conexión actual no permitió consultar el estado de migraciones en Neon; confirmar si está aplicada antes de desplegar.
+- Se ajustaron las rutas de descarga, borrado, carga, limpieza y conversacion para distinguir `scope=client` del acceso global `scope=admin`; un ADMIN en su espacio personal queda restringido a sus propios trabajos.
+- Verificación local actual (23/10/2026): `npm run typecheck`, `npm test` y `prisma validate` de Tienda pasaron; Worker `typecheck`, `typecheck:test`, `prisma validate`, pruebas de uso, planes y lecturas WSFE pasaron. `npm run build` alcanzó Next.js pero falló al abrir `.next/trace` con `EPERM` en OneDrive. Esto no valida migraciones ni comportamiento desplegado.
+- El Worker tiene cambios locales con la migración `20261023100000_monthly_service_request_usage`; no se confirmó ni aplicó en Neon. Sus pruebas de uso y planes pasaron localmente.
+- No se pudo consultar el estado de migraciones de ambas bases: `prisma migrate status` terminó con `Schema engine error` sin detalle. Falta determinar si las migraciones están aplicadas, ejecutar las pendientes, completar build, desplegar Tienda/Worker y recorrer los flujos en el entorno correspondiente.
+- `accountProvisioning` y `apiKeyManagement` tienen defaults cerrados. El alta autoservicio y la gestión de claves no quedan disponibles hasta habilitar sus flags y verificar secretos/configuración del entorno.
+- Para un primer cierre siguen pendientes la prueba desplegada de alta NODO y emisión controlada en TEST, la prueba de generación/rotación de claves, la revisión móvil/escritorio y las notificaciones globales. Solicitudes/briefs autenticados, gestión avanzada de usuarios y tareas completas de proyectos pueden planificarse como siguientes fases.

@@ -229,7 +229,7 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
       }
       const request = toRequest(row.input)
       try {
-        const response = await fetch(api('/api/fiscal/invoices/emit?dryRun=true'), {
+        const response = await fetch(api('/api/nodo/invoices/emit?dryRun=true'), {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request),
         })
         const payload = await response.json()
@@ -268,7 +268,7 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
         setStage('partial'); setBusy(false); return
       }
       try {
-        const response = await fetch(api('/api/fiscal/invoices/emit'), {
+        const response = await fetch(api('/api/nodo/invoices/emit'), {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(row.request),
         })
         const payload = await response.json().catch(() => ({}))
