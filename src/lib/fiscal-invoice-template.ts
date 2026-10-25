@@ -1,0 +1,45 @@
+import { z } from 'zod'
+
+export const fiscalInvoiceTemplateSchema = z.object({
+  legalName: z.string().trim().max(180).default(''),
+  issuerCuit: z.string().trim().regex(/^(|\d{11})$/).default(''),
+  ivaCondition: z.string().trim().max(100).default(''),
+  grossIncomeRegistration: z.string().trim().max(120).default(''),
+  startActivity: z.string().trim().max(10).default(''),
+  taxAddress: z.string().trim().max(180).default(''),
+  commercialName: z.string().trim().max(120).default(''),
+  address: z.string().trim().max(180).default(''),
+  locality: z.string().trim().max(100).default(''),
+  province: z.string().trim().max(100).default(''),
+  phone: z.string().trim().max(40).default(''),
+  whatsapp: z.string().trim().max(40).default(''),
+  website: z.string().trim().max(200).default(''),
+  logoUrl: z.string().trim().max(500).refine(value => !value || value.startsWith('https://media.zap.com.ar/'), 'El logo debe estar alojado en media.zap.com.ar.').default(''),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#ed164f'),
+  showWebsite: z.boolean().default(true),
+  showWhatsapp: z.boolean().default(true),
+  footerText: z.string().trim().max(180).default('Gracias por elegirnos.'),
+})
+
+export const DEFAULT_FISCAL_INVOICE_TEMPLATE = {
+  legalName: '',
+  issuerCuit: '',
+  ivaCondition: '',
+  grossIncomeRegistration: '',
+  startActivity: '',
+  taxAddress: '',
+  commercialName: '',
+  address: '',
+  locality: '',
+  province: '',
+  phone: '',
+  whatsapp: '',
+  website: '',
+  logoUrl: '',
+  primaryColor: '#ed164f',
+  showWebsite: true,
+  showWhatsapp: true,
+  footerText: 'Gracias por elegirnos.',
+} satisfies z.input<typeof fiscalInvoiceTemplateSchema>
+
+export type FiscalInvoiceTemplateInput = z.infer<typeof fiscalInvoiceTemplateSchema>

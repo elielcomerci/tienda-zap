@@ -5,6 +5,7 @@ import { buildFiscalInvoicePdfBlob, downloadFiscalInvoiceBatchPdf, downloadFisca
 import FiscalBatchImport from '@/components/fiscal/FiscalBatchImport'
 import FiscalWorkerTools from '@/components/fiscal/FiscalWorkerTools'
 import CertificateCsrAssistant from '@/components/fiscal/CertificateCsrAssistant'
+import FiscalInvoiceTemplateEditor from '@/components/fiscal/FiscalInvoiceTemplateEditor'
 import { AlertCircle, CheckCircle2, FileKey2, FileText, LoaderCircle, Plus, RefreshCw, Search, ShieldCheck, UploadCloud } from 'lucide-react'
 
 type Account = { id: string; userId: string; tenantName: string; tenantSlug: string; status: string; notes?: string | null; customer?: { name: string | null; email: string; phone: string | null } }
@@ -727,6 +728,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             </article>)}
           </div>}
       </section>}
+
+      {(section === 'all' || section === 'settings') && <FiscalInvoiceTemplateEditor api={api} />}
 
       {showAddContributor && (section === 'all' || section === 'settings') && <div role="dialog" aria-modal="true" aria-labelledby="add-contributor-title" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4">
         <section className="my-auto w-full max-w-xl rounded-2xl bg-white p-5 shadow-xl sm:p-6">

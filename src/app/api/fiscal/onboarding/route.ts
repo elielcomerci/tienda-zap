@@ -25,7 +25,7 @@ function workerError(payload: WorkerPayload, fallback: string) {
 
 export async function POST(request: NextRequest) {
   const session = await auth()
-  if (!session?.user?.id || session.user.role !== 'CUSTOMER') {
+  if (!session?.user?.id || !['CUSTOMER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Iniciá sesión como cliente para crear NODO ZAP.' }, { status: 401 })
   }
   const user = await prisma.user.findUnique({
