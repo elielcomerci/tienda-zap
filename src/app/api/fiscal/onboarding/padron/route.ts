@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
         'X-Nodo-Client-IP': `customer-${clientKey}`,
         'Idempotency-Key': idempotencyKey,
       },
-      body: JSON.stringify({ cuit }),
+      // Onboarding uses ZAP's server configured platform tenant and production A13 authorization.
+      body: JSON.stringify({ cuit, environment: 'PROD' }),
       cache: 'no-store',
       signal: AbortSignal.timeout(30_000),
     })
