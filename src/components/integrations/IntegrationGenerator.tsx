@@ -129,7 +129,7 @@ export default function IntegrationGenerator() {
       { id: 'connect', label: '2. Conectá', detail: 'Crear y validar clave' },
       { id: 'integrate', label: '3. Integrá', detail: 'Paquete y ejemplos' },
     ].map(item => <li key={item.id} aria-current={stage === item.id ? 'step' : undefined} className={`rounded-xl border px-4 py-3 ${stage === item.id ? 'border-[#ED164F] bg-rose-50' : stage === 'integrate' || (stage === 'connect' && item.id === 'configure') ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-white'}`}><p className="text-sm font-semibold text-gray-900">{item.label}</p><p className="mt-1 text-xs text-gray-600">{item.detail}</p></li>)}
-    ]}</ol>
+    </ol>
     <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
       <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
         <h2 className="text-lg font-semibold text-gray-950">1. Elegí la tecnología</h2><p className="mt-1 text-sm text-gray-500">Los stacks pendientes están identificados como tales.</p>
