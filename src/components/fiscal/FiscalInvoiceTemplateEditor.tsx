@@ -148,6 +148,7 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
       }
       if (!response.ok) throw new Error(typeof payload.error === 'string'?payload.error : payload.error?.message || 'No se pudieron traer los datos de ARCA.')
       const arcaData = payload.data
+      const usedA13 = fallback || payload.source === 'ARCA_A13'
       const legalName = arcaData?.razonSocial?.trim()
       if (arcaData?.cuit !== selectedCuit || !legalName) {
         throw new Error('ARCA no devolvió una razón social verificable para esta CUIT.')
@@ -159,11 +160,11 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
         ...(arcaData.domicilioFiscal?{ taxAddress: arcaData.domicilioFiscal } : {}),
         ...(arcaData.condicionIva?{ ivaCondition: arcaData.condicionIva } : {}),
         ...(arcaData.actividades?{ activities: arcaData.actividades } : {}),
-        arcaSource: fallback?'ARCA_A13' : 'ARCA_CONSTANCIA',
+        arcaSource: usedA13?'ARCA_A13' : 'ARCA_CONSTANCIA',
         arcaConsultedAt: payload.consultedAt || new Date().toISOString(),
       } : current)
       setPadronKey(''); setPadronCuit('')
-      setNotice(`Datos actualizados desde ${fallback ? 'A13 (Constancia requiere delegacion)' : 'Constancia de Inscripcion'}${arcaData.estadoRegistral ? ` - Estado registral: ${arcaData.estadoRegistral}` : ''}. Revisa los datos y guarda la plantilla.`)
+      setNotice(`Datos actualizados desde ${usedA13 ? 'A13' : 'Constancia de Inscripcion'}${arcaData.estadoRegistral ? ` - Estado registral: ${arcaData.estadoRegistral}` : ''}. Revisa los datos y guarda la plantilla.`)
     } catch (reason) {
       setError(reason instanceof Error?reason.message : 'No se pudieron traer los datos de ARCA.')
     } finally {

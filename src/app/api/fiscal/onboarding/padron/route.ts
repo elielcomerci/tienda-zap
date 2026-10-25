@@ -35,23 +35,43 @@ export async function POST(request: NextRequest) {
   try {
     const url = new URL('/internal/public/padron/consultas', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`)
     const clientKey = createHash('sha256').update(session.user.id).digest('hex').slice(0, 48)
-    const response = await fetch(url, {
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Public-Padron-Secret': secret,
+      'X-Nodo-Client-IP': `customer-${clientKey}`,
+      'Idempotency-Key': idempotencyKey,
+    }
+    const requestWorker = (includeSource: boolean) => fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Public-Padron-Secret': secret,
-        'X-Nodo-Client-IP': `customer-${clientKey}`,
-        'Idempotency-Key': idempotencyKey,
-      },
+      headers,
       // The server uses ZAP's platform identity; callers cannot choose the represented CUIT.
-      body: JSON.stringify({ cuit, environment: 'PROD', source }),
+      body: JSON.stringify({ cuit, environment: 'PROD', ...(includeSource ? { source } : {}) }),
       cache: 'no-store',
       signal: AbortSignal.timeout(30_000),
     })
+    // Older Worker deployments default to A13 and reject the newer `source` field.
+    let response = await requestWorker(source === 'constancia')
+    let usedA13CompatibilityFallback = source === 'a13'
+    if (source === 'constancia' && response.status === 400) {
+      const firstText = await response.clone().text()
+      let unsupportedSource = false
+      try {
+        const failure = JSON.parse(firstText) as { error?: { code?: unknown; message?: unknown } }
+        unsupportedSource = failure.error?.code === 'INVALID_REQUEST' &&
+          typeof failure.error.message === 'string' &&
+          /solo admite cuit,\s*environment(?:,| y)\s*turnstileToken/i.test(failure.error.message)
+      } catch {
+        unsupportedSource = false
+      }
+      if (unsupportedSource) {
+        response = await requestWorker(false)
+        usedA13CompatibilityFallback = true
+      }
+    }
     const text = await response.text()
     if (response.ok) {
       try {
-        const payload = JSON.parse(text) as { success?: boolean; data?: { cuit?: string; razonSocial?: string; estadoRegistral?: string } }
+        const payload = JSON.parse(text) as { success?: boolean; source?: string; data?: { cuit?: string; razonSocial?: string; estadoRegistral?: string } }
         if (payload.success && payload.data?.cuit === cuit && payload.data.razonSocial?.trim()) {
           const proof = signFiscalPadronResult({
             userId: session.user.id,
@@ -60,10 +80,18 @@ export async function POST(request: NextRequest) {
             estadoRegistral: payload.data.estadoRegistral?.slice(0, 120),
           })
           if (!proof) return NextResponse.json({ error: 'La validación segura del padrón no está configurada.' }, { status: 503 })
-          return NextResponse.json({ ...payload, proof }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
+          return NextResponse.json({ ...payload, ...(usedA13CompatibilityFallback ? { source: 'ARCA_A13' } : {}), proof }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
         }
       } catch {
         // Preserve the Worker's safe response shape when it is not a successful lookup.
+      }
+    }
+    if (response.ok && usedA13CompatibilityFallback) {
+      try {
+        const payload = JSON.parse(text) as Record<string, unknown>
+        return NextResponse.json({ ...payload, source: 'ARCA_A13' }, { status: response.status, headers: { 'Cache-Control': 'no-store' } })
+      } catch {
+        // Preserve the Worker's response if it is not JSON.
       }
     }
     return new NextResponse(text, {
