@@ -29,13 +29,13 @@ export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean>
   invoiceEmissionProd: true,
   batchImport: true,
   pdfExport: true,
-  manualInvoiceRegistration: false,
+  manualInvoiceRegistration: true,
   wsfeRead: true,
   padronQuery: true,
   invoiceVoid: true,
   jobReconciliation: true,
   usageVisibility: true,
-  operationalRecovery: false,
+  operationalRecovery: true,
 }
 
 const FAIL_CLOSED_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean> = {
