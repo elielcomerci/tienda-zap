@@ -10,6 +10,8 @@ import {
   Wallet,
 } from 'lucide-react'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
+import { isZapCreditEnabled } from '@/lib/zap-credit'
+import { notFound } from 'next/navigation'
 
 export const metadata = {
   title: 'Crédito ZAP',
@@ -54,6 +56,8 @@ const privacyPoints = [
 ]
 
 export default function CréditoZapPage() {
+  if (!isZapCreditEnabled()) notFound()
+
   const whatsappUrl = buildWhatsappUrl(
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     'Hola! Quiero conocer como funciona Crédito ZAP para mi negocio.'

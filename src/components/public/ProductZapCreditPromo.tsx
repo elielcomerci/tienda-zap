@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { BadgePercent, ChevronDown, MessageCircleMore } from 'lucide-react'
 import { useState } from 'react'
+import { isZapCreditEnabled } from '@/lib/zap-credit'
 
 export default function ProductZapCreditPromo({
   downPaymentPercent,
@@ -12,6 +13,8 @@ export default function ProductZapCreditPromo({
   whatsappUrl: string | null
 }) {
   const [expanded, setExpanded] = useState(false)
+
+  if (!isZapCreditEnabled()) return null
 
   return (
     <section className="overflow-hidden rounded-[28px] border border-[#F7638B]/20 bg-gradient-to-r from-[#FEF1F5] via-white to-[#F0F5FA]">

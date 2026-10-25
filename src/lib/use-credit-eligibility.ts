@@ -6,6 +6,7 @@ import { PaymentFrequency } from '@/lib/financing-calculator'
 export type CreditEligibilitySnapshot = {
   authenticated: boolean
   canRequestCredit: boolean
+  creditEnabled: boolean
   activeCreditsCount: number
   overdueInstallmentsCount: number
   hasDelinquency: boolean

@@ -31,6 +31,7 @@ function getInvoiceStatus(invoice: Invoice): Exclude<InvoiceStatusFilter, 'all'>
   return 'review'
 }
 type CertificateInfo = { id: string; environment: string; status: string; cn?: string; expiresAt: string; daysUntilExpiry: number }
+type WsfeCheckResult = { cuit: string; environment: 'TEST' | 'PROD'; verifiedAt: string; puntosVenta: Array<{ nro: number; activo: boolean; emisionTipo: string }> }
 type SavedCustomer = { id: string; name: string; documentType: string | null; documentNumber: string | null; vatCondition: string | null; address: string | null }
 type SavedProduct = { id: string; kind: 'PRODUCT' | 'SERVICE'; description: string; unit: string; unitPrice: string; vatRatePercent: string | null }
 const emissionDraftSchema = z.object({
@@ -94,6 +95,8 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
   const [settingsTab, setSettingsTab] = useState<'access' | 'invoice'>('access')
   const [certificateInfo, setCertificateInfo] = useState<{ active: CertificateInfo[] | null; others: CertificateInfo[] } | null>(null)
   const [certificateLoading, setCertificateLoading] = useState(false)
+  const [wsfeCheckResult, setWsfeCheckResult] = useState<WsfeCheckResult | null>(null)
+  const [padronCheckResult, setPadronCheckResult] = useState<{ cuit: string; environment: 'TEST' | 'PROD'; checkedAt: string } | null>(null)
   const [certFile, setCertFile] = useState<File | null>(null)
   const [keyFile, setKeyFile] = useState<File | null>(null)
   const [supportNotes, setSupportNotes] = useState('')
@@ -144,7 +147,11 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
         pdfTemplateSnapshot: invoice.pdfTemplateSnapshot || invoice.payload?.pdfTemplateSnapshot || null,
       })))
       setSelectedInvoiceIds([])
-      setContributors(contributorPayload.contributors || [])
+      const refreshedContributors = Array.isArray(contributorPayload.contributors) ? contributorPayload.contributors as Contributor[] : []
+      setContributors(refreshedContributors)
+      setSelectedContributor(current => current
+        ? refreshedContributors.find(item => item.cuit === current.cuit && item.environment === current.environment) || current
+        : current)
       setWorkspaceLoaded(true)
       const customersPayload = customersResponse?.ok ? await customersResponse.json().catch(() => ({})) : {}
       const productsPayload = productsResponse?.ok ? await productsResponse.json().catch(() => ({})) : {}
@@ -278,7 +285,13 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
     setSelectedContributor(contributor); setCertificateInfo(null); setError(''); setNotice('')
     setCertificateLoading(true)
     try {
-      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/certificate?environment=${contributor.environment}`), { cache: 'no-store' })
+      const contributorsResponse = await fetch(api('/api/nodo/contributors'), { cache: 'no-store' })
+      const contributorsPayload = await contributorsResponse.json().catch(() => ({})) as { contributors?: Contributor[]; error?: string }
+      if (!contributorsResponse.ok) throw new Error(contributorsPayload.error || 'No se pudo actualizar el estado informado por el Worker.')
+      const latestContributor = contributorsPayload.contributors?.find(item => item.cuit === contributor.cuit && item.environment === contributor.environment) || contributor
+      setContributors(contributorsPayload.contributors || [])
+      setSelectedContributor(latestContributor)
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(latestContributor.cuit)}/certificate?environment=${latestContributor.environment}`), { cache: 'no-store' })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo consultar el certificado.')
       setCertificateInfo(payload)
@@ -291,7 +304,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
     setBusy(true); setError(''); setNotice('')
     try {
       const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/padron/connection-check?environment=${contributor.environment}&source=a13`), { method: 'POST' })
-      const payload = await response.json().catch(() => ({})) as { error?: string | { message?: string } }
+      const payload = await response.json().catch(() => ({})) as { persona?: unknown; error?: string | { message?: string } }
       if (!response.ok) {
         const message = typeof payload.error === 'string' ? payload.error : payload.error?.message
         throw new Error(message || 'ARCA no pudo validar el acceso al padrón.')
@@ -304,9 +317,30 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
       setNotice(contributor.permissions?.canEmit === true
         ? `Acceso al padrón validado en ${contributor.environment}. Los permisos de emisión no se modificaron.`
         : `Acceso al padrón validado en ${contributor.environment}. La consulta quedó habilitada y la emisión sigue desactivada.`)
+      setPadronCheckResult({ cuit: contributor.cuit, environment: contributor.environment, checkedAt: new Date().toISOString() })
       await load()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudo validar el acceso al padrón.')
+    } finally { setBusy(false) }
+  }
+
+  async function checkWsfeConnection(contributor: Contributor) {
+    if (featureFlags.wsfeRead !== true) return
+    setBusy(true); setError(''); setNotice(''); setWsfeCheckResult(null)
+    try {
+      const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/wsfe/connection-check?environment=${contributor.environment}`), { method: 'POST' })
+      const payload = await response.json().catch(() => ({})) as { cuit?: string; environment?: 'TEST' | 'PROD'; verified?: boolean; puntosVenta?: WsfeCheckResult['puntosVenta']; error?: string | { message?: string } }
+      if (!response.ok || payload.verified !== true) {
+        const message = typeof payload.error === 'string' ? payload.error : payload.error?.message
+        throw new Error(message || 'No se pudo confirmar la conexión WSFE con ARCA. Revisá el certificado, la autorización del servicio y volvé a intentar.')
+      }
+      const puntosVenta = Array.isArray(payload.puntosVenta) ? payload.puntosVenta.filter((item): item is WsfeCheckResult['puntosVenta'][number] =>
+        typeof item === 'object' && item !== null && Number.isInteger(item.nro) && typeof item.activo === 'boolean' && typeof item.emisionTipo === 'string') : []
+      setWsfeCheckResult({ cuit: payload.cuit || contributor.cuit, environment: payload.environment || contributor.environment, verifiedAt: new Date().toISOString(), puntosVenta })
+      setNotice(`ARCA respondió por WSFE en ${contributor.environment}. No se emitió ningún comprobante.`)
+      await load()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo validar la conexión WSFE con ARCA.')
     } finally { setBusy(false) }
   }
 
@@ -725,6 +759,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
   const activeEnvironmentCertificate = selectedEnvironmentCertificates.find(cert => cert.status === 'ACTIVE')
   const pendingEnvironmentCertificate = selectedEnvironmentCertificates.find(cert => cert.status === 'PENDING_PROPAGATION')
   const selectedPadronIsActive = selectedContributor?.authorizationStatus === 'ACTIVE' && selectedContributor.permissions?.canQueryPadron === true
+  const selectedCanEmit = selectedContributor?.authorizationVerified === true && selectedContributor.authorizationStatus === 'ACTIVE' && selectedContributor.permissions?.canEmit === true
   const linkedCuitCount = new Set(contributors.map(item => item.cuit)).size
   const visibleInvoices = invoices.filter(invoice =>
     (invoiceEnvironmentFilter === 'ALL' || invoice.environment === invoiceEnvironmentFilter)
@@ -852,9 +887,10 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             {contributors.map(item => <article key={item.id} className="rounded-xl border border-gray-200 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><p className="font-semibold text-gray-900">{item.razonSocial || 'Contribuyente'}</p><p className="mt-1 font-mono text-sm text-gray-600">{item.cuit}</p><p className="mt-1 text-xs text-gray-500">Representante {item.representativeCuit} · {item.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div>
-                <span className={item.authorizationStatus === 'ACTIVE' ? 'rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700' : 'rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700'}>{item.authorizationStatus === 'ACTIVE' ? item.permissions?.canEmit === true ? 'Activa · emisión' : item.permissions?.canQueryPadron === true ? 'Activa · solo padrón' : 'Activa · consulta limitada' : item.authorizationStatus === 'PENDING' ? 'Sin validar · certificado propio' : item.authorizationStatus}</span>
+                <span className={item.authorizationVerified && item.authorizationStatus === 'ACTIVE' ? 'rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700' : 'rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700'}>{item.authorizationVerified !== true ? 'Estado sin confirmar' : item.authorizationStatus === 'ACTIVE' ? item.permissions?.canEmit === true ? 'Permiso de emisión activo' : item.permissions?.canQueryPadron === true ? 'Solo consulta A13' : 'Sin permiso de emisión' : item.authorizationStatus === 'PENDING' ? 'Pendiente de autorización' : item.authorizationStatus}</span>
               </div>
-              {item.authorizationStatus === 'PENDING' && <p className="mt-2 text-xs leading-5 text-gray-600">Este estado corresponde al acceso con certificado de esta CUIT. La consulta de datos fiscales con la cuenta de ZAP funciona por separado y no lo activa.</p>}
+              {item.authorizationVerified !== true && <p className="mt-2 text-xs leading-5 text-amber-800">No pudimos consultar el estado actual en el Worker. Actualizá la pantalla; no vuelvas a cargar el certificado si ya figura activo.</p>}
+              {item.authorizationVerified === true && item.authorizationStatus === 'PENDING' && <p className="mt-2 text-xs leading-5 text-gray-600">El Worker todavía no confirma permisos de emisión para esta CUIT y ambiente. Un certificado o TA activo no concede por sí solo permiso para facturar; A13 es una consulta aparte.</p>}
               <div className="mt-3 flex flex-wrap gap-2">
                 <button onClick={() => void loadCertificate(item)} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40"><UploadCloud size={14} /> Revisar o configurar certificado</button>
                 {featureFlags.certificateManagement !== true && <p role="status" className="self-center text-xs text-amber-800">La carga está desactivada para esta cuenta.</p>}
@@ -922,20 +958,35 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
       </div>}
 
       {selectedContributor && (section === 'all' || (section === 'settings' && settingsTab === 'access')) && <section id="certificate-panel" tabIndex={-1} className={`scroll-mt-6 rounded-2xl bg-white p-5 ${surfaceShadow}`}>
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-900">Activar consulta de padrón</h2><p className="mt-1 text-sm text-gray-500">{selectedContributor.razonSocial || 'Contribuyente'} · {selectedContributor.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div><button onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-slate-400 hover:text-slate-900">Cerrar</button></div>
-        <p className="mt-3 text-sm text-gray-700">Este flujo habilita únicamente A13 para esta CUIT. No habilita emisión.</p>
-        <ol className="mt-4 grid gap-2 sm:grid-cols-2">
-          <li className={`rounded-xl border p-3 text-sm ${activeEnvironmentCertificate ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-gray-50'}`}><span className="font-semibold">1. Certificado</span><p className="mt-1">{certificateLoading ? 'Consultando estado…' : activeEnvironmentCertificate ? 'Activo en NODO' : pendingEnvironmentCertificate ? 'Cargado; falta activarlo en NODO' : 'Falta cargar o activar'}</p></li>
-          <li className={`rounded-xl border p-3 text-sm ${selectedPadronIsActive ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-gray-50'}`}><span className="font-semibold">2. Acceso A13</span><p className="mt-1">{selectedPadronIsActive ? 'Activo · solo consulta' : 'Pendiente de validación con ARCA'}</p></li>
-        </ol>
-        {certificateLoading && <p role="status" className="mt-4 text-sm text-gray-600">Consultando el certificado…</p>}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-[#C2103F]">{selectedContributor.environment === 'TEST' ? 'TEST · HOMOLOGACIÓN' : 'PROD · PRODUCCIÓN'}</p><h2 className="mt-1 font-semibold text-gray-900">Acceso fiscal de {selectedContributor.razonSocial || selectedContributor.cuit}</h2><p className="mt-1 text-sm text-gray-500">Los certificados y permisos se configuran por separado en cada ambiente.</p></div>
+          <div className="flex gap-2"><button type="button" onClick={() => void loadCertificate(selectedContributor)} disabled={certificateLoading || busy} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 disabled:opacity-50"><RefreshCw size={14} /> Actualizar estado</button><button type="button" onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-slate-400 hover:text-slate-900">Cerrar</button></div>
+        </div>
+        <div className="mt-4 rounded-xl border border-gray-200 p-4">
+          <h3 className="text-sm font-semibold text-gray-900">¿Para qué sirve este ambiente?</h3>
+          <p className="mt-1 text-sm leading-5 text-gray-600">{selectedContributor.environment === 'TEST' ? 'Homologación sirve para hacer pruebas con ARCA. Sus comprobantes no son facturas válidas.' : 'Producción conecta con ARCA real y permite emitir comprobantes fiscales cuando la autorización y los permisos están activos.'}</p>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className={`rounded-xl border p-4 ${activeEnvironmentCertificate ? 'border-emerald-200 bg-emerald-50' : pendingEnvironmentCertificate ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}><p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Certificado en NODO</p><p className="mt-1 text-sm font-semibold text-gray-900">{certificateLoading ? 'Consultando…' : activeEnvironmentCertificate ? 'Activo' : pendingEnvironmentCertificate ? 'Cargado; falta activarlo' : certificateInfo ? 'Todavía no está cargado' : 'Estado sin consultar'}</p>{activeEnvironmentCertificate && <p className="mt-1 text-xs text-gray-600">Vence {date(activeEnvironmentCertificate.expiresAt)}</p>}{pendingEnvironmentCertificate && <p className="mt-1 text-xs text-gray-600">Vence {date(pendingEnvironmentCertificate.expiresAt)}</p>}</div>
+          <div className={`rounded-xl border p-4 ${selectedCanEmit ? 'border-emerald-200 bg-emerald-50' : selectedContributor.authorizationVerified ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}><p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Permiso de emisión en el Worker</p><p className="mt-1 text-sm font-semibold text-gray-900">{selectedCanEmit ? 'Activo' : !selectedContributor.authorizationVerified ? 'No se pudo confirmar' : selectedContributor.permissions?.canQueryPadron === true ? 'Solo consulta A13; emisión desactivada' : selectedContributor.authorizationStatus === 'ACTIVE' ? 'La CUIT está vinculada, pero no tiene emisión habilitada' : 'Pendiente de autorización'}</p><p className="mt-1 text-xs text-gray-600">{selectedCanEmit ? 'El Worker confirma el permiso. En PROD, cada comprobante igual debe ser autorizado por ARCA.' : !selectedContributor.authorizationVerified ? 'Actualizá el estado para consultar de nuevo al Worker. No cargues otra vez el certificado si ya figura activo.' : 'Cargar o activar un certificado no concede por sí solo permiso para emitir.'}</p></div>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-gray-500">El Worker usa el certificado para autenticarse con ARCA y administra el TA. No necesitás cargar un TA manualmente. TEST y PROD usan certificados distintos.</p>
+        {certificateInfo && <div className="mt-4 rounded-xl border border-gray-200 p-4">
+          <h3 className="text-sm font-semibold text-gray-900">Conexión para facturar (WSFE)</h3>
+          <p className="mt-1 text-sm text-gray-600">Probá el acceso con esta CUIT y ambiente. Si ARCA responde, NODO confirma WSAA/TA y habilita emisión y consulta de historial en el Worker. Esta prueba no emite comprobantes; en PROD consume una consulta del plan.</p>
+          <button type="button" onClick={() => void checkWsfeConnection(selectedContributor)} disabled={busy || !activeEnvironmentCertificate || selectedContributor.permissions?.canManageCert !== true || featureFlags.wsfeRead !== true} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Probar conexión y habilitar WSFE</button>
+          {!activeEnvironmentCertificate && <p className="mt-2 text-xs text-amber-800">Primero activá en NODO el certificado de este ambiente.</p>}
+          {featureFlags.wsfeRead !== true && <p className="mt-2 text-xs text-amber-800">La verificación WSFE está desactivada para esta cuenta.</p>}
+          {wsfeCheckResult?.cuit === selectedContributor.cuit && wsfeCheckResult.environment === selectedContributor.environment && <div role="status" className="mt-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">
+            <p className="font-semibold">Autenticación WSAA/TA y respuesta WSFE confirmadas</p>
+            <p className="mt-1">{wsfeCheckResult.cuit} · {wsfeCheckResult.environment} · {new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(wsfeCheckResult.verifiedAt))}</p>
+            <p className="mt-1">{wsfeCheckResult.puntosVenta.length} puntos de venta informados por ARCA{wsfeCheckResult.puntosVenta.length > 0 ? `: ${wsfeCheckResult.puntosVenta.map(item => `${item.nro}${item.activo ? '' : ' (inactivo)'}`).join(', ')}` : '.'}</p>
+          </div>}
+        </div>}
+        {certificateLoading && <p role="status" className="mt-4 text-sm text-gray-600">Consultando el estado del certificado…</p>}
         {!certificateLoading && !certificateInfo && <div className="mt-4"><p className="text-sm text-amber-800">No pudimos leer el estado del certificado.</p><button type="button" onClick={() => void loadCertificate(selectedContributor)} className="mt-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold">Reintentar</button></div>}
-        {!certificateLoading && certificateInfo && activeEnvironmentCertificate && selectedPadronIsActive && <div role="status" className="mt-4 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900">Listo. La consulta A13 está activa para esta CUIT en {selectedContributor.environment}.</div>}
-        {!certificateLoading && certificateInfo && activeEnvironmentCertificate && !selectedPadronIsActive && (featureFlags.padronQuery === true
-          ? <div className="mt-4 rounded-xl border border-gray-200 p-4"><p className="text-sm text-gray-700">Certificado activo. El siguiente paso es validar A13 con ARCA.</p><button type="button" onClick={() => void checkPadronAccess(selectedContributor)} disabled={busy || selectedContributor.permissions?.canManageCert !== true || selectedContributor.authorizationStatus === 'REVOKED'} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar acceso A13</button></div>
-          : <p role="status" className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">La validación de padrón está desactivada para esta cuenta. Pedile a ZAP que habilite esa función.</p>)}
-        {!certificateLoading && certificateInfo && !activeEnvironmentCertificate && pendingEnvironmentCertificate && <div className="mt-4 rounded-xl border border-gray-200 p-4"><p className="text-sm text-gray-700">El certificado ya está cargado. Activálo en NODO para continuar.</p><p className="mt-1 text-xs text-gray-500">Vence {date(pendingEnvironmentCertificate.expiresAt)}.</p><button type="button" onClick={() => void activateCertificate(pendingEnvironmentCertificate)} disabled={busy || featureFlags.certificateManagement !== true} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Activar certificado en NODO</button></div>}
-        {!certificateLoading && certificateInfo && !activeEnvironmentCertificate && !pendingEnvironmentCertificate && <div className="mt-4 space-y-3"><p className="text-sm text-gray-700">Cargá el certificado emitido por ARCA y la clave privada que se generó junto con él.</p>
+        {!certificateLoading && certificateInfo && !activeEnvironmentCertificate && pendingEnvironmentCertificate && <div className="mt-4 rounded-xl border border-amber-200 p-4"><p className="text-sm font-semibold text-gray-900">El certificado está cargado, pero todavía no está activo en NODO.</p><p className="mt-1 text-sm text-gray-600">Activarlo acá registra el certificado para {selectedContributor.environment}; no cambia sus permisos de ARCA.</p><button type="button" onClick={() => void activateCertificate(pendingEnvironmentCertificate)} disabled={busy || featureFlags.certificateManagement !== true} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Activar certificado en NODO</button></div>}
+        {!certificateLoading && certificateInfo && !activeEnvironmentCertificate && !pendingEnvironmentCertificate && <div className="mt-4 space-y-3"><h3 className="text-sm font-semibold text-gray-900">Cargar certificado para {selectedContributor.environment === 'TEST' ? 'homologación' : 'producción'}</h3><p className="text-sm text-gray-600">Subí el certificado emitido por ARCA y la clave privada que se generó junto con él.</p>
           {featureFlags.certificateManagement === true ? <>
             <form onSubmit={event => void uploadCertificate(event)} className="grid gap-3 sm:grid-cols-2">
               <label className="block text-sm font-medium text-gray-700">Certificado (.crt o .pem)<input required type="file" accept=".crt,.pem,.cer,application/x-pem-file" onChange={event => setCertFile(event.target.files?.[0] || null)} className="mt-1 block w-full rounded-xl border border-gray-200 p-2 text-sm font-normal" /></label>
@@ -945,6 +996,17 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             <CertificateCsrAssistant key={selectedContributor.id + selectedContributor.environment} contributor={selectedContributor} />
           </> : <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">La gestión de certificados está desactivada para esta cuenta. Pedile a ZAP que la habilite.</p>}
         </div>}
+        {!certificateLoading && certificateInfo && <details className="mt-4 rounded-xl border border-gray-200 px-4 py-3">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-800">Consulta de padrón A13 <span className="font-normal text-gray-500">· opcional, no habilita emisión</span></summary>
+          <p className="mt-2 text-sm text-gray-600">A13 permite consultar datos registrales. Es independiente de la emisión y no es un paso para activar el certificado.</p>
+          <p className="mt-2 text-xs font-semibold text-gray-700">Estado: {selectedPadronIsActive ? 'consulta habilitada' : 'sin validar'}</p>
+          {padronCheckResult?.cuit === selectedContributor.cuit && padronCheckResult.environment === selectedContributor.environment && <p role="status" className="mt-1 text-xs text-emerald-800">ARCA respondió la consulta A13 para {padronCheckResult.cuit} · {padronCheckResult.environment} el {new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(padronCheckResult.checkedAt))}. La autenticación del servicio fue confirmada.</p>}
+          {selectedPadronIsActive ? <p className="mt-1 text-xs text-gray-600">El permiso de consulta está activo para este ambiente.</p> : featureFlags.padronQuery === true ? <>
+            <button type="button" onClick={() => void checkPadronAccess(selectedContributor)} disabled={busy || selectedContributor.permissions?.canManageCert !== true || selectedContributor.authorizationStatus === 'REVOKED'} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Consultar acceso A13 de esta CUIT</button>
+            <p className="mt-2 text-xs leading-5 text-gray-600">Si la respuesta señala que falta autorizar el servicio, hacelo para esta CUIT en {selectedContributor.environment === 'TEST' ? 'WSASS' : 'Administrador de Relaciones de ARCA'}. Un error de conexión o certificado no confirma por sí solo que falte autorización.</p>
+            <a className="mt-1 inline-flex text-xs font-semibold text-[#C2103F] hover:underline" href={selectedContributor.environment === 'TEST' ? 'https://www.arca.gob.ar/ws/WSASS/html/introduccion.html' : 'https://www.arca.gob.ar/landing/default.asp'} target="_blank" rel="noreferrer">{selectedContributor.environment === 'TEST' ? 'Abrir WSASS' : 'Abrir ARCA para gestionar relaciones'} ↗</a>
+          </> : <p className="mt-1 text-xs text-amber-800">La consulta de padrón está desactivada por ZAP.</p>}
+        </details>}
         {certificateInfo && selectedEnvironmentCertificates.some(cert => cert.status !== 'ACTIVE' && cert.status !== 'PENDING_PROPAGATION') && <details className="mt-4 text-xs text-gray-500"><summary className="cursor-pointer">Ver certificados anteriores</summary><ul className="mt-2 space-y-1">{selectedEnvironmentCertificates.filter(cert => cert.status !== 'ACTIVE' && cert.status !== 'PENDING_PROPAGATION').map(cert => <li key={cert.id}>{cert.cn || 'Certificado'} · {cert.status} · vence {date(cert.expiresAt)}</li>)}</ul></details>}
       </section>}
 

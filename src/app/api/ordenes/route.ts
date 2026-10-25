@@ -13,6 +13,7 @@ import { sendEmailAsync } from '@/lib/email'
 import { orderConfirmationEmail } from '@/lib/email-templates'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 import { resolveActiveSellerId } from '@/lib/sellers'
+import { isZapCreditEnabled } from '@/lib/zap-credit'
 
 // POST /api/ordenes - crear orden TRANSFER, CASH o ZAP_CREDIT
 export async function POST(req: NextRequest) {
@@ -22,6 +23,10 @@ export async function POST(req: NextRequest) {
 
     if (data.paymentType === 'MERCADOPAGO') {
       return Response.json({ error: 'Usar /api/checkout/mercadopago' }, { status: 400 })
+    }
+
+    if (data.paymentType === 'ZAP_CREDIT' && !isZapCreditEnabled()) {
+      return Response.json({ error: 'Crédito ZAP no está disponible para nuevas solicitudes.' }, { status: 423 })
     }
 
     const session = await auth()

@@ -31,6 +31,7 @@ import {
 } from '@/lib/financing-calculator'
 import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 import { orderCheckoutSchema, type OrderCheckoutData } from '@/lib/validations'
+import { isZapCreditEnabled } from '@/lib/zap-credit'
 
 const paymentOptions = [
   {
@@ -70,9 +71,10 @@ const checkoutPaymentOptions = paymentOptions.filter((option) => {
   if (option.value === 'MERCADOPAGO') return Boolean(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY?.trim())
   if (option.value === 'CRYPTO') return process.env.NEXT_PUBLIC_CRYPTO_CHECKOUT_ENABLED === 'true'
   if (option.value === 'TRANSFER') return transferConfigured
+  if (option.value === 'ZAP_CREDIT') return isZapCreditEnabled()
   return true
 })
-const defaultPaymentType = checkoutPaymentOptions.find((option) => option.value !== 'ZAP_CREDIT')?.value ?? 'ZAP_CREDIT'
+const defaultPaymentType = checkoutPaymentOptions.find((option) => option.value !== 'ZAP_CREDIT')?.value ?? checkoutPaymentOptions[0]?.value ?? 'TRANSFER'
 
 type CustomerFieldConfig = {
   name:
