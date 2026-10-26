@@ -515,7 +515,7 @@ export default function ProductMediaBlock({
                       {track.type === 'VIDEO' && (
                         <Video size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
-                      {track.type === 'YOUTUBE' && (
+                      {(track.type === 'YOUTUBE' || track.type === 'SOUNDCLOUD') && (
                         <LinkIcon size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
                     </div>
