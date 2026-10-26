@@ -1,7 +1,7 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { importCustomerConversation } from './actions'
+import { importCustomerConversation } from '../../../admin/clientes/conversaciones/actions'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Conversaciones de clientes | ZAP Tienda' }
