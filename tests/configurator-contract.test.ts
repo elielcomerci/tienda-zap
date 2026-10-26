@@ -432,7 +432,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
       { ...selection, productionProcess: 'offset', quantity: 3000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
       { profitMargin: 0 } as any,
     ),
-    /Cantidad '(3000|5000)' no permitida/,
+    /validación comercial/,
   );
   assert.throws(
     () => quoteConfiguratorSelection(
@@ -440,7 +440,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
       { ...selection, productionProcess: 'offset', quantity: 5000, material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar' },
       { profitMargin: 0 } as any,
     ),
-    /Cantidad '5000' no permitida/,
+    /validación comercial/,
   );
 
   assert.throws(
