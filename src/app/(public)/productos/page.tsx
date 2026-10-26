@@ -398,6 +398,10 @@ export default async function ProductsPage({
                       ? null
                       : getProductDisplayPrice(product)
                   const isPurchasable = displayPrice !== null && product.modality === 'DIRECTO'
+                  const fromPrice = typeof product.priceFrom === 'number' && product.priceFrom > 0
+                    ? product.priceFrom
+                    : null
+                  const isFromPriceVisible = displayPrice === null && fromPrice !== null
                   const requiresConversation = isDevelopment(product) || isConsultationOnly(product)
                   const isConsultationOnlyFlow = requiresConversation || (!requiresConfiguration && !isPurchasable)
 
@@ -450,7 +454,7 @@ export default async function ProductsPage({
 
                         <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-end sm:justify-between">
                           <div>
-                            {requiresConfiguration && displayPrice !== null && (
+                            {(requiresConfiguration && displayPrice !== null || isFromPriceVisible) && (
                               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                                 Desde
                               </p>
@@ -458,6 +462,11 @@ export default async function ProductsPage({
                             {displayPrice !== null && (
                               <p className="mt-1 text-2xl font-black text-gray-950">
                                 {displayPrice.toLocaleString('es-AR')}
+                              </p>
+                            )}
+                            {isFromPriceVisible && fromPrice !== null && (
+                              <p className="mt-1 text-2xl font-black text-gray-950">
+                                ${fromPrice.toLocaleString('es-AR')}
                               </p>
                             )}
                           </div>
