@@ -17,6 +17,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Formato', 'Material / Gramaje', 'Impresión frente y dorso', 'Laminados y terminaciones', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 9,
@@ -31,6 +33,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Formato y dimensiones', 'Tipo de plegado', 'Papel', 'Terminación', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 15,
@@ -45,6 +49,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Medidas', 'Material y acabado', 'Perforación / Ojales', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 10,
@@ -59,6 +65,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Formato y dimensiones', 'Soporte (vinilo / papel)', 'Corte', 'Laminado protector', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 17,
@@ -73,6 +81,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Medidas / Desarrollo', 'Papel', 'Cierre y adhesivado', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 16,
@@ -87,6 +97,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Dimensiones', 'Material', 'Impresión gráfica', 'Manijas', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 18,
@@ -101,6 +113,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Modelo estructural', 'Medidas (ancho, alto, profundidad)', 'Soporte cartulina o microcorrugado', 'Impresión', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 19,
@@ -115,6 +129,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Formato', 'Estructura / Solapa', 'Material', 'Laminado', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 12,
@@ -129,6 +145,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Formato', 'Estructura (hojas sueltas, plegado, encuadernado)', 'Material', 'Protección / Laminado', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 24,
@@ -143,6 +161,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Producto (individual / posavasos)', 'Medidas', 'Material', 'Impresión', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 20,
@@ -157,6 +177,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Tipo de aplicación', 'Ancho y alto (m2)', 'Soporte y gráfica', 'Instalación'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 21,
@@ -171,6 +193,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Tipo de corpóreo', 'Medidas y espesor', 'Material', 'Iluminación', 'Instalación'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 22,
@@ -185,6 +209,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Medidas', 'Material (acrílico, alto impacto, madera)', 'Impresión / Grabado', 'Fijación'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 25,
@@ -199,6 +225,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Tipo de exhibidor', 'Dimensiones', 'Material', 'Gráfica'],
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 23,
@@ -213,6 +241,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Prenda base', 'Color', 'Técnica de estampado/bordado', 'Distribución de talles', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 26,
@@ -227,6 +257,8 @@ export const productsData: ProductSeedData[] = [
     configurable: [],
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 27,
@@ -241,6 +273,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Tipo de sitio', 'Alcance y páginas', 'Funcionalidades (WhatsApp, reservas, pagos)', 'Mantenimiento'],
     priceFrom: 350000,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 31,
@@ -255,6 +289,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Canal principal', 'Objetivo y flujo', 'Nivel de integración'],
     priceFrom: 450000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 28,
@@ -269,6 +305,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Objetivo comercial', 'Canal (Meta, Google)', 'Cantidad de piezas gráficas', 'Duración de la gestión'],
     priceFrom: 220000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'VENTAS',
   },
   {
     order: 30,
@@ -282,6 +320,8 @@ export const productsData: ProductSeedData[] = [
     consultationNote: 'Cada proyecto audiovisual requiere relevar locación, equipamiento, guión y jornadas de rodaje.',
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'PROYECTOS',
   },
   {
     order: 29,
@@ -295,6 +335,8 @@ export const productsData: ProductSeedData[] = [
     consultationNote: 'El desarrollo de identidad parte de un diagnóstico estratégico del negocio y su competencia.',
     priceFrom: 2200000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 32,
@@ -308,6 +350,8 @@ export const productsData: ProductSeedData[] = [
     consultationNote: 'Servicio a medida según el estadio del negocio, volumen de operaciones y objetivos.',
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 33,
@@ -329,54 +373,72 @@ export const productsData: ProductSeedData[] = [
     consultationNote: 'Cada evento requiere definir qué contacto se busca, cómo se captura y qué debería pasar después. Puede integrar herramientas como WhatsApp o CRM cuando tenga sentido. No es un kit de piezas ni una promesa de cantidad de contactos.',
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'VENTAS',
   },
   {
     order: 1,
     slug: 'diseno-flyer-volante',
     catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 120000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 5,
     slug: 'diseno-cartel-afiche',
     catalogType: 'COSA', name: 'Diseño de Cartel / Afiche', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 160000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 2,
     slug: 'diseno-pack-graficos-redes',
     catalogType: 'COSA', name: 'Diseño Pack de piezas para redes (10)', modality: 'CONSULTAR', engine: null,
     whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 230000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 6,
     slug: 'diseno-carteleria-rotulos',
     catalogType: 'COSA', name: 'Diseño de Cartelería / Rótulos', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño de piezas gráficas para cartelería y rótulos comerciales.', purpose: 'Definir qué se comunica y cómo se ve antes de producir la cartelería.', includes: ['Diseño de la pieza', 'Adaptación al formato definido', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 220000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 3,
     slug: 'diseno-menu-gastronomico',
     catalogType: 'COSA', name: 'Diseño de Menú Gastronómico', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 250000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 7,
     slug: 'diseno-vidriera',
     catalogType: 'COSA', name: 'Diseño de Vidriera', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño de una propuesta gráfica para una vidriera o escaparate comercial.', purpose: 'Definir qué debería ver primero quien pasa frente al local.', includes: ['Concepto visual', 'Diseño de la propuesta', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 300000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 4,
     slug: 'diseno-etiquetas',
     catalogType: 'COSA', name: 'Diseño de Etiquetas', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 350000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 8,
     slug: 'diseno-papeleria-corporativa',
     catalogType: 'COSA', name: 'Diseño de Papelería Corporativa', modality: 'CONSULTAR', engine: null,
     whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Aplicación de identidad existente a tres piezas acordadas', 'Criterio visual consistente', 'Hasta dos rondas de ajustes', 'Archivos finales listos para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 400000, active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 11,
@@ -391,6 +453,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Medida', 'Terminación', 'Cantidad'],
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 14,
@@ -405,6 +469,8 @@ export const productsData: ProductSeedData[] = [
     configurable: ['Tipo de talonario', 'Formato', 'Cantidad de talonarios'],
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
 
   // Servicios digitales y producción musical. Publicables sin precio hasta definir cada alcance.
@@ -422,6 +488,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 350000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'VENTAS',
   },
   {
     order: 35,
@@ -437,6 +505,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 800000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 36,
@@ -452,6 +522,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 800000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'VENTAS',
   },
   {
     order: 37,
@@ -467,6 +539,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 350000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'VENTAS',
   },
   {
     order: 38,
@@ -482,6 +556,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 600000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'VENTAS',
   },
   {
     order: 39,
@@ -497,6 +573,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 350000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 40,
@@ -512,6 +590,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 41,
@@ -527,6 +607,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'PROYECTOS',
   },
   {
     order: 42,
@@ -542,6 +624,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'PROYECTOS',
   },
   {
     order: 43,
@@ -557,6 +641,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 44,
@@ -572,6 +658,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 45,
@@ -587,6 +675,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 46,
@@ -602,6 +692,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: false,
+    publicGroup: null,
   },
   {
     order: 47,
@@ -617,6 +709,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 48,
@@ -632,6 +726,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 49,
@@ -647,6 +743,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
   {
     order: 50,
@@ -662,6 +760,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: 180000,
     active: true,
+    publicVisible: true,
+    publicGroup: 'MARCA',
   },
   {
     order: 51,
@@ -677,6 +777,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
+    publicVisible: true,
+    publicGroup: 'EXPERIENCIA',
   },
 
 ];
