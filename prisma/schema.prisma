@@ -449,6 +449,8 @@ model Product {
   engine                   ConfiguratorEngine?
   images                   String[]            @default([])
   active                   Boolean             @default(true)
+  publicVisible            Boolean             @default(false)
+  publicGroup              String?
   sortOrder                Int                 @default(999)
   stock                    Int                 @default(0)
   briefType                String?             @default("NONE")
@@ -478,6 +480,7 @@ model Product {
   categoryLinks        ProductCategory[]
 
   @@index([catalogType, active])
+  @@index([publicVisible, publicGroup, active])
   @@index([modality, active])
   @@index([engine])
 }
