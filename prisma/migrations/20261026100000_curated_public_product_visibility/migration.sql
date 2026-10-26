@@ -48,4 +48,23 @@ SET "publicVisible" = true,
     END
 WHERE "slug" IN ('anuncios-campanas', 'sistema-captacion-eventos', 'landing-pages', 'tiendas-online', 'catalogos-digitales', 'webs-eventos-reservas', 'tarjetas-vouchers', 'flyers-desplegables', 'tags-etiquetas', 'adhesivos-stickers', 'fajas-envoltorios', 'bolsas-contenedores', 'cajas-personalizadas', 'menus-cartas', 'carteleria-ploteo', 'corporeos-marquesinas', 'senaletica-placas', 'expositores-stands', 'sistema-identidad', 'diseno-flyer-volante', 'diseno-cartel-afiche', 'diseno-pack-graficos-redes', 'diseno-carteleria-rotulos', 'diseno-menu-gastronomico', 'diseno-vidriera', 'diseno-etiquetas', 'diseno-papeleria-corporativa', 'diseno-presentaciones-digitales', 'asistentes-bots', 'sitios-web-institucionales', 'rediseno-web-optimizacion', 'mantenimiento-web', 'automatizaciones-comerciales', 'formularios-cotizadores-digitales', 'integraciones-digitales', 'recursos-digitales-a-medida', 'produccion-audiovisual', 'jingle-publicitario', 'identidad-sonora', 'musica-original-cine');
 
+-- Seed the first approved portfolio sample without overwriting other media/configuration.
+UPDATE "Product"
+SET "mediaList" = (
+  SELECT COALESCE(jsonb_agg(entry), '[]'::jsonb)
+  FROM jsonb_array_elements(
+    CASE
+      WHEN jsonb_typeof("Product"."mediaList") = 'array' THEN "Product"."mediaList"
+      ELSE '[]'::jsonb
+    END
+  ) AS entry
+  WHERE entry->>'type' <> 'SOUNDCLOUD'
+) || jsonb_build_array(jsonb_build_object(
+  'id', 'soundcloud-1',
+  'type', 'SOUNDCLOUD',
+  'url', 'https://soundcloud.com/eliel-comerci/sets/music-for-films-and-tv',
+  'title', 'Music for Films and TV'
+))
+WHERE "slug" = 'musica-original-cine';
+
 CREATE INDEX "Product_publicVisible_publicGroup_active_idx" ON "Product"("publicVisible", "publicGroup", "active");
