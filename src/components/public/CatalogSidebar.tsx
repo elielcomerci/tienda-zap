@@ -13,6 +13,7 @@ export default function CatalogSidebar({
   situation,
   businessType,
   catalogType,
+  publicGroup,
 }: {
   categories: { id: string; name: string; slug: string }[]
   intentions: DiscoverySituation[]
@@ -23,6 +24,7 @@ export default function CatalogSidebar({
   situation?: string
   businessType?: string
   catalogType?: 'cosa' | 'desarrollo'
+  publicGroup?: 'VENTAS' | 'MARCA' | 'EXPERIENCIA' | 'PROYECTOS'
 }) {
   const currentMode = mode || 'product'
   const isSituationMode = currentMode === 'objective' || currentMode === 'situation'
@@ -33,6 +35,7 @@ export default function CatalogSidebar({
     mode: isSituationMode ? 'situation' : currentMode === 'rubro' ? 'rubro' : currentMode === 'product' ? 'product' : undefined,
     businessTypeSlug: businessType,
     situationSlug: currentSituation,
+    publicGroup,
   }
   const catalogUrl = (overrides: Record<string, string | undefined> = {}) => buildProductsUrl(explorationContext, overrides)
 
