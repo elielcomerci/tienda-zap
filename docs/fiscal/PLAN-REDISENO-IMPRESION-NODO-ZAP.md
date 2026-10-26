@@ -61,6 +61,11 @@ La referencia de REVEX es el modelo técnico deseado para la experiencia: docume
 - La plantilla ya incluye datos comerciales, `logoUrl`, `primaryColor` y `designVariant` (`classic | modern | editorial`). Por tanto, las tres propuestas existentes son variantes del renderer actual, no evidencia de que haya tres composiciones visualmente distintas adecuadas para impresión nativa.
 - La auditoría no considera validado el cumplimiento fiscal por el mero hecho de que el renderer actual tenga validaciones. Falta contrastar los campos y leyendas con tipos de comprobante realmente soportados y normativa vigente antes de cerrar el diseño.
 
+- La configuración visual se guarda en `FiscalInvoiceTemplate`, vinculada a la cuenta fiscal, mediante `GET/PUT /api/fiscal/template`; el esquema Zod ya restringe el logo a `https://media.zap.com.ar/` y el color a hexadecimal. La UI nueva debe preservar esas validaciones y revisar si los campos comerciales actuales exceden la personalización ahora acordada.
+- La emisión de la interfaz usa `/api/nodo/invoices/emit`; el registro del panel se crea en el flujo de emisión y guarda el snapshot de plantilla. La nueva capa de impresión debe recibir comprobantes persistidos y autorizados, no reconstruir ni reenviar la solicitud de emisión.
+- La salida de lote actual valida los comprobantes seleccionados y crea un PDF local. Eso sirve para exportación de selección, pero no garantiza reimpresión del lote Excel original ni continuidad si se cierra/recarga el navegador.
+- La plantilla tiene campos comerciales amplios (teléfono, WhatsApp, web, pie, actividades y datos de emisor) además de logo/color. La decisión de producto reduce el editor visible a logo, acento y datos comerciales permitidos; no significa borrar de golpe los campos persistidos antes de comprobar sus usos y compatibilidad histórica.
+
 **Brecha de arquitectura prioritaria:** el requisito nuevo de recuperar un lote completo requiere un modelo persistente de lote y sus elementos ordenados, o una alternativa relacional equivalente. Debe diseñarse sin alterar la idempotencia ni permitir que la impresión reintente una emisión. La migración debe ser compatible con facturas ya guardadas que no pertenezcan a ningún lote.
 
 ## 3. Requisito: contenido variable, varias páginas y lotes
