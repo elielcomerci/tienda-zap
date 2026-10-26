@@ -93,6 +93,8 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
 
   const publicGroupValue = String(formData.get('publicGroup') || '').trim()
   const publicGroup = ['VENTAS', 'MARCA', 'EXPERIENCIA', 'PROYECTOS'].includes(publicGroupValue) ? publicGroupValue : null
+  const publicVisible = formData.get('publicVisible') === 'on'
+  if (publicVisible && !publicGroup) throw new Error('Elegí una puerta de entrada antes de publicar el producto.')
 
   const vatRateInput = String(formData.get('vatRatePercent') ?? '').trim()
   const vatRatePercent = vatRateInput ? Number(vatRateInput) : null
@@ -110,8 +112,8 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
     vatRatePercent,
     priceFrom: null,
     active: formData.get('active') !== 'false',
-    publicVisible: formData.get('publicVisible') === 'on',
-    publicGroup: formData.get('publicVisible') === 'on' ? publicGroup : null,
+    publicVisible,
+    publicGroup: publicVisible ? publicGroup : null,
     images: productImages(formData, fallbackImages),
     stock: 0,
     briefType: 'NONE',
