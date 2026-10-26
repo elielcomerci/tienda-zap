@@ -688,6 +688,8 @@ model Order {
   cryptoPayments        CryptoPayment[]
   transferPaymentReconciliation TransferPaymentReconciliation?
   sellerIncentiveContributions SellerIncentiveOrderContribution[]
+
+  @@index([businessAccountId, createdAt])
 }
 
 model TransferPaymentReconciliation {
