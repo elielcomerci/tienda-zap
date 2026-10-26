@@ -7,9 +7,9 @@ type FeatureFlags = Record<FiscalFeatureFlagKey, boolean>
  * the persisted admin flag and an explicit deployment-level opt-in.
  * An enabled DB row alone must never authorize real fiscal issuance.
  */
-export function applyFiscalFeatureGates(flags: FeatureFlags, allowProductionEmission: boolean): FeatureFlags {
+export function applyFiscalFeatureGates(flags: FeatureFlags, allowProductionEmission: boolean, hasPersistedProductionFlag: boolean): FeatureFlags {
   return {
     ...flags,
-    invoiceEmissionProd: allowProductionEmission && flags.invoiceEmissionProd,
+    invoiceEmissionProd: allowProductionEmission && hasPersistedProductionFlag && flags.invoiceEmissionProd,
   }
 }
