@@ -974,7 +974,11 @@ export const adhesivosStickersConfigurator: ConfiguratorVersionSeedData = {
     commercialPricingPolicy: {
       version: 1,
       mode: 'MARKUP',
-      percentage: 110,
+      // Ajuste de posicionamiento: 125% sobre costo neto + IVA.
+      // En stickers circulares de papel, 5 cm, el precio estimado queda cerca del promedio
+      // entre B377 ($60.000/500; $110.000/1.000) y Dokan ($95.000/1.000).
+      // Revisar de nuevo cuando se confirme el tratamiento de IVA de cada competidor.
+      percentage: 125,
       vatRatePercent: 21,
     },
     // El corte recto usa un margen del 50% + IVA: queda entre las referencias locales
