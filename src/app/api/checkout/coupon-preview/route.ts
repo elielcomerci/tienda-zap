@@ -9,6 +9,7 @@ const couponPreviewSchema = z.object({
     z.object({
       productId: z.string(),
       quantity: z.number().int().positive(),
+      unitPrice: z.number().min(0).optional(),
       notes: z.string().optional(),
       briefType: z.enum(['NONE', 'DESIGN', 'MUSIC', 'VIDEO']).optional(),
       briefResponses: z.record(z.string(), z.string()).optional(),
