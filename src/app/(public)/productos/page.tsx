@@ -18,6 +18,13 @@ import { getProductDisplayPrice } from '@/lib/product-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
+const PUBLIC_GROUPS = {
+  VENTAS: { title: 'Vender y conseguir más clientes', description: 'Publicidad, páginas y herramientas para convertir interés en consultas o ventas.' },
+  MARCA: { title: 'Marca y comunicación', description: 'Identidad, diseño y piezas para que tu negocio se vea, se entienda y se recuerde.' },
+  EXPERIENCIA: { title: 'Experiencia digital y funcionamiento', description: 'Web, atención e integraciones para que la experiencia de tus clientes funcione mejor.' },
+  PROYECTOS: { title: 'Proyectos específicos', description: 'Soluciones a medida que requieren entender el contexto antes de definir el alcance.' },
+} as const
+
 const BUSINESS_CONTEXT: Record<string, string> = {
   gastronomia: 'Más pedidos, una propuesta que se destaque y una experiencia que invite a volver.',
   'moda-showrooms': 'Una marca sólida conecta producto, espacio, comunicación y experiencia.',
@@ -77,9 +84,10 @@ export default async function ProductsPage({
     necesidad?: string
     rubro?: string
     tipo?: 'cosa' | 'desarrollo'
+    grupo?: 'VENTAS' | 'MARCA' | 'EXPERIENCIA' | 'PROYECTOS'
   }>
 }) {
-  const { cat, q, mode: requestedMode, intent, situacion, necesidad, rubro, tipo } = await searchParams
+  const { cat, q, mode: requestedMode, intent, situacion, necesidad, rubro, tipo, grupo } = await searchParams
 
   // Legacy public entry: Packs/Combos no longer exist as a public layer.
   // Keep old links working by sending them into the real Solutions discovery.
@@ -93,6 +101,7 @@ export default async function ProductsPage({
     if (cat) params.set('cat', cat)
     if (q) params.set('q', q)
     if (tipo) params.set('tipo', tipo)
+    if (grupo) params.set('grupo', grupo)
     if (situacion || intent) params.set('situacion', situacion || intent || '')
     if (necesidad) params.set('necesidad', necesidad)
     redirect(`/productos?${params.toString()}`)
@@ -119,6 +128,7 @@ export default async function ProductsPage({
     if (cat) params.set('cat', cat)
     if (q) params.set('q', q)
     if (tipo) params.set('tipo', tipo)
+    if (grupo) params.set('grupo', grupo)
     const suffix = params.toString()
     redirect(suffix ? `/productos?${suffix}` : '/productos')
   }
@@ -141,6 +151,7 @@ export default async function ProductsPage({
           situationPriority: rubro ? BUSINESS_SITUATION_PRIORITY[rubro] : undefined,
         } : undefined,
         catalogType: mode === 'product' ? (tipo === 'cosa' ? 'COSA' : tipo === 'desarrollo' ? 'DESARROLLO' : undefined) : undefined,
+        publicGroup: grupo,
       }
     ), 
     getPublicCategories()
@@ -155,6 +166,7 @@ export default async function ProductsPage({
     businessTypeSlug: rubro,
     situationSlug: selectedSituation?.slug,
     needSlug: selectedNeed?.slug,
+    publicGroup: grupo,
   }
 
   return (
@@ -164,19 +176,23 @@ export default async function ProductsPage({
           <section className="mb-8 flex flex-col gap-3 border-b border-gray-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-3xl">
               <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">
-                {mode === 'rubro'
-                  ? selectedBusinessType?.name || '¿En qué rubro trabajás?'
-                  : tipo === 'desarrollo'
+                {grupo
+                  ? PUBLIC_GROUPS[grupo].title
+                  : mode === 'rubro'
+                    ? selectedBusinessType?.name || '¿En qué rubro trabajás?'
+                    : tipo === 'desarrollo'
                     ? 'Desarrollos ZAP'
                     : tipo === 'cosa'
                       ? 'Productos ZAP'
                       : 'Productos y desarrollos'}
               </h1>
-              {(mode === 'rubro' && selectedBusinessType || tipo === 'desarrollo' || tipo === 'cosa') && (
+              {(grupo || mode === 'rubro' && selectedBusinessType || tipo === 'desarrollo' || tipo === 'cosa') && (
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
-                  {mode === 'rubro' && selectedBusinessType
-                    ? BUSINESS_CONTEXT[selectedBusinessType.slug]
-                    : tipo === 'desarrollo'
+                  {grupo
+                    ? PUBLIC_GROUPS[grupo].description
+                    : mode === 'rubro' && selectedBusinessType
+                      ? BUSINESS_CONTEXT[selectedBusinessType.slug]
+                      : tipo === 'desarrollo'
                       ? 'Soluciones a medida para tu negocio.'
                       : 'Productos para elegir, configurar o comprar.'}
                 </p>
@@ -202,6 +218,7 @@ export default async function ProductsPage({
         {!isSituationMode && mode !== 'rubro' && (
           <form action="/productos" method="GET" role="search" className="mb-6 flex max-w-2xl items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm focus-within:border-[#ED164F]/50">
             {tipo && <input type="hidden" name="tipo" value={tipo} />}
+            {grupo && <input type="hidden" name="grupo" value={grupo} />}
             {cat && <input type="hidden" name="cat" value={cat} />}
             {rubro && <input type="hidden" name="rubro" value={rubro} />}
             <Search size={19} className="ml-2 shrink-0 text-gray-400" aria-hidden="true" />
@@ -223,6 +240,7 @@ export default async function ProductsPage({
               situation={situacion}
               businessType={rubro}
               catalogType={tipo}
+              publicGroup={grupo}
             />
           )}
 
