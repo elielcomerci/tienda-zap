@@ -31,7 +31,7 @@
 
 ## Compuerta de emisión real
 
-La emisión en PROD requiere dos condiciones simultáneas: la flag administrativa `invoiceEmissionProd` y la variable de entorno de servidor `FISCAL_PROD_EMISSION_ENABLED=true`. Si la variable no existe o tiene otro valor, el servidor y la UI deben mostrar la emisión PROD desactivada aunque la base conserve una flag habilitada. No configurar esta variable hasta terminar la prueba controlada en homologación y confirmar certificados, autorización y puntos de venta.
+La emisión en PROD requiere dos condiciones simultáneas: una flag administrativa `invoiceEmissionProd` explícitamente persistida y habilitada, y la variable de entorno de servidor `FISCAL_PROD_EMISSION_ENABLED=true`. Si la fila no existe, está deshabilitada o la variable no existe o tiene otro valor, el servidor y la UI deben mostrar la emisión PROD desactivada. No configurar esta variable hasta terminar la prueba controlada en homologación y confirmar certificados, autorización y puntos de venta.
 
 ## Pendiente antes de habilitar
 
