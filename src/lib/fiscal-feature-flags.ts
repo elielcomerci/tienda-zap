@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { applyFiscalFeatureGates } from '@/lib/fiscal-feature-flag-policy'
 
 export const FISCAL_FEATURE_FLAGS = {
   accountProvisioning: { key: 'accountProvisioning', label: 'Alta de cuentas fiscales', description: 'Crear o vincular tenants del Worker desde el panel.' },
@@ -26,7 +27,8 @@ export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean>
   apiKeyManagement: true,
   certificateManagement: true,
   invoiceEmissionTest: true,
-  invoiceEmissionProd: true,
+  // Fail closed if the production flag has not been explicitly persisted.
+  invoiceEmissionProd: false,
   batchImport: true,
   pdfExport: true,
   manualInvoiceRegistration: true,
@@ -64,7 +66,8 @@ export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagK
     for (const row of rows) {
       if (row.key in result) result[row.key as FiscalFeatureFlagKey] = row.enabled
     }
-    return result
+    const hasPersistedProductionFlag = rows.some(row => row.key === 'invoiceEmissionProd')
+    return applyFiscalFeatureGates(result, process.env.FISCAL_PROD_EMISSION_ENABLED === 'true', hasPersistedProductionFlag)
   } catch (error) {
     // Fail closed whenever the settings store is unavailable.
     console.error('[fiscal/feature-flags] read failed; all flags disabled', error instanceof Error ? error.name : 'UnknownError')

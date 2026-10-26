@@ -29,6 +29,10 @@
 - `FISCAL_CREDENTIALS_ENCRYPTION_KEY`
 - `AUTH_SECRET` o `NEXTAUTH_SECRET`
 
+## Compuerta de emisión real
+
+La emisión en PROD requiere dos condiciones simultáneas: una flag administrativa `invoiceEmissionProd` explícitamente persistida y habilitada, y la variable de entorno de servidor `FISCAL_PROD_EMISSION_ENABLED=true`. Si la fila no existe, está deshabilitada o la variable no existe o tiene otro valor, el servidor y la UI deben mostrar la emisión PROD desactivada. No configurar esta variable hasta terminar la prueba controlada en homologación y confirmar certificados, autorización y puntos de venta.
+
 ## Pendiente antes de habilitar
 
 - Los cupos de comprobantes, padrón y otros requests son incluidos, no cortes: al superarlos el Worker mantiene la operación y registra `overage`. Tienda muestra las tres categorías por separado, pero no calcula cargos hasta definir tarifa y regularización. El rate limit por minuto es independiente.
