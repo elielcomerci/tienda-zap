@@ -46,7 +46,28 @@ export default function ProductContextForm({
     })
   }, [answers, config, otherValues])
 
-  if (!config) return null
+  if (!config) {
+    const inquiryMessage = encodeURIComponent(`Hola, quiero consultar por ${product.name}.`)
+    return (
+      <section className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-7">
+        {typeof product.priceFrom === 'number' && product.priceFrom > 0 ? (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio inicial orientativo</p>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Desde ${product.priceFrom.toLocaleString('es-AR')} ARS</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-300">El alcance y el presupuesto final se confirman con ZAP.</p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio</p>
+            <h2 className="mt-3 text-2xl font-black sm:text-3xl">A definir según alcance</h2>
+          </>
+        )}
+        <a href={`https://wa.me/541125832323?text=${inquiryMessage}`} target="_blank" rel="noreferrer" className="mt-6 flex w-full items-center justify-center gap-2 rounded-[24px] bg-[#ED164F] px-8 py-4 font-bold text-white transition hover:bg-[#F7638B]">
+          Consultar con ZAP
+        </a>
+      </section>
+    )
+  }
 
   const setSingle = (question: ProductInquiryQuestion, value: string) => {
     setAnswers((current) => ({ ...current, [question.id]: value }))
