@@ -167,6 +167,7 @@ export default async function ProductsPage({
     businessTypeSlug: rubro,
     situationSlug: selectedSituation?.slug,
     needSlug: selectedNeed?.slug,
+    publicGroup: grupo,
   }
 
   return (
@@ -240,6 +241,7 @@ export default async function ProductsPage({
               situation={situacion}
               businessType={rubro}
               catalogType={tipo}
+              publicGroup={grupo}
             />
           )}
 
