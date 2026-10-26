@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { notFound } from 'next/navigation'
-import { getActiveProductSlugs, getProduct } from '@/lib/products'
+import { getProduct } from '@/lib/products'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductDetailExperience from '@/components/public/ProductDetailExperience'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
@@ -14,11 +14,10 @@ import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
 export const revalidate = 300
 
+// Generate product detail pages on demand instead of querying the database at build time.
+// This keeps builds independent from whether the target database has received the latest migration.
 export async function generateStaticParams() {
-  const products = await getActiveProductSlugs()
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
+  return []
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
