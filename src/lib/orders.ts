@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import { findAccessibleOrder } from '@/lib/order-access'
 
 const validOrderStatuses = new Set([
@@ -96,12 +97,32 @@ export async function getOrderForViewer(id: string, accessToken?: string) {
   })
 }
 
+/**
+ * A signed-in customer can access their own orders and orders explicitly linked
+ * to their uniquely resolved BusinessAccount. Ambiguous account identities never
+ * grant account-wide access.
+ */
 export async function getCustomerOrder(id: string, userId?: string) {
   const sessionUserId = userId ?? (await auth())?.user?.id
   if (!sessionUserId) throw new Error('No autorizado')
 
+  const user = await prisma.user.findUnique({
+    where: { id: sessionUserId },
+    select: { email: true },
+  })
+  const businessAccountId = await findUniqueBusinessAccountId({
+    userId: sessionUserId,
+    email: user?.email,
+  })
+
   return prisma.order.findFirst({
-    where: { id, userId: sessionUserId },
+    where: {
+      id,
+      OR: [
+        { userId: sessionUserId },
+        ...(businessAccountId ? [{ businessAccountId }] : []),
+      ],
+    },
     include: viewerOrderInclude,
   })
 }

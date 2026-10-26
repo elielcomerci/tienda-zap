@@ -1,6 +1,7 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import Link from 'next/link'
 import { ArrowRight, BriefcaseBusiness, FolderOpen, Package, ReceiptText, UserRound } from 'lucide-react'
 
@@ -23,14 +24,24 @@ export default async function PerfilPage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const [user, orders] = await Promise.all([
-    prisma.user.findUnique({ where: { id: session.user.id } }),
-    prisma.order.findMany({
-      where: { userId: session.user.id }, orderBy: { createdAt: 'desc' }, take: 4,
-      include: { items: { include: { product: { select: { name: true } } } } },
-    }),
-  ])
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } })
   if (!user) redirect('/login')
+
+  const businessAccountId = await findUniqueBusinessAccountId({
+    userId: session.user.id,
+    email: user.email,
+  })
+  const orders = await prisma.order.findMany({
+    where: {
+      OR: [
+        { userId: session.user.id },
+        ...(businessAccountId ? [{ businessAccountId }] : []),
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 4,
+    include: { items: { include: { product: { select: { name: true } } } } },
+  })
 
   const firstName = user.name?.trim().split(/\s+/)[0] || 'Hola'
   const areas = [

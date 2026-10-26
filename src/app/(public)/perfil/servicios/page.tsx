@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { ArrowRight, ArrowUpRight, Package } from 'lucide-react'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import { OrderStatus, Prisma } from '@prisma/client'
 import { getOrderDisplayCode } from '@/lib/orders-workflow'
 
@@ -42,11 +43,27 @@ export default async function ServiciosPage({ searchParams }: { searchParams: Pr
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { email: true },
+  })
+  if (!user) redirect('/login')
+
+  const businessAccountId = await findUniqueBusinessAccountId({
+    userId: session.user.id,
+    email: user.email,
+  })
   const params = await searchParams
   const estado = filters.find(filter => filter.value === params.estado)?.value ?? 'todos'
   const page = Math.max(1, Number.parseInt(params.pagina || '1', 10) || 1)
   const pageSize = 15
-  const baseWhere: Prisma.OrderWhereInput = { userId: session.user.id, status: { in: serviceStatuses } }
+  const baseWhere: Prisma.OrderWhereInput = {
+    OR: [
+      { userId: session.user.id },
+      ...(businessAccountId ? [{ businessAccountId }] : []),
+    ],
+    status: { in: serviceStatuses },
+  }
   const statuses = estado === 'curso' ? inProgressStatuses : estado === 'finalizados' ? finishedStatuses : undefined
   const where: Prisma.OrderWhereInput = { ...baseWhere, ...(statuses ? { status: { in: statuses } } : {}) }
   const [orders, total, statusCounts] = await Promise.all([
