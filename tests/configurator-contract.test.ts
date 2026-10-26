@@ -198,6 +198,55 @@ test('flyers habilita costos offset y digitales según la matriz disponible', ()
   );
 });
 
+test('flyers expone 2.500 y 5.000 unidades y cotiza las celdas offset documentadas', () => {
+  const config = flyersDesplegablesConfigurator;
+  const quantityOptions = ((config.schema.fields as any).quantity.options || []).map((option: any) => option.value);
+  assert.ok(quantityOptions.includes(2500));
+  assert.ok(quantityOptions.includes(5000));
+
+  for (const quantity of [2500, 5000]) {
+    const quote = quoteConfiguratorSelection(
+      config as any,
+      {
+        ...defaultSelection(config),
+        foldingType: 'plano',
+        format: '10x15',
+        material: 'ilustracion_115g',
+        printing: '4_4',
+        quantity,
+      },
+      { profitMargin: 0 } as any,
+    );
+    assertQuoteFinancials(quote);
+    assert.equal(quote.taxTreatment, 'INCLUDED');
+  }
+});
+
+test('tarjetas muestra 3.000 y 5.000 unidades como consulta hasta validar los costos offset', () => {
+  const config = tarjetasVouchersConfigurator;
+  const quantityOptions = ((config.schema.fields as any).quantity.options || []).map((option: any) => option.value);
+  assert.ok(quantityOptions.includes(3000));
+  assert.ok(quantityOptions.includes(5000));
+  assert.deepEqual((config.pricing as any).consultRequiredQuantities, [3000, 5000]);
+
+  assert.throws(
+    () => quoteConfiguratorSelection(
+      config as any,
+      {
+        ...defaultSelection(config),
+        productionProcess: 'offset',
+        format: '9x5',
+        material: 'ilustracion_350g',
+        printing: '4_4',
+        lamination: 'sin_laminar',
+        quantity: 3000,
+      },
+      { profitMargin: 0 } as any,
+    ),
+    /validación comercial/,
+  );
+});
+
 test('los procesos obligatorios están resueltos a terminaciones reales del adapter', () => {
   for (const config of configs) {
     const processes = config.compatibility?.requiredProcesses || [];
