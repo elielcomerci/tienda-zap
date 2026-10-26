@@ -99,6 +99,45 @@ FROM unique_consultation_candidates uc
 WHERE cr."id" = uc."consultId"
   AND cr."businessAccountId" IS NULL;
 
+-- Attach orders to the common account when the registered user or guest email is unambiguous.
+ALTER TABLE "Order"
+ADD COLUMN "businessAccountId" TEXT;
+
+CREATE INDEX "Order_businessAccountId_createdAt_idx"
+ON "Order"("businessAccountId", "createdAt");
+
+ALTER TABLE "Order"
+ADD CONSTRAINT "Order_businessAccountId_fkey"
+FOREIGN KEY ("businessAccountId") REFERENCES "BusinessAccount"("id")
+ON DELETE SET NULL ON UPDATE CASCADE;
+
+WITH order_candidates AS (
+  SELECT o."id" AS "orderId", ba."id" AS "accountId"
+  FROM "Order" o
+  JOIN "BusinessAccount" ba ON ba."userId" = o."userId"
+  WHERE o."userId" IS NOT NULL
+
+  UNION
+
+  SELECT o."id" AS "orderId", bc."accountId"
+  FROM "Order" o
+  JOIN "BusinessContact" bc
+    ON o."guestEmail" IS NOT NULL
+   AND lower(trim(bc."email")) = lower(trim(o."guestEmail"))
+  WHERE trim(o."guestEmail") <> ''
+),
+unique_order_candidates AS (
+  SELECT "orderId", MIN("accountId") AS "accountId"
+  FROM order_candidates
+  GROUP BY "orderId"
+  HAVING COUNT(DISTINCT "accountId") = 1
+)
+UPDATE "Order" o
+SET "businessAccountId" = uc."accountId"
+FROM unique_order_candidates uc
+WHERE o."id" = uc."orderId"
+  AND o."businessAccountId" IS NULL;
+
 CREATE TABLE "CustomerConversation" (
   "id" TEXT NOT NULL,
   "businessAccountId" TEXT NOT NULL,
