@@ -32,10 +32,11 @@ export async function importCustomerConversation(formData: FormData) {
     : '/admin/clientes/conversaciones'
   const businessAccountId = String(formData.get('businessAccountId') || '').trim()
   const title = String(formData.get('title') || '').trim().slice(0, 180)
-  const rawTranscript = String(formData.get('rawTranscript') || '').trim()
+  // Keep the pasted source intact; use trim only to validate that it is not blank.
+  const rawTranscript = String(formData.get('rawTranscript') || '')
   const dateValue = String(formData.get('conversationAt') || '').trim()
 
-  if (!businessAccountId || rawTranscript.length < 10) {
+  if (!businessAccountId || rawTranscript.trim().length < 10) {
     redirect(returnPath + '?error=missing')
   }
   if (rawTranscript.length > 100000) {
@@ -66,28 +67,31 @@ export async function importCustomerConversation(formData: FormData) {
   }
 
   try {
-    const conversation = await prisma.customerConversation.create({
-      data: {
-        businessAccountId,
-        importedById: user.id,
-        title: title || null,
-        source: 'WHATSAPP_PASTE',
-        rawTranscript,
-        contentHash,
-        conversationAt,
-      },
-    })
+    // The source record and its timeline event must succeed or fail together.
+    await prisma.$transaction(async (tx) => {
+      const conversation = await tx.customerConversation.create({
+        data: {
+          businessAccountId: account.id,
+          importedById: user.id,
+          title: title || null,
+          source: 'WHATSAPP_PASTE',
+          rawTranscript,
+          contentHash,
+          conversationAt,
+        },
+      })
 
-    await prisma.customerTimelineEvent.create({
-      data: {
-        businessAccountId,
-        actorUserId: user.id,
-        eventType: 'CONVERSATION_IMPORTED',
-        sourceType: 'CUSTOMER_CONVERSATION',
-        sourceId: conversation.id,
-        occurredAt: conversationAt || conversation.importedAt,
-        payload: { source: 'WHATSAPP_PASTE', title: title || null },
-      },
+      await tx.customerTimelineEvent.create({
+        data: {
+          businessAccountId: account.id,
+          actorUserId: user.id,
+          eventType: 'CONVERSATION_IMPORTED',
+          sourceType: 'CUSTOMER_CONVERSATION',
+          sourceId: conversation.id,
+          occurredAt: conversationAt || conversation.importedAt,
+          payload: { source: 'WHATSAPP_PASTE', title: title || null },
+        },
+      })
     })
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
