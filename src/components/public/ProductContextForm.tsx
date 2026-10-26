@@ -5,6 +5,7 @@ import type { FormEvent } from 'react'
 import { ArrowRight, Check, LoaderCircle } from 'lucide-react'
 import { PRODUCT_INQUIRY_CONFIGS, type ProductInquiryQuestion } from '@/lib/product-inquiry-config'
 import type { ExplorationContext } from '@/lib/exploration-context'
+import { formatARS, getPublicPriceBreakdown } from '@/lib/service-public-pricing'
 
 type AnswerValue = string | string[]
 
@@ -48,12 +49,18 @@ export default function ProductContextForm({
 
   if (!config) {
     const inquiryMessage = encodeURIComponent(`Hola, quiero consultar por ${product.name}.`)
+    const priceFrom = typeof product.priceFrom === 'number' && product.priceFrom > 0
+      ? getPublicPriceBreakdown(product.priceFrom)
+      : null
     return (
       <section className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-7">
-        {typeof product.priceFrom === 'number' && product.priceFrom > 0 ? (
+        {priceFrom ? (
           <>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio inicial orientativo</p>
-            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Desde ${product.priceFrom.toLocaleString('es-AR')} ARS</h2>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Desde ${formatARS(priceFrom.gross)} ARS</h2>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-gray-400">IVA incluido</p>
+            <p className="mt-3 text-xs leading-5 text-gray-400">PRECIO SIN IMPUESTOS NACIONALES: ${formatARS(priceFrom.net)}</p>
+            <p className="text-xs leading-5 text-gray-400">IVA ({priceFrom.vatRatePercent}%): ${formatARS(priceFrom.vat)}</p>
             <p className="mt-2 text-sm leading-6 text-gray-300">El alcance y el presupuesto final se confirman con ZAP.</p>
           </>
         ) : (
@@ -135,13 +142,19 @@ export default function ProductContextForm({
 
   return (
     <section className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-7">
-      {typeof product.priceFrom === 'number' && product.priceFrom > 0 ? (
+      {typeof product.priceFrom === 'number' && product.priceFrom > 0 ? (() => {
+        const price = getPublicPriceBreakdown(product.priceFrom)
+        return (
         <>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio inicial orientativo</p>
-          <h2 className="mt-3 text-3xl font-black sm:text-4xl">Desde ${product.priceFrom.toLocaleString('es-AR')} ARS</h2>
+          <h2 className="mt-3 text-3xl font-black sm:text-4xl">Desde ${formatARS(price.gross)} ARS</h2>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-gray-400">IVA incluido</p>
+          <p className="mt-3 text-xs leading-5 text-gray-400">PRECIO SIN IMPUESTOS NACIONALES: ${formatARS(price.net)}</p>
+          <p className="text-xs leading-5 text-gray-400">IVA ({price.vatRatePercent}%): ${formatARS(price.vat)}</p>
           <p className="mt-2 text-sm leading-6 text-gray-300">El alcance y el presupuesto final se confirman con ZAP.</p>
         </>
-      ) : (
+        )
+      })() : (
         <>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio</p>
           <h2 className="mt-3 text-2xl font-black sm:text-3xl">A definir según alcance</h2>
