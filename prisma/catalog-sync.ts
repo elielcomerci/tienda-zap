@@ -37,7 +37,7 @@ async function main() {
   await loadBusinessTypes(prisma);
   await loadSituations(prisma);
   await loadNeeds(prisma);
-  await loadProducts(prisma, { preservePricing: true });
+  await loadProducts(prisma, { preservePricing: true, deactivateMissing: false });
   await loadConfigurators(prisma);
   await loadProductRelations(prisma);
 
