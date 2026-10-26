@@ -665,12 +665,12 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
 
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 2500 }, makeQuoterConfig(config)),
-    /Cantidad '2500' no permitida/,
+    /CONSULT_REQUIRED: No hay costo real cargado/,
   );
 
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 5000 }, makeQuoterConfig(config)),
-    /Cantidad '5000' no permitida/,
+    /CONSULT_REQUIRED: No hay costo real cargado/,
   );
 
   assert.throws(
