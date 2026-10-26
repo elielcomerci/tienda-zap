@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { calculateProductQuote, getQuoterMaterials } from '@/lib/pricing/product-quoter'
+import { assertQuotedPriceCurrent, resolveSemanticCheckoutQuote } from '@/lib/pricing/semantic-checkout-quote'
+import { impresosPackagingConfigurators } from '../../prisma/seed/data/06-configurators/impresos-packaging'
+import { presenciaFisicaConfigurators } from '../../prisma/seed/data/06-configurators/presencia-fisica'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 
 function sortSelectedOptions(options: Array<{ name: string; value: string }> = []) {
@@ -45,29 +48,33 @@ function parseSizeLabel(value?: string) {
 function buildConfigurationSnapshot(input: {
   product: any
   selectedOptions: Array<{ name: string; value: string }>
+  configuratorSelection?: Record<string, string | number | boolean | string[]>
+  activeConfigurator?: any
   unitPrice: number
   quantity: number
   priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo'
   vatRatePercent: number | null
 }) {
-  const { product, selectedOptions, unitPrice, quantity, priceSource, vatRatePercent } = input
+  const { product, selectedOptions, configuratorSelection, activeConfigurator, unitPrice, quantity, priceSource, vatRatePercent } = input
   const inferredBlocks = product.quoterConfig
     ? ['material', 'size', 'quantity', 'finishing']
     : product.options.map((option: { name: string }) => option.name)
 
   return {
     productSlug: product.slug,
-    version: product.configuratorVersions?.[0]?.schemaVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
+    version: activeConfigurator?.schemaVersion || product.configuratorVersions?.[0]?.schemaVersion || (product.quoterConfig ? 'quoter-v1' : product.options.length ? 'variants-v1' : 'simple-v1'),
     result: product.modality === 'CONSULTAR'
       ? 'GUIDED_REVIEW'
-      : product.quoterConfig
+      : activeConfigurator || product.quoterConfig
         ? 'CALCULATED_PRICE'
         : 'DIRECT_PRICE',
-    definition: product.configuratorVersions?.[0]?.schema || {
+    definition: activeConfigurator?.schema || product.configuratorVersions?.[0]?.schema || {
       kind: product.quoterConfig ? 'product-quoter' : product.options.length ? 'product-options' : 'simple-product',
       blocks: inferredBlocks,
     },
     selections: selectedOptions,
+    selectionValues: configuratorSelection || null,
+    pricingPolicy: activeConfigurator ? { schemaVersion: activeConfigurator.schemaVersion, compatibility: activeConfigurator.compatibility, pricing: activeConfigurator.pricing } : null,
     price: {
       unitPrice,
       quantity,
@@ -106,6 +113,7 @@ export async function resolveCheckoutOrderItems(
     fileUrl?: string
     designRequested?: boolean
     selectedOptions?: Array<{ name: string; value: string }>
+    configuratorSelection?: Record<string, string | number | boolean | string[]>
   }>
 ) {
   const productIds = [...new Set(items.map((item) => item.productId))]
@@ -158,8 +166,8 @@ export async function resolveCheckoutOrderItems(
       },
       configuratorVersions: {
         where: { status: 'ACTIVE' },
-        orderBy: { schemaVersion: 'desc' },
-        select: { schemaVersion: true, schema: true },
+        orderBy: { updatedAt: 'desc' },
+        select: { id: true, schemaVersion: true, schema: true, compatibility: true, pricing: true, updatedAt: true },
       },
     },
   })
@@ -174,8 +182,15 @@ export async function resolveCheckoutOrderItems(
 
     const selectedOptions = sortSelectedOptions(item.selectedOptions || [])
     const selectedMap = optionsToMap(selectedOptions)
+    const databaseConfigurator = product.configuratorVersions?.[0]
+    const seedConfigurator = [...impresosPackagingConfigurators, ...presenciaFisicaConfigurators]
+      .filter((configurator) => configurator.productSlug === product.slug && configurator.status === 'ACTIVE')
+      .sort((a, b) => b.schemaVersion.localeCompare(a.schemaVersion, undefined, { numeric: true }))[0]
+    const activeConfigurator = seedConfigurator && (!databaseConfigurator || seedConfigurator.schemaVersion.localeCompare(databaseConfigurator.schemaVersion, undefined, { numeric: true }) > 0)
+      ? seedConfigurator
+      : databaseConfigurator
 
-    for (const option of product.options) {
+    if (!activeConfigurator) for (const option of product.options) {
       const selectedValue = selectedMap.get(option.name)
       if (option.isRequired && !selectedValue) {
         throw new Error(`Falta seleccionar ${option.name} para ${product.name}.`)
@@ -192,7 +207,17 @@ export async function resolveCheckoutOrderItems(
     let unitPrice = product.price
     let priceSource: 'base' | 'variant' | 'quote' | 'dynamic-combo' = 'base'
     let vatRatePercent: number | null = product.vatRatePercent
-    if (product.quoterConfig) {
+    if (activeConfigurator) {
+      if (!item.configuratorSelection || typeof item.configuratorSelection !== 'object' || Array.isArray(item.configuratorSelection)) {
+        throw new Error(`La configuración de ${product.name} está incompleta. Volvé al producto y cotizalo de nuevo.`)
+      }
+      const quote = resolveSemanticCheckoutQuote(activeConfigurator as any, item.configuratorSelection, product.quoterConfig as any)
+      assertQuotedPriceCurrent(product.name, item.unitPrice, quote.totalPrice)
+      unitPrice = quote.totalPrice
+      priceSource = 'quote'
+      selectedOptions.splice(0, selectedOptions.length, ...sortSelectedOptions(quote.selectedOptions))
+      vatRatePercent = quote.vatRatePercent ?? product.vatRatePercent
+    } else if (product.quoterConfig) {
       const materialName = selectedMap.get('Material')
       const sizeLabel = selectedMap.get('Medida')
       const parsedSize = parseSizeLabel(sizeLabel)
@@ -237,7 +262,7 @@ export async function resolveCheckoutOrderItems(
       priceSource = 'variant'
     }
 
-    if (unitPrice <= 0) {
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
       throw new Error(`${product.name} no esta disponible para compra online con la configuracion seleccionada.`)
     }
 
@@ -263,6 +288,8 @@ export async function resolveCheckoutOrderItems(
       configurationSnapshot: buildConfigurationSnapshot({
         product,
         selectedOptions,
+        configuratorSelection: item.configuratorSelection,
+        activeConfigurator,
         unitPrice,
         quantity: item.quantity,
         priceSource,

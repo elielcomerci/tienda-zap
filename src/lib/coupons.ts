@@ -15,6 +15,7 @@ const COUPON_CODE_PATTERN = /^[A-Z0-9]+(?:-[A-Z0-9]+)*$/
 type CouponPreviewItem = {
   productId: string
   quantity: number
+  unitPrice?: number
   notes?: string
   briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
   briefResponses?: Record<string, string>
@@ -29,6 +30,7 @@ type CouponPreviewItem = {
   fileUrl?: string
   designRequested?: boolean
   selectedOptions?: Array<{ name: string; value: string }>
+  configuratorSelection?: Record<string, string | number | boolean | string[]>
 }
 
 type CouponDbClient = typeof prisma | Prisma.TransactionClient
