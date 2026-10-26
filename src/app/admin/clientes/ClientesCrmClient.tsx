@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { Building2, Mail, Phone, Plus, Save, UserRound, X } from 'lucide-react'
 import { saveBusinessAccount, saveBusinessContact } from './actions'
@@ -130,7 +131,7 @@ export default function ClientesCrmClient({
                             <Building2 size={18} />
                           </div>
                           <div>
-                            <p className="font-black text-gray-950">{account.name}</p>
+                            <Link href={`/admin/clientes/${account.id}`} className="font-black text-gray-950 hover:text-[#C2103F] hover:underline">{account.name}</Link>
                             <p className="mt-1 text-xs text-gray-500">
                               {account.businessType?.name || account.legalName || 'Sin rubro asignado'}
                             </p>
