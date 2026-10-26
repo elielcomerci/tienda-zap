@@ -90,6 +90,9 @@ La ocultación no niega la capacidad de ejecución. Evita que estas prestaciones
 - Seed explícito de visibilidad y grupo para los 51 productos actuales.
 - Listados, páginas de detalle y recomendaciones públicas respetan la visibilidad; las fichas se generan bajo demanda para evitar consultas de base de datos durante el build.
 - La administración permite cambiar la visibilidad y la puerta.
+- ZAP Admin incorpora “Portfolio y muestras” para guardar enlaces HTTPS de SoundCloud por producto (un enlace por línea; título opcional separado con `|`).
+- La ficha pública muestra el reproductor de SoundCloud y un enlace para abrir la muestra en SoundCloud.
+- La migración carga la playlist inicial “Music for Films and TV” en “Música Original para Cine y Audiovisual”, preservando otros elementos existentes de `mediaList`.
 - La página inicial reemplaza la división plana “Productos / Desarrollos a medida” por tres entradas basadas en necesidades y una vía secundaria para proyectos específicos.
 - El grupo elegido se conserva al buscar, filtrar, entrar en una ficha y volver a navegar.
 
