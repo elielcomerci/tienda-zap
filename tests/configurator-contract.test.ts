@@ -14,6 +14,7 @@ import {
   quoteConfiguratorSelection,
   validateCommercialSelection,
 } from '../src/lib/pricing/configurator-adapter';
+import { assertQuotedPriceCurrent, resolveSemanticCheckoutQuote } from '../src/lib/pricing/semantic-checkout-quote';
 import {
   collectEditableProviderCostValues,
   flattenProviderCostMatrix,
@@ -751,6 +752,25 @@ test('el módulo de archivos permanece desactivado por defecto y requiere habili
   assert.equal(isClientWorkFilesEnabled(), true);
   if (original === undefined) delete process.env.CLIENT_WORK_FILES_ENABLED;
   else process.env.CLIENT_WORK_FILES_ENABLED = original;
+});
+
+
+test('checkout semantic rechaza cotizaciones vencidas o precios no verificables', () => {
+  assert.doesNotThrow(() => assertQuotedPriceCurrent('Tarjetas', 1150, 1150));
+  assert.doesNotThrow(() => assertQuotedPriceCurrent('Tarjetas', undefined, 1150));
+  assert.throws(() => assertQuotedPriceCurrent('Tarjetas', 1150, 1380), /cambió desde la última cotización/i);
+  assert.throws(() => assertQuotedPriceCurrent('Tarjetas', Number.NaN, 1150), /cambió desde la última cotización/i);
+  assert.throws(() => assertQuotedPriceCurrent('Tarjetas', undefined, Number.NaN), /no pudimos validar el precio actual/i);
+});
+
+test('checkout semantic vuelve a cotizar con la configuración activa del servidor', () => {
+  const config = tarjetasVouchersConfigurator as any;
+  const selection = defaultSelection(config);
+  const expected = quoteConfiguratorSelection(config, selection);
+  const actual = resolveSemanticCheckoutQuote(config, selection);
+  assert.equal(actual.totalPrice, expected.totalPrice);
+  assert.deepEqual(actual.selectedOptions, expected.selectedOptions);
+  assert.throws(() => resolveSemanticCheckoutQuote(config, {}), /configuración está incompleta/i);
 });
 
 console.log(`\\nResultado: ${passed} pruebas superadas.`);
