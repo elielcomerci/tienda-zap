@@ -277,10 +277,10 @@ export default function ProductMediaBlock({
 
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-sm font-black uppercase tracking-[0.16em] text-gray-900">
-          {activeTrack.type === 'AUDIO' ? 'Escuchar pista' : 'Ver video'}
+          {activeTrack.type === 'SOUNDCLOUD' ? 'Portfolio musical' : activeTrack.type === 'AUDIO' ? 'Escuchar pista' : 'Ver video'}
         </h2>
         <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
-          {activeTrack.type === 'YOUTUBE' ? 'YouTube' : activeTrack.type === 'VIDEO' ? 'MP4' : 'Audio'}
+          {activeTrack.type === 'SOUNDCLOUD' ? 'SoundCloud' : activeTrack.type === 'YOUTUBE' ? 'YouTube' : activeTrack.type === 'VIDEO' ? 'MP4' : 'Audio'}
         </span>
       </div>
 
@@ -442,6 +442,23 @@ export default function ProductMediaBlock({
         </div>
       )}
 
+      {activeTrack.type === 'SOUNDCLOUD' && (
+        <div className="space-y-3">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-950 shadow-lg sm:aspect-video">
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(activeTrack.url)}&color=%23ed164f&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=true`}
+              title={activeTrack.title || productName}
+              allow="autoplay"
+              loading="lazy"
+            />
+          </div>
+          <a href={activeTrack.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 underline decoration-gray-300 underline-offset-4 hover:text-[#ED164F]">
+            Abrir en SoundCloud <LinkIcon size={14} />
+          </a>
+        </div>
+      )}
+
       {activeTrack.type === 'VIDEO' && (
         <video
           controls
@@ -498,7 +515,7 @@ export default function ProductMediaBlock({
                       {track.type === 'VIDEO' && (
                         <Video size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
-                      {track.type === 'YOUTUBE' && (
+                      {(track.type === 'YOUTUBE' || track.type === 'SOUNDCLOUD') && (
                         <LinkIcon size={16} className={isActive ? 'text-[#ED164F]' : 'text-gray-500'} />
                       )}
                     </div>
@@ -511,7 +528,7 @@ export default function ProductMediaBlock({
                         {track.title}
                       </p>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mt-0.5">
-                        {track.type === 'YOUTUBE' ? 'YouTube' : track.type}
+                        {track.type === 'SOUNDCLOUD' ? 'SoundCloud' : track.type === 'YOUTUBE' ? 'YouTube' : track.type}
                       </span>
                     </div>
                   </div>

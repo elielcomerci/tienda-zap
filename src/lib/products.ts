@@ -20,7 +20,7 @@ const quoterConfigInclude = {
 /** Minimal public catalog metadata for homepage entry points. */
 export async function getPublicCatalogTypes() {
   return prisma.product.findMany({
-    where: { active: true },
+    where: { active: true, publicVisible: true },
     select: { catalogType: true },
     distinct: ['catalogType'],
   })
@@ -29,7 +29,7 @@ export async function getPublicCatalogTypes() {
 export async function getProducts(
   familySlug?: string,
   search?: string,
-  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO'; rankContext?: { situationSlug?: string; needSlug?: string; businessTypeSlug?: string; situationPriority?: string[] } }
+  options?: { take?: number; situationSlug?: string; needSlug?: string; businessTypeSlug?: string; catalogType?: 'COSA' | 'DESARROLLO'; publicGroup?: string; rankContext?: { situationSlug?: string; needSlug?: string; businessTypeSlug?: string; situationPriority?: string[] } }
 ) {
   const engine = engineForCatalogFamily(familySlug)
   const categoryFilter = familySlug ? { categoryLinks: { some: { category: { slug: familySlug, active: true } } } } : {}
@@ -46,6 +46,8 @@ export async function getProducts(
 
   const where: Prisma.ProductWhereInput = {
     active: true,
+    publicVisible: true,
+    ...(options?.publicGroup ? { publicGroup: options.publicGroup } : { AND: [{ OR: [{ publicGroup: { not: 'PROYECTOS' } }, { publicGroup: null }] }] }),
     ...catalogTypeFilter,
     ...(familySlug ? categoryFilter : engine ? { engine } : {}),
     ...(hasOfferFilter ? { offerEntries: { some: offerFilter } } : {}),
@@ -165,8 +167,8 @@ export async function getProducts(
 }
 
 export const getProduct = cache(async function getProduct(slug: string) {
-  const product = await prisma.product.findUnique({
-    where: { slug },
+  const product = await prisma.product.findFirst({
+    where: { slug, active: true, publicVisible: true },
     include: {
       options: {
         include: { values: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } },
@@ -203,7 +205,7 @@ export const getProduct = cache(async function getProduct(slug: string) {
 })
 
 export async function getActiveProductSlugs() {
-  return prisma.product.findMany({ where: { active: true }, select: { slug: true } })
+  return prisma.product.findMany({ where: { active: true, publicVisible: true }, select: { slug: true } })
 }
 
 export async function getAllProductsAdmin() {

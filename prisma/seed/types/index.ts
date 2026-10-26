@@ -39,6 +39,8 @@ export interface ProductSeedData {
   briefType?: string | null;
   priceFrom?: number | null;
   active?: boolean;
+  publicVisible?: boolean;
+  publicGroup?: string | null;
 }
 
 export interface ConfiguratorVersionSeedData {
