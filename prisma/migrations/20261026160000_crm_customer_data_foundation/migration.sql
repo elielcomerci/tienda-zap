@@ -59,6 +59,46 @@ FROM unique_candidates uc
 WHERE sl."id" = uc."leadId"
   AND sl."businessAccountId" IS NULL;
 
+-- Link historical consultations by exact email only when it identifies one account.
+ALTER TABLE "ConsultRequest"
+ADD COLUMN "businessAccountId" TEXT;
+
+CREATE INDEX "ConsultRequest_businessAccountId_createdAt_idx"
+ON "ConsultRequest"("businessAccountId", "createdAt");
+
+ALTER TABLE "ConsultRequest"
+ADD CONSTRAINT "ConsultRequest_businessAccountId_fkey"
+FOREIGN KEY ("businessAccountId") REFERENCES "BusinessAccount"("id")
+ON DELETE SET NULL ON UPDATE CASCADE;
+
+WITH consultation_candidates AS (
+  SELECT cr."id" AS "consultId", ba."id" AS "accountId"
+  FROM "ConsultRequest" cr
+  JOIN "BusinessAccount" ba ON lower(trim(ba."userId")) = lower(trim(cr."customerEmail"))
+  JOIN "User" u ON u."id" = ba."userId"
+  WHERE lower(trim(u."email")) = lower(trim(cr."customerEmail"))
+    AND trim(cr."customerEmail") <> ''
+
+  UNION
+
+  SELECT cr."id" AS "consultId", bc."accountId"
+  FROM "ConsultRequest" cr
+  JOIN "BusinessContact" bc
+    ON cr."customerEmail" <> ''
+   AND lower(trim(bc."email")) = lower(trim(cr."customerEmail"))
+),
+unique_consultation_candidates AS (
+  SELECT "consultId", MIN("accountId") AS "accountId"
+  FROM consultation_candidates
+  GROUP BY "consultId"
+  HAVING COUNT(DISTINCT "accountId") = 1
+)
+UPDATE "ConsultRequest" cr
+SET "businessAccountId" = uc."accountId"
+FROM unique_consultation_candidates uc
+WHERE cr."id" = uc."consultId"
+  AND cr."businessAccountId" IS NULL;
+
 CREATE TABLE "CustomerConversation" (
   "id" TEXT NOT NULL,
   "businessAccountId" TEXT NOT NULL,
