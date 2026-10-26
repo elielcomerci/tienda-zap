@@ -124,11 +124,28 @@ model BusinessAccount {
   sellerLeads        SellerLead[]
   conversations     CustomerConversation[]
   timelineEvents    CustomerTimelineEvent[]
+  activities        BusinessAccountActivity[]
 
   @@index([name])
   @@index([status, nextActionAt])
   @@index([businessTypeId])
   @@index([assignedSellerId, status])
+}
+
+model BusinessAccountActivity {
+  id          String   @id @default(cuid())
+  accountId   String
+  type        String
+  title       String
+  detail      String?  @db.Text
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  createdById String?
+
+  account BusinessAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, occurredAt])
+  @@index([type, occurredAt])
 }
 
 model BusinessContact {

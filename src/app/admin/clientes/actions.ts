@@ -157,3 +157,47 @@ export async function saveBusinessContact(formData: FormData) {
 
   revalidatePath('/admin/clientes')
 }
+
+const businessActivityTypes = new Set(['NOTE', 'CALL', 'EMAIL', 'WHATSAPP', 'MEETING', 'FOLLOW_UP'])
+
+export async function addBusinessAccountActivity(accountId: string, formData: FormData) {
+  const actor = await requireAdmin()
+  const account = await prisma.businessAccount.findUnique({
+    where: { id: accountId },
+    select: { id: true, name: true },
+  })
+  if (!account) throw new Error('No encontramos esta cuenta comercial.')
+
+  const typeValue = String(formData.get('type') || 'NOTE')
+  const title = normalizeText(String(formData.get('title') || ''))
+  const detail = normalizeText(String(formData.get('detail') || ''))
+  const occurredAtRaw = normalizeText(String(formData.get('occurredAt') || ''))
+  const occurredAt = occurredAtRaw ? new Date(occurredAtRaw) : new Date()
+
+  if (!businessActivityTypes.has(typeValue)) throw new Error('Tipo de actividad no válido.')
+  if (!title) throw new Error('Contá brevemente qué pasó.')
+  if (Number.isNaN(occurredAt.getTime())) throw new Error('La fecha de actividad no es válida.')
+
+  const activity = await prisma.businessAccountActivity.create({
+    data: {
+      accountId,
+      type: typeValue,
+      title,
+      detail,
+      occurredAt,
+      createdById: actor.user?.id ?? null,
+    },
+  })
+
+  await writeAudit({
+    actor,
+    action: 'businessAccountActivity.create',
+    entityType: 'BusinessAccountActivity',
+    entityId: activity.id,
+    description: `Actividad CRM registrada para ${account.name}: ${title}`,
+    after: activity,
+  })
+
+  revalidatePath('/admin/clientes')
+  revalidatePath(`/admin/clientes/${accountId}`)
+}
