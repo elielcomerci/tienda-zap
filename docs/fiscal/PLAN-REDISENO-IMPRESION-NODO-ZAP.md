@@ -36,7 +36,7 @@ El tipo `FiscalPdfTemplate` actualmente contempla `designVariant: 'classic' | 'm
 
 La impresión de REVEX usa una vista de documento específica y reglas CSS de impresión (A4, márgenes, ocultamiento de controles y prevención de cortes). NODO, en cambio, hoy dibuja el PDF con jsPDF. Por lo tanto, **no se debe asumir que copiar el CSS de REVEX mejorará el PDF actual**: son mecanismos diferentes.
 
-La referencia de REVEX sirve como patrón de composición y control del documento. La decisión entre perfeccionar jsPDF o migrar a HTML/CSS de impresión debe tomarse luego de inspeccionar el flujo completo y comparar prototipos equivalentes.
+La referencia de REVEX es el modelo técnico deseado para la experiencia: documento formado con componentes React/Next.js discretos y reutilizables, más CSS de pantalla e impresión. La dirección propuesta es **dejar de usar jsPDF para construir visualmente los comprobantes** y formar el documento de manera nativa en Next.js. La auditoría debe determinar cómo retirar o sustituir el renderer actual de forma segura, conservar la información fiscal y mantener la funcionalidad existente. No es una migración a ciegas: primero se inspeccionan todos los consumidores, dependencias y contratos.
 
 ## 3. Qué vamos a decidir
 
@@ -54,10 +54,11 @@ Son nombres de trabajo, no una decisión final. Pueden cambiar, combinarse o red
 
 Comparar dos caminos con un mismo comprobante de prueba:
 
-- **Camino 1 — Mantener jsPDF:** ordenar el código de renderizado por componentes/secciones y variantes, resolver saltos de página, altura dinámica, textos largos, consistencia de estilos y ubicación de totales/CAE/QR.
-- **Camino 2 — Vista HTML/CSS dedicada:** construir un documento independiente de la interfaz, con estilos de pantalla e impresión, reglas A4 y paginación; definir cómo se genera el archivo descargable y cómo se evita que la impresión dependa de las preferencias del navegador.
+**Dirección elegida:** construir el comprobante como una vista HTML/React nativa de Next.js, con componentes discretos, CSS específico para pantalla e impresión y comportamiento A4 inspirado en REVEX. No usar jsPDF como motor que dibuja el diseño final.
 
-Evaluar calidad visual, fidelidad entre vista previa y archivo final, control de paginación, accesibilidad, mantenimiento, dependencias y compatibilidad con los flujos existentes. Elegir un camino principal; evitar mantener dos motores de salida sin una razón comprobada.
+La auditoría aún debe resolver la estrategia de salida: imprimir desde el navegador (incluido Guardar como PDF), o usar un mecanismo de generación de PDF a partir de HTML si los requisitos del producto lo exigen. No asumir que ambos resultados son idénticos: definir y probar la salida que NODO soportará oficialmente.
+
+El documento debe componerse con una única estructura de presentación para vista previa e impresión. CSS `@media print` y `@page` controlarán tamaño, márgenes, colores, controles ocultos y saltos; los componentes se encargarán de cabecera, emisor/receptor, detalle, totales y bloque fiscal. El motor de emisión fiscal sigue separado y es la fuente de los datos autorizados.
 
 ## 4. Experiencia propuesta
 
@@ -97,8 +98,10 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 - [ ] Elegir un comprobante representativo y crear datos de prueba anonimizados.
 - [ ] Producir propuestas visuales con la misma información y restricciones fiscales.
 - [ ] Comparar al menos un PDF con pocos ítems y otro que fuerce varias páginas.
-- [ ] Si aporta valor, construir un prototipo HTML/CSS paralelo para comparar con jsPDF; no migrar por intuición.
-- [ ] Registrar la decisión técnica, sus razones y riesgos antes de tocar el flujo de producción.
+- [ ] Construir un prototipo nativo React/Next.js + CSS de impresión, siguiendo el patrón arquitectónico de REVEX.
+- [ ] Comparar el prototipo con el PDF actual usando el mismo conjunto de datos, identificar qué se gana y qué se debe preservar.
+- [ ] Definir la forma oficial de obtener el PDF y documentar límites conocidos del navegador/motor elegido.
+- [ ] Registrar plan de sustitución y compatibilidad antes de retirar el renderer jsPDF.
 
 ### Fase 3 — Especificación final
 - [ ] Elegir las plantillas definitivas según diferencias útiles y ZAP Style.
@@ -110,12 +113,13 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 ### Fase 4 — Implementación controlada
 - [ ] Trabajar en una rama específica, sin desplegar ni alterar el Worker.
 - [ ] Mantener la lógica fiscal separada de la capa visual.
-- [ ] Implementar el motor/plantillas seleccionados y conectar el editor.
+- [ ] Implementar la vista de comprobante con componentes React/Next.js y CSS de impresión, conectada al editor.
+- [ ] Retirar jsPDF del flujo visual de comprobantes solo después de verificar que ningún consumidor requerido dependa de su salida; no eliminar dependencias o archivos sin auditoría.
 - [ ] Preservar la configuración existente y definir fallback seguro.
 - [ ] No cambiar la apariencia de documentos históricos ya emitidos.
 
 ### Fase 5 — Validación
-- [ ] Comparar vista previa y PDF descargado.
+- [ ] Comparar la vista previa con la impresión física y el PDF obtenido mediante el flujo elegido.
 - [ ] Probar una página, múltiples páginas, descripciones extensas, muchos ítems, importes altos, campos opcionales y logo ausente/inválido.
 - [ ] Verificar que las filas no se recorten y que los totales no queden aislados o superpuestos.
 - [ ] Verificar CAE, vencimiento y lectura real del QR fiscal.
@@ -156,4 +160,4 @@ La iniciativa estará lista cuando:
 - `docs/zap-style-interface-guidelines.md`
 - Referencia REVEX: `RPM.ar/components/print/OrderPrintView.tsx` y estilos `@media print`.
 
-**Próximo paso:** completar la Fase 1 y producir una comparación técnica/visual antes de decidir si mantenemos jsPDF o adoptamos una vista HTML/CSS dedicada.
+**Próximo paso:** completar la Fase 1 y construir un prototipo nativo de React/Next.js con CSS de impresión, al estilo REVEX. La decisión pendiente es el mecanismo definitivo para entregar el PDF y cómo reemplazar de forma segura el flujo actual basado en jsPDF.
