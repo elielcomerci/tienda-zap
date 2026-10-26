@@ -24,6 +24,14 @@ type Invoice = {
 }
 type InvoiceStatusFilter = 'all' | 'authorized' | 'processing' | 'review'
 
+function formatFiscalCuit(cuit: string): string {
+  return /^\d{11}$/.test(cuit) ? `${cuit.slice(0, 2)}-${cuit.slice(2, 10)}-${cuit.slice(10)}` : cuit
+}
+
+function isAuthorizationFailure(message: string): boolean {
+  return /delegaci|no autorizado|unauthorized|not authorized|permission denied|servicio.*autorizar/i.test(message)
+}
+
 function getInvoiceStatus(invoice: Invoice): Exclude<InvoiceStatusFilter, 'all'> {
   const result = String(invoice.result || '').toUpperCase()
   if (invoice.cae && ['A', 'DONE'].includes(result)) return 'authorized'
@@ -34,6 +42,45 @@ type CertificateInfo = { id: string; environment: string; status: string; cn?: s
 type WsfeCheckResult = { cuit: string; environment: 'TEST' | 'PROD'; verifiedAt: string; puntosVenta: Array<{ nro: number; activo: boolean; emisionTipo: string }> }
 type SavedCustomer = { id: string; name: string; documentType: string | null; documentNumber: string | null; vatCondition: string | null; address: string | null }
 type SavedProduct = { id: string; kind: 'PRODUCT' | 'SERVICE'; description: string; unit: string; unitPrice: string; vatRatePercent: string | null }
+const wsfeCheckResultSchema = z.object({
+  cuit: z.string().regex(/^\d{11}$/),
+  environment: z.enum(['TEST', 'PROD']),
+  verifiedAt: z.string().datetime(),
+  puntosVenta: z.array(z.object({ nro: z.number().int(), activo: z.boolean(), emisionTipo: z.string() })),
+})
+const WSFE_CHECK_FRESHNESS_MS = 24 * 60 * 60 * 1000
+const wsfeCheckStorageKey = (accountId: string, cuit: string, environment: 'TEST' | 'PROD') => `zap-nodo-wsfe-check:${accountId}:${cuit}:${environment}`
+
+function readWsfeCheckResult(key: string): WsfeCheckResult | null {
+  try {
+    const stored = window.sessionStorage.getItem(key)
+    if (!stored) return null
+    const parsed = wsfeCheckResultSchema.safeParse(JSON.parse(stored))
+    if (parsed.success) return parsed.data
+    window.sessionStorage.removeItem(key)
+    return null
+  } catch {
+    return null
+  }
+}
+
+function saveWsfeCheckResult(key: string, result: WsfeCheckResult): boolean {
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(result))
+    return true
+  } catch {
+    return false
+  }
+}
+
+function clearWsfeCheckResult(key: string): boolean {
+  try {
+    window.sessionStorage.removeItem(key)
+    return true
+  } catch {
+    return false
+  }
+}
 const emissionDraftSchema = z.object({
   cuit: z.string(), environment: z.enum(['TEST', 'PROD']), pointOfSale: z.string(), type: z.enum(['A', 'B', 'C', 'M']),
   concept: z.string(), date: z.string(), serviceFrom: z.string(), serviceTo: z.string(), paymentDueDate: z.string(),
@@ -90,20 +137,25 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
   const [representativeCuit, setRepresentativeCuit] = useState('')
   const [razonSocial, setRazonSocial] = useState('')
   const [padronLookup, setPadronLookup] = useState<{ cuit: string; key: string; status: 'idle' | 'loading' | 'pending' | 'success' | 'manual'; message: string; estado?: string }>({ cuit: '', key: '', status: 'idle', message: '' })
-  const [environment, setEnvironment] = useState<'TEST' | 'PROD'>('TEST')
+  const [environment, setEnvironment] = useState<'TEST' | 'PROD'>('PROD')
+  const [settingsEnvironment, setSettingsEnvironment] = useState<'TEST' | 'PROD'>('PROD')
+  const [settingsCuit, setSettingsCuit] = useState('')
   const [selectedContributor, setSelectedContributor] = useState<Contributor | null>(null)
   const [settingsTab, setSettingsTab] = useState<'access' | 'invoice'>('access')
   const [certificateInfo, setCertificateInfo] = useState<{ active: CertificateInfo[] | null; others: CertificateInfo[] } | null>(null)
   const [certificateLoading, setCertificateLoading] = useState(false)
   const [wsfeCheckResult, setWsfeCheckResult] = useState<WsfeCheckResult | null>(null)
+  const [certificateInfoKey, setCertificateInfoKey] = useState('')
+  const [certificateReadFailed, setCertificateReadFailed] = useState(false)
   const [padronCheckResult, setPadronCheckResult] = useState<{ cuit: string; environment: 'TEST' | 'PROD'; checkedAt: string } | null>(null)
+  const [showPadronAuthorizationHelp, setShowPadronAuthorizationHelp] = useState(false)
   const [certFile, setCertFile] = useState<File | null>(null)
   const [keyFile, setKeyFile] = useState<File | null>(null)
   const [supportNotes, setSupportNotes] = useState('')
   const [platformStatus, setPlatformStatus] = useState<'ACTIVE' | 'PAUSED'>('ACTIVE')
   const [manualInvoice, setManualInvoice] = useState({ cuit: '', environment: 'PROD' as 'TEST' | 'PROD', pointOfSale: '1', voucherType: '6', voucherNumber: '', cae: '', caeFchVto: '', amount: '' })
   const [emission, setEmission] = useState({
-    cuit: '', environment: 'TEST' as 'TEST' | 'PROD', pointOfSale: '1', type: 'B' as 'A' | 'B' | 'C' | 'M',
+    cuit: '', environment: 'PROD' as 'TEST' | 'PROD', pointOfSale: '1', type: 'B' as 'A' | 'B' | 'C' | 'M',
     concept: '1', date: '', serviceFrom: '', serviceTo: '', paymentDueDate: '',
     docType: '99', docNumber: '0', customerName: '', customerAddress: '', vatCondition: '5', saleCondition: 'Contado',
     description: '', netBase: '', vatRate: '21', otherNationalIndirectTaxes: '0',
@@ -281,8 +333,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
     }
   }
 
-  async function loadCertificate(contributor: Contributor) {
-    setSelectedContributor(contributor); setCertificateInfo(null); setError(''); setNotice('')
+  const loadCertificate = useCallback(async (contributor: Contributor, openPanel = true) => {
+    if (openPanel) setSelectedContributor(contributor)
+    setCertificateInfo(null); setCertificateInfoKey(''); setCertificateReadFailed(false); setError(''); setNotice(''); setShowPadronAuthorizationHelp(false)
     setCertificateLoading(true)
     try {
       const contributorsResponse = await fetch(api('/api/nodo/contributors'), { cache: 'no-store' })
@@ -290,18 +343,22 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
       if (!contributorsResponse.ok) throw new Error(contributorsPayload.error || 'No se pudo actualizar el estado informado por el Worker.')
       const latestContributor = contributorsPayload.contributors?.find(item => item.cuit === contributor.cuit && item.environment === contributor.environment) || contributor
       setContributors(contributorsPayload.contributors || [])
-      setSelectedContributor(latestContributor)
+      if (openPanel) setSelectedContributor(latestContributor)
       const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(latestContributor.cuit)}/certificate?environment=${latestContributor.environment}`), { cache: 'no-store' })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.error?.message || payload.error || 'No se pudo consultar el certificado.')
       setCertificateInfo(payload)
-    } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo consultar el certificado.') }
+      setCertificateInfoKey(`${latestContributor.cuit}:${latestContributor.environment}`)
+    } catch (reason) {
+      setCertificateReadFailed(true)
+      setError(`${formatFiscalCuit(contributor.cuit)} · ${contributor.environment} · Certificado: ${reason instanceof Error ? reason.message : 'no se pudo consultar.'}`)
+    }
     finally { setCertificateLoading(false) }
-  }
+  }, [api])
 
   async function checkPadronAccess(contributor: Contributor) {
     if (featureFlags.padronQuery !== true) return
-    setBusy(true); setError(''); setNotice('')
+    setBusy(true); setError(''); setNotice(''); setShowPadronAuthorizationHelp(false)
     try {
       const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/padron/connection-check?environment=${contributor.environment}&source=a13`), { method: 'POST' })
       const payload = await response.json().catch(() => ({})) as { persona?: unknown; error?: string | { message?: string } }
@@ -320,13 +377,16 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
       setPadronCheckResult({ cuit: contributor.cuit, environment: contributor.environment, checkedAt: new Date().toISOString() })
       await load()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'No se pudo validar el acceso al padrón.')
+      const message = reason instanceof Error ? reason.message : 'No se pudo validar el acceso.'
+      setShowPadronAuthorizationHelp(isAuthorizationFailure(message))
+      setError(`${formatFiscalCuit(contributor.cuit)} · ${contributor.environment} · A13: ${message}`)
     } finally { setBusy(false) }
   }
 
   async function checkWsfeConnection(contributor: Contributor) {
     if (featureFlags.wsfeRead !== true) return
     setBusy(true); setError(''); setNotice(''); setWsfeCheckResult(null)
+    if (account?.id) clearWsfeCheckResult(wsfeCheckStorageKey(account.id, contributor.cuit, contributor.environment))
     try {
       const response = await fetch(api(`/api/nodo/contributors/${encodeURIComponent(contributor.cuit)}/wsfe/connection-check?environment=${contributor.environment}`), { method: 'POST' })
       const payload = await response.json().catch(() => ({})) as { cuit?: string; environment?: 'TEST' | 'PROD'; verified?: boolean; puntosVenta?: WsfeCheckResult['puntosVenta']; error?: string | { message?: string } }
@@ -336,11 +396,16 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
       }
       const puntosVenta = Array.isArray(payload.puntosVenta) ? payload.puntosVenta.filter((item): item is WsfeCheckResult['puntosVenta'][number] =>
         typeof item === 'object' && item !== null && Number.isInteger(item.nro) && typeof item.activo === 'boolean' && typeof item.emisionTipo === 'string') : []
-      setWsfeCheckResult({ cuit: payload.cuit || contributor.cuit, environment: payload.environment || contributor.environment, verifiedAt: new Date().toISOString(), puntosVenta })
+      const result: WsfeCheckResult = { cuit: payload.cuit || contributor.cuit, environment: payload.environment || contributor.environment, verifiedAt: new Date().toISOString(), puntosVenta }
+      setWsfeCheckResult(result)
+      if (account?.id && !saveWsfeCheckResult(wsfeCheckStorageKey(account.id, contributor.cuit, contributor.environment), result)) {
+        setNotice('La conexión se comprobó. El resultado no pudo guardarse en esta pestaña.')
+      }
       setNotice(`ARCA respondió por WSFE en ${contributor.environment}. No se emitió ningún comprobante.`)
       await load()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'No se pudo validar la conexión WSFE con ARCA.')
+      const message = reason instanceof Error ? reason.message : 'No se pudo validar la conexión con ARCA.'
+      setError(`${formatFiscalCuit(contributor.cuit)} · ${contributor.environment} · WSFE: ${message}`)
     } finally { setBusy(false) }
   }
 
@@ -761,6 +826,49 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
   const selectedPadronIsActive = selectedContributor?.authorizationStatus === 'ACTIVE' && selectedContributor.permissions?.canQueryPadron === true
   const selectedCanEmit = selectedContributor?.authorizationVerified === true && selectedContributor.authorizationStatus === 'ACTIVE' && selectedContributor.permissions?.canEmit === true
   const linkedCuitCount = new Set(contributors.map(item => item.cuit)).size
+  const productionContributors = contributors.filter(item => item.environment === 'PROD')
+  const testContributors = contributors.filter(item => item.environment === 'TEST')
+  const settingsContributors = settingsEnvironment === 'PROD' ? productionContributors : testContributors
+  const selectedSettingsContributor = settingsContributors.find(item => item.cuit === settingsCuit) || settingsContributors[0] || null
+  const settingsCertificateKey = selectedSettingsContributor ? `${selectedSettingsContributor.cuit}:${selectedSettingsContributor.environment}` : ''
+  const settingsCertificateInfo = certificateInfoKey === settingsCertificateKey ? certificateInfo : null
+  const settingsCertificates = settingsCertificateInfo
+    ? [...(settingsCertificateInfo.active ?? []), ...settingsCertificateInfo.others].filter(item => item.environment === settingsEnvironment)
+    : []
+  const settingsActiveCertificate = settingsCertificates.find(item => item.status === 'ACTIVE')
+  const settingsPendingCertificate = settingsCertificates.find(item => item.status === 'PENDING_PROPAGATION')
+  const settingsWsfeResult = wsfeCheckResult?.cuit === selectedSettingsContributor?.cuit && wsfeCheckResult.environment === settingsEnvironment
+    ? wsfeCheckResult
+    : null
+  const settingsCheckAgeMs = settingsWsfeResult ? Date.now() - Date.parse(settingsWsfeResult.verifiedAt) : Number.POSITIVE_INFINITY
+  const settingsCheckFresh = !!settingsWsfeResult && Number.isFinite(settingsCheckAgeMs) && settingsCheckAgeMs >= 0 && settingsCheckAgeMs < WSFE_CHECK_FRESHNESS_MS
+  const settingsActivePointCount = settingsWsfeResult?.puntosVenta.filter(item => item.activo).length ?? 0
+  const settingsPermissionActive = selectedSettingsContributor?.authorizationVerified === true && selectedSettingsContributor.authorizationStatus === 'ACTIVE' && selectedSettingsContributor.permissions?.canEmit === true
+  const settingsWsfeFailed = !!selectedSettingsContributor && error.includes(`${selectedSettingsContributor.cuit} · ${settingsEnvironment} · WSFE:`)
+  const settingsCanEmitByFeature = featureFlags[settingsEnvironment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] === true
+  const settingsOverall = !selectedSettingsContributor
+    ? { title: 'Vinculá una CUIT', message: 'La configuración fiscal empieza con la CUIT que va a emitir.', tone: 'amber' as const }
+    : selectedSettingsContributor.authorizationVerified !== true
+      ? { title: 'No pudimos verificar el estado', message: 'Actualizá la información para saber qué falta.', tone: 'amber' as const }
+      : certificateLoading
+        ? { title: 'Revisando el certificado', message: 'Estamos consultando su estado para este ambiente.', tone: 'amber' as const }
+        : certificateReadFailed
+          ? { title: 'No pudimos verificar el certificado', message: 'Volvé a consultar su estado.', tone: 'amber' as const }
+          : !settingsCertificateInfo
+            ? { title: 'Estado del certificado sin confirmar', message: 'Volvé a consultar su estado para saber si falta configurarlo.', tone: 'amber' as const }
+            : !settingsActiveCertificate
+              ? { title: settingsPendingCertificate ? 'Activá el certificado' : 'Falta configurar el certificado', message: settingsPendingCertificate ? 'El certificado está cargado y necesita activarse en NODO.' : 'Vinculá el certificado de este ambiente para continuar.', tone: 'amber' as const }
+              : settingsWsfeFailed
+                ? { title: 'No pudimos conectar con ARCA', message: 'Probá de nuevo. Si vuelve a fallar, consultá los detalles técnicos.', tone: 'amber' as const }
+                : !settingsCheckFresh
+                  ? { title: 'Comprobá la conexión', message: settingsWsfeResult ? 'La última comprobación ya no es reciente.' : 'Todavía no comprobamos la conexión con ARCA en este ambiente.', tone: 'amber' as const }
+                  : !settingsPermissionActive
+                    ? { title: 'Falta confirmar el permiso de emisión', message: 'La conexión respondió, pero el permiso de emisión no está activo.', tone: 'amber' as const }
+                    : settingsActivePointCount === 0
+                      ? { title: 'Revisá tus puntos de venta', message: `ARCA informó ${settingsWsfeResult?.puntosVenta.length ?? 0} y ninguno está activo.`, tone: 'amber' as const }
+                      : !settingsCanEmitByFeature
+                        ? { title: 'La emisión no está habilitada', message: 'Contactá a ZAP para revisar el acceso de esta cuenta.', tone: 'amber' as const }
+                        : { title: 'Listo para facturar', message: 'La conexión, el certificado, los permisos y al menos un punto activo están verificados.', tone: 'green' as const }
   const visibleInvoices = invoices.filter(invoice =>
     (invoiceEnvironmentFilter === 'ALL' || invoice.environment === invoiceEnvironmentFilter)
     && (invoiceStatusFilter === 'all' || getInvoiceStatus(invoice) === invoiceStatusFilter),
@@ -771,15 +879,85 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
   const emissionFeatureUnknown = workerEmissionCandidates.some(item => featureFlags[item.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] === undefined)
   const authorizationUnverified = contributors.some(item => item.authorizationVerified !== true)
 
+  useEffect(() => {
+    if (section !== 'settings' || adminMode || settingsTab !== 'access') return
+    if (!selectedSettingsContributor) {
+      setCertificateInfo(null)
+      setCertificateInfoKey('')
+      setSelectedContributor(null)
+      return
+    }
+    if (certificateInfoKey === settingsCertificateKey || certificateLoading || certificateReadFailed) return
+    void loadCertificate(selectedSettingsContributor, false)
+  }, [adminMode, certificateInfoKey, certificateLoading, certificateReadFailed, loadCertificate, section, selectedSettingsContributor?.cuit, selectedSettingsContributor?.environment, settingsCertificateKey, settingsTab])
+
+  useEffect(() => {
+    if (section !== 'settings' || adminMode || settingsTab !== 'access' || !account?.id || !selectedSettingsContributor) {
+      setWsfeCheckResult(null)
+      return
+    }
+    setWsfeCheckResult(readWsfeCheckResult(wsfeCheckStorageKey(account.id, selectedSettingsContributor.cuit, settingsEnvironment)))
+  }, [account?.id, adminMode, section, selectedSettingsContributor?.cuit, settingsEnvironment, settingsTab])
+
+  const renderContributor = (item: Contributor) => {
+    const certificateChecked = selectedContributor?.id === item.id && certificateInfo !== null
+    const contributorCertificates = certificateChecked
+      ? [...(certificateInfo.active ?? []), ...certificateInfo.others].filter(cert => cert.environment === item.environment)
+      : []
+    const certificateState = selectedContributor?.id === item.id && certificateLoading
+      ? 'Consultando'
+      : !certificateChecked
+        ? 'Sin consultar'
+        : contributorCertificates.some(cert => cert.status === 'ACTIVE')
+          ? 'Activo'
+          : contributorCertificates.some(cert => cert.status === 'PENDING_PROPAGATION')
+            ? 'Cargado; falta activarlo'
+            : 'Falta cargar'
+    const permission = item.authorizationVerified !== true
+      ? 'No se pudo verificar'
+      : item.authorizationStatus === 'ACTIVE' && item.permissions?.canEmit === true
+        ? 'Activo'
+        : item.authorizationStatus === 'ACTIVE' && item.permissions?.canQueryPadron === true
+          ? 'Solo consulta A13'
+        : item.authorizationStatus === 'PENDING'
+          ? 'Pendiente'
+          : 'Sin permiso'
+    return <article key={item.id} className="rounded-xl border border-gray-200 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div><p className="font-semibold text-gray-900">{item.razonSocial || 'Contribuyente'}</p><p className="mt-1 font-mono text-sm text-gray-600">{formatFiscalCuit(item.cuit)}</p></div>
+        <div className="grid gap-1 text-sm sm:grid-cols-2 sm:gap-4">
+          <p><span className="text-gray-500">Certificado</span><span className="ml-2 font-semibold text-gray-800">{certificateState}</span></p>
+          <p><span className="text-gray-500">Permiso de emisión</span><span className={`ml-2 font-semibold ${permission === 'Activo' ? 'text-emerald-700' : permission === 'No se pudo verificar' ? 'text-gray-600' : 'text-amber-700'}`}>{permission}</span></p>
+        </div>
+      </div>
+      {item.authorizationVerified !== true && <p className="mt-2 text-xs text-amber-800">No se pudo leer el estado actual. Actualizá y volvé a revisar.</p>}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button onClick={() => void loadCertificate(item)} disabled={certificateLoading || featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 disabled:opacity-40">Revisar configuración</button>
+        <button onClick={() => void removeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Quitar CUIT</button>
+      </div>
+      {featureFlags.certificateManagement !== true && <p className="mt-2 text-xs text-amber-800">La configuración de certificados no está disponible para esta cuenta.</p>}
+      <details className="mt-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+        <summary className="cursor-pointer text-xs font-semibold text-gray-700">Ayuda de ARCA</summary>
+        {item.environment === 'PROD' ? <div className="mt-3 space-y-2 text-xs leading-5 text-gray-600">
+          <p>En ARCA, generá un certificado y autorizá el servicio de facturación para esta CUIT. Después cargá acá el certificado y su clave privada.</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/landing/default.asp" target="_blank" rel="noreferrer">Portal ARCA ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/documentacion/certificados.asp" target="_blank" rel="noreferrer">Certificados ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/ADMINREL.DelegarWS.pdf" target="_blank" rel="noreferrer">Autorizar servicio ↗</a></div>
+        </div> : <div className="mt-3 space-y-2 text-xs leading-5 text-gray-600">
+          <p>En WSASS, generá un certificado de homologación y autorizá el servicio para esta CUIT. Se usa solo para pruebas.</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/html/introduccion.html" target="_blank" rel="noreferrer">Abrir WSASS ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/WSASS_manual.pdf" target="_blank" rel="noreferrer">Manual ↗</a></div>
+        </div>}
+      </details>
+    </article>
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 text-[#0F172A] tabular-nums sm:p-6 lg:p-8">
       {section !== 'summary' && section !== 'tools' && <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-800">{adminMode ? 'ZAP · Soporte fiscal' : 'NODO ZAP'}</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">{adminMode ? account.customer?.name || account.tenantName : section === 'emit' ? 'Nueva factura' : section === 'batch' ? 'Facturación por lote' : section === 'invoices' ? 'Comprobantes' : section === 'settings' ? 'Configuración fiscal' : 'Facturación'}</h1>
-          <p className="mt-2 text-sm text-gray-500">{adminMode ? account.customer?.email : section === 'emit' ? 'Completá los datos, revisá el importe y confirmá la emisión.' : section === 'batch' ? 'Importá una planilla, revisá las filas y confirmá el envío.' : section === 'invoices' ? 'Consultá el estado y descargá la representación de tus comprobantes.' : section === 'settings' ? 'CUIT, autorización, datos del emisor y diseño.' : ''}</p>
+          <p className="mt-2 text-sm text-gray-500">{adminMode ? account.customer?.email : section === 'emit' ? 'Completá los datos, revisá el importe y confirmá la emisión.' : section === 'batch' ? 'Importá una planilla, revisá las filas y confirmá el envío.' : section === 'invoices' ? 'Consultá el estado y descargá la representación de tus comprobantes.' : section === 'settings' ? 'Comprobá que todo esté listo para facturar.' : ''}</p>
         </div>
-        <button onClick={() => void load()} disabled={loading || busy} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"><RefreshCw size={16} /> Actualizar</button>
+        <button onClick={() => section === 'settings' && !adminMode && selectedSettingsContributor ? void loadCertificate(selectedSettingsContributor, false) : void load()} disabled={loading || busy || certificateLoading} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"><RefreshCw size={16} />Actualizar</button>
       </header>}
 
       {error && <div role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertCircle size={18} className="mt-0.5 shrink-0" />{error}</div>}
@@ -870,45 +1048,84 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
 
       {(section === 'all' || section === 'tools') && <FiscalWorkerTools api={api} contributors={contributors} invoices={invoices} flags={featureFlags} onSelectPointOfSale={pointOfSale => setEmission(current => ({ ...current, pointOfSale }))} />}
 
-      {section === 'settings' && <nav aria-label="Secciones de configuración fiscal" className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1">
+      {section === 'settings' && !adminMode && settingsTab === 'access' && <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" aria-label="Ambiente fiscal" className="inline-flex rounded-xl bg-slate-100 p-1">
+          {(['PROD', 'TEST'] as const).map(item => <button key={item} type="button" role="tab" aria-selected={settingsEnvironment === item} onClick={() => { setSettingsEnvironment(item); setSettingsCuit((item === 'PROD' ? productionContributors : testContributors)[0]?.cuit || ''); setSelectedContributor(null); setCertificateInfo(null); setCertificateInfoKey(''); setCertificateReadFailed(false); setError('') }} className={`rounded-lg px-4 py-2 text-sm font-semibold ${settingsEnvironment === item ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>{item === 'PROD' ? 'Producción' : 'Homologación'}</button>)}
+        </div>
+        <button type="button" onClick={() => setSettingsTab('invoice')} className="text-sm font-semibold text-[#C2103F] hover:underline">Datos del emisor y diseño ↗</button>
+      </div>}
+      {section === 'settings' && !adminMode && settingsTab === 'invoice' && <button type="button" onClick={() => setSettingsTab('access')} className="text-sm font-semibold text-[#C2103F] hover:underline">← Volver a configuración fiscal</button>}
+
+      {section === 'settings' && adminMode && <nav aria-label="Secciones de configuración fiscal" className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1">
         <button type="button" aria-current={settingsTab === 'access' ? 'page' : undefined} onClick={() => { setSettingsTab('access'); setSelectedContributor(null) }} className={`rounded-xl px-4 py-3 text-sm font-semibold ${settingsTab === 'access' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Certificado y permisos</button>
         <button type="button" aria-current={settingsTab === 'invoice' ? 'page' : undefined} onClick={() => { setSettingsTab('invoice'); setSelectedContributor(null) }} className={`rounded-xl px-4 py-3 text-sm font-semibold ${settingsTab === 'invoice' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Datos y diseño del PDF</button>
       </nav>}
 
-      {(section === 'all' || (section === 'settings' && settingsTab === 'access')) && <section className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
+      {section === 'settings' && !adminMode && settingsTab === 'access' && <section aria-labelledby="fiscal-settings-status" className={`rounded-2xl bg-white p-5 sm:p-7 ${surfaceShadow}`}>
+        {settingsContributors.length > 1 && <label className="mb-5 block max-w-xl text-sm font-medium text-gray-700" htmlFor="fiscal-settings-cuit">CUIT
+          <select id="fiscal-settings-cuit" value={selectedSettingsContributor?.cuit || ''} onChange={event => { setSettingsCuit(event.target.value); setSelectedContributor(null); setCertificateInfo(null); setCertificateInfoKey(''); setCertificateReadFailed(false); setError('') }} className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5">
+            {settingsContributors.map(item => <option key={item.id} value={item.cuit}>{item.razonSocial || 'Contribuyente'} · {formatFiscalCuit(item.cuit)}</option>)}
+          </select>
+        </label>}
+        {!selectedSettingsContributor ? <div className="max-w-2xl py-3">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#C2103F]">{settingsEnvironment === 'PROD' ? 'Producción' : 'Homologación'}</p>
+          <h2 id="fiscal-settings-status" className="mt-2 text-xl font-semibold text-gray-950">Todavía no hay una CUIT en este ambiente</h2>
+          <p className="mt-2 text-sm text-gray-600">Vinculá la CUIT que querés configurar. El estado de Producción y Homologación se administra por separado.</p>
+          <button type="button" onClick={() => { setEnvironment(settingsEnvironment); setCuit(''); setRepresentativeCuit(''); setRazonSocial(''); setShowAddContributor(true) }} disabled={featureFlags.contributorManagement !== true} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"><Plus size={16} /> Vincular CUIT</button>
+        </div> : <>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div><p className="text-sm font-semibold text-gray-900">{selectedSettingsContributor.razonSocial || 'Contribuyente'} · {settingsEnvironment === 'PROD' ? 'Producción' : 'Homologación'}</p><p className="mt-1 font-mono text-sm text-gray-500">{formatFiscalCuit(selectedSettingsContributor.cuit)}</p></div>
+            {settingsPermissionActive && <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Permiso de emisión activo</span>}
+          </div>
+          <div className={`mt-5 rounded-2xl border p-5 ${settingsOverall.tone === 'green' ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`}>
+            <p className="text-xs font-bold uppercase tracking-wide text-gray-600">{settingsOverall.tone === 'green' ? 'Estado de facturación' : 'Próximo paso'}</p>
+            <h2 id="fiscal-settings-status" className="mt-1 text-xl font-semibold text-gray-950">{settingsOverall.title}</h2>
+            <p className="mt-1 max-w-2xl text-sm text-gray-700">{settingsOverall.message}</p>
+            {!settingsOverall.title.includes('Vinculá') && !settingsOverall.title.includes('certificado') && <p className="mt-2 text-sm font-medium text-gray-800">Permiso de emisión: {selectedSettingsContributor.authorizationVerified !== true ? 'No se pudo verificar' : settingsPermissionActive ? 'Activo' : selectedSettingsContributor.authorizationStatus === 'PENDING' ? 'Pendiente' : 'Sin habilitar'}</p>}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {!certificateLoading && (!settingsCertificateInfo || certificateReadFailed) && <button type="button" onClick={() => void loadCertificate(selectedSettingsContributor, false)} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Volver a consultar estado</button>}
+              {!certificateLoading && settingsCertificateInfo && !settingsActiveCertificate && <button type="button" onClick={() => void loadCertificate(selectedSettingsContributor)} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{settingsPendingCertificate ? 'Activar certificado' : 'Configurar certificado'}</button>}
+              {settingsActiveCertificate && (!settingsCheckFresh || settingsWsfeFailed) && <button type="button" onClick={() => void checkWsfeConnection(selectedSettingsContributor)} disabled={busy || featureFlags.wsfeRead !== true} className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />}{settingsWsfeFailed ? 'Reintentar conexión' : 'Probar conexión'}</button>}
+              {settingsWsfeResult && settingsCheckFresh && settingsActivePointCount === 0 && <a href="https://www.arca.gob.ar/landing/default.asp" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white">Consultar cómo revisarlos en ARCA ↗</a>}
+              {settingsOverall.tone === 'green' && <Link href="/perfil/nodo/emitir" className="inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white">Emitir comprobante →</Link>}
+              {selectedSettingsContributor.authorizationVerified !== true && <button type="button" onClick={() => void load()} disabled={loading || busy} className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700">Actualizar estado</button>}
+              {settingsActiveCertificate && settingsWsfeResult && settingsCheckFresh && settingsActivePointCount === 0 && <button type="button" onClick={() => void checkWsfeConnection(selectedSettingsContributor)} disabled={busy || featureFlags.wsfeRead !== true} className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700">Volver a comprobar</button>}
+            </div>
+            {featureFlags.wsfeRead !== true && <p className="mt-3 text-sm text-amber-900">La comprobación de conexión no está disponible para esta cuenta.</p>}
+          </div>
+          <div className="mt-5 divide-y divide-gray-100 border-y border-gray-100">
+            <div className="flex flex-wrap items-center justify-between gap-3 py-4"><div><p className="text-sm font-medium text-gray-900">Conexión con ARCA</p><p className="mt-1 text-sm text-gray-500">{settingsWsfeResult ? `Última comprobación: ${new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(settingsWsfeResult.verifiedAt))}` : settingsWsfeFailed ? 'No pudimos comprobarla' : 'Todavía no comprobada en esta sesión'}</p></div><span className={`text-sm font-semibold ${settingsCheckFresh ? 'text-emerald-700' : settingsWsfeFailed ? 'text-red-700' : 'text-gray-600'}`}>{settingsCheckFresh ? 'Respondió' : settingsWsfeFailed ? 'No disponible' : settingsWsfeResult ? 'Comprobación anterior' : 'Sin comprobar'}</span></div>
+            <div className="flex flex-wrap items-center justify-between gap-3 py-4"><div><p className="text-sm font-medium text-gray-900">Certificado</p><p className="mt-1 text-sm text-gray-500">{certificateLoading ? 'Consultando…' : settingsActiveCertificate ? `Válido hasta el ${date(settingsActiveCertificate.expiresAt)}` : settingsPendingCertificate ? 'Está cargado y falta activarlo' : certificateReadFailed ? 'No pudimos verificarlo' : settingsCertificateInfo ? 'Falta cargarlo' : 'Consultando estado'}</p></div><span className="text-sm font-semibold text-gray-800">{certificateLoading ? 'Consultando' : settingsActiveCertificate ? 'Activo' : settingsPendingCertificate ? 'Pendiente' : certificateReadFailed ? 'No verificado' : settingsCertificateInfo ? 'Falta' : '—'}</span></div>
+            <div className="flex flex-wrap items-center justify-between gap-3 py-4"><div><p className="text-sm font-medium text-gray-900">Puntos de venta</p><p className="mt-1 text-sm text-gray-500">{settingsWsfeResult ? settingsActivePointCount > 0 ? `${settingsActivePointCount} activos de ${settingsWsfeResult.puntosVenta.length} informados por ARCA` : `ARCA informó ${settingsWsfeResult.puntosVenta.length}; ninguno figura activo` : 'Se muestran al comprobar la conexión'}</p></div><span className={`text-sm font-semibold ${settingsWsfeResult && settingsCheckFresh && settingsActivePointCount > 0 ? 'text-emerald-700' : settingsWsfeResult && settingsCheckFresh ? 'text-amber-800' : 'text-gray-600'}`}>{settingsWsfeResult && settingsCheckFresh ? settingsActivePointCount > 0 ? 'Activo' : 'Revisar' : settingsWsfeResult ? 'Comprobación anterior' : 'Sin verificar'}</span></div>
+          </div>
+          {settingsWsfeResult && <p className="mt-3 text-xs text-gray-500">Los puntos y la conexión corresponden a la comprobación del {new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(settingsWsfeResult.verifiedAt))}. La última comprobación se considera reciente durante 24 horas.</p>}
+          {settingsWsfeResult && settingsActivePointCount > 0 && <details className="mt-3 text-sm text-gray-600"><summary className="cursor-pointer font-semibold">Ver puntos de venta</summary><ul className="mt-2 space-y-1">{settingsWsfeResult.puntosVenta.map(item => <li key={item.nro}>Punto {item.nro} · {item.activo ? 'Activo' : 'Inactivo'}{item.emisionTipo ? ` · ${item.emisionTipo}` : ''}</li>)}</ul></details>}
+          {settingsWsfeResult && settingsCheckFresh && settingsActivePointCount === 0 && <p className="mt-3 text-sm text-gray-600">En ARCA, revisá el estado de tus puntos de venta. Después, volvé a comprobarlos acá.</p>}
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <button type="button" onClick={() => void loadCertificate(selectedSettingsContributor)} disabled={certificateLoading || featureFlags.certificateManagement !== true} className="font-semibold text-[#C2103F] hover:underline">Administrar certificado</button>
+            <button type="button" onClick={() => setSettingsTab('invoice')} className="font-semibold text-[#C2103F] hover:underline">Datos del emisor y diseño</button>
+            <details className="basis-full pt-2 text-xs text-gray-500"><summary className="cursor-pointer font-semibold">Detalles técnicos y permisos</summary><div className="mt-2 space-y-1"><p>CUIT: {formatFiscalCuit(selectedSettingsContributor.cuit)} · Ambiente: {settingsEnvironment}</p><p>Autorización informada por NODO: {selectedSettingsContributor.authorizationVerified === true ? selectedSettingsContributor.authorizationStatus : 'No se pudo verificar'}</p><p>Permiso de emisión: {selectedSettingsContributor.authorizationVerified !== true ? 'No se pudo verificar' : settingsPermissionActive ? 'Activo' : 'Inactivo'}</p>{settingsWsfeResult && <p>Servicio WSFE respondió el {new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(settingsWsfeResult.verifiedAt))}. No se emitió un comprobante.</p>}</div></details>
+            <details className="basis-full text-xs text-gray-500"><summary className="cursor-pointer font-semibold">Consulta de datos registrales · opcional</summary><p className="mt-2">Esta consulta no habilita la emisión.</p><p className="mt-1 font-semibold text-gray-700">{selectedSettingsContributor.authorizationStatus === 'ACTIVE' && selectedSettingsContributor.permissions?.canQueryPadron === true ? 'Consulta habilitada' : 'Sin verificar'}</p>{selectedSettingsContributor.authorizationStatus === 'ACTIVE' && selectedSettingsContributor.permissions?.canQueryPadron === true ? <p className="mt-1">El permiso está activo para este ambiente.</p> : featureFlags.padronQuery === true && selectedSettingsContributor.permissions?.canManageCert === true ? <button type="button" onClick={() => void checkPadronAccess(selectedSettingsContributor)} disabled={busy} className="mt-2 font-semibold text-[#C2103F] hover:underline">Consultar datos registrales</button> : <p className="mt-1">Consulta no disponible.</p>}</details>
+          </div>
+        </>}
+      </section>}
+
+      {(section === 'all' || (section === 'settings' && adminMode && settingsTab === 'access')) && <section className={`rounded-2xl bg-white p-5 ${surfaceShadow}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex-1">
-            <h2 className="font-semibold text-gray-900">Certificado y permisos de la CUIT</h2>
-            <p className="mt-1 text-sm text-gray-500">Cada ambiente se gestiona por separado.</p>
+            <h2 className="font-semibold text-gray-900">Producción</h2>
           </div>
-          <button type="button" onClick={() => { setCuit(''); setRepresentativeCuit(''); setRazonSocial(''); setPadronLookup({ cuit: '', key: '', status: 'idle', message: '' }); setError(''); setShowAddContributor(true) }} disabled={featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40"><Plus size={16} /> Vincular CUIT</button>
+          <button type="button" onClick={() => { setEnvironment('PROD'); setCuit(''); setRepresentativeCuit(''); setRazonSocial(''); setPadronLookup({ cuit: '', key: '', status: 'idle', message: '' }); setError(''); setShowAddContributor(true) }} disabled={featureFlags.contributorManagement !== true} className="inline-flex items-center gap-2 rounded-full bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40"><Plus size={16} /> Configurar producción</button>
         </div>
-        {contributors.length === 0 ? <p className="mt-4 rounded-xl bg-[#F4F4F1] p-4 text-sm text-gray-500">Todavía no hay CUIT vinculadas a esta cuenta.</p> : <div className="mt-4 space-y-3">
-            {contributors.map(item => <article key={item.id} className="rounded-xl border border-gray-200 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div><p className="font-semibold text-gray-900">{item.razonSocial || 'Contribuyente'}</p><p className="mt-1 font-mono text-sm text-gray-600">{item.cuit}</p><p className="mt-1 text-xs text-gray-500">Representante {item.representativeCuit} · {item.environment === 'TEST' ? 'Homologación' : 'Producción'}</p></div>
-                <span className={item.authorizationVerified && item.authorizationStatus === 'ACTIVE' ? 'rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700' : 'rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700'}>{item.authorizationVerified !== true ? 'Estado sin confirmar' : item.authorizationStatus === 'ACTIVE' ? item.permissions?.canEmit === true ? 'Permiso de emisión activo' : item.permissions?.canQueryPadron === true ? 'Solo consulta A13' : 'Sin permiso de emisión' : item.authorizationStatus === 'PENDING' ? 'Pendiente de autorización' : item.authorizationStatus}</span>
-              </div>
-              {item.authorizationVerified !== true && <p className="mt-2 text-xs leading-5 text-amber-800">No pudimos consultar el estado actual en el Worker. Actualizá la pantalla; no vuelvas a cargar el certificado si ya figura activo.</p>}
-              {item.authorizationVerified === true && item.authorizationStatus === 'PENDING' && <p className="mt-2 text-xs leading-5 text-gray-600">El Worker todavía no confirma permisos de emisión para esta CUIT y ambiente. Un certificado o TA activo no concede por sí solo permiso para facturar; A13 es una consulta aparte.</p>}
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button onClick={() => void loadCertificate(item)} disabled={featureFlags.certificateManagement !== true} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40"><UploadCloud size={14} /> Revisar o configurar certificado</button>
-                {featureFlags.certificateManagement !== true && <p role="status" className="self-center text-xs text-amber-800">La carga está desactivada para esta cuenta.</p>}
-                <button onClick={() => void removeContributor(item)} disabled={busy || featureFlags.contributorManagement !== true} className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40">Quitar CUIT</button>
-              </div>
-              <details className="mt-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
-                <summary className="cursor-pointer text-xs font-semibold text-gray-700">Ayuda oficial para {item.environment === 'TEST' ? 'homologación' : 'producción'} de esta CUIT</summary>
-                {item.environment === 'PROD' ? <div className="mt-3 space-y-2 text-xs leading-5 text-gray-600">
-                  <p>En ARCA: generá una clave privada y CSR; en “Administrador de Certificados Digitales” cargá el CSR y descargá el CRT. Después, en “Administrador de Relaciones”, autorizá el alias para el Web Service que vas a usar (por ejemplo, Factura Electrónica). Finalmente, cargá aquí el CRT y la clave privada con “Cargar certificado”. El certificado y la autorización deben corresponder a esta CUIT y al ambiente productivo.</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/landing/default.asp" target="_blank" rel="noreferrer">Portal ARCA ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/documentacion/certificados.asp" target="_blank" rel="noreferrer">Certificados oficiales ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/WSAA.ObtenerCertificado.pdf" target="_blank" rel="noreferrer">Instructivo CSR/certificado ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSAA/ADMINREL.DelegarWS.pdf" target="_blank" rel="noreferrer">Instructivo de autorización ↗</a></div>
-                  <p>Emitir el certificado no autoriza por sí solo `wsfe`. La clave privada debe conservarse protegida; no la compartas por chat ni la subas al repositorio.</p>
-                </div> : <div className="mt-3 space-y-2 text-xs leading-5 text-gray-600">
-                  <p>Para homologación, usá WSASS y un certificado TEST. En WSASS gestioná el certificado y autorizá el Web Service que corresponda para esta CUIT. Esos certificados no sirven en producción.</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1"><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/html/introduccion.html" target="_blank" rel="noreferrer">Guía oficial de WSASS ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/WSASS/WSASS_manual.pdf" target="_blank" rel="noreferrer">Manual WSASS (PDF) ↗</a><a className="font-semibold text-[#c2103f] hover:underline" href="https://www.arca.gob.ar/ws/documentacion/wsaa.asp" target="_blank" rel="noreferrer">Documentación WSAA ↗</a></div>
-                </div>}
-              </details>
-            </article>)}
-          </div>}
+        {featureFlags.contributorManagement !== true && <p className="mt-2 text-xs text-amber-800">La vinculación de CUIT no está disponible para esta cuenta.</p>}
+        {productionContributors.length === 0 ? <p className="mt-4 rounded-xl bg-[#F4F4F1] p-4 text-sm text-gray-600">Todavía no configuraste una CUIT para emitir en producción.</p> : <div className="mt-4 space-y-3">{productionContributors.map(renderContributor)}</div>}
+        <details className="mt-5 rounded-xl border border-gray-200 p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-800">¿Necesitás probar la integración? · Homologación</summary>
+          <p className="mt-2 text-sm text-gray-600">Entorno de pruebas; sus comprobantes no son válidos para facturar.</p>
+          {testContributors.length > 0 && <div className="mt-3 space-y-3">{testContributors.map(renderContributor)}</div>}
+          <button type="button" onClick={() => { setEnvironment('TEST'); setCuit(''); setRepresentativeCuit(''); setRazonSocial(''); setPadronLookup({ cuit: '', key: '', status: 'idle', message: '' }); setError(''); setShowAddContributor(true) }} disabled={featureFlags.contributorManagement !== true} className="mt-3 inline-flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40"><Plus size={15} /> Configurar entorno de pruebas</button>
+          {featureFlags.contributorManagement !== true && <p className="mt-2 text-xs text-amber-800">La vinculación de CUIT no está disponible para esta cuenta.</p>}
+        </details>
       </section>}
 
       {(section === 'all' || (section === 'settings' && settingsTab === 'invoice')) && <FiscalInvoiceTemplateEditor api={api} contributors={contributors} />}
@@ -935,7 +1152,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             </label>
             <label className="block text-sm font-medium text-gray-700">Ambiente
               <select value={environment} onChange={event => setEnvironment(event.target.value as 'TEST' | 'PROD')} className="mt-1 block w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 font-normal">
-                <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
+                <option value="PROD">Producción</option><option value="TEST">Entorno de pruebas · Homologación</option>
               </select>
             </label>
             <details className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5">
@@ -959,26 +1176,23 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
 
       {selectedContributor && (section === 'all' || (section === 'settings' && settingsTab === 'access')) && <section id="certificate-panel" tabIndex={-1} className={`scroll-mt-6 rounded-2xl bg-white p-5 ${surfaceShadow}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div><p className="text-xs font-semibold uppercase tracking-wide text-[#C2103F]">{selectedContributor.environment === 'TEST' ? 'TEST · HOMOLOGACIÓN' : 'PROD · PRODUCCIÓN'}</p><h2 className="mt-1 font-semibold text-gray-900">Acceso fiscal de {selectedContributor.razonSocial || selectedContributor.cuit}</h2><p className="mt-1 text-sm text-gray-500">Los certificados y permisos se configuran por separado en cada ambiente.</p></div>
-          <div className="flex gap-2"><button type="button" onClick={() => void loadCertificate(selectedContributor)} disabled={certificateLoading || busy} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 disabled:opacity-50"><RefreshCw size={14} /> Actualizar estado</button><button type="button" onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-slate-400 hover:text-slate-900">Cerrar</button></div>
-        </div>
-        <div className="mt-4 rounded-xl border border-gray-200 p-4">
-          <h3 className="text-sm font-semibold text-gray-900">¿Para qué sirve este ambiente?</h3>
-          <p className="mt-1 text-sm leading-5 text-gray-600">{selectedContributor.environment === 'TEST' ? 'Homologación sirve para hacer pruebas con ARCA. Sus comprobantes no son facturas válidas.' : 'Producción conecta con ARCA real y permite emitir comprobantes fiscales cuando la autorización y los permisos están activos.'}</p>
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-[#C2103F]">{selectedContributor.environment === 'TEST' ? 'ENTORNO DE PRUEBAS' : 'PRODUCCIÓN'}</p><h2 className="mt-1 font-semibold text-gray-900">{selectedContributor.razonSocial || formatFiscalCuit(selectedContributor.cuit)}</h2><p className="mt-1 text-sm text-gray-500">{formatFiscalCuit(selectedContributor.cuit)}</p></div>
+          <div className="flex gap-2"><button type="button" onClick={() => void loadCertificate(selectedContributor)} disabled={certificateLoading || busy} className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-slate-400 disabled:opacity-50"><RefreshCw size={14} /> Actualizar</button><button type="button" onClick={() => { setSelectedContributor(null); setCertificateInfo(null); setCertFile(null); setKeyFile(null) }} className="rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-slate-400 hover:text-slate-900">Cerrar</button></div>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div className={`rounded-xl border p-4 ${activeEnvironmentCertificate ? 'border-emerald-200 bg-emerald-50' : pendingEnvironmentCertificate ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}><p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Certificado en NODO</p><p className="mt-1 text-sm font-semibold text-gray-900">{certificateLoading ? 'Consultando…' : activeEnvironmentCertificate ? 'Activo' : pendingEnvironmentCertificate ? 'Cargado; falta activarlo' : certificateInfo ? 'Todavía no está cargado' : 'Estado sin consultar'}</p>{activeEnvironmentCertificate && <p className="mt-1 text-xs text-gray-600">Vence {date(activeEnvironmentCertificate.expiresAt)}</p>}{pendingEnvironmentCertificate && <p className="mt-1 text-xs text-gray-600">Vence {date(pendingEnvironmentCertificate.expiresAt)}</p>}</div>
-          <div className={`rounded-xl border p-4 ${selectedCanEmit ? 'border-emerald-200 bg-emerald-50' : selectedContributor.authorizationVerified ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}><p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Permiso de emisión en el Worker</p><p className="mt-1 text-sm font-semibold text-gray-900">{selectedCanEmit ? 'Activo' : !selectedContributor.authorizationVerified ? 'No se pudo confirmar' : selectedContributor.permissions?.canQueryPadron === true ? 'Solo consulta A13; emisión desactivada' : selectedContributor.authorizationStatus === 'ACTIVE' ? 'La CUIT está vinculada, pero no tiene emisión habilitada' : 'Pendiente de autorización'}</p><p className="mt-1 text-xs text-gray-600">{selectedCanEmit ? 'El Worker confirma el permiso. En PROD, cada comprobante igual debe ser autorizado por ARCA.' : !selectedContributor.authorizationVerified ? 'Actualizá el estado para consultar de nuevo al Worker. No cargues otra vez el certificado si ya figura activo.' : 'Cargar o activar un certificado no concede por sí solo permiso para emitir.'}</p></div>
+          <div className={`rounded-xl border p-4 ${activeEnvironmentCertificate ? 'border-emerald-200 bg-emerald-50' : pendingEnvironmentCertificate ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}><p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Certificado</p><p className="mt-1 text-sm font-semibold text-gray-900">{certificateLoading ? 'Consultando…' : activeEnvironmentCertificate ? 'Activo' : pendingEnvironmentCertificate ? 'Cargado; falta activarlo' : certificateInfo ? 'Falta cargar' : 'Sin consultar'}</p>{activeEnvironmentCertificate && <p className="mt-1 text-xs text-gray-600">Vence {date(activeEnvironmentCertificate.expiresAt)}</p>}{pendingEnvironmentCertificate && <p className="mt-1 text-xs text-gray-600">Vence {date(pendingEnvironmentCertificate.expiresAt)}</p>}</div>
+          <div className={`rounded-xl border p-4 ${selectedCanEmit ? 'border-emerald-200 bg-emerald-50' : selectedContributor.authorizationVerified ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}><p className="text-xs font-semibold uppercase tracking-wide text-gray-600">Permiso de emisión</p><p className="mt-1 text-sm font-semibold text-gray-900">{selectedCanEmit ? 'Activo' : !selectedContributor.authorizationVerified ? 'No se pudo verificar' : selectedContributor.permissions?.canQueryPadron === true ? 'Solo consulta A13' : selectedContributor.authorizationStatus === 'ACTIVE' ? 'Sin permiso de emisión' : 'Pendiente'}</p>{selectedCanEmit && selectedContributor.environment === 'PROD' && <p className="mt-1 text-xs text-gray-600">Cada comprobante requiere autorización de ARCA.</p>}{!selectedContributor.authorizationVerified && <p className="mt-1 text-xs text-gray-600">Actualizá el estado para volver a consultar.</p>}</div>
         </div>
-        <p className="mt-3 text-xs leading-5 text-gray-500">El Worker usa el certificado para autenticarse con ARCA y administra el TA. No necesitás cargar un TA manualmente. TEST y PROD usan certificados distintos.</p>
+        <details className="mt-3 text-xs text-gray-500"><summary className="cursor-pointer font-semibold">Detalles de conexión</summary><p className="mt-2 leading-5">NODO usa el certificado para autenticarse con ARCA y gestiona el TA. No hace falta cargar el TA manualmente. Producción y pruebas usan certificados separados.</p></details>
         {certificateInfo && <div className="mt-4 rounded-xl border border-gray-200 p-4">
-          <h3 className="text-sm font-semibold text-gray-900">Conexión para facturar (WSFE)</h3>
-          <p className="mt-1 text-sm text-gray-600">Probá el acceso con esta CUIT y ambiente. Si ARCA responde, NODO confirma WSAA/TA y habilita emisión y consulta de historial en el Worker. Esta prueba no emite comprobantes; en PROD consume una consulta del plan.</p>
-          <button type="button" onClick={() => void checkWsfeConnection(selectedContributor)} disabled={busy || !activeEnvironmentCertificate || selectedContributor.permissions?.canManageCert !== true || featureFlags.wsfeRead !== true} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Probar conexión y habilitar WSFE</button>
-          {!activeEnvironmentCertificate && <p className="mt-2 text-xs text-amber-800">Primero activá en NODO el certificado de este ambiente.</p>}
+          <h3 className="text-sm font-semibold text-gray-900">WSFE · Facturación</h3>
+          <p className="mt-1 text-sm text-gray-600">Verificá la autenticación y el acceso a este servicio. No emite comprobantes.</p>
+          <p className="mt-2 text-sm font-medium text-gray-800">Autenticación con ARCA: {wsfeCheckResult?.cuit === selectedContributor.cuit && wsfeCheckResult.environment === selectedContributor.environment ? 'Confirmada' : 'Sin verificar'}</p>
+          <button type="button" onClick={() => void checkWsfeConnection(selectedContributor)} disabled={busy || !activeEnvironmentCertificate || selectedContributor.permissions?.canManageCert !== true || featureFlags.wsfeRead !== true} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Verificar</button>
+          {!activeEnvironmentCertificate && <p className="mt-2 text-xs text-amber-800">Primero activá el certificado.</p>}
           {featureFlags.wsfeRead !== true && <p className="mt-2 text-xs text-amber-800">La verificación WSFE está desactivada para esta cuenta.</p>}
           {wsfeCheckResult?.cuit === selectedContributor.cuit && wsfeCheckResult.environment === selectedContributor.environment && <div role="status" className="mt-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">
-            <p className="font-semibold">Autenticación WSAA/TA y respuesta WSFE confirmadas</p>
+            <p className="font-semibold">WSFE disponible</p>
             <p className="mt-1">{wsfeCheckResult.cuit} · {wsfeCheckResult.environment} · {new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(wsfeCheckResult.verifiedAt))}</p>
             <p className="mt-1">{wsfeCheckResult.puntosVenta.length} puntos de venta informados por ARCA{wsfeCheckResult.puntosVenta.length > 0 ? `: ${wsfeCheckResult.puntosVenta.map(item => `${item.nro}${item.activo ? '' : ' (inactivo)'}`).join(', ')}` : '.'}</p>
           </div>}
@@ -997,14 +1211,12 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
           </> : <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">La gestión de certificados está desactivada para esta cuenta. Pedile a ZAP que la habilite.</p>}
         </div>}
         {!certificateLoading && certificateInfo && <details className="mt-4 rounded-xl border border-gray-200 px-4 py-3">
-          <summary className="cursor-pointer text-sm font-semibold text-gray-800">Consulta de padrón A13 <span className="font-normal text-gray-500">· opcional, no habilita emisión</span></summary>
-          <p className="mt-2 text-sm text-gray-600">A13 permite consultar datos registrales. Es independiente de la emisión y no es un paso para activar el certificado.</p>
-          <p className="mt-2 text-xs font-semibold text-gray-700">Estado: {selectedPadronIsActive ? 'consulta habilitada' : 'sin validar'}</p>
+          <summary className="cursor-pointer text-sm font-semibold text-gray-800">A13 · Datos registrales</summary>
+          <p className="mt-2 text-xs font-semibold text-gray-700">{selectedPadronIsActive ? 'Consulta habilitada' : 'Sin verificar'}</p>
           {padronCheckResult?.cuit === selectedContributor.cuit && padronCheckResult.environment === selectedContributor.environment && <p role="status" className="mt-1 text-xs text-emerald-800">ARCA respondió la consulta A13 para {padronCheckResult.cuit} · {padronCheckResult.environment} el {new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(padronCheckResult.checkedAt))}. La autenticación del servicio fue confirmada.</p>}
           {selectedPadronIsActive ? <p className="mt-1 text-xs text-gray-600">El permiso de consulta está activo para este ambiente.</p> : featureFlags.padronQuery === true ? <>
-            <button type="button" onClick={() => void checkPadronAccess(selectedContributor)} disabled={busy || selectedContributor.permissions?.canManageCert !== true || selectedContributor.authorizationStatus === 'REVOKED'} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Consultar acceso A13 de esta CUIT</button>
-            <p className="mt-2 text-xs leading-5 text-gray-600">Si la respuesta señala que falta autorizar el servicio, hacelo para esta CUIT en {selectedContributor.environment === 'TEST' ? 'WSASS' : 'Administrador de Relaciones de ARCA'}. Un error de conexión o certificado no confirma por sí solo que falte autorización.</p>
-            <a className="mt-1 inline-flex text-xs font-semibold text-[#C2103F] hover:underline" href={selectedContributor.environment === 'TEST' ? 'https://www.arca.gob.ar/ws/WSASS/html/introduccion.html' : 'https://www.arca.gob.ar/landing/default.asp'} target="_blank" rel="noreferrer">{selectedContributor.environment === 'TEST' ? 'Abrir WSASS' : 'Abrir ARCA para gestionar relaciones'} ↗</a>
+            <button type="button" onClick={() => void checkPadronAccess(selectedContributor)} disabled={busy || selectedContributor.permissions?.canManageCert !== true || selectedContributor.authorizationStatus === 'REVOKED'} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Consultar</button>
+            {showPadronAuthorizationHelp && <div className="mt-2 text-xs text-gray-700"><p>ARCA indica que falta autorizar A13 para esta CUIT.</p><a className="mt-1 inline-flex font-semibold text-[#C2103F] hover:underline" href={selectedContributor.environment === 'TEST' ? 'https://www.arca.gob.ar/ws/WSASS/html/introduccion.html' : 'https://www.arca.gob.ar/landing/default.asp'} target="_blank" rel="noreferrer">{selectedContributor.environment === 'TEST' ? 'Abrir WSASS' : 'Abrir ARCA'} ↗</a></div>}
           </> : <p className="mt-1 text-xs text-amber-800">La consulta de padrón está desactivada por ZAP.</p>}
         </details>}
         {certificateInfo && selectedEnvironmentCertificates.some(cert => cert.status !== 'ACTIVE' && cert.status !== 'PENDING_PROPAGATION') && <details className="mt-4 text-xs text-gray-500"><summary className="cursor-pointer">Ver certificados anteriores</summary><ul className="mt-2 space-y-1">{selectedEnvironmentCertificates.filter(cert => cert.status !== 'ACTIVE' && cert.status !== 'PENDING_PROPAGATION').map(cert => <li key={cert.id}>{cert.cn || 'Certificado'} · {cert.status} · vence {date(cert.expiresAt)}</li>)}</ul></details>}
@@ -1048,7 +1260,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-sm font-medium text-gray-700">Ambiente
                 <select value={emission.environment} onChange={event => setEmission(v => ({ ...v, environment: event.target.value as 'TEST' | 'PROD', cuit: '' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
-                  <option value="TEST">Homologación (TEST)</option><option value="PROD">Producción (PROD)</option>
+                  <option value="PROD">Producción</option><option value="TEST">Entorno de pruebas · Homologación</option>
                 </select>
               </label>
               <label className="text-sm font-medium text-gray-700">CUIT emisora

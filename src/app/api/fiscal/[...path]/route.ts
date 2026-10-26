@@ -55,11 +55,34 @@ function allowedPath(segments: string[], method: string) {
   return false
 }
 
+function describeOperation(segments: string[]): string {
+  const path = segments.join('/')
+  if (path === 'contributors') return 'contributors-create'
+  if (/^contributors\/[0-9]{11}\/certificate\/[A-Za-z0-9_-]+\/activate$/.test(path)) return 'certificate-activate'
+  if (/^contributors\/[0-9]{11}\/certificate$/.test(path)) return 'certificate-manage'
+  if (/^contributors\/[0-9]{11}\/(?:wsfe|padron)\/connection-check$/.test(path)) return 'service-connection-check'
+  if (/^contributors\/[0-9]{11}\/wsfe\/(?:points-of-sale|vouchers)(?:\/latest|\/[0-9]+)?$/.test(path)) return 'wsfe-read'
+  if (/^contributors\/[0-9]{11}$/.test(path)) return 'contributor-manage'
+  if (path === 'invoices/emit') return 'invoice-emit'
+  if (path === 'invoices/void') return 'invoice-void'
+  if (path === 'padron/consultas') return 'padron-query'
+  if (path === 'usage') return 'usage-read'
+  if (/^jobs\/[A-Za-z0-9_-]+\/reconcile$/.test(path)) return 'job-reconcile'
+  if (/^jobs\/[A-Za-z0-9_-]+$/.test(path)) return 'job-read'
+  return 'unrecognized-route'
+}
+
 async function proxy(request: NextRequest, { params }: FiscalPathParams) {
   const segments = (await params).path || []
   const method = request.method
   if (!allowedPath(segments, method)) {
-    return NextResponse.json({ error: 'Operación fiscal no habilitada desde el panel.' }, { status: 404 })
+    const operation = describeOperation(segments)
+    console.warn('[fiscal/proxy] route not allowed', { method, operation })
+    return NextResponse.json({
+      error: `La acción fiscal “${operation}” no está disponible en esta versión del panel.`,
+      code: 'FISCAL_PROXY_ROUTE_NOT_ALLOWED',
+      operation,
+    }, { status: 404, headers: { 'Cache-Control': 'no-store' } })
   }
 
   const resolved = await resolveAccount(request)
