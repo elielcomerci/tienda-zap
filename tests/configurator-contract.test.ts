@@ -663,15 +663,15 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - quote.totalPrice / 1.21) < 0.01);
 
-  assert.throws(
-    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 2500 }, makeQuoterConfig(config)),
-    /CONSULT_REQUIRED: No hay costo real cargado/,
-  );
-
-  assert.throws(
-    () => quoteConfiguratorSelection(config as any, { ...selection, quantity: 5000 }, makeQuoterConfig(config)),
-    /CONSULT_REQUIRED: No hay costo real cargado/,
-  );
+  for (const quantity of [2500, 5000]) {
+    const volumeQuote = quoteConfiguratorSelection(
+      config as any,
+      { ...selection, quantity },
+      makeQuoterConfig(config),
+    );
+    assertQuoteFinancials(volumeQuote);
+    assert.equal(volumeQuote.taxTreatment, 'INCLUDED');
+  }
 
   assert.throws(
     () => quoteConfiguratorSelection(config as any, { ...selection, format: 'a4' }, makeQuoterConfig(config)),
