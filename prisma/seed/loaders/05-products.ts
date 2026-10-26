@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { productsData } from '../data/05-products';
 
-export async function loadProducts(prisma: PrismaClient): Promise<void> {
+export async function loadProducts(prisma: PrismaClient, options: { preservePricing?: boolean } = {}): Promise<void> {
   for (const p of productsData) {
     await prisma.product.upsert({
       where: { slug: p.slug },
@@ -16,9 +16,9 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
         includes: p.includes || [],
         configurable: p.configurable || [],
         consultationNote: p.consultationNote || null,
-        ...(p.price !== undefined ? { price: p.price } : {}),
+        ...(!options.preservePricing && p.price !== undefined ? { price: p.price } : {}),
         ...(p.briefType !== undefined ? { briefType: p.briefType } : {}),
-        priceFrom: p.priceFrom ?? null,
+        ...(!options.preservePricing ? { priceFrom: p.priceFrom ?? null } : {}),
         active: p.active ?? true,
         publicVisible: p.publicVisible ?? false,
         publicGroup: p.publicGroup ?? null,
