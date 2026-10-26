@@ -179,3 +179,54 @@ No esconder una tarifa concreta detrás de “Consultar” si el alcance base pu
 ### Siguiente entregable de auditoría
 
 Crear una matriz maestra de todos los servicios actuales y relevados, con una fila por servicio y estas columnas: familia, problema del cliente, nombre público propuesto, alcance base, modalidad, precio de referencia, precio ZAP desde (si está aprobado), estado del precio, potencial de demanda, claridad, fricción, recurrencia, oportunidad de ampliación, nivel A/B/C/D y decisión editorial. La matriz permitirá seleccionar la portada y navegación sin eliminar capacidades válidas.
+
+
+## Frontera de marca: qué pertenece a ZAP Agencia Creativa
+
+**Criterio estratégico confirmado por el titular, 2026-10-26:** ZAP no debe diversificarse hasta perder su identidad. Tener capacidad de ejecución no basta para justificar que una prestación se presente bajo la marca principal. Si una línea de negocio necesita otra expectativa de compra, otro público, otra narrativa y otra reputación para venderse bien, se debe evaluar una marca separada en vez de estirar ZAP.
+
+### Definición de pertenencia
+
+Un servicio pertenece a ZAP Agencia Creativa cuando ayuda a que una marca o negocio:
+- se vea, se exprese y se diferencie;
+- comunique mejor y atraiga oportunidades;
+- convierta interés en ventas o mejore la experiencia del cliente;
+- conecte los puntos de contacto de su marca;
+- resuelva una necesidad de funcionamiento comercial u operativo estrechamente relacionada con la experiencia, la comunicación o la venta.
+
+La tecnología no queda fuera por sí misma. Una tienda online, un configurador para vender productos, un bot de atención, una integración entre canales o una automatización comercial pueden pertenecer plenamente a ZAP porque materializan una solución creativa, de experiencia o de negocio.
+
+En cambio, una prestación técnica genérica cuyo comprador busca principalmente ingeniería de infraestructura, operación de sistemas críticos, plataformas de datos empresariales, DevSecOps/SRE, IoT industrial o desarrollo de software sin vínculo claro con marca, comunicación, experiencia o funcionamiento comercial no debe entrar automáticamente en la oferta visible de ZAP. Primero se evalúa si es una extensión natural, una capacidad de proyecto bajo consulta o una línea que necesita marca propia.
+
+### Test de frontera para cada servicio
+
+Responder estas cinco preguntas:
+1. **Continuidad de marca:** ¿un cliente que conoce a ZAP por diseño, creatividad, estrategia, publicidad y tecnología aplicada al negocio entendería naturalmente que también hacemos esto?
+2. **Mismo comprador:** ¿lo compra la misma persona o área que contrata a ZAP, o requiere otro decisor y otro proceso comercial?
+3. **Mismo problema:** ¿la prestación conecta con marca, comunicación, adquisición, conversión, experiencia o funcionamiento comercial, o responde a una necesidad independiente?
+4. **Misma promesa y prueba:** ¿podemos explicarlo con la promesa de ZAP y demostrar su valor sin inventar una identidad técnica distinta?
+5. **Costo de dilución:** ¿mostrarlo fortalece la percepción de ZAP como socio creativo-tecnológico o la vuelve una agencia genérica que hace de todo?
+
+### Decisiones posibles
+
+- **ZAP principal:** pertenece naturalmente a la marca y puede aparecer en su oferta.
+- **ZAP por consulta:** encaja con la promesa, pero su venta requiere diagnóstico, especialización o alcance a medida.
+- **Marca hermana / unidad separada:** tiene potencial comercial, pero exige otra narrativa, audiencia, reputación o proceso de venta. Debe tener posicionamiento propio y una relación explícita, si conviene, con ZAP.
+- **Solo capacidad de ejecución / no promover:** se puede resolver para un cliente existente o como parte de un proyecto, pero no merece adquisición comercial propia desde ZAP.
+- **No priorizar ahora:** encaja, pero no tiene prioridad frente a oportunidades más sencillas y rentables. Esto no equivale a descartar la capacidad.
+
+No crear una marca hermana solo para esconder servicios incómodos. Debe existir una tesis comercial independiente: cliente definido, problema recurrente, oferta reconocible, canal de adquisición y razón por la que la marca separada aumentaría claridad o ventas.
+
+### Hipótesis inicial de frontera
+
+- **Núcleo ZAP:** marca, identidad, diseño, comunicación, publicidad, contenidos, packaging/impresos de marca, web y comercio digital, experiencia digital, captación y conversión.
+- **Extensión natural ZAP:** asistentes y bots para atención/venta, automatizaciones comerciales, integraciones entre canales y sistemas, herramientas internas para resolver problemas concretos de operación comercial, analítica aplicada a adquisición/conversión.
+- **ZAP por consulta / frontera a validar:** software a medida, APIs, aplicaciones, IA aplicada, producción audiovisual, 3D para productos/campañas/experiencias, visualización interactiva, soluciones digitales complejas.
+- **Posible marca o línea independiente:** ingeniería de infraestructura y plataforma, SRE/DevSecOps, IoT industrial, big data empresarial y arquitectura cloud avanzada cuando se venden como disciplina técnica autónoma, sin relación directa con la promesa creativa-comercial.
+- **No decidir solo por etiqueta:** IA, software, datos, 3D o cloud no son automáticamente ajenos a ZAP; la decisión depende del problema, comprador, entregable y narrativa comercial.
+
+Esta hipótesis es un filtro inicial para completar la matriz servicio por servicio, no una decisión irreversible de crear nuevas marcas.
+
+### Implicación para la auditoría comercial
+
+La matriz maestra debe incorporar tres campos nuevos: **ajuste a marca (alto/medio/bajo), relación con el negocio del cliente y marca recomendada (ZAP / ZAP por consulta / evaluar marca separada / no promover)**. El ranking final de ventas con baja fricción se realiza después de este filtro de identidad: un servicio rentable pero ajeno a la marca no debe desplazar una oferta más coherente.
