@@ -449,7 +449,7 @@ test('tarjetas cotiza con costo de proveedor conocido y respeta la selección', 
       { ...selection, productionProcess: 'offset', quantity: 5000, material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada' },
       { profitMargin: 0 } as any,
     ),
-    /Cantidad '5000' no permitida/,
+    /validación comercial/,
   );
 
   assert.throws(
