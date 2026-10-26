@@ -74,7 +74,7 @@ ON DELETE SET NULL ON UPDATE CASCADE;
 WITH consultation_candidates AS (
   SELECT cr."id" AS "consultId", ba."id" AS "accountId"
   FROM "ConsultRequest" cr
-  JOIN "BusinessAccount" ba ON lower(trim(ba."userId")) = lower(trim(cr."customerEmail"))
+  JOIN "BusinessAccount" ba ON ba."userId" IS NOT NULL
   JOIN "User" u ON u."id" = ba."userId"
   WHERE lower(trim(u."email")) = lower(trim(cr."customerEmail"))
     AND trim(cr."customerEmail") <> ''
