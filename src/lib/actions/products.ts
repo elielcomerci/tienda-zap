@@ -91,6 +91,9 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
   if (modality === 'CONFIGURABLE' && !engine) throw new Error('Un Product Base configurable necesita un motor.')
   if (modality !== 'CONFIGURABLE' && engine) throw new Error('Sólo un Product Base configurable puede tener motor.')
 
+  const publicGroupValue = String(formData.get('publicGroup') || '').trim()
+  const publicGroup = ['VENTAS', 'MARCA', 'EXPERIENCIA', 'PROYECTOS'].includes(publicGroupValue) ? publicGroupValue : null
+
   const vatRateInput = String(formData.get('vatRatePercent') ?? '').trim()
   const vatRatePercent = vatRateInput ? Number(vatRateInput) : null
   if (vatRatePercent !== null && (!Number.isFinite(vatRatePercent) || vatRatePercent < 0 || vatRatePercent > 100)) {
@@ -107,6 +110,8 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
     vatRatePercent,
     priceFrom: null,
     active: formData.get('active') !== 'false',
+    publicVisible: formData.get('publicVisible') === 'on',
+    publicGroup: formData.get('publicVisible') === 'on' ? publicGroup : null,
     images: productImages(formData, fallbackImages),
     stock: 0,
     briefType: 'NONE',
@@ -215,6 +220,8 @@ export async function duplicateProduct(id: string) {
       configurable: original.configurable,
       consultationNote: original.consultationNote,
       creditDownPaymentPercent: original.creditDownPaymentPercent,
+      publicVisible: false,
+      publicGroup: null,
       categoryLinks: { create: original.categoryLinks.map(({ categoryId }) => ({ categoryId })) },
       outgoingRelations: { create: original.outgoingRelations.map(({ relatedProductId, type }) => ({ relatedProductId, type })) },
     },
