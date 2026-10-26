@@ -189,6 +189,25 @@ export const marketPriceBenchmarks: MarketPriceBenchmark[] = [
     notes: 'Precio publicado + IVA. La ficha ofrece escala por cantidad; tamaño debe seleccionarse en el cotizador.',
   },
 
+  {
+    id: 'stickers-dokan-circle-5cm-1000',
+    family: 'impresos-packaging',
+    product: 'Stickers circulares',
+    supplier: 'Dokan',
+    url: 'https://dokan.com.ar/product/stickers-redondos/',
+    observedAt: '2026-10-26',
+    quantity: 1000,
+    dimensions: '5 cm diámetro',
+    material: 'Papel autoadhesivo ilustración Avery Fasson S208 (según proveedor)',
+    print: 'Impresión digital color',
+    finishing: 'Troquelado circular; entrega en planchas',
+    amountARS: 95000,
+    taxStatus: 'UNSPECIFIED',
+    scope: 'FINISHED_PRODUCT',
+    confidence: 'HIGH',
+    notes: 'Precio publicado; confirmar IVA y comparar contra la misma calidad de adhesivo y condiciones de entrega.',
+  },
+
   // TAGS: el laminado y la impresión de una o dos caras cambian el precio.
   {
     id: 'tags-grafica-limite-3x9-100-1side-unlaminated',
