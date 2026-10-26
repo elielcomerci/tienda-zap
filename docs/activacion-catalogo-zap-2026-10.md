@@ -4,7 +4,7 @@
 **Implementación original:** `feat/catalogo-publico-main-20261026`
 **Actualización de estado:** 2026-10-26
 
-La selección de visibilidad se aplicó en la base principal después de comprobar que las columnas y el índice ya existían. El resultado confirmado es 40 productos visibles y 14 ocultos (54 registros totales), distribuidos en 22 MARCA, 6 VENTAS, 8 EXPERIENCIA y 4 PROYECTOS. La migración `20261026100000_curated_public_product_visibility` todavía no figura como completada en `_prisma_migrations`; ejecutar el flujo normal de migraciones después de integrar la versión reanudable de SQL.**
+La selección de visibilidad se aplicó en la base principal después de comprobar que las columnas y el índice ya existían. El resultado confirmado es 40 productos visibles y 14 ocultos (54 registros totales), distribuidos en 22 MARCA, 6 VENTAS, 8 EXPERIENCIA y 4 PROYECTOS. La migración `20261026100000_curated_public_product_visibility` todavía no figura como completada en `_prisma_migrations`; ejecutar el flujo normal de migraciones después de integrar la versión reanudable de SQL.
 
 ## Qué cambia
 
