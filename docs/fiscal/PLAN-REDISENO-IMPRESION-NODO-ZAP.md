@@ -38,7 +38,32 @@ La impresión de REVEX usa una vista de documento específica y reglas CSS de im
 
 La referencia de REVEX es el modelo técnico deseado para la experiencia: documento formado con componentes React/Next.js discretos y reutilizables, más CSS de pantalla e impresión. La dirección propuesta es **dejar de usar jsPDF para construir visualmente los comprobantes** y formar el documento de manera nativa en Next.js. La auditoría debe determinar cómo retirar o sustituir el renderer actual de forma segura, conservar la información fiscal y mantener la funcionalidad existente. No es una migración a ciegas: primero se inspeccionan todos los consumidores, dependencias y contratos.
 
-## 3. Qué vamos a decidir
+## 3. Requisito: contenido variable, varias páginas y lotes
+
+La composición nativa debe soportar desde el inicio dos escalas diferentes:
+
+### Una factura, una o varias páginas
+
+- El contenido determina la altura; no se fija una altura rígida que recorte ítems o descripciones.
+- Cuando el comprobante excede una página, continúa en páginas adicionales de forma controlada.
+- La tabla de conceptos debe repetir encabezados cuando corresponda; las filas no deben cortarse de forma ilegible.
+- Totales, CAE, vencimiento y QR fiscal deben permanecer legibles y ubicarse junto a un contexto suficiente, sin superponerse ni desaparecer al paginar.
+- Definir explícitamente qué se repite por página (por ejemplo, identificación del comprobante y encabezados) y qué aparece solo al cierre.
+- Probar textos largos, muchos conceptos, observaciones, datos de receptor extensos y contenido opcional.
+
+CSS de impresión puede controlar tamaño de página, márgenes, saltos y reglas como `break-inside`, pero la paginación real debe verificarse en los navegadores/motores elegidos. No prometer una paginación perfecta solo por agregar CSS.
+
+### Lote de comprobantes desde Excel
+
+La carga de Excel es un flujo de emisión por lote, no una única factura con muchas páginas. Cada comprobante debe mantener su propia identidad fiscal, datos, autorización, QR y snapshot visual. La salida imprimible debe generar una secuencia ordenada de documentos independientes, con un salto de página o separación clara entre comprobantes, y permitir imprimir/guardar el conjunto cuando el flujo actual lo soporte.
+
+- No mezclar varias facturas dentro de una misma hoja como si fueran una sola.
+- Cada comprobante inicia en una nueva página; si uno necesita más de una página, termina antes de comenzar el siguiente.
+- Un fallo o rechazo de una fila no debe convertirla en un comprobante válido ni romper silenciosamente los restantes; respetar el estado de emisión del lote.
+- Antes de diseñar el lote, auditar el flujo existente de importación/emisión y distinguir claramente **emisión fiscal** de **generación de documentos imprimibles**. El diseño no debe disparar emisiones por el solo hecho de previsualizar o imprimir.
+- Probar lotes mixtos, comprobantes largos, orden de salida, límites de volumen y recuperación ante errores.
+
+## 4. Qué vamos a decidir
 
 ### A. Sistema visual
 
@@ -60,7 +85,7 @@ La auditoría aún debe resolver la estrategia de salida: imprimir desde el nave
 
 El documento debe componerse con una única estructura de presentación para vista previa e impresión. CSS `@media print` y `@page` controlarán tamaño, márgenes, colores, controles ocultos y saltos; los componentes se encargarán de cabecera, emisor/receptor, detalle, totales y bloque fiscal. El motor de emisión fiscal sigue separado y es la fuente de los datos autorizados.
 
-## 4. Experiencia propuesta
+## 5. Experiencia propuesta
 
 - Entrar a **Diseño de comprobantes** desde la configuración correspondiente.
 - Identificar claramente el emisor/CUIT al que se aplica la configuración.
@@ -72,7 +97,7 @@ El documento debe componerse con una única estructura de presentación para vis
 
 No construir un editor de lienzo libre. La vista previa debe ser el resultado del mismo motor que genera el archivo final, o debe demostrarse que la diferencia es insignificante.
 
-## 5. Límites fiscales y de seguridad
+## 6. Límites fiscales y de seguridad
 
 La personalización es exclusivamente de presentación. No puede cambiar, inventar, ocultar ni reemplazar los datos fiscales autorizados.
 
@@ -85,13 +110,14 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 - Aislar la configuración por el ámbito correcto (tenant/CUIT/emisor) y respetar permisos.
 - Conservar snapshots/versiones necesarias para que el documento histórico no cambie cuando se edite el diseño.
 
-## 6. Plan de trabajo
+## 7. Plan de trabajo
 
 ### Fase 1 — Auditoría técnica
 - [ ] Leer completa la ruta de exportación del PDF y todos sus consumidores.
 - [ ] Identificar persistencia, snapshot, permisos y alcance actual de la configuración.
 - [ ] Revisar editor, vista previa, carga de logo, errores y fallback.
 - [ ] Mapear límites del renderer actual: descripciones largas, varias páginas, totales, CAE/QR, caracteres, imágenes y moneda.
+- [ ] Auditar el flujo de importación y emisión por lote de Excel, sus estados, descarga actual y límites de volumen.
 - [ ] Confirmar contratos reales de los datos del Worker y tipos de comprobantes soportados.
 
 ### Fase 2 — Prototipos visuales y decisión de motor
@@ -121,6 +147,7 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 ### Fase 5 — Validación
 - [ ] Comparar la vista previa con la impresión física y el PDF obtenido mediante el flujo elegido.
 - [ ] Probar una página, múltiples páginas, descripciones extensas, muchos ítems, importes altos, campos opcionales y logo ausente/inválido.
+- [ ] Probar un lote de varios comprobantes: cada uno comienza en una página nueva, los documentos largos continúan correctamente y ningún comprobante se mezcla con el siguiente.
 - [ ] Verificar que las filas no se recorten y que los totales no queden aislados o superpuestos.
 - [ ] Verificar CAE, vencimiento y lectura real del QR fiscal.
 - [ ] Probar color y blanco y negro, A4 y distintos navegadores/dispositivos relevantes.
@@ -128,7 +155,7 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 - [ ] Ejecutar typecheck, tests y build; documentar resultados y pendientes.
 - [ ] No fusionar ni habilitar producción hasta revisar evidencia y resolver fallos.
 
-## 7. Criterios de aceptación
+## 8. Criterios de aceptación
 
 La iniciativa estará lista cuando:
 
@@ -141,8 +168,10 @@ La iniciativa estará lista cuando:
 7. Los cambios visuales no alteren la emisión, los importes, la numeración ni los snapshots históricos.
 8. La experiencia sea entendible sin explicación extensa y respete los criterios de interfaz ZAP Style.
 9. Las pruebas y el build pertinentes pasen, con evidencia registrada.
+10. La paginación automática se valide con comprobantes cortos y largos en el mecanismo de salida elegido.
+11. La impresión por lote respete el orden y la separación de cada comprobante y no vuelva a emitir comprobantes al imprimir o descargar.
 
-## 8. Fuera de alcance
+## 9. Fuera de alcance
 
 - Rediseñar o cambiar la lógica de emisión fiscal.
 - Cambiar Worker, certificados, autorizaciones o integración ARCA.
@@ -151,7 +180,7 @@ La iniciativa estará lista cuando:
 - Ofrecer un diseñador libre de posiciones, HTML o CSS.
 - Dar por cumplida la normativa solo por una revisión visual.
 
-## 9. Referencias del repositorio
+## 10. Referencias del repositorio
 
 - `src/lib/fiscal-invoice-pdf.ts`
 - `src/components/fiscal/FiscalInvoiceTemplateEditor.tsx`
@@ -160,4 +189,4 @@ La iniciativa estará lista cuando:
 - `docs/zap-style-interface-guidelines.md`
 - Referencia REVEX: `RPM.ar/components/print/OrderPrintView.tsx` y estilos `@media print`.
 
-**Próximo paso:** completar la Fase 1 y construir un prototipo nativo de React/Next.js con CSS de impresión, al estilo REVEX. La decisión pendiente es el mecanismo definitivo para entregar el PDF y cómo reemplazar de forma segura el flujo actual basado en jsPDF.
+**Próximo paso:** completar la Fase 1, incluyendo el flujo Excel, y construir un prototipo nativo React/Next.js + CSS de impresión que valide una factura de varias páginas y un lote con varios comprobantes. La decisión pendiente es el mecanismo definitivo para entregar el PDF y cómo reemplazar de forma segura el flujo actual basado en jsPDF.
