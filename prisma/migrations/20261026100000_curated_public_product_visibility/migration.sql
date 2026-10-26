@@ -1,5 +1,5 @@
-ALTER TABLE "Product" ADD COLUMN "publicVisible" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "Product" ADD COLUMN "publicGroup" TEXT;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "publicVisible" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "publicGroup" TEXT;
 
 UPDATE "Product"
 SET "publicVisible" = true,
@@ -67,4 +67,4 @@ SET "mediaList" = (
 ))
 WHERE "slug" = 'musica-original-cine';
 
-CREATE INDEX "Product_publicVisible_publicGroup_active_idx" ON "Product"("publicVisible", "publicGroup", "active");
+CREATE INDEX IF NOT EXISTS "Product_publicVisible_publicGroup_active_idx" ON "Product"("publicVisible", "publicGroup", "active");
