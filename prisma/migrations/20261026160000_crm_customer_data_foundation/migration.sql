@@ -12,6 +12,45 @@ ADD CONSTRAINT "SellerLead_businessAccountId_fkey"
 FOREIGN KEY ("businessAccountId") REFERENCES "BusinessAccount"("id")
 ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- Link legacy leads only when existing data identifies exactly one account.
+-- Ambiguous matches intentionally remain unlinked for manual reconciliation.
+WITH candidates AS (
+  SELECT sl."id" AS "leadId", ba."id" AS "accountId"
+  FROM "SellerLead" sl
+  JOIN "BusinessAccount" ba ON ba."userId" = sl."convertedUserId"
+  WHERE sl."convertedUserId" IS NOT NULL
+
+  UNION
+
+  SELECT sl."id" AS "leadId", bc."accountId"
+  FROM "SellerLead" sl
+  JOIN "BusinessContact" bc
+    ON sl."email" IS NOT NULL
+   AND lower(trim(bc."email")) = lower(trim(sl."email"))
+  WHERE trim(sl."email") <> ''
+
+  UNION
+
+  SELECT sl."id" AS "leadId", bc."accountId"
+  FROM "SellerLead" sl
+  JOIN "BusinessContact" bc
+    ON sl."phone" IS NOT NULL
+   AND regexp_replace(bc."phone", '[^0-9]', '', 'g') =
+       regexp_replace(sl."phone", '[^0-9]', '', 'g')
+  WHERE regexp_replace(trim(sl."phone"), '[^0-9]', '', 'g') <> ''
+),
+unique_candidates AS (
+  SELECT "leadId", MIN("accountId") AS "accountId"
+  FROM candidates
+  GROUP BY "leadId"
+  HAVING COUNT(DISTINCT "accountId") = 1
+)
+UPDATE "SellerLead" sl
+SET "businessAccountId" = uc."accountId"
+FROM unique_candidates uc
+WHERE sl."id" = uc."leadId"
+  AND sl."businessAccountId" IS NULL;
+
 CREATE TABLE "CustomerConversation" (
   "id" TEXT NOT NULL,
   "businessAccountId" TEXT NOT NULL,
