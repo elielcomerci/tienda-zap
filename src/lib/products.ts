@@ -71,7 +71,7 @@ export async function getProducts(
     include: {
       variants: { select: { price: true }, orderBy: { price: 'asc' } },
       quoterConfig: { include: quoterConfigInclude },
-      configuratorVersions: { where: { status: 'ACTIVE' }, select: { id: true, schemaVersion: true, status: true } },
+      configuratorVersions: { where: { status: 'ACTIVE' }, orderBy: { updatedAt: 'desc' as const }, take: 1, select: { id: true, schemaVersion: true, status: true, schema: true, compatibility: true, pricing: true } },
       categoryLinks: { where: { category: { active: true } }, include: { category: { select: { id: true, name: true, slug: true, sortOrder: true } } }, orderBy: { category: { sortOrder: 'asc' } } },
       offerEntries: {
         select: {
