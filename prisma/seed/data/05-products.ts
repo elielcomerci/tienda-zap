@@ -641,8 +641,8 @@ export const productsData: ProductSeedData[] = [
     price: 0,
     priceFrom: null,
     active: true,
-    publicVisible: false,
-    publicGroup: null,
+    publicVisible: true,
+    publicGroup: 'PROYECTOS',
   },
   {
     order: 44,
