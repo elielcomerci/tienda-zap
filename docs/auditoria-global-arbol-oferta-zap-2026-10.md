@@ -230,3 +230,11 @@ Esta hipótesis es un filtro inicial para completar la matriz servicio por servi
 ### Implicación para la auditoría comercial
 
 La matriz maestra debe incorporar tres campos nuevos: **ajuste a marca (alto/medio/bajo), relación con el negocio del cliente y marca recomendada (ZAP / ZAP por consulta / evaluar marca separada / no promover)**. El ranking final de ventas con baja fricción se realiza después de este filtro de identidad: un servicio rentable pero ajeno a la marca no debe desplazar una oferta más coherente.
+
+## Matriz maestra de servicios
+
+Se agregó `docs/matriz-maestra-oferta-zap-2026-10.csv` como inventario de trabajo, no como catálogo aprobado. Reúne 258 filas entre productos del seed, referencias de impresos/packaging, marketing, audiovisual, IA/automatización/datos, 3D, ingeniería de software/cloud y la lista digital aportada por el titular. Los importes de referencias siguen separados de los precios ZAP del seed y de los precios comerciales aprobados.
+
+**Importante:** las columnas de ajuste a marca, decisión y visibilidad son hipótesis de clasificación inicial para facilitar la revisión, no decisiones finales fila por fila. Se deben corregir manualmente con el test de frontera de marca; no se debe publicar, eliminar ni trasladar un servicio a otra marca basándose únicamente en esas etiquetas. En la lista digital aportada en conversación, se conservó el nombre y el importe resumido, pero no se reconstruyó un alcance que no estaba disponible en el archivo fuente.
+
+Siguiente paso: revisar por familia y servicio, resolver solapamientos, confirmar el alcance comercial, distinguir precio de referencia / precio ZAP vigente / precio público aprobado y recién entonces seleccionar las puertas de entrada de la tienda.
