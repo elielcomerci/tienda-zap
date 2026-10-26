@@ -1249,6 +1249,15 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             <li aria-current={emissionStep === 2 ? 'step' : undefined} className={emissionStep === 2 ? 'text-slate-900' : ''}>2. Venta y cliente</li>
           </ol>
           <fieldset disabled={preparedMode === 'uncertain' || busy || contributors.length === 0} className="space-y-5">
+            {emissionStep === 2 && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <div>
+                <p className="text-xs font-medium text-gray-500">EMISOR</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">{contributors.find(item => item.cuit === emission.cuit && item.environment === emission.environment)?.razonSocial || 'CUIT seleccionada'} · {formatFiscalCuit(emission.cuit)}</p>
+                <p className="mt-1 text-xs text-gray-600">{emission.environment === 'PROD' ? 'Producción' : 'Homologación'} · Punto de venta {emission.pointOfSale} · Factura {emission.type}</p>
+              </div>
+              <button type="button" onClick={() => setEmissionStep(1)} className="text-sm font-semibold text-[#C2103F] hover:underline">Cambiar emisor</button>
+            </div>}
+            {emissionStep === 2 && <h3 className="text-base font-semibold text-gray-900">Datos de la venta</h3>}
             {emissionStep === 2 && savedProducts.length > 0 && <label className="block max-w-xl text-sm font-medium text-gray-700">Cargar producto o servicio guardado
               <select defaultValue="" onChange={event => {
                 const item = savedProducts.find(saved => saved.id === event.target.value)
@@ -1258,6 +1267,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
               </select>
             </label>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {emissionStep === 1 && <>
               <label className="text-sm font-medium text-gray-700">Ambiente
                 <select value={emission.environment} onChange={event => setEmission(v => ({ ...v, environment: event.target.value as 'TEST' | 'PROD', cuit: '' }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
                   <option value="PROD">Producción</option><option value="TEST">Entorno de pruebas · Homologación</option>
@@ -1280,6 +1290,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
                   <option value="A">Factura A</option><option value="B">Factura B</option><option value="C">Factura C</option><option value="M">Factura M</option>
                 </select>
               </label>
+              </>}
               {emissionStep === 2 && <>
               <label className="text-sm font-medium text-gray-700">Concepto
                 <select value={emission.concept} onChange={event => setEmission(v => ({ ...v, concept: event.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 font-normal">
@@ -1365,7 +1376,6 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
             </div>
             </>}
             {emissionStep === 1 && <button type="submit" className="rounded-xl bg-[#0F172A] px-4 py-2.5 text-sm font-semibold text-white">Continuar</button>}
-            {emissionStep === 2 && <button type="button" onClick={() => setEmissionStep(1)} className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700">Volver al emisor</button>}
           </fieldset>
         </form>
         {preparedMode === 'uncertain' && <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Resultado de red incierto</p><p className="mt-1">La solicitud queda guardada. Consultá su estado antes de intentar de nuevo.</p><button type="button" onClick={() => void submitPreparedEmission()} disabled={busy || featureFlags[preparedEmission?.contributor.environment === 'PROD' ? 'invoiceEmissionProd' : 'invoiceEmissionTest'] !== true} className="mt-3 rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Reintentar misma solicitud</button></div>}
