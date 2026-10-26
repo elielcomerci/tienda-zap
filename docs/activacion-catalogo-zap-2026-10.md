@@ -70,7 +70,7 @@ Los proyectos de esta última puerta no aparecen en el listado general. Se muest
 Siguen siendo registros activos para gestión interna y no se borran de la base:
 - Sitios web y catálogos digitales (ficha paraguas redundante frente a ofertas más concretas)
 - Operaciones & Consultoría (demasiado genérica para la promesa pública actual)
-- Imánes personalizados
+- Imanes personalizados
 - Talonarios & Formularios
 - Carpetas & Folders
 - Individuales & Posavasos
