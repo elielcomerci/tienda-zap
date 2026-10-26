@@ -414,7 +414,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.9',
+  schemaVersion: '2.0',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -503,9 +503,9 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // La matriz offset de producto terminado contiene un costo comparable para
-    // 1.000 flyers planos 10×15 cm, 4/4. Se habilita solo esa combinación por papel;
-    // otras cantidades, medidas, caras y plegados siguen en consulta.
+    // La matriz offset contiene costos explícitos para flyers planos 10×15 cm 4/4
+    // en 1.000, 2.500 y 5.000 unidades para los tres papeles. Se habilitan esas
+    // celdas exactas; combinaciones sin costo comparable siguen en consulta.
     // El precio usa políticas distintas según el método resuelto.
     // Offset: recargo calibrado para acercar el precio neto a listas minoristas actuales.
     // Digital: recargo calibrado con referencias minoristas de flyers 10×15 cm.
@@ -577,9 +577,6 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
       { format: 'a4', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
       { format: '10x20', material: 'ilustracion_150g', printing: '4_0', quantity: 100, foldingType: 'plano' },
       { format: '10x20', material: 'ilustracion_150g', printing: '4_4', quantity: 100, foldingType: 'plano' },
-      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 1000, foldingType: 'plano' },
-      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 2500, foldingType: 'plano' },
-      { format: '10x15', material: 'obra_80g', printing: '4_4', quantity: 5000, foldingType: 'plano' }
     ],
     // El automático se resuelve contra el costo de proveedor, no solo el papel.
     // No representa precio de venta ZAP ni una materia prima; es costo de producción tercerizada.
