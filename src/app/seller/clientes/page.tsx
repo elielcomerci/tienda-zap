@@ -1,7 +1,7 @@
 ﻿import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { MessageSquareText, Plus } from 'lucide-react'
 import ClientsTable from './ClientsTable'
 
 export const dynamic = 'force-dynamic'
@@ -108,9 +108,15 @@ export default async function SellerClientesPage({
             Gestioná tu cartera de clientes activos.
           </p>
         </div>
-        <div className="hidden items-center gap-2 text-sm font-semibold text-[#ED164F] sm:flex">
-          <Plus size={18} />
-          Cargar prospectos y clientes
+        <div className="flex flex-wrap items-center gap-2">
+          <a href="/seller/clientes/conversaciones" className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            <MessageSquareText size={16} />
+            Importar WhatsApp
+          </a>
+          <div className="hidden items-center gap-2 text-sm font-semibold text-[#ED164F] lg:flex">
+            <Plus size={18} />
+            Cargar prospectos y clientes
+          </div>
         </div>
       </div>
 
