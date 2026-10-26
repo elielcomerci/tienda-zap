@@ -21,7 +21,7 @@ export default function ProductContextForm({
   businessTypeId,
   explorationContext,
 }: {
-  product: { id: string; slug: string; name: string; catalogType: string; modality: string }
+  product: { id: string; slug: string; name: string; catalogType: string; modality: string; priceFrom?: number | null }
   businessTypeId?: string | null
   explorationContext?: ExplorationContext
 }) {
@@ -114,8 +114,18 @@ export default function ProductContextForm({
 
   return (
     <section className="rounded-[28px] bg-gray-950 p-5 text-white shadow-[0_28px_80px_-42px_rgba(15,23,42,0.7)] sm:p-7">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio</p>
-      <h2 className="mt-3 text-2xl font-black sm:text-3xl">A definir según alcance</h2>
+      {typeof product.priceFrom === 'number' && product.priceFrom > 0 ? (
+        <>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio inicial orientativo</p>
+          <h2 className="mt-3 text-3xl font-black sm:text-4xl">Desde ${product.priceFrom.toLocaleString('es-AR')} ARS</h2>
+          <p className="mt-2 text-sm leading-6 text-gray-300">El alcance y el presupuesto final se confirman con ZAP.</p>
+        </>
+      ) : (
+        <>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Precio</p>
+          <h2 className="mt-3 text-2xl font-black sm:text-3xl">A definir según alcance</h2>
+        </>
+      )}
       <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">{config.intro}</p>
 
       <form onSubmit={handleSubmit} className="mt-7 space-y-6">
