@@ -499,6 +499,13 @@ function quoteProviderFinishedCostSelection(
       // de 1.000 del mismo material, formato, impresión y terminación. Esas
       // tarifas necesitan confirmación: no extrapolar ni publicar por error.
       if (quantity > 1000) {
+        // Una política comercial explícita para esta combinación y cantidad es
+        // aprobación deliberada del precio por volumen; permite aceptar un costo
+        // unitario menor que el tramo de 1.000 sin desactivar la protección global.
+        const hasExplicitQuantityPricingPolicy = Boolean(
+          pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrintingAndQuantity
+            ?.[resolvedPricingProcess || '']?.[selection.material || '']?.[selection.printing || '']?.[String(quantity)]
+        );
         const baselineCost = (() => {
           if (selection.lamination === 'sin_laminar') {
             return tiers.clasicas?.finishes?.sin_laminar?.printing?.[selection.printing || '']?.[formatKey]?.['1000'];
@@ -514,8 +521,12 @@ function quoteProviderFinishedCostSelection(
           }
           return undefined;
         })();
-        if (baselineCost !== undefined && Number(offsetCost) < Number(baselineCost)) {
-          throw new Error('CONSULT_REQUIRED: El costo offset de esta cantidad es menor que el de 1.000 unidades y requiere reconfirmación del proveedor.');
+        if (
+          baselineCost !== undefined &&
+          Number(offsetCost) < Number(baselineCost) &&
+          !hasExplicitQuantityPricingPolicy
+        ) {
+          throw new Error('CONSULT_REQUIRED: El costo offset de esta cantidad es menor que el de 1.000 unidades y requiere reconfirmación del proveedor o una política comercial específica.');
         }
       }
       totalCost = Number(offsetCost);
