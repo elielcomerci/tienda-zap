@@ -30,6 +30,36 @@ async function uniqueSlug(requested: string, excludeId?: string) {
   return slug
 }
 
+function productSoundCloudTracks(formData: FormData, fallbackMediaList: unknown = []) {
+  let parsed: unknown = fallbackMediaList
+  if (typeof parsed === 'string') {
+    try { parsed = JSON.parse(parsed) } catch { parsed = [] }
+  }
+  const existing = Array.isArray(parsed) ? parsed : []
+  const preserved = existing.filter((item: any) => item && item.type !== 'SOUNDCLOUD')
+  const raw = String(formData.get('soundcloudLinks') || '')
+  const tracks = raw.split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean).map((line, index) => {
+    const separator = line.indexOf('|')
+    const titleInput = separator >= 0 ? line.slice(0, separator).trim() : ''
+    const urlInput = separator >= 0 ? line.slice(separator + 1).trim() : line
+    let url: URL
+    try { url = new URL(urlInput) } catch { throw new Error(`El enlace de SoundCloud de la línea ${index + 1} no es válido.`) }
+    const host = url.hostname.toLowerCase()
+    if (url.protocol !== 'https:' || !['soundcloud.com', 'www.soundcloud.com', 'on.soundcloud.com'].includes(host)) {
+      throw new Error('Los enlaces de portfolio deben ser direcciones HTTPS de SoundCloud.')
+    }
+    const fallbackTitle = url.pathname.split('/').filter(Boolean).slice(-1)[0]?.replace(/[-_]/g, ' ') || 'Muestra de SoundCloud'
+    return {
+      id: `soundcloud-${index + 1}`,
+      type: 'SOUNDCLOUD',
+      url: url.toString(),
+      title: titleInput || fallbackTitle,
+    }
+  })
+  if (tracks.length > 20) throw new Error('Podés cargar hasta 20 enlaces de SoundCloud por producto.')
+  return [...preserved, ...tracks]
+}
+
 function productImages(formData: FormData, fallbackImages: string[] = []) {
   const raw = formData.get('imagesJson')
   if (raw === null) return fallbackImages
@@ -74,7 +104,7 @@ function relationInputs(formData: FormData) {
   }).map((relatedProductId) => ({ relatedProductId, type })))
 }
 
-function productData(formData: FormData, fallbackImages: string[] = []) {
+function productData(formData: FormData, fallbackImages: string[] = [], fallbackMediaList: unknown = []) {
   const catalogTypeValue = String(formData.get('catalogType') || 'COSA')
   const catalogType = Object.values(CatalogType).includes(catalogTypeValue as CatalogType)
     ? (catalogTypeValue as CatalogType)
@@ -115,6 +145,7 @@ function productData(formData: FormData, fallbackImages: string[] = []) {
     publicVisible,
     publicGroup: publicVisible ? publicGroup : null,
     images: productImages(formData, fallbackImages),
+    mediaList: productSoundCloudTracks(formData, fallbackMediaList),
     stock: 0,
     briefType: 'NONE',
     mediaType: 'NONE',
@@ -153,9 +184,9 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin()
-  const previous = await prisma.product.findUnique({ where: { id }, select: { slug: true, images: true, price: true, priceFrom: true, active: true, stock: true, briefType: true, mediaType: true, includes: true, configurable: true } })
+  const previous = await prisma.product.findUnique({ where: { id }, select: { slug: true, images: true, mediaList: true, price: true, priceFrom: true, active: true, stock: true, briefType: true, mediaType: true, includes: true, configurable: true } })
   if (!previous) throw new Error('Product Base no encontrado.')
-  const data = productData(formData, previous.images)
+  const data = productData(formData, previous.images, previous.mediaList)
   if (!data.name) throw new Error('Nombre requerido.')
   const categoryIds = [...new Set(formData.getAll('categoryIds').map(String).filter(Boolean))]
   const relations = relationInputs(formData)
