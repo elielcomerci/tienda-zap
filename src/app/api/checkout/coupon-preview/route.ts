@@ -34,6 +34,7 @@ const couponPreviewSchema = z.object({
           })
         )
         .optional(),
+      configuratorSelection: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
     })
   ).min(1),
 })
