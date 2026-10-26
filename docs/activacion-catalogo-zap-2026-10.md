@@ -12,7 +12,7 @@ El catálogo público deja de ser equivalente al inventario completo. Cada produ
 - `publicVisible`: si puede aparecer en páginas, listados y recomendaciones públicas.
 - `publicGroup`: puerta comercial donde se presenta: `VENTAS`, `MARCA`, `EXPERIENCIA` o `PROYECTOS`.
 
-La visibilidad pública nueva tiene valor predeterminado `false`. Un producto nuevo o duplicado no se publica por accidente. El formulario de administración permite activar la visibilidad y elegir una puerta.
+La visibilidad pública nueva tiene valor predeterminado `false`. Un producto nuevo o duplicado no se publica por accidente. El formulario de administración permite activar la visibilidad y elegir una puerta; no permite publicar un producto sin asignarlo a una de las cuatro puertas.
 
 ## Puertas públicas
 
