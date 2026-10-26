@@ -8,6 +8,8 @@ import { loadSituations } from './seed/loaders/03-situations';
 import { loadNeeds } from './seed/loaders/04-needs';
 import { loadProducts } from './seed/loaders/05-products';
 import { loadConfigurators } from './seed/loaders/06-configurators';
+import { loadOfferMatrix } from './seed/loaders/07-offer-matrix';
+import { loadQuoterConfig } from './seed/loaders/09-quoter-config';
 import { loadProductRelations } from './seed/loaders/10-product-relations';
 import { productsData } from './seed/data/05-products';
 import { runSeedAudit } from './seed/audit/seed-audit';
@@ -16,10 +18,9 @@ import { runSeedAudit } from './seed/audit/seed-audit';
  * Synchronizes catalog definitions without reseeding commercial amounts.
  *
  * Deliberately excluded:
- * - loadOfferMatrix: the existing commercial matrix is already defined.
- * - loadQuoterConfig: preserves raw-material/finishing costs and quote tiers.
- * - loadPacks: does not change pack availability.
- * - loadAdmin: does not touch admin credentials.
+ * - loadPacks is intentionally excluded: the seed currently has no approved
+ *   pack definitions, and its loader would deactivate existing packs.
+ * - loadAdmin is excluded to avoid touching credentials.
  */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL as string });
 const adapter = new PrismaPg(pool as any);
@@ -33,7 +34,8 @@ async function main() {
   console.log('--------------------------------------------------');
   console.log('TIENDA ZAP — SINCRONIZACIÓN SEGURA DEL CATÁLOGO');
   console.log('--------------------------------------------------');
-  console.log('Preserva precios existentes, costos, matriz comercial y packs.\n');
+  console.log('Sincroniza catálogo, matriz comercial y fuentes de costo del cotizador.');
+  console.log('Preserva el precio directo de cada producto y los packs existentes.\n');
 
   // Never create a catalog product with a placeholder price during a preservation sync.
   const existingProducts = await prisma.product.findMany({
@@ -53,6 +55,8 @@ async function main() {
   await loadNeeds(prisma);
   await loadProducts(prisma, { preservePricing: true, deactivateMissing: false });
   await loadConfigurators(prisma);
+  await loadOfferMatrix(prisma);
+  await loadQuoterConfig(prisma);
   await loadProductRelations(prisma);
 
   console.log('\n[CATALOG SYNC] Carga finalizada. Ejecutando auditoría integral...');
