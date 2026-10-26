@@ -154,6 +154,24 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 - Aislar la configuración por el ámbito correcto (tenant/CUIT/emisor) y respetar permisos.
 - Conservar snapshots/versiones necesarias para que el documento histórico no cambie cuando se edite el diseño.
 
+## 6.1 Matriz normativa para la representación gráfica (pendiente de verificación funcional)
+
+Una referencia comercial publicada el 10/10/2026 se incorpora únicamente como orientación visual, no como fuente normativa. La matriz debe verificarse contra ARCA y la normativa vigente antes de aprobar la plantilla.
+
+- La clase y modalidad no se reducen a una letra genérica: contemplar, cuando el comprobante y la autorización del emisor lo requieran, Factura A, A con leyenda «Pago en CBU informada» y A con leyenda «Operación sujeta a retención».
+- No asumir que un responsable inscripto debe emitir siempre Factura B a un monotributista. La documentación vigente de ARCA indica que puede corresponder comprobante A y que, en ciertos casos, incluye la leyenda relativa al crédito fiscal de la Ley 27.618.
+- La representación debe respetar la información fiscal autorizada: identificación de emisor/receptor, tipo y numeración, punto de venta, fecha, conceptos, netos, IVA por alícuota, otros tributos/percepciones aplicables, total, CAE y vencimiento cuando correspondan, y QR derivado de los datos fiscales canónicos.
+- No codificar una única alícuota de IVA ni añadir percepciones genéricas por defecto. Mostrar solo conceptos e importes presentes y aplicables al comprobante.
+- «ORIGINAL»/«DUPLICADO» no debe agregarse automáticamente a toda representación electrónica: validar su aplicabilidad según modalidad y norma.
+- El CAE de ejemplo, datos ficticios o QR de demostración jamás pueden confundirse con una autorización real.
+- Esta matriz no constituye dictamen legal ni certifica cumplimiento. Antes de cerrar, verificar el Anexo II de RG 1415/2003, requisitos de factura electrónica y normativa específica vigente en ARCA.
+
+Fuentes oficiales consultadas el 25/10/2026:
+- https://www.arca.gob.ar/facturacion/regimen-general/comprobantes.asp
+- https://www.arca.gob.ar/facturacion/regimen-general/requisitos.asp
+- https://www.arca.gob.ar/fe/emision-autorizacion/datos-comprobantes.asp
+- https://www.arca.gob.ar/fe/emision-autorizacion/comprobantes.asp
+
 ## 7. Plan de trabajo
 
 ### Fase 1 — Auditoría técnica
@@ -233,4 +251,4 @@ La iniciativa estará lista cuando:
 - `docs/zap-style-interface-guidelines.md`
 - Referencia REVEX: `RPM.ar/components/print/OrderPrintView.tsx` y estilos `@media print`.
 
-**Próximo paso:** especificar e implementar en Tienda el modelo persistente de lote/filas y el guardado del `documentSnapshot` al sincronizar jobs; después, prototipar React/Next.js + CSS de impresión con una factura multipágina y un lote persistido. La salida elegida es impresión del navegador + Guardar como PDF. Mantener todo en rama, sin desplegar ni modificar el Worker.
+**Próximo paso:** especificar e implementar en Tienda el modelo persistente de lote/filas y el guardado del `documentSnapshot` al sincronizar jobs; después, prototipar React/Next.js + CSS de impresión con una factura multipágina y un lote persistido. La salida elegida es impresión del navegador + Guardar como PDF. Mantener todo en rama, sin desplegar ni modificar el Worker. La emisión de cada fila del lote es secuencial, una por vez; el lote organiza y permite recuperar el trabajo, pero no convierte varias facturas en una sola emisión.
