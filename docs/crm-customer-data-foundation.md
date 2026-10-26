@@ -10,7 +10,7 @@ Construir una base compartida para la relación comercial entre ZAP Tienda y el 
 - `User`: identidad de acceso y cliente registrado, cuando existe.
 - `BusinessContact`: personas y canales de contacto de una cuenta.
 - `SellerLead`: proceso comercial del vendedor. Ahora puede vincularse a `BusinessAccount`; los leads existentes se vinculan automáticamente solo cuando los datos existentes apuntan a una única cuenta.
-- `Order` / `OrderItem`: fuente original para compras y productos. No se copian a una tabla paralela de eventos en esta etapa.
+- `Order` / `OrderItem`: fuente original para compras y productos; ahora pueden vincularse directamente a `BusinessAccount`. Los flujos principales de checkout enlazan por usuario/email solo cuando la identidad es inequívoca.
 - `ConsultRequest`: fuente original para consultas, con snapshot del contexto enviado por el cliente.
 - `CustomerConversation`: texto original importado (por ejemplo, una conversación de WhatsApp pegada manualmente), fecha opcional, referencia, cuenta, autor de la importación y hash para evitar duplicados.
 - `CustomerTimelineEvent`: envoltorio neutral para registrar eventos nuevos y referencias a su fuente original. Se utiliza al importar conversaciones; no reemplaza las tablas originales ni duplica pedidos.
@@ -29,8 +29,8 @@ El límite actual es de 100.000 caracteres por importación. La pantalla adviert
 
 ## Resolución de identidad
 
-- La migración solo enlaza leads existentes con una cuenta si el usuario convertido o los contactos existentes permiten una coincidencia inequívoca.
-- La creación de leads intenta encontrar una única cuenta por usuario/email/teléfono. Si encuentra varias cuentas o una cuenta asignada a otro vendedor, deja el lead sin vincular antes que mezclar historiales de personas o negocios diferentes.
+- La migración solo enlaza leads, consultas y pedidos existentes con una cuenta si el usuario convertido o los contactos existentes permiten una coincidencia inequívoca.
+- La creación de leads intenta encontrar una única cuenta por usuario/email/teléfono; los pedidos nuevos y consultas nuevas también intentan resolver la cuenta por usuario/email. Si encuentra varias cuentas o una cuenta asignada a otro vendedor, deja el lead sin vincular antes que mezclar historiales de personas o negocios diferentes.
 - No se usa coincidencia difusa por nombre. Los casos ambiguos requieren revisión humana.
 - La identidad canónica aquí es comercial (cuenta/negocio), no una afirmación de que todos los contactos de ese negocio sean la misma persona.
 
