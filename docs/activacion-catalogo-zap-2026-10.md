@@ -88,7 +88,7 @@ La ocultación no niega la capacidad de ejecución. Evita que estas prestaciones
 - `Product.publicVisible` y `Product.publicGroup` en Prisma.
 - Migración `20261026100000_curated_public_product_visibility`: publica la selección aprobada y deja ocultos los demás registros existentes.
 - Seed explícito de visibilidad y grupo para los 51 productos actuales.
-- Listados, páginas de detalle, rutas estáticas y recomendaciones públicas respetan la visibilidad.
+- Listados, páginas de detalle y recomendaciones públicas respetan la visibilidad; las fichas se generan bajo demanda para evitar consultas de base de datos durante el build.
 - La administración permite cambiar la visibilidad y la puerta.
 - La página inicial reemplaza la división plana “Productos / Desarrollos a medida” por tres entradas basadas en necesidades y una vía secundaria para proyectos específicos.
 - El grupo elegido se conserva al buscar, filtrar, entrar en una ficha y volver a navegar.
