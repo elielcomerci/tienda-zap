@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { resolveFiscalAccount, fiscalApiRequest } from '@/lib/fiscal-account-access'
 import { isFiscalFeatureEnabled } from '@/lib/fiscal-feature-flags'
 import { DEFAULT_FISCAL_INVOICE_TEMPLATE, fiscalInvoiceTemplateSchema } from '@/lib/fiscal-invoice-template'
+import { refreshFiscalInvoiceBatchStatus, getFiscalInvoiceBatchItemStatusFromJob } from '@/lib/fiscal-invoice-batches'
+import { fiscalBatchRequestPayloadSchema } from '@/lib/fiscal-invoice-batch-schema'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -40,11 +42,30 @@ export async function POST(request: NextRequest) {
   const access = await resolveFiscalAccount(request)
   if ('response' in access) return access.response
 
+  const batchItemId = request.nextUrl.searchParams.get('batchItemId')
+  let batchItem: { id: string; batchId: string; status: string; requestPayload: unknown; jobId: string | null } | null = null
   let body: EmitBody
-  try {
-    body = await request.json() as EmitBody
-  } catch {
-    return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 })
+  if (batchItemId) {
+    if (!(await isFiscalFeatureEnabled('batchImport'))) return NextResponse.json({ error: 'La importación por lote está desactivada.' }, { status: 423 })
+    batchItem = await prisma.fiscalInvoiceBatchItem.findFirst({ where: { id: batchItemId, accountId: access.account.id }, select: { id: true, batchId: true, status: true, requestPayload: true, jobId: true } })
+    if (!batchItem) return NextResponse.json({ error: 'No se encontró la fila del lote.' }, { status: 404 })
+    if (batchItem.jobId || ['PROCESSING', 'AUTHORIZED', 'REJECTED'].includes(batchItem.status)) return NextResponse.json({ error: 'Esta fila ya tiene un trabajo o un resultado registrado. Consultá su estado antes de continuar.', jobId: batchItem.jobId }, { status: 409 })
+    const payload = fiscalBatchRequestPayloadSchema.safeParse(batchItem.requestPayload)
+    if (!payload.success || (batchItem.status !== 'READY' && batchItem.status !== 'UNKNOWN')) return NextResponse.json({ error: 'La fila no tiene una solicitud válida lista para emitir.' }, { status: 409 })
+    body = payload.data
+    const claimed = await prisma.fiscalInvoiceBatchItem.updateMany({
+      where: { id: batchItem.id, accountId: access.account.id, status: batchItem.status, jobId: null },
+      data: { status: 'PROCESSING', errorCode: null, errorMessage: null, submittedAt: new Date() },
+    })
+    if (claimed.count !== 1) return NextResponse.json({ error: 'Otra solicitud ya está procesando esta fila. Actualizá el lote para ver su estado.' }, { status: 409 })
+    const claimedBatchId = batchItem.batchId
+    await prisma.$transaction(transaction => refreshFiscalInvoiceBatchStatus(transaction, access.account.id, claimedBatchId))
+  } else {
+    try {
+      body = await request.json() as EmitBody
+    } catch {
+      return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 })
+    }
   }
   const cuit = body.contributor?.cuit || ''
   const pointOfSale = body.contributor?.pointOfSale
@@ -74,12 +95,27 @@ export async function POST(request: NextRequest) {
   }
   const workerPath = dryRun ? '/v1/invoices/emit?dryRun=true' : '/v1/invoices/emit'
   const response = await fiscalApiRequest(request, workerPath, access.apiKey, JSON.stringify(body))
-  if (!response.ok) return response
+  if (!response.ok) {
+    if (batchItem) {
+      const uncertain = response.status >= 500 || response.status === 408 || response.status === 429
+      await prisma.$transaction(async transaction => {
+        await transaction.fiscalInvoiceBatchItem.update({ where: { id: batchItem.id }, data: { status: uncertain ? 'UNKNOWN' : 'REJECTED', errorCode: `HTTP_${response.status}`, errorMessage: uncertain ? 'No se pudo confirmar si el Worker recibió la solicitud.' : 'El Worker rechazó la emisión.', resolvedAt: uncertain ? null : new Date() } })
+        await refreshFiscalInvoiceBatchStatus(transaction, access.account.id, batchItem.batchId)
+      })
+    }
+    return response
+  }
   const result = await response.clone().json().catch(() => ({})) as EmitResult
-  if (!result.jobId) return response
+  if (!result.jobId) {
+    if (batchItem) await prisma.$transaction(async transaction => {
+      await transaction.fiscalInvoiceBatchItem.update({ where: { id: batchItem.id }, data: { status: 'UNKNOWN', errorCode: 'WORKER_JOB_ID_MISSING', errorMessage: 'La respuesta no incluyó la referencia del trabajo.' } })
+      await refreshFiscalInvoiceBatchStatus(transaction, access.account.id, batchItem.batchId)
+    })
+    return response
+  }
 
   try {
-    await prisma.fiscalInvoiceRecord.upsert({
+    const invoice = await prisma.fiscalInvoiceRecord.upsert({
       where: { jobId: result.jobId },
       create: {
         accountId: access.account.id,
@@ -118,8 +154,25 @@ export async function POST(request: NextRequest) {
         workerVoucherId: result.voucher?.id ?? undefined,
       },
     })
+    if (batchItem) await prisma.$transaction(async transaction => {
+      await transaction.fiscalInvoiceBatchItem.update({
+        where: { id: batchItem.id },
+        data: {
+          jobId: result.jobId,
+          invoiceRecordId: invoice.id,
+          status: getFiscalInvoiceBatchItemStatusFromJob(result.status, result.voucher?.cae),
+          errorCode: null,
+          errorMessage: null,
+          resolvedAt: ['DONE', 'FAILED', 'DEAD'].includes(result.status ?? '') ? new Date() : null,
+        },
+      })
+      await refreshFiscalInvoiceBatchStatus(transaction, access.account.id, batchItem.batchId)
+    })
   } catch (error) {
     console.error('[fiscal/emit] invoice record save failed', error instanceof Error ? error.name : 'UnknownError')
+    if (batchItem) {
+      await prisma.fiscalInvoiceBatchItem.update({ where: { id: batchItem.id }, data: { jobId: result.jobId, status: 'PROCESSING', errorCode: 'INVOICE_RECORD_SYNC_PENDING', errorMessage: 'El trabajo existe; la sincronización del comprobante está pendiente.' } }).catch(syncError => console.error('[fiscal/emit] batch job sync failed', syncError instanceof Error ? syncError.name : 'UnknownError'))
+    }
     return NextResponse.json({
       error: 'La respuesta del Worker llegó, pero no se pudo registrar en el panel. Consultá el estado del trabajo antes de volver a emitir.',
       code: 'FISCAL_INVOICE_RECORD_FAILED',

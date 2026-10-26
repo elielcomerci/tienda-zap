@@ -37,7 +37,7 @@ export async function fiscalApiRequest(request: NextRequest, path: string, apiKe
   if (!baseUrl) return NextResponse.json({ error: 'FISCAL_WORKER_URL no está configurada.' }, { status: 503 })
   const url = new URL(path, baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
   for (const [key, value] of request.nextUrl.searchParams.entries()) {
-    if (key !== 'accountId') url.searchParams.append(key, value)
+    if (key !== 'accountId' && key !== 'batchItemId') url.searchParams.append(key, value)
   }
   const headers = new Headers({ 'X-Api-Key': apiKey, Accept: 'application/json' })
   const contentType = request.headers.get('content-type')

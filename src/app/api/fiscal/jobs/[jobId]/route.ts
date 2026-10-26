@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveFiscalAccount, fiscalApiRequest } from '@/lib/fiscal-account-access'
+import { getFiscalInvoiceBatchItemStatusFromJob, refreshFiscalInvoiceBatchStatus } from '@/lib/fiscal-invoice-batches'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -9,7 +10,11 @@ type Context = { params: Promise<{ jobId: string }> }
 type JobResult = {
   jobId?: string
   status?: string
-  voucher?: { id?: string; voucherType?: number; voucherNumber?: number; cae?: string; caeFchVto?: string; issuedAt?: string }
+  voucher?: { id?: string; voucherType?: number; voucherNumber?: number; cae?: string; caeFchVto?: string; issuedAt?: string; documentSnapshot?: unknown }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function parseDate(value: string | undefined) {
@@ -32,17 +37,44 @@ export async function GET(request: NextRequest, context: Context) {
   if (result.jobId) {
     const record = await prisma.fiscalInvoiceRecord.findFirst({ where: { accountId: access.account.id, jobId } })
     if (record) {
-      await prisma.fiscalInvoiceRecord.update({
-        where: { id: record.id },
-        data: {
-          result: result.status || record.result,
-          workerVoucherId: result.voucher?.id ?? record.workerVoucherId,
-          voucherType: result.voucher?.voucherType ?? record.voucherType,
-          voucherNumber: result.voucher?.voucherNumber ?? record.voucherNumber,
-          cae: result.voucher?.cae ?? record.cae,
-          caeExpiresAt: parseDate(result.voucher?.caeFchVto) ?? record.caeExpiresAt,
-        },
-      }).catch(error => console.error('[fiscal/jobs] invoice sync failed', error instanceof Error ? error.name : 'UnknownError'))
+      try {
+        const previousPayload = isRecord(record.payload) ? record.payload : {}
+        const snapshot = isRecord(result.voucher?.documentSnapshot) ? result.voucher.documentSnapshot : null
+        const payload = snapshot
+          ? JSON.parse(JSON.stringify({ ...previousPayload, documentSnapshot: snapshot })) as import('@prisma/client').Prisma.InputJsonValue
+          : undefined
+        await prisma.$transaction(async transaction => {
+          await transaction.fiscalInvoiceRecord.update({
+            where: { id: record.id },
+            data: {
+              result: result.status || record.result,
+              workerVoucherId: result.voucher?.id ?? record.workerVoucherId,
+              voucherType: result.voucher?.voucherType ?? record.voucherType,
+              voucherNumber: result.voucher?.voucherNumber ?? record.voucherNumber,
+              cae: result.voucher?.cae ?? record.cae,
+              caeExpiresAt: parseDate(result.voucher?.caeFchVto) ?? record.caeExpiresAt,
+              ...(payload ? { payload } : {}),
+            },
+          })
+          const batchItem = await transaction.fiscalInvoiceBatchItem.findFirst({ where: { accountId: access.account.id, jobId }, select: { id: true, batchId: true } })
+          if (batchItem) {
+            const itemStatus = getFiscalInvoiceBatchItemStatusFromJob(result.status, result.voucher?.cae)
+            await transaction.fiscalInvoiceBatchItem.update({
+              where: { id: batchItem.id },
+              data: {
+                status: itemStatus,
+                invoiceRecordId: record.id,
+                errorCode: itemStatus === 'UNKNOWN' ? 'WORKER_RESULT_INCOMPLETE' : null,
+                errorMessage: itemStatus === 'UNKNOWN' ? 'El trabajo terminó sin un CAE confirmado. Revisá el comprobante antes de continuar.' : null,
+                resolvedAt: itemStatus === 'AUTHORIZED' || itemStatus === 'REJECTED' ? new Date() : null,
+              },
+            })
+            await refreshFiscalInvoiceBatchStatus(transaction, access.account.id, batchItem.batchId)
+          }
+        })
+      } catch (error) {
+        console.error('[fiscal/jobs] invoice sync failed', error instanceof Error ? error.name : 'UnknownError')
+      }
     }
   }
   return response

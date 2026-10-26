@@ -61,6 +61,7 @@ model User {
   requestedClientWorkApprovals      ClientWorkFileApproval[]         @relation("ClientWorkApprovalRequester")
   respondedClientWorkApprovals      ClientWorkFileApproval[]         @relation("ClientWorkApprovalResponder")
   fiscalClientAccount               FiscalClientAccount?
+  createdFiscalInvoiceBatches       FiscalInvoiceBatch[]       @relation("FiscalInvoiceBatchCreator")
 }
 
 model SellerProfile {
@@ -238,6 +239,8 @@ model FiscalClientAccount {
   savedCustomers    FiscalSavedCustomer[]
   savedProducts     FiscalSavedProduct[]
   invoiceTemplate   FiscalInvoiceTemplate?
+  invoiceBatches    FiscalInvoiceBatch[]
+  fiscalInvoiceBatchItems FiscalInvoiceBatchItem[]
 
   @@index([status, createdAt])
 }
@@ -317,11 +320,66 @@ model FiscalInvoiceRecord {
   updatedAt         DateTime            @updatedAt
 
   account           FiscalClientAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  batchItem         FiscalInvoiceBatchItem?
 
   @@unique([environment, cuit, pointOfSale, voucherType, voucherNumber], map: "FiscalInvoiceRecord_invoice_unique")
   @@index([accountId, createdAt])
   @@index([accountId, environment, cuit, createdAt])
   @@index([jobId])
+}
+
+model FiscalInvoiceBatch {
+  id              String                  @id @default(cuid())
+  accountId       String
+  createdByUserId String?
+  sourceType      String                  @default("TSV")
+  sourceName      String?
+  fingerprint     String
+  status          String                  @default("READY")
+  rowCount        Int
+  completedAt     DateTime?
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  account   FiscalClientAccount      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdBy User?                   @relation("FiscalInvoiceBatchCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  items     FiscalInvoiceBatchItem[]
+
+  @@unique([id, accountId])
+  @@unique([accountId, fingerprint])
+  @@index([accountId, updatedAt])
+  @@index([createdByUserId, createdAt])
+}
+
+model FiscalInvoiceBatchItem {
+  id              String               @id @default(cuid())
+  accountId       String
+  batchId         String
+  rowNumber       Int
+  environment     String?
+  cuit            String?
+  externalId      String?
+  idempotencyKey  String?
+  input           Json
+  requestPayload  Json?
+  status          String               @default("INVALID")
+  errorCode       String?
+  errorMessage    String?              @db.Text
+  jobId           String?
+  invoiceRecordId String?              @unique
+  submittedAt     DateTime?
+  resolvedAt      DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  account       FiscalClientAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  batch         FiscalInvoiceBatch  @relation(fields: [batchId, accountId], references: [id, accountId], onDelete: Cascade)
+  invoiceRecord FiscalInvoiceRecord? @relation(fields: [invoiceRecordId], references: [id], onDelete: SetNull)
+
+  @@unique([batchId, rowNumber])
+  @@unique([accountId, idempotencyKey])
+  @@unique([accountId, jobId])
+  @@index([accountId, status, updatedAt])
 }
 
 model AdminAuditLog {
