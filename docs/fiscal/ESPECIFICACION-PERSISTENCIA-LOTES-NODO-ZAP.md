@@ -48,6 +48,16 @@ No duplicar un snapshot en dos sitios sin definir precedencia. Antes de migrar, 
 5. Cuando el job termina, sincronizar el estado y guardar el `documentSnapshot` junto con número, CAE, vencimiento y referencia al comprobante en una operación consistente.
 6. Un lote con filas fallidas, rechazadas o inciertas puede seguir visible y recuperable. No se presenta como lote completamente autorizado.
 
+## 3.1 Cola de emisión: secuencial, una factura por vez
+
+- La UI procesa las filas elegibles de forma secuencial: espera la respuesta/estado de la fila actual antes de iniciar la siguiente, conforme al comportamiento acordado.
+- Cada comprobante conserva su propio job, clave de idempotencia, payload, autorización y estado. El lote solo agrupa y ordena.
+- Persistir el lote y todas sus filas antes de empezar la cola. Guardar el resultado de cada fila apenas se conozca; no esperar a que termine todo el lote.
+- Si se recarga o interrumpe la sesión, reconstruir el avance desde la base de datos y reconciliar jobs ya existentes. No reiniciar la cola completa ni reenviar filas a ciegas.
+- Reanudar por la primera fila pendiente elegible, preservando el orden de origen. Una fila en estado incierto debe reconciliarse antes de considerar una nueva emisión.
+- El orden de impresión siempre es `rowNumber ASC`, no el orden en que ARCA autoriza los comprobantes.
+- El estado agregado del lote refleja estados parciales; nunca presentar como completado un lote con filas pendientes, rechazadas, fallidas o inciertas.
+
 ## 4. Recuperación y reintento
 
 - La recuperación lista lotes de la cuenta autorizada, luego obtiene sus filas en orden `rowNumber ASC`.
@@ -74,6 +84,23 @@ No implementar endpoints duplicados si rutas actuales pueden extenderse de forma
 - La plantilla editable actual no debe sobreescribir el snapshot histórico.
 - Si un comprobante antiguo carece de snapshot, aplicar un fallback explícito y documentado sin inventar datos fiscales; marcar internamente el origen del fallback.
 - Los datos QR se derivan de la autorización fiscal canónica; nunca del texto comercial o de campos editables.
+
+## 6.1 Matriz de requisitos fiscales para la plantilla
+
+La referencia visual de YoFacturo sirve como ejemplo de jerarquía, pero no como fuente normativa suficiente. La implementación debe validar la representación contra las fuentes oficiales vigentes de ARCA.
+
+- Soportar las modalidades de comprobante A que pueden llevar leyendas fiscales específicas («Pago en CBU informada» y «Operación sujeta a retención») cuando los datos autorizados lo indiquen.
+- No forzar Factura B para todo receptor monotributista: ARCA documenta casos de Factura A a monotributistas y una leyenda sobre el crédito fiscal vinculada a la Ley 27.618.
+- Renderizar importes y desgloses recibidos de la fuente fiscal canónica: netos, IVA por alícuota, tributos/percepciones aplicables y total. No asumir IVA 21 % como única alícuota.
+- CAE, vencimiento, numeración, modalidad y QR deben derivarse de datos autorizados reales. No completar faltantes inventando datos ni reconstruir el QR desde campos editables.
+- Evaluar la aplicabilidad de «ORIGINAL»/«DUPLICADO» según la modalidad; no imponerlo como regla universal a la representación electrónica.
+- Confirmar datos obligatorios del Anexo II de RG 1415/2003 y de las reglas de factura electrónica antes de declarar conformidad. La revisión de diseño no equivale a certificación legal.
+
+Fuentes oficiales de referencia:
+- https://www.arca.gob.ar/facturacion/regimen-general/comprobantes.asp
+- https://www.arca.gob.ar/facturacion/regimen-general/requisitos.asp
+- https://www.arca.gob.ar/fe/emision-autorizacion/datos-comprobantes.asp
+- https://www.arca.gob.ar/fe/emision-autorizacion/comprobantes.asp
 
 ## 7. Invariantes de seguridad y consistencia
 
