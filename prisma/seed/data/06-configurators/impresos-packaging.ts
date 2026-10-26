@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '2.1',
+  schemaVersion: '2.2',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -98,7 +98,9 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { value: 200, label: '200 u.' },
           { value: 300, label: '300 u.' },
           { value: 500, label: '500 u.' },
-          { value: 1000, label: '1000 u.' },
+          { value: 1000, label: '1.000 u.' },
+          { value: 3000, label: '3.000 u. · Offset' },
+          { value: 5000, label: '5.000 u. · Offset' },
         ],
       },
     },
@@ -408,7 +410,7 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
 
 export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'flyers-desplegables',
-  schemaVersion: '1.8',
+  schemaVersion: '1.9',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -472,6 +474,8 @@ export const flyersDesplegablesConfigurator: ConfiguratorVersionSeedData = {
           { value: 300, label: '300 u.' },
           { value: 500, label: '500 u.' },
           { value: 1000, label: '1.000 u.' },
+          { value: 2500, label: '2.500 u. · Offset' },
+          { value: 5000, label: '5.000 u. · Offset' },
         ],
       },
     },
