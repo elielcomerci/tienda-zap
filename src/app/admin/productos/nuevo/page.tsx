@@ -12,7 +12,7 @@ function soundCloudLinksValue(value: unknown) {
   return parsed
     .filter((item: any) => item?.type === 'SOUNDCLOUD' && typeof item.url === 'string')
     .map((item: any) => `${String(item.title || 'Muestra de SoundCloud')} | ${item.url}`)
-    .join('\\n')
+    .join('\n')
 }
 
 export default async function NewProductPage() {
@@ -57,7 +57,7 @@ export function ProductBaseForm({ title, action, product, categories = [], relat
             name="soundcloudLinks"
             defaultValue={soundCloudLinksValue(product?.mediaList)}
             className="input mt-1 min-h-32 w-full font-normal"
-            placeholder={"Music for Films and TV | https://soundcloud.com/usuario/sets/playlist\\nOtra muestra | https://soundcloud.com/usuario/pista"}
+            placeholder={"Music for Films and TV | https://soundcloud.com/usuario/sets/playlist\nOtra muestra | https://soundcloud.com/usuario/pista"}
           />
           <span className="mt-1 block text-xs font-normal text-gray-500">Formato: título opcional, luego | y la URL. También podés pegar solo la URL. Se aceptan enlaces HTTPS de SoundCloud.</span>
         </label>
