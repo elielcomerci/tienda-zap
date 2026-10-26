@@ -48,6 +48,21 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Este producto no requiere una consulta previa.' }, { status: 400 })
     }
 
+    const matchingAccounts = customerEmail
+      ? await prisma.businessAccount.findMany({
+          where: {
+            OR: [
+              { user: { email: { equals: customerEmail, mode: 'insensitive' } } },
+              { contacts: { some: { email: { equals: customerEmail, mode: 'insensitive' } } } },
+            ],
+          },
+          select: { id: true },
+          take: 2,
+        })
+      : []
+    // Link only when the email identifies one account; ambiguous identities stay unlinked.
+    const businessAccountId = matchingAccounts.length === 1 ? matchingAccounts[0].id : null
+
     const snapshot = {
       source: 'product-context-form',
       product: { id: product.id, name: product.name, slug: product.slug },
@@ -66,6 +81,7 @@ export async function POST(request: NextRequest) {
       data: {
         productId: product.id,
         businessTypeId,
+        businessAccountId,
         snapshot,
         customerName,
         customerEmail: customerEmail || '',
