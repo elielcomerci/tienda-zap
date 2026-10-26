@@ -26,16 +26,20 @@ async function requireCustomerDataAccess() {
 
 export async function importCustomerConversation(formData: FormData) {
   const user = await requireCustomerDataAccess()
+  const requestedReturnPath = String(formData.get('returnPath') || '').trim()
+  const returnPath = requestedReturnPath === '/seller/clientes/conversaciones'
+    ? '/seller/clientes/conversaciones'
+    : '/admin/clientes/conversaciones'
   const businessAccountId = String(formData.get('businessAccountId') || '').trim()
   const title = String(formData.get('title') || '').trim().slice(0, 180)
   const rawTranscript = String(formData.get('rawTranscript') || '').trim()
   const dateValue = String(formData.get('conversationAt') || '').trim()
 
   if (!businessAccountId || rawTranscript.length < 10) {
-    redirect('/admin/clientes/conversaciones?error=missing')
+    redirect(returnPath + '?error=missing')
   }
   if (rawTranscript.length > 100000) {
-    redirect('/admin/clientes/conversaciones?error=length')
+    redirect(returnPath + '?error=length')
   }
 
   const account = await prisma.businessAccount.findFirst({
@@ -58,7 +62,7 @@ export async function importCustomerConversation(formData: FormData) {
   const contentHash = createHash('sha256').update(rawTranscript).digest('hex')
   const conversationAt = dateValue ? new Date(dateValue + 'T12:00:00') : null
   if (conversationAt && Number.isNaN(conversationAt.getTime())) {
-    redirect('/admin/clientes/conversaciones?error=date')
+    redirect(returnPath + '?error=date')
   }
 
   try {
@@ -87,12 +91,13 @@ export async function importCustomerConversation(formData: FormData) {
     })
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-      redirect('/admin/clientes/conversaciones?error=duplicate')
+      redirect(returnPath + '?error=duplicate')
     }
     throw error
   }
 
   revalidatePath('/admin/clientes')
   revalidatePath('/admin/clientes/conversaciones')
-  redirect('/admin/clientes/conversaciones?saved=1')
+  revalidatePath('/seller/clientes/conversaciones')
+  redirect(returnPath + '?saved=1')
 }
