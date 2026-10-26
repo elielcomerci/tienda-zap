@@ -1,6 +1,6 @@
 # NODO ZAP — Plan de rediseño de comprobantes e impresión
 
-**Estado:** decisiones de producto confirmadas; auditoría técnica en curso. No autoriza cambios en emisión fiscal ni en `zap-fiscal-core`.  
+**Estado:** decisiones de producto y arquitectura confirmadas; auditoría de flujos cerrada con hallazgos del 2026-10-25. La siguiente etapa es diseñar e implementar persistencia en Tienda y prototipo de impresión, sin cambiar la lógica fiscal ni `zap-fiscal-core`.  
 **Repositorio:** `elielcomerci/tienda-zap`  
 **Referencia visual/técnica:** impresión de órdenes de trabajo de REVEX (`RPM.ar`).
 
@@ -49,6 +49,20 @@ El tipo `FiscalPdfTemplate` actualmente contempla `designVariant: 'classic' | 'm
 La impresión de REVEX usa una vista de documento específica y reglas CSS de impresión (A4, márgenes, ocultamiento de controles y prevención de cortes). NODO, en cambio, hoy dibuja el PDF con jsPDF. Por lo tanto, **no se debe asumir que copiar el CSS de REVEX mejorará el PDF actual**: son mecanismos diferentes.
 
 La referencia de REVEX es el modelo técnico deseado para la experiencia: documento formado con componentes React/Next.js discretos y reutilizables, más CSS de pantalla e impresión. La dirección propuesta es **dejar de usar jsPDF para construir visualmente los comprobantes** y formar el documento de manera nativa en Next.js. La auditoría debe determinar cómo retirar o sustituir el renderer actual de forma segura, conservar la información fiscal y mantener la funcionalidad existente. No es una migración a ciegas: primero se inspeccionan todos los consumidores, dependencias y contratos.
+
+## 2.2 Cierre de auditoría de lote y sincronización asíncrona (2026-10-25)
+
+La revisión de los flujos completos aporta estas precisiones:
+
+- La validación por `dryRun` no crea jobs ni consulta ARCA. La emisión posterior genera un job por fila.
+- La clave se deriva como `zap-batch-${externalId}`. El Worker aplica unicidad por tenant: una repetición idéntica recupera el job existente; si cambian los datos fiscales, rechaza la reutilización. La tienda debe persistir el `externalId` y la solicitud validada original, no generar una clave nueva al recuperar.
+- El historial de la tienda persiste cada comprobante por separado; la posición y estado de las filas importadas no sobreviven a la recarga. El historial limitado a los últimos 100 comprobantes no reemplaza una entidad de lote.
+- El estado del job puede consultarse después. Sin embargo, al sincronizar un job asíncrono, la ruta actualiza número/CAE pero no persiste el `documentSnapshot` devuelto por el Worker. Debe corregirse en Tienda antes de depender del nuevo renderer para reimpresión histórica.
+- Consumidores identificados de jsPDF: editor/vista previa, descarga individual y descarga múltiple. La emisión individual intenta descargar al recibir autorización. Se conserva ese comportamiento; la acción manual de reimpresión reutiliza el documento persistido y no llama al endpoint de emisión.
+
+### Decisión de arquitectura
+
+**Tienda persiste lote, orden y estado; el Worker mantiene su idempotencia y emisión por fila; Tienda guarda el snapshot fiscal al sincronizar jobs; el renderer imprime exclusivamente comprobantes autorizados y persistidos.** La capa de impresión no crea jobs, no consulta ARCA y no reintenta emisiones.
 
 ## 2.1 Hallazgos confirmados en la auditoría técnica inicial
 
@@ -147,7 +161,7 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 - [ ] Identificar persistencia, snapshot, permisos y alcance actual de la configuración.
 - [ ] Revisar editor, vista previa, carga de logo, errores y fallback.
 - [ ] Mapear límites del renderer actual: descripciones largas, varias páginas, totales, CAE/QR, caracteres, imágenes y moneda.
-- [x] Inspección inicial del componente de importación: estado de filas en cliente y estados conceptuales detectados; pendiente rastrear rutas API, persistencia, reanudación y límites reales.\n- [ ] Auditar el flujo completo de importación y emisión por lote de Excel, sus estados, descarga actual y límites de volumen.\n- [ ] Diseñar modelo persistente de lote y elementos ordenados, con aislamiento tenant/CUIT/ambiente, estados recuperables, auditoría y compatibilidad con facturas históricas individuales.
+- [x] Inspección inicial del componente de importación: estado de filas en cliente y estados conceptuales detectados; pendiente rastrear rutas API, persistencia, reanudación y límites reales.\n- [x] Auditar el flujo completo de importación/emisión por fila y la recuperación del estado del job.\n- [x] Confirmar brecha: la tienda no persiste lote, orden ni estado completo de importación.\n- [x] Confirmar brecha: la sincronización asíncrona no persiste el `documentSnapshot` devuelto por el Worker.\n- [ ] Diseñar modelo persistente de lote y elementos ordenados, con aislamiento tenant/CUIT/ambiente, estados recuperables, auditoría y compatibilidad con facturas históricas individuales.\n- [ ] Diseñar modelo persistente de lote y elementos ordenados, con aislamiento tenant/CUIT/ambiente, estados recuperables, auditoría y compatibilidad con facturas históricas individuales.
 - [ ] Confirmar contratos reales de los datos del Worker y tipos de comprobantes soportados.
 
 ### Fase 2 — Prototipos visuales y decisión de motor
@@ -219,4 +233,4 @@ La iniciativa estará lista cuando:
 - `docs/zap-style-interface-guidelines.md`
 - Referencia REVEX: `RPM.ar/components/print/OrderPrintView.tsx` y estilos `@media print`.
 
-**Próximo paso:** completar la Fase 1, incluyendo el flujo Excel, y construir un prototipo nativo React/Next.js + CSS de impresión que valide una factura de varias páginas y un lote con varios comprobantes. La decisión pendiente es el mecanismo definitivo para entregar el PDF y cómo reemplazar de forma segura el flujo actual basado en jsPDF.
+**Próximo paso:** especificar e implementar en Tienda el modelo persistente de lote/filas y el guardado del `documentSnapshot` al sincronizar jobs; después, prototipar React/Next.js + CSS de impresión con una factura multipágina y un lote persistido. La salida elegida es impresión del navegador + Guardar como PDF. Mantener todo en rama, sin desplegar ni modificar el Worker.
