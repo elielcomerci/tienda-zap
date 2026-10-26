@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import { NextRequest } from 'next/server'
 
 function clean(value: unknown) {
@@ -48,20 +49,8 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Este producto no requiere una consulta previa.' }, { status: 400 })
     }
 
-    const matchingAccounts = customerEmail
-      ? await prisma.businessAccount.findMany({
-          where: {
-            OR: [
-              { user: { email: { equals: customerEmail, mode: 'insensitive' } } },
-              { contacts: { some: { email: { equals: customerEmail, mode: 'insensitive' } } } },
-            ],
-          },
-          select: { id: true },
-          take: 2,
-        })
-      : []
     // Link only when the email identifies one account; ambiguous identities stay unlinked.
-    const businessAccountId = matchingAccounts.length === 1 ? matchingAccounts[0].id : null
+    const businessAccountId = await findUniqueBusinessAccountId({ email: customerEmail })
 
     const snapshot = {
       source: 'product-context-form',
