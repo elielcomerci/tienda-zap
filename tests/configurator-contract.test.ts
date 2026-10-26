@@ -652,10 +652,15 @@ test('flyers habilita 1.000 unidades 10x15 cm 4/4 con costo terminado offset e I
   assertQuoteFinancials(quote);
 
   assert.equal(quote.taxTreatment, 'INCLUDED');
-  assert.throws(
-    () => quoteConfiguratorSelection(config as any, { ...selection, material: 'obra_80g' }, makeQuoterConfig(config)),
-    /validación comercial antes de ofrecer un precio automático/,
-  );
+  for (const quantity of [1000, 2500, 5000]) {
+    const obraQuote = quoteConfiguratorSelection(
+      config as any,
+      { ...selection, material: 'obra_80g', quantity },
+      makeQuoterConfig(config),
+    );
+    assertQuoteFinancials(obraQuote);
+    assert.equal(obraQuote.taxTreatment, 'INCLUDED');
+  }
 
   const heavier = quoteConfiguratorSelection(config as any, { ...selection, material: 'ilustracion_150g' }, makeQuoterConfig(config));
   assertQuoteFinancials(heavier);
