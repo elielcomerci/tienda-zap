@@ -331,13 +331,13 @@ export const productsData: ProductSeedData[] = [
     order: 1,
     slug: 'diseno-flyer-volante',
     catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 95000, active: true,
+    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 120000, active: true,
   },
   {
     order: 5,
     slug: 'diseno-cartel-afiche',
     catalogType: 'COSA', name: 'Diseño de Cartel / Afiche', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 140000, active: true,
+    whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 160000, active: true,
   },
   {
     order: 2,
@@ -367,7 +367,7 @@ export const productsData: ProductSeedData[] = [
     order: 4,
     slug: 'diseno-etiquetas',
     catalogType: 'COSA', name: 'Diseño de Etiquetas', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 250000, active: true,
+    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 350000, active: true,
   },
   {
     order: 8,
