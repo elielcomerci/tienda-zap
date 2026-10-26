@@ -126,7 +126,7 @@ export function parseMediaList(value: unknown): any[] {
 
 export function getProductMediaTracks(value: unknown) {
   return parseMediaList(value).filter((item) =>
-    item && ['AUDIO', 'VIDEO', 'YOUTUBE'].includes(item.type)
+    item && ['AUDIO', 'VIDEO', 'YOUTUBE', 'SOUNDCLOUD'].includes(item.type)
   )
 }
 
