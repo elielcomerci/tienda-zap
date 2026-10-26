@@ -442,6 +442,23 @@ export default function ProductMediaBlock({
         </div>
       )}
 
+      {activeTrack.type === 'SOUNDCLOUD' && (
+        <div className="space-y-3">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-950 shadow-lg sm:aspect-video">
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(activeTrack.url)}&color=%23ed164f&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=true`}
+              title={activeTrack.title || productName}
+              allow="autoplay"
+              loading="lazy"
+            />
+          </div>
+          <a href={activeTrack.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 underline decoration-gray-300 underline-offset-4 hover:text-[#ED164F]">
+            Abrir en SoundCloud <LinkIcon size={14} />
+          </a>
+        </div>
+      )}
+
       {activeTrack.type === 'VIDEO' && (
         <video
           controls
