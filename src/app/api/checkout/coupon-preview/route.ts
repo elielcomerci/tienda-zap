@@ -54,9 +54,12 @@ export async function POST(req: NextRequest) {
       status: result.status === 'invalid' ? 400 : 200,
     })
   } catch (error: any) {
+    const message = error?.message || 'No pudimos revisar el cupon en este momento.'
+    const staleConfiguration = /(cambió desde la última cotización|configuración .* incompleta|no pudimos validar el precio actual)/i.test(message)
+    const invalidRequest = error instanceof z.ZodError || /Falta el producto|producto ya no esta disponible|no esta disponible para compra online/i.test(message)
     return Response.json(
-      { error: error.message || 'No pudimos revisar el cupon en este momento.' },
-      { status: 500 }
+      { error: message },
+      { status: staleConfiguration ? 409 : invalidRequest ? 400 : 500 }
     )
   }
 }
