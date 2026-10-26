@@ -126,7 +126,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   // The seed owns the 51 catalog products, not historical/test rows kept in the DB.
   // Hidden out-of-catalog records are preserved; only an unexpected public offer is an error.
   const catalogDbProducts = dbProducts.filter((product) => expectedProductSlugs.has(product.slug));
-  const catalogProductSlugs = new Set(catalogDbProducts.map((p) => p.slug));
+  const catalogDbProductSlugs = new Set(catalogDbProducts.map((p) => p.slug));
   const unexpectedPublicProducts = dbProducts.filter(
     (product) => !expectedProductSlugs.has(product.slug) && product.publicVisible
   );
@@ -135,7 +135,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos del catálogo, encontrados en DB: ${catalogDbProducts.length}`);
   }
   for (const slug of expectedProductSlugs) {
-    if (!catalogProductSlugs.has(slug)) {
+    if (!catalogDbProductSlugs.has(slug)) {
       errors.push(`[PRODUCTS MISSING] Producto faltante en DB: ${slug}`);
     }
   }
