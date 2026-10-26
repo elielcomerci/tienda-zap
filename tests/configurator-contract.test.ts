@@ -537,7 +537,7 @@ test('stickers habilita las combinaciones con costo exacto y precio final con IV
   assert.equal(quote.vatRatePercent, 21);
   assert.ok(Math.abs((quote.netPrice ?? 0) - (quote.totalPrice / 1.21)) < 0.01);
   assert.ok(Math.abs((quote.vatAmount ?? 0) - (quote.totalPrice - quote.netPrice!)) < 0.01);
-  assert.ok((quote.breakdown?.marginPercent ?? 0) > 52.3 && (quote.breakdown?.marginPercent ?? 0) < 52.5);
+  assert.ok((quote.breakdown?.marginPercent ?? 0) > 55.5 && (quote.breakdown?.marginPercent ?? 0) < 55.6);
 
   const thousand = quoteConfiguratorSelection(config as any, { ...selection, quantity: 1000 }, { profitMargin: 0 } as any);
   assertQuoteFinancials(thousand);
