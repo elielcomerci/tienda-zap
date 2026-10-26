@@ -1,5 +1,8 @@
 import { ProductSeedData } from '../types';
 
+// Para servicios con priceFrom, guardar el importe neto (sin IVA). La interfaz
+// publica el total con IVA y su desglose mediante src/lib/service-public-pricing.ts.
+
 export const productsData: ProductSeedData[] = [
   {
     order: 13,
