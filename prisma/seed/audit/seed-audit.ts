@@ -326,6 +326,25 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   if (expectedRelationKeys.size !== productRelationsData.length) {
     errors.push('[PRODUCT RELATIONS DATA DUPLICATE] Hay relaciones duplicadas en productRelationsData.');
   }
+  const relationCatalogSlugs = new Set(productsData.map((product) => product.slug));
+  const relatedProductSlugs = new Set<string>();
+  for (const relation of productRelationsData) {
+    relatedProductSlugs.add(relation.productSlug);
+    if (!relationCatalogSlugs.has(relation.productSlug)) {
+      errors.push(`[PRODUCT RELATIONS UNKNOWN PRODUCT] Producto inexistente: ${relation.productSlug}`);
+    }
+    if (!relationCatalogSlugs.has(relation.relatedProductSlug)) {
+      errors.push(`[PRODUCT RELATIONS UNKNOWN RELATED PRODUCT] Producto relacionado inexistente: ${relation.relatedProductSlug}`);
+    }
+    if (!expectedRelationKeys.has(relation.relatedProductSlug + '|' + relation.productSlug)) {
+      errors.push(`[PRODUCT RELATIONS NOT RECIPROCAL] Falta el vínculo inverso: ${relation.relatedProductSlug}|${relation.productSlug}`);
+    }
+  }
+  for (const product of productsData.filter((item) => item.active !== false)) {
+    if (!relatedProductSlugs.has(product.slug)) {
+      errors.push(`[PRODUCT RELATIONS ORPHAN PRODUCT] Producto activo sin complementos definidos: ${product.slug}`);
+    }
+  }
   for (const key of expectedRelationKeys) {
     if (!actualRelationKeys.has(key)) {
       errors.push(`[PRODUCT RELATIONS MISSING] Relación faltante: ${key}`);
