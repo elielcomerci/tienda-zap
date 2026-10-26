@@ -815,9 +815,6 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
     finally { setBusy(false) }
   }
 
-  if (loading) return <div className="mx-auto max-w-7xl p-8 text-sm text-gray-500">Cargando espacio fiscal…</div>
-  if (!account) return <div className="mx-auto max-w-4xl p-8"><div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8"><h1 className="text-xl font-bold tabular-nums text-gray-900">Cuenta fiscal todavía no vinculada</h1><p className="mt-2 text-sm leading-6 text-gray-600">{adminMode ? 'Esta cuenta no tiene un vínculo fiscal activo. Volvé a Clientes fiscales y asigná una cuenta del Worker.' : 'Estamos preparando tu espacio fiscal. Contactá a ZAP para vincular tu cuenta y ayudarte con la configuración inicial.'}</p></div></div>
-
   const selectedEnvironmentCertificates = selectedContributor && certificateInfo
     ? [...(certificateInfo.active ?? []), ...certificateInfo.others].filter(cert => cert.environment === selectedContributor.environment)
     : []
@@ -898,6 +895,9 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
     }
     setWsfeCheckResult(readWsfeCheckResult(wsfeCheckStorageKey(account.id, selectedSettingsContributor.cuit, settingsEnvironment)))
   }, [account?.id, adminMode, section, selectedSettingsContributor?.cuit, settingsEnvironment, settingsTab])
+
+  if (loading) return <div className="mx-auto max-w-7xl p-8 text-sm text-gray-500">Cargando espacio fiscal…</div>
+  if (!account) return <div className="mx-auto max-w-4xl p-8"><div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8"><h1 className="text-xl font-bold tabular-nums text-gray-900">Cuenta fiscal todavía no vinculada</h1><p className="mt-2 text-sm leading-6 text-gray-600">{adminMode ? 'Esta cuenta no tiene un vínculo fiscal activo. Volvé a Clientes fiscales y asigná una cuenta del Worker.' : 'Estamos preparando tu espacio fiscal. Contactá a ZAP para vincular tu cuenta y ayudarte con la configuración inicial.'}</p></div></div>
 
   const renderContributor = (item: Contributor) => {
     const certificateChecked = selectedContributor?.id === item.id && certificateInfo !== null
