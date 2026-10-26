@@ -61,7 +61,7 @@ async function ensureLeadBusinessAccount(args: {
   const candidates = matchingConditions.length
     ? await prisma.businessAccount.findMany({
         where: { OR: matchingConditions },
-        select: { id: true, assignedSellerId: true },
+        select: { id: true, assignedSellerId: true, operationalSellerId: true },
         take: 10,
       })
     : []
@@ -69,6 +69,7 @@ async function ensureLeadBusinessAccount(args: {
   // Never merge records when the available identifiers point to multiple accounts.
   if (candidates.length > 1) return
   if (candidates[0]?.assignedSellerId && candidates[0].assignedSellerId !== args.sellerId) return
+  if (candidates[0]?.operationalSellerId && candidates[0].operationalSellerId !== args.sellerId) return
 
   let businessAccountId = candidates[0]?.id
   if (!businessAccountId) {
