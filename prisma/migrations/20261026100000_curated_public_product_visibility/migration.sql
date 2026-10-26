@@ -1,8 +1,8 @@
-ALTER TABLE "Product" ADD COLUMN "publicVisible" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "Product" ADD COLUMN "publicGroup" TEXT;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "publicVisible" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "publicGroup" TEXT;
 
 UPDATE "Product"
-SET "publicVisible" = true,
+SET "publicVisible" = "slug" IN ('anuncios-campanas', 'sistema-captacion-eventos', 'landing-pages', 'tiendas-online', 'catalogos-digitales', 'webs-eventos-reservas', 'tarjetas-vouchers', 'flyers-desplegables', 'tags-etiquetas', 'adhesivos-stickers', 'fajas-envoltorios', 'bolsas-contenedores', 'cajas-personalizadas', 'menus-cartas', 'carteleria-ploteo', 'corporeos-marquesinas', 'senaletica-placas', 'expositores-stands', 'sistema-identidad', 'diseno-flyer-volante', 'diseno-cartel-afiche', 'diseno-pack-graficos-redes', 'diseno-carteleria-rotulos', 'diseno-menu-gastronomico', 'diseno-vidriera', 'diseno-etiquetas', 'diseno-papeleria-corporativa', 'diseno-presentaciones-digitales', 'asistentes-bots', 'sitios-web-institucionales', 'rediseno-web-optimizacion', 'mantenimiento-web', 'automatizaciones-comerciales', 'formularios-cotizadores-digitales', 'integraciones-digitales', 'recursos-digitales-a-medida', 'produccion-audiovisual', 'jingle-publicitario', 'identidad-sonora', 'musica-original-cine'),
     "publicGroup" = CASE "slug"
     WHEN 'anuncios-campanas' THEN 'VENTAS'
     WHEN 'sistema-captacion-eventos' THEN 'VENTAS'
@@ -45,8 +45,7 @@ SET "publicVisible" = true,
     WHEN 'identidad-sonora' THEN 'PROYECTOS'
     WHEN 'musica-original-cine' THEN 'PROYECTOS'
     ELSE NULL
-    END
-WHERE "slug" IN ('anuncios-campanas', 'sistema-captacion-eventos', 'landing-pages', 'tiendas-online', 'catalogos-digitales', 'webs-eventos-reservas', 'tarjetas-vouchers', 'flyers-desplegables', 'tags-etiquetas', 'adhesivos-stickers', 'fajas-envoltorios', 'bolsas-contenedores', 'cajas-personalizadas', 'menus-cartas', 'carteleria-ploteo', 'corporeos-marquesinas', 'senaletica-placas', 'expositores-stands', 'sistema-identidad', 'diseno-flyer-volante', 'diseno-cartel-afiche', 'diseno-pack-graficos-redes', 'diseno-carteleria-rotulos', 'diseno-menu-gastronomico', 'diseno-vidriera', 'diseno-etiquetas', 'diseno-papeleria-corporativa', 'diseno-presentaciones-digitales', 'asistentes-bots', 'sitios-web-institucionales', 'rediseno-web-optimizacion', 'mantenimiento-web', 'automatizaciones-comerciales', 'formularios-cotizadores-digitales', 'integraciones-digitales', 'recursos-digitales-a-medida', 'produccion-audiovisual', 'jingle-publicitario', 'identidad-sonora', 'musica-original-cine');
+    END;
 
 -- Seed the first approved portfolio sample without overwriting other media/configuration.
 UPDATE "Product"
@@ -67,4 +66,4 @@ SET "mediaList" = (
 ))
 WHERE "slug" = 'musica-original-cine';
 
-CREATE INDEX "Product_publicVisible_publicGroup_active_idx" ON "Product"("publicVisible", "publicGroup", "active");
+CREATE INDEX IF NOT EXISTS "Product_publicVisible_publicGroup_active_idx" ON "Product"("publicVisible", "publicGroup", "active");
