@@ -9,6 +9,7 @@ import { loadNeeds } from './seed/loaders/04-needs';
 import { loadProducts } from './seed/loaders/05-products';
 import { loadConfigurators } from './seed/loaders/06-configurators';
 import { loadProductRelations } from './seed/loaders/10-product-relations';
+import { productsData } from './seed/data/05-products';
 import { runSeedAudit } from './seed/audit/seed-audit';
 
 /**
@@ -33,6 +34,19 @@ async function main() {
   console.log('TIENDA ZAP — SINCRONIZACIÓN SEGURA DEL CATÁLOGO');
   console.log('--------------------------------------------------');
   console.log('Preserva precios existentes, costos, matriz comercial y packs.\n');
+
+  // Never create a catalog product with a placeholder price during a preservation sync.
+  const existingProducts = await prisma.product.findMany({
+    where: { slug: { in: productsData.map((product) => product.slug) } },
+    select: { slug: true },
+  });
+  const existingSlugs = new Set(existingProducts.map((product) => product.slug));
+  const missingSlugs = productsData.map((product) => product.slug).filter((slug) => !existingSlugs.has(slug));
+  if (missingSlugs.length > 0) {
+    throw new Error(
+      `[CATALOG SYNC] Se cancela antes de escribir: faltan productos existentes con precio comercial por verificar: ${missingSlugs.join(', ')}`
+    );
+  }
 
   await loadBusinessTypes(prisma);
   await loadSituations(prisma);
