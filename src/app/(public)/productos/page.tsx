@@ -15,6 +15,7 @@ import ProductRelevanceItem from '@/components/public/ProductRelevanceItem'
 import LiveContextSummary from '@/components/public/LiveContextSummary'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import { formatARS, getPublicPriceBreakdown } from '@/lib/service-public-pricing'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
@@ -464,11 +465,19 @@ export default async function ProductsPage({
                                 {displayPrice.toLocaleString('es-AR')}
                               </p>
                             )}
-                            {isFromPriceVisible && fromPrice !== null && (
-                              <p className="mt-1 text-2xl font-black text-gray-950">
-                                ${fromPrice.toLocaleString('es-AR')}
-                              </p>
-                            )}
+                            {isFromPriceVisible && fromPrice !== null && (() => {
+                              const price = getPublicPriceBreakdown(fromPrice)
+                              return (
+                                <>
+                                  <p className="mt-1 text-2xl font-black text-gray-950">
+                                    ${formatARS(price.gross)}
+                                  </p>
+                                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">IVA incluido</p>
+                                  <p className="mt-1 text-xs text-gray-500">PRECIO SIN IMPUESTOS NACIONALES: ${formatARS(price.net)}</p>
+                                  <p className="text-xs text-gray-500">IVA ({price.vatRatePercent}%): ${formatARS(price.vat)}</p>
+                                </>
+                              )
+                            })()}
                           </div>
 
                           <div className="flex sm:justify-end">
