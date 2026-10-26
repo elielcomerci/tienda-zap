@@ -770,7 +770,24 @@ test('checkout semantic vuelve a cotizar con la configuración activa del servid
   const quoter = ['PRODUCT_QUOTER', 'PROVIDER_FINISHED_COST'].includes(engine) ? makeQuoterConfig(config) : undefined;
   const expected = quoteConfiguratorSelection(config, selection, quoter as any);
   const actual = resolveSemanticCheckoutQuote(config, selection, quoter as any);
-  assert.equal(actual.totalPrice, expected.totalPrice);
+  const pricing = config.pricing as any;
+  const process = String(selection.productionProcess || 'digital');
+  const policy =
+    pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrintingAndQuantity?.[process]?.[String(selection.material || '')]?.[String(selection.printing || '')]?.[String(selection.quantity)] ||
+    pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrinting?.[process]?.[String(selection.material || '')]?.[String(selection.printing || '')] ||
+    pricing?.commercialPricingPoliciesByProcessAndMaterialAndQuantity?.[process]?.[String(selection.material || '')]?.[String(selection.quantity)] ||
+    pricing?.commercialPricingPoliciesByProcessAndMaterial?.[process]?.[String(selection.material || '')] ||
+    pricing?.commercialPricingPoliciesByProcess?.[process] ||
+    pricing?.commercialPricingPoliciesByMaterial?.[String(selection.material || '')] ||
+    pricing?.commercialPricingPoliciesByShape?.[String(selection.shape || '')] ||
+    pricing?.commercialPricingPolicy;
+  if (pricing.engine === 'PROVIDER_FINISHED_COST' && policy) {
+    assert.equal(actual.totalPrice, calculateCommercialPrice(Number(expected.totalCost), policy).finalPrice);
+    assert.equal(actual.taxTreatment, 'INCLUDED');
+    assert.equal(actual.vatRatePercent, policy.vatRatePercent);
+  } else {
+    assert.equal(actual.totalPrice, expected.totalPrice);
+  }
   assert.deepEqual(actual.selectedOptions, expected.selectedOptions);
   assert.throws(() => resolveSemanticCheckoutQuote(config, {}), /configuración está incompleta/i);
 });
