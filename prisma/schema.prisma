@@ -120,6 +120,7 @@ model BusinessAccount {
   contacts          BusinessContact[]
   coupons           PromotionCoupon[]
   consultRequests   ConsultRequest[]
+  orders            Order[]
   sellerLeads        SellerLead[]
   conversations     CustomerConversation[]
   timelineEvents    CustomerTimelineEvent[]
@@ -633,6 +634,7 @@ model ConsultRequest {
 
 model Order {
   id                    String                   @id @default(cuid())
+  businessAccountId     String?
   userId                String?
   sellerId              String?
   guestEmail            String?
@@ -673,6 +675,7 @@ model Order {
   shippingPostalCode    String?
   shippingProvince      String?
   partnerAccount        PartnerAccount?          @relation(fields: [partnerAccountId], references: [id])
+  businessAccount       BusinessAccount?         @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
   user                  User?                    @relation("CustomerOrders", fields: [userId], references: [id])
   seller                User?                    @relation("OrderSeller", fields: [sellerId], references: [id])
   items                 OrderItem[]
