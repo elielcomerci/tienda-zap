@@ -20,7 +20,7 @@ export type AudiovisualPriceReference = {
   priceType: 'FROM_PRICE';
   taxStatus: 'EXCLUDED';
   status: AudiovisualPriceReferenceStatus;
-  cadence: 'PER_JOURNEY' | 'PER_VIDEO' | 'PER_EPISODE' | 'MONTHLY' | 'CAMPAIGN' | 'PROJECT' | 'UNSPECIFIED';
+  cadence: 'PER_JOURNEY' | 'PER_VIDEO' | 'PER_EPISODE' | 'PER_ITEM' | 'MONTHLY' | 'CAMPAIGN' | 'PROJECT' | 'UNSPECIFIED';
   notes?: string;
 };
 
@@ -51,5 +51,5 @@ export const audiovisualPriceReferences: AudiovisualPriceReference[] = [
   { id: 'social-media-ar-filter', service: 'Creación de filtros AR para redes sociales', scope: 'Diseño/desarrollo de filtro con elementos 2D/3D simples e interacciones básicas; publicación en plataforma y 2 rondas.', amountARSNet: 937818, priceType: 'FROM_PRICE', taxStatus: 'EXCLUDED', status: 'INTERNAL_ONLY', cadence: 'PROJECT', notes: 'La disponibilidad de plataformas y herramientas debe verificarse al cotizar.' },
   { id: 'ai-multimedia-content-pilot', service: 'Generación de contenido multimedia con IA (piloto)', scope: 'Uso experimental de herramientas de IA para generar video o animación corta desde prompts/imágenes, con edición básica.', amountARSNet: 772418, priceType: 'FROM_PRICE', taxStatus: 'EXCLUDED', status: 'INTERNAL_REFERENCE', cadence: 'PROJECT', notes: 'Piloto experimental; definir derechos de uso, límites de generación y revisiones.' },
   { id: 'projection-mapping-concept', service: 'Diseño conceptual de projection mapping', scope: 'Diseño conceptual y simulación 2D/3D básica de show de mapping para fachada u objeto; no incluye producción ni hardware.', amountARSNet: 1873982, priceType: 'FROM_PRICE', taxStatus: 'EXCLUDED', status: 'INTERNAL_ONLY', cadence: 'PROJECT', notes: 'Solo concepto; producción, equipos, montaje y operación se cotizan aparte.' },
-  { id: 'interactive-360-product-photography', service: 'Fotografía de producto 360° interactiva', scope: 'Captura de serie fotográfica con plato giratorio, procesamiento y visualizador interactivo 360° para web; código embed/archivos; por producto.', amountARSNet: 330800, priceType: 'FROM_PRICE', taxStatus: 'EXCLUDED', status: 'INTERNAL_REFERENCE', cadence: 'PER_VIDEO', notes: 'Unidad por producto; confirmar cantidad de ángulos, entrega de archivos y alojamiento del visor.' },
+  { id: 'interactive-360-product-photography', service: 'Fotografía de producto 360° interactiva', scope: 'Captura de serie fotográfica con plato giratorio, procesamiento y visualizador interactivo 360° para web; código embed/archivos; por producto.', amountARSNet: 330800, priceType: 'FROM_PRICE', taxStatus: 'EXCLUDED', status: 'INTERNAL_REFERENCE', cadence: 'PER_ITEM', notes: 'Unidad por producto; confirmar cantidad de ángulos, entrega de archivos y alojamiento del visor.' },
 ];
