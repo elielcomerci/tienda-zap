@@ -657,7 +657,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Estructura visual', 'Diseño de diapositivas según alcance', 'Archivo final en formato acordado'],
     configurable: ['Cantidad de diapositivas', 'Contenido provisto', 'Identidad visual', 'Archivo editable'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 180000,
     active: true,
   },
   {
