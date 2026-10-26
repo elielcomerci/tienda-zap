@@ -120,23 +120,33 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   // 4. Audit Product Bases
   const dbProducts = await prisma.product.findMany({
     where: { active: true },
-    select: { id: true, slug: true, modality: true, engine: true },
+    select: { id: true, slug: true, modality: true, engine: true, publicVisible: true },
   });
   const expectedProductSlugs = new Set(productsData.filter((p) => p.active !== false).map((p) => p.slug));
-  const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
+  // The seed owns the 51 catalog products, not historical/test rows kept in the DB.
+  // Hidden out-of-catalog records are preserved; only an unexpected public offer is an error.
+  const catalogDbProducts = dbProducts.filter((product) => expectedProductSlugs.has(product.slug));
+  const catalogProductSlugs = new Set(catalogDbProducts.map((p) => p.slug));
+  const unexpectedPublicProducts = dbProducts.filter(
+    (product) => !expectedProductSlugs.has(product.slug) && product.publicVisible
+  );
 
-  if (dbProducts.length !== expectedProductSlugs.size) {
-    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos, encontrados en DB: ${dbProducts.length}`);
+  if (catalogDbProducts.length !== expectedProductSlugs.size) {
+    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos del catálogo, encontrados en DB: ${catalogDbProducts.length}`);
   }
   for (const slug of expectedProductSlugs) {
-    if (!actualProductSlugs.has(slug)) {
+    if (!catalogProductSlugs.has(slug)) {
       errors.push(`[PRODUCTS MISSING] Producto faltante en DB: ${slug}`);
     }
   }
-  for (const slug of actualProductSlugs) {
-    if (!expectedProductSlugs.has(slug)) {
-      errors.push(`[PRODUCTS EXTRA] Producto activo no esperado en DB: ${slug}`);
-    }
+  for (const product of unexpectedPublicProducts) {
+    errors.push(`[PRODUCTS EXTRA PUBLIC] Producto fuera del seed visible públicamente: ${product.slug}`);
+  }
+  const preservedHiddenRecords = dbProducts.filter(
+    (product) => !expectedProductSlugs.has(product.slug) && !product.publicVisible
+  );
+  if (preservedHiddenRecords.length > 0) {
+    console.log(`[PRODUCTS LEGACY PRESERVED] ${preservedHiddenRecords.length} registros activos ajenos al seed permanecen ocultos y preservados.`);
   }
 
   // 5. Audit Modality and Engine
