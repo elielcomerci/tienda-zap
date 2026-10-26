@@ -57,8 +57,8 @@ SET "mediaList" = (
       WHEN jsonb_typeof("Product"."mediaList") = 'array' THEN "Product"."mediaList"
       ELSE '[]'::jsonb
     END
-  ) AS entry
-  WHERE entry->>'type' <> 'SOUNDCLOUD'
+  ) AS items(entry)
+  WHERE COALESCE(entry->>'type', '') <> 'SOUNDCLOUD'
 ) || jsonb_build_array(jsonb_build_object(
   'id', 'soundcloud-1',
   'type', 'SOUNDCLOUD',
