@@ -27,7 +27,8 @@ export const DEFAULT_FISCAL_FEATURE_FLAGS: Record<FiscalFeatureFlagKey, boolean>
   apiKeyManagement: true,
   certificateManagement: true,
   invoiceEmissionTest: true,
-  invoiceEmissionProd: true,
+  // Fail closed if the production flag has not been explicitly persisted.
+  invoiceEmissionProd: false,
   batchImport: true,
   pdfExport: true,
   manualInvoiceRegistration: true,
