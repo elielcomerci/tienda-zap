@@ -757,7 +757,7 @@ test('el módulo de archivos permanece desactivado por defecto y requiere habili
 
 test('checkout semantic rechaza cotizaciones vencidas o precios no verificables', () => {
   assert.doesNotThrow(() => assertQuotedPriceCurrent('Tarjetas', 1150, 1150));
-  assert.doesNotThrow(() => assertQuotedPriceCurrent('Tarjetas', undefined, 1150));
+  assert.throws(() => assertQuotedPriceCurrent('Tarjetas', undefined, 1150), /no pudimos verificar el importe/i);
   assert.throws(() => assertQuotedPriceCurrent('Tarjetas', 1150, 1380), /cambió desde la última cotización/i);
   assert.throws(() => assertQuotedPriceCurrent('Tarjetas', Number.NaN, 1150), /cambió desde la última cotización/i);
   assert.throws(() => assertQuotedPriceCurrent('Tarjetas', undefined, Number.NaN), /no pudimos validar el precio actual/i);
