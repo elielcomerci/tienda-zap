@@ -417,14 +417,14 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     if (cfg.product.modality !== 'CONFIGURABLE' || !cfg.product.engine) {
       errors.push(`[PRICING PRODUCT RULE] '${cfg.product.slug}' debe ser CONFIGURABLE y tener engine.`);
     }
-    if (cfg.allowedMaterials.length === 0) errors.push(`[PRICING MATERIALS MISSING] '${cfg.product.slug}' no tiene materias primas.`);
+    if (cfg.pricingMode !== 'PROVIDER_FINISHED_COST' && cfg.allowedMaterials.length === 0) errors.push(`[PRICING MATERIALS MISSING] '${cfg.product.slug}' no tiene materias primas.`);
     if (cfg.quantityPresets.length === 0) errors.push(`[PRICING QUANTITIES MISSING] '${cfg.product.slug}' no tiene cantidades.`);
-    if (cfg.sizePresets.length === 0 && !cfg.allowCustomSize) errors.push(`[PRICING SIZES MISSING] '${cfg.product.slug}' no tiene tamaños.`);
+    if (cfg.pricingMode !== 'PROVIDER_FINISHED_COST' && cfg.sizePresets.length === 0 && !cfg.allowCustomSize) errors.push(`[PRICING SIZES MISSING] '${cfg.product.slug}' no tiene tamaños.`);
 
     const expectedOptionConfig = quoterOptionConfigs.find((entry) => entry.productSlug === cfg.product.slug);
-    if (!expectedOptionConfig) {
+    if (!expectedOptionConfig && cfg.pricingMode !== 'PROVIDER_FINISHED_COST') {
       errors.push(`[PRICING OPTIONS MISSING SEED] No hay semántica de opciones declarada para '${cfg.product.slug}'.`);
-    } else {
+    } else if (expectedOptionConfig) {
       const expectedGroupKeys = new Set(expectedOptionConfig.groups.map((group) => group.key));
       const actualGroupKeys = new Set(cfg.optionGroups.map((group) => group.key));
       if (cfg.optionGroups.length !== expectedOptionConfig.groups.length) {
