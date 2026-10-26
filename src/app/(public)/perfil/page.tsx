@@ -43,7 +43,7 @@ export default async function PerfilPage() {
     include: { items: { include: { product: { select: { name: true } } } } },
   })
 
-  const firstName = user.name?.trim().split(/\\s+/)[0] || 'Hola'
+  const firstName = user.name?.trim().split(/\s+/)[0] || 'Hola'
   const areas = [
     { title: 'Mis servicios', description: 'Consultá lo que tenés en marcha y su seguimiento.', href: '/perfil/servicios', icon: BriefcaseBusiness, tint: 'text-[#6D48A8]', action: 'Ver servicios' },
     { title: 'Archivos compartidos', description: 'Intercambiá material y conversá sobre cada trabajo.', href: '/perfil/archivos', icon: FolderOpen, tint: 'text-[#3472A5]', action: process.env.CLIENT_WORK_FILES_ENABLED === 'true' ? 'Ver archivos' : 'Ver información' },
