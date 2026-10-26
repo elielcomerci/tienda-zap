@@ -58,10 +58,11 @@ La visibilidad pública nueva tiene valor predeterminado `false`. Un producto nu
 - Integraciones Digitales
 - Recursos Digitales a Medida
 
-### PROYECTOS — Acceso secundario (3)
+### PROYECTOS — Acceso secundario (4)
 - Producción Audiovisual
 - Jingle Publicitario
 - Identidad Sonora
+- Música Original para Cine y Audiovisual
 
 Los proyectos de esta última puerta no aparecen en el listado general. Se muestran cuando la persona elige explícitamente “Tengo un proyecto más específico”.
 
@@ -76,7 +77,6 @@ Siguen siendo registros activos para gestión interna y no se borran de la base:
 - Individuales & Posavasos
 - Indumentaria & Textil
 - Objetos & Regalería
-- Música Original para Cine y Audiovisual
 - Música Original para Videojuegos
 - Diseño Sonoro y Efectos
 - Música e Identidad Sonora para Podcasts
@@ -99,7 +99,7 @@ La ocultación no niega la capacidad de ejecución. Evita que estas prestaciones
 2. Ejecutar `npm run typecheck`.
 3. Ejecutar `npm run build` (incluye `prebuild` y sus pruebas).
 4. Aplicar la migración con el procedimiento normal del entorno.
-5. Ejecutar el seed de productos y verificar que el resultado sea: 39 visibles, 12 ocultos; 22 MARCA, 6 VENTAS, 8 EXPERIENCIA y 3 PROYECTOS.
+5. Ejecutar el seed de productos y verificar que el resultado sea: 40 visibles, 11 ocultos; 22 MARCA, 6 VENTAS, 8 EXPERIENCIA y 4 PROYECTOS.
 6. Probar que un producto oculto no aparece en `/productos`, no abre por su slug público y no se recomienda como relacionado.
 7. Probar las cuatro puertas, búsqueda, filtros, fichas y navegación móvil.
 8. Revisar en producción los precios públicos e IVA ya existentes; esta modificación no cambia importes ni aprueba nuevas tarifas.
