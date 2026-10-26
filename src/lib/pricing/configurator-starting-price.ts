@@ -32,7 +32,7 @@ function policyFor(pricing: any, selection: Record<string, any>) {
  * ignored; no legacy Product.price or guessed cost is used.
  */
 export function getSemanticStartingPrice(configurator: ConfiguratorLike, quoterConfig?: any): number | null {
-  if (!configurator?.schema?.fields || configurator.pricing?.engine !== 'PROVIDER_FINISHED_COST') return null
+  if (!configurator?.schema?.fields || !configurator.pricing?.engine) return null
   const fields = configurator.schema.fields
   let selections: Record<string, any>[] = [{}]
   for (const [key, field] of Object.entries(fields) as Array<[string, any]>) {
