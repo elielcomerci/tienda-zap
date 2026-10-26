@@ -280,7 +280,7 @@ export default function ProductMediaBlock({
           {activeTrack.type === 'SOUNDCLOUD' ? 'Portfolio musical' : activeTrack.type === 'AUDIO' ? 'Escuchar pista' : 'Ver video'}
         </h2>
         <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
-          {activeTrack.type === 'YOUTUBE' ? 'YouTube' : activeTrack.type === 'VIDEO' ? 'MP4' : 'Audio'}
+          {activeTrack.type === 'SOUNDCLOUD' ? 'SoundCloud' : activeTrack.type === 'YOUTUBE' ? 'YouTube' : activeTrack.type === 'VIDEO' ? 'MP4' : 'Audio'}
         </span>
       </div>
 
