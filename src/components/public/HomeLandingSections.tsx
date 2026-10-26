@@ -19,18 +19,12 @@ type SituationItem = {
   icon?: string | null
 }
 
-type CatalogTypeItem = {
-  catalogType: 'COSA' | 'DESARROLLO'
-}
-
 export default function HomeLandingSections({
   businessTypes,
   situations,
-  products,
 }: {
   businessTypes: BusinessTypeItem[]
   situations: SituationItem[]
-  products: CatalogTypeItem[]
 }) {
   const { context, setContext, ready } = useExplorationContext()
   const [selectedRubro, setSelectedRubro] = useState('')
@@ -63,7 +57,7 @@ export default function HomeLandingSections({
         </div>
       </section>
 
-      <CatalogEntrySection products={products} />
+      <CatalogEntrySection />
     </>
   )
 }
