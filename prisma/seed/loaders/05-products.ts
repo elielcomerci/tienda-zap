@@ -20,6 +20,8 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
         ...(p.briefType !== undefined ? { briefType: p.briefType } : {}),
         priceFrom: p.priceFrom ?? null,
         active: p.active ?? true,
+        publicVisible: p.publicVisible ?? false,
+        publicGroup: p.publicGroup ?? null,
       },
       create: {
         slug: p.slug,
@@ -37,6 +39,8 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
         briefType: p.briefType ?? null,
         priceFrom: p.priceFrom ?? null,
         active: p.active ?? true,
+        publicVisible: p.publicVisible ?? false,
+        publicGroup: p.publicGroup ?? null,
         images: [],
       },
     });
