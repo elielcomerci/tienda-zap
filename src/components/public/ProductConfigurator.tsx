@@ -124,6 +124,7 @@ export default function ProductConfigurator({
   const isContactOnly = requiresConversation(product)
   const contactHref = inquiryUrl || 'https://wa.me/541125832323'
   const simpleProductAvailable = isPurchasablePrice(product.price)
+  const fromPrice = isPurchasablePrice(product.priceFrom) ? product.priceFrom : null
   const creditDownPaymentPercent = product.creditDownPaymentPercent || 30
   const activeSemanticConfigurator = product.configuratorVersions?.[0] || null
   const quoterConfig = product.quoterConfig
@@ -851,7 +852,7 @@ export default function ProductConfigurator({
           <div className="flex flex-col gap-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
-                Precio final
+                {displayPrice === null && fromPrice !== null ? 'Precio inicial' : 'Precio final'}
               </p>
 
               {displayPrice !== null ? (
@@ -862,9 +863,18 @@ export default function ProductConfigurator({
                     </span>
                     <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">
-                    'Precio unitario.'
-                  </p>
+                  <p className="mt-2 text-sm text-gray-300">Precio unitario.</p>
+                </>
+              ) : fromPrice !== null ? (
+                <>
+                  <div className="mt-3 flex flex-wrap items-end gap-2">
+                    <span className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-400">Desde</span>
+                    <span className="text-4xl font-black tracking-tight sm:text-5xl">
+                      ${fromPrice.toLocaleString('es-AR')}
+                    </span>
+                    <span className="mb-2 text-sm font-semibold text-gray-400">ARS</span>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-300">Precio inicial orientativo. El alcance y el presupuesto final se confirman con ZAP.</p>
                 </>
               ) : (
                 <>
