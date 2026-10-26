@@ -250,7 +250,7 @@ export const productsData: ProductSeedData[] = [
     purpose: 'Atención 24/7, calificación de leads y derivación comercial inmediata.',
     includes: ['Flujo de conversación, configuración de canales y testing'],
     configurable: ['Canal principal', 'Objetivo y flujo', 'Nivel de integración'],
-    priceFrom: 350000,
+    priceFrom: 450000,
     active: true,
   },
   {
@@ -264,7 +264,7 @@ export const productsData: ProductSeedData[] = [
     purpose: 'Generar consultas, pedidos y tráfico comercial calificado de forma predecible.',
     includes: ['Estrategia, diseño de creativos y configuración de pauta'],
     configurable: ['Objetivo comercial', 'Canal (Meta, Google)', 'Cantidad de piezas gráficas', 'Duración de la gestión'],
-    priceFrom: 160000,
+    priceFrom: 220000,
     active: true,
   },
   {
@@ -290,7 +290,7 @@ export const productsData: ProductSeedData[] = [
     whatIs: 'Diseño integral de marca: logotipo, manual de normas, tipografías, colores y aplicaciones.',
     purpose: 'Construir una marca sólida, reconocible y coherente desde sus cimientos.',
     consultationNote: 'El desarrollo de identidad parte de un diagnóstico estratégico del negocio y su competencia.',
-    priceFrom: 1200000,
+    priceFrom: 2200000,
     active: true,
   },
   {
@@ -331,7 +331,7 @@ export const productsData: ProductSeedData[] = [
     order: 1,
     slug: 'diseno-flyer-volante',
     catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 80000, active: true,
+    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 95000, active: true,
   },
   {
     order: 5,
@@ -355,7 +355,7 @@ export const productsData: ProductSeedData[] = [
     order: 3,
     slug: 'diseno-menu-gastronomico',
     catalogType: 'COSA', name: 'Diseño de Menú Gastronómico', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 240000, active: true,
+    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 250000, active: true,
   },
   {
     order: 7,
@@ -367,7 +367,7 @@ export const productsData: ProductSeedData[] = [
     order: 4,
     slug: 'diseno-etiquetas',
     catalogType: 'COSA', name: 'Diseño de Etiquetas', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 180000, active: true,
+    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 250000, active: true,
   },
   {
     order: 8,
@@ -432,7 +432,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Diseño adaptable a dispositivos', 'Estructura de páginas acordada', 'Configuración básica de SEO', 'Publicación del sitio'],
     configurable: ['Cantidad de secciones', 'Idiomas', 'Formularios e integraciones', 'Contenido y mantenimiento'],
     price: 0,
-    priceFrom: 650000,
+    priceFrom: 800000,
     active: true,
   },
   {
@@ -447,7 +447,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Diseño responsive', 'Estructura de catálogo', 'Configuración de flujo comercial acordado'],
     configurable: ['Cantidad y tipo de productos', 'Medios de pago y entrega', 'Integraciones', 'Administración y mantenimiento'],
     price: 0,
-    priceFrom: 700000,
+    priceFrom: 800000,
     active: true,
   },
   {
@@ -477,7 +477,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Información del evento', 'Llamada a la acción', 'Formulario o integración acordada'],
     configurable: ['Tipo de evento', 'Registro y confirmaciones', 'Reservas o pagos', 'Integraciones'],
     price: 0,
-    priceFrom: 450000,
+    priceFrom: 600000,
     active: true,
   },
   {
