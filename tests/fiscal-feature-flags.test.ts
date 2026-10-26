@@ -21,13 +21,18 @@ const allEnabled = {
 } as const
 
 test('production invoice emission remains disabled without deployment opt-in even when the database flag is true', () => {
-  const flags = applyFiscalFeatureGates({ ...allEnabled }, false)
+  const flags = applyFiscalFeatureGates({ ...allEnabled }, false, true)
   assert.equal(flags.invoiceEmissionProd, false)
   assert.equal(flags.invoiceEmissionTest, true)
   assert.equal(flags.apiKeyManagement, true)
 })
 
 test('production invoice emission requires both the database flag and deployment opt-in', () => {
-  assert.equal(applyFiscalFeatureGates({ ...allEnabled }, true).invoiceEmissionProd, true)
-  assert.equal(applyFiscalFeatureGates({ ...allEnabled, invoiceEmissionProd: false }, true).invoiceEmissionProd, false)
+  assert.equal(applyFiscalFeatureGates({ ...allEnabled }, true, true).invoiceEmissionProd, true)
+  assert.equal(applyFiscalFeatureGates({ ...allEnabled, invoiceEmissionProd: false }, true, true).invoiceEmissionProd, false)
+})
+
+
+test('production invoice emission remains disabled when the database flag row is missing', () => {
+  assert.equal(applyFiscalFeatureGates({ ...allEnabled, invoiceEmissionProd: false }, true, false).invoiceEmissionProd, false)
 })
