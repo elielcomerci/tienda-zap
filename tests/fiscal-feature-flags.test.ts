@@ -34,5 +34,5 @@ test('production invoice emission requires both the database flag and deployment
 
 
 test('production invoice emission remains disabled when the database flag row is missing', () => {
-  assert.equal(applyFiscalFeatureGates({ ...allEnabled, invoiceEmissionProd: false }, true, false).invoiceEmissionProd, false)
+  assert.equal(applyFiscalFeatureGates({ ...allEnabled }, true, false).invoiceEmissionProd, false)
 })
