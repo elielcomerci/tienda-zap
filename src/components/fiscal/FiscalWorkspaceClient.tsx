@@ -834,7 +834,7 @@ export default function FiscalWorkspaceClient({ accountId, adminMode = false, se
     : []
   const settingsActiveCertificate = settingsCertificates.find(item => item.status === 'ACTIVE')
   const settingsPendingCertificate = settingsCertificates.find(item => item.status === 'PENDING_PROPAGATION')
-  const settingsWsfeResult = wsfeCheckResult?.cuit === selectedSettingsContributor?.cuit && wsfeCheckResult.environment === settingsEnvironment
+  const settingsWsfeResult = wsfeCheckResult && selectedSettingsContributor && wsfeCheckResult.cuit === selectedSettingsContributor.cuit && wsfeCheckResult.environment === settingsEnvironment
     ? wsfeCheckResult
     : null
   const settingsCheckAgeMs = settingsWsfeResult ? Date.now() - Date.parse(settingsWsfeResult.verifiedAt) : Number.POSITIVE_INFINITY
