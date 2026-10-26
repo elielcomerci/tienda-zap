@@ -12,7 +12,9 @@ import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/li
 import ExplorationContextIndicator from '@/components/public/ExplorationContextIndicator'
 import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
-export const revalidate = 300
+// The public layout reads auth/cookies, so product details must render dynamically.
+// ISR here triggers DYNAMIC_SERVER_USAGE and breaks the RSC response for every product.
+export const dynamic = 'force-dynamic'
 
 // Generate product detail pages on demand instead of querying the database at build time.
 // This keeps builds independent from whether the target database has received the latest migration.
@@ -69,7 +71,14 @@ export default async function ProductDetailPage({
   }
 
   const relatedProducts = product.outgoingRelations
-    .filter((relation) => relation.relatedProduct.active && relation.relatedProduct.publicVisible)
+    .filter((relation) => {
+      const related = relation.relatedProduct
+      if (!related.active || !related.publicVisible) return false
+
+      // PROYECTOS is a secondary entrance, not a recommendation source for the general catalog.
+      if (related.publicGroup === 'PROYECTOS' && product.publicGroup !== 'PROYECTOS') return false
+      return true
+    })
     .map((relation) => ({ ...relation.relatedProduct, relationType: relation.type }))
   const displayPrice = getProductDisplayPrice(product)
   const fixedDisplayedPrice =

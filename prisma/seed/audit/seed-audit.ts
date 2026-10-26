@@ -120,23 +120,33 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   // 4. Audit Product Bases
   const dbProducts = await prisma.product.findMany({
     where: { active: true },
-    select: { id: true, slug: true, modality: true, engine: true },
+    select: { id: true, slug: true, modality: true, engine: true, publicVisible: true },
   });
   const expectedProductSlugs = new Set(productsData.filter((p) => p.active !== false).map((p) => p.slug));
-  const actualProductSlugs = new Set(dbProducts.map((p) => p.slug));
+  // The seed owns the 51 catalog products, not historical/test rows kept in the DB.
+  // Hidden out-of-catalog records are preserved; only an unexpected public offer is an error.
+  const catalogDbProducts = dbProducts.filter((product) => expectedProductSlugs.has(product.slug));
+  const catalogDbProductSlugs = new Set(catalogDbProducts.map((p) => p.slug));
+  const unexpectedPublicProducts = dbProducts.filter(
+    (product) => !expectedProductSlugs.has(product.slug) && product.publicVisible
+  );
 
-  if (dbProducts.length !== expectedProductSlugs.size) {
-    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos, encontrados en DB: ${dbProducts.length}`);
+  if (catalogDbProducts.length !== expectedProductSlugs.size) {
+    errors.push(`[PRODUCTS COUNT] Esperados ${expectedProductSlugs.size} productos activos del catálogo, encontrados en DB: ${catalogDbProducts.length}`);
   }
   for (const slug of expectedProductSlugs) {
-    if (!actualProductSlugs.has(slug)) {
+    if (!catalogDbProductSlugs.has(slug)) {
       errors.push(`[PRODUCTS MISSING] Producto faltante en DB: ${slug}`);
     }
   }
-  for (const slug of actualProductSlugs) {
-    if (!expectedProductSlugs.has(slug)) {
-      errors.push(`[PRODUCTS EXTRA] Producto activo no esperado en DB: ${slug}`);
-    }
+  for (const product of unexpectedPublicProducts) {
+    errors.push(`[PRODUCTS EXTRA PUBLIC] Producto fuera del seed visible públicamente: ${product.slug}`);
+  }
+  const preservedHiddenRecords = dbProducts.filter(
+    (product) => !expectedProductSlugs.has(product.slug) && !product.publicVisible
+  );
+  if (preservedHiddenRecords.length > 0) {
+    console.log(`[PRODUCTS LEGACY PRESERVED] ${preservedHiddenRecords.length} registros activos ajenos al seed permanecen ocultos y preservados.`);
   }
 
   // 5. Audit Modality and Engine
@@ -326,6 +336,25 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
   if (expectedRelationKeys.size !== productRelationsData.length) {
     errors.push('[PRODUCT RELATIONS DATA DUPLICATE] Hay relaciones duplicadas en productRelationsData.');
   }
+  const relationCatalogSlugs = new Set(productsData.map((product) => product.slug));
+  const relatedProductSlugs = new Set<string>();
+  for (const relation of productRelationsData) {
+    relatedProductSlugs.add(relation.productSlug);
+    if (!relationCatalogSlugs.has(relation.productSlug)) {
+      errors.push(`[PRODUCT RELATIONS UNKNOWN PRODUCT] Producto inexistente: ${relation.productSlug}`);
+    }
+    if (!relationCatalogSlugs.has(relation.relatedProductSlug)) {
+      errors.push(`[PRODUCT RELATIONS UNKNOWN RELATED PRODUCT] Producto relacionado inexistente: ${relation.relatedProductSlug}`);
+    }
+    if (!expectedRelationKeys.has(relation.relatedProductSlug + '|' + relation.productSlug)) {
+      errors.push(`[PRODUCT RELATIONS NOT RECIPROCAL] Falta el vínculo inverso: ${relation.relatedProductSlug}|${relation.productSlug}`);
+    }
+  }
+  for (const product of productsData.filter((item) => item.active !== false)) {
+    if (!relatedProductSlugs.has(product.slug)) {
+      errors.push(`[PRODUCT RELATIONS ORPHAN PRODUCT] Producto activo sin complementos definidos: ${product.slug}`);
+    }
+  }
   for (const key of expectedRelationKeys) {
     if (!actualRelationKeys.has(key)) {
       errors.push(`[PRODUCT RELATIONS MISSING] Relación faltante: ${key}`);
@@ -369,33 +398,33 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     if (!expectedPricingSlugs.has(slug)) errors.push(`[PRICING CONFIG EXTRA] ProductQuoterConfig inesperado para '${slug}'.`);
   }
 
-  const auditTiers = (tiers: Array<{ minQty: number; maxQty: number | null; unitPrice: number }>, label: string) => {
+  const auditTiers = (tiers: Array<{ minQty: number; maxQty: number | null; unitPrice: number }>, label: string, requireStartAtOne = true, requireContinuous = true, requireOpenEnd = true) => {
     if (tiers.length === 0) { errors.push(`[PRICING TIERS MISSING] ${label}: no tiene tiers.`); return; }
     const ordered = [...tiers].sort((a, b) => a.minQty - b.minQty);
-    if (ordered[0].minQty !== 1) errors.push(`[PRICING TIERS START] ${label}: debe comenzar en 1.`);
+    if (requireStartAtOne && ordered[0].minQty !== 1) errors.push(`[PRICING TIERS START] ${label}: debe comenzar en 1.`);
     for (let i = 0; i < ordered.length; i += 1) {
       const tier = ordered[i];
       if (tier.unitPrice <= 0) errors.push(`[PRICING TIER PRICE] ${label}: costo inválido (${tier.unitPrice}).`);
       if (tier.maxQty !== null && tier.maxQty < tier.minQty) errors.push(`[PRICING TIER RANGE] ${label}: rango inválido.`);
       const next = ordered[i + 1];
       if (next && tier.maxQty === null) errors.push(`[PRICING TIER OVERLAP] ${label}: hay tiers después de un rango abierto.`);
-      if (next && tier.maxQty !== null && next.minQty !== tier.maxQty + 1) errors.push(`[PRICING TIER GAP] ${label}: salto entre ${tier.maxQty} y ${next.minQty}.`);
+      if (requireContinuous && next && tier.maxQty !== null && next.minQty !== tier.maxQty + 1) errors.push(`[PRICING TIER GAP] ${label}: salto entre ${tier.maxQty} y ${next.minQty}.`);
     }
-    if (ordered[ordered.length - 1].maxQty !== null) errors.push(`[PRICING TIER OPEN END] ${label}: el último tier debe ser abierto.`);
+    if (requireOpenEnd && ordered[ordered.length - 1].maxQty !== null) errors.push(`[PRICING TIER OPEN END] ${label}: el último tier debe ser abierto.`);
   };
 
   for (const cfg of dbPricingConfigs) {
     if (cfg.product.modality !== 'CONFIGURABLE' || !cfg.product.engine) {
       errors.push(`[PRICING PRODUCT RULE] '${cfg.product.slug}' debe ser CONFIGURABLE y tener engine.`);
     }
-    if (cfg.allowedMaterials.length === 0) errors.push(`[PRICING MATERIALS MISSING] '${cfg.product.slug}' no tiene materias primas.`);
+    if (cfg.pricingMode !== 'PROVIDER_FINISHED_COST' && cfg.allowedMaterials.length === 0) errors.push(`[PRICING MATERIALS MISSING] '${cfg.product.slug}' no tiene materias primas.`);
     if (cfg.quantityPresets.length === 0) errors.push(`[PRICING QUANTITIES MISSING] '${cfg.product.slug}' no tiene cantidades.`);
-    if (cfg.sizePresets.length === 0 && !cfg.allowCustomSize) errors.push(`[PRICING SIZES MISSING] '${cfg.product.slug}' no tiene tamaños.`);
+    if (cfg.pricingMode !== 'PROVIDER_FINISHED_COST' && cfg.sizePresets.length === 0 && !cfg.allowCustomSize) errors.push(`[PRICING SIZES MISSING] '${cfg.product.slug}' no tiene tamaños.`);
 
     const expectedOptionConfig = quoterOptionConfigs.find((entry) => entry.productSlug === cfg.product.slug);
-    if (!expectedOptionConfig) {
+    if (!expectedOptionConfig && cfg.pricingMode !== 'PROVIDER_FINISHED_COST') {
       errors.push(`[PRICING OPTIONS MISSING SEED] No hay semántica de opciones declarada para '${cfg.product.slug}'.`);
-    } else {
+    } else if (expectedOptionConfig) {
       const expectedGroupKeys = new Set(expectedOptionConfig.groups.map((group) => group.key));
       const actualGroupKeys = new Set(cfg.optionGroups.map((group) => group.key));
       if (cfg.optionGroups.length !== expectedOptionConfig.groups.length) {
@@ -432,7 +461,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     const quantities = cfg.quantityPresets.map((q) => q.quantity);
     for (const link of cfg.finishings) {
       if (!link.finishing.active) errors.push(`[PRICING FINISHING INACTIVE] '${cfg.product.slug}' usa '${link.finishing.id}' inactiva.`);
-      auditTiers(link.finishing.tiers, `terminación '${link.finishing.id}'`);
+      auditTiers(link.finishing.tiers, `terminación '${link.finishing.id}'`, link.finishing.costType !== 'FIXED_SETUP', link.finishing.costType !== 'FIXED_SETUP', link.finishing.costType !== 'FIXED_SETUP');
       if (link.finishing.costType === 'PER_UNIT') {
         for (const quantity of quantities) {
           const covered = link.finishing.tiers.some((t) => t.minQty <= quantity && (t.maxQty === null || t.maxQty >= quantity));

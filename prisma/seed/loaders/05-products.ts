@@ -1,7 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import { productsData } from '../data/05-products';
 
-export async function loadProducts(prisma: PrismaClient): Promise<void> {
+export async function loadProducts(
+  prisma: PrismaClient,
+  options: { preservePricing?: boolean; deactivateMissing?: boolean } = {}
+): Promise<void> {
   for (const p of productsData) {
     await prisma.product.upsert({
       where: { slug: p.slug },
@@ -16,9 +19,9 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
         includes: p.includes || [],
         configurable: p.configurable || [],
         consultationNote: p.consultationNote || null,
-        ...(p.price !== undefined ? { price: p.price } : {}),
+        ...(!options.preservePricing && p.price !== undefined ? { price: p.price } : {}),
         ...(p.briefType !== undefined ? { briefType: p.briefType } : {}),
-        priceFrom: p.priceFrom ?? null,
+        ...(!options.preservePricing ? { priceFrom: p.priceFrom ?? null } : {}),
         active: p.active ?? true,
         publicVisible: p.publicVisible ?? false,
         publicGroup: p.publicGroup ?? null,
@@ -46,13 +49,17 @@ export async function loadProducts(prisma: PrismaClient): Promise<void> {
     });
   }
 
-  const expectedSlugs = productsData.map((product) => product.slug);
-  // Keep historical product rows (orders/relations may reference them), but remove
-  // products outside the current catalog from the public surface.
-  await prisma.product.updateMany({
-    where: { slug: { notIn: expectedSlugs }, active: true },
-    data: { active: false },
-  });
+  if (options.deactivateMissing !== false) {
+    const expectedSlugs = productsData.map((product) => product.slug);
+    // Keep historical product rows (orders/relations may reference them), but remove
+    // products outside the current catalog from the public surface in the full seed only.
+    await prisma.product.updateMany({
+      where: { slug: { notIn: expectedSlugs }, active: true },
+      data: { active: false },
+    });
+  }
 
-  console.log(`[SEED] ${productsData.length} productos de catálogo persistidos; productos fuera de fuente desactivados.`);
+  console.log(
+    `[SEED] ${productsData.length} productos de catálogo persistidos${options.deactivateMissing === false ? '; registros ajenos preservados' : '; productos fuera de fuente desactivados'}.`
+  );
 }
