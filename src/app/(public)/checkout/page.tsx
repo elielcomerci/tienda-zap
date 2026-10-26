@@ -433,6 +433,7 @@ function CheckoutContent() {
           items: items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
+            unitPrice: item.price,
             notes: item.notes,
             briefType: item.briefType,
             briefResponses: item.briefResponses,
