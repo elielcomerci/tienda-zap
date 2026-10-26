@@ -277,7 +277,7 @@ export default function ProductMediaBlock({
 
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-sm font-black uppercase tracking-[0.16em] text-gray-900">
-          {activeTrack.type === 'AUDIO' ? 'Escuchar pista' : 'Ver video'}
+          {activeTrack.type === 'SOUNDCLOUD' ? 'Portfolio musical' : activeTrack.type === 'AUDIO' ? 'Escuchar pista' : 'Ver video'}
         </h2>
         <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
           {activeTrack.type === 'YOUTUBE' ? 'YouTube' : activeTrack.type === 'VIDEO' ? 'MP4' : 'Audio'}
