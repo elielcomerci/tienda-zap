@@ -124,3 +124,58 @@ La tienda pública muestra una oferta seleccionada y comprensible. El inventario
 
 ## Límites de esta auditoría
 Esta propuesta usa el catálogo seed y los inventarios internos disponibles en la rama. No demuestra capacidad de ejecución, vigencia de cada referencia externa, margen real ni demanda. Antes de activar cada nueva ficha deben confirmarse responsable, costos, entregables, condiciones, soporte y fuente/fecha de precio. No se modifica la publicación ni se ejecuta seed/build/deploy como parte de este documento.
+
+
+## Revisión del criterio comercial — capacidad confirmada por ZAP
+
+**Aclaración del titular, 2026-10-26:** ZAP cuenta con capacidad para ejecutar las prestaciones de los inventarios relevados. Por lo tanto, no se debe descartar ni relegar un servicio simplemente porque sea técnico, complejo, especializado o requiera una presentación comercial distinta. Las clasificaciones anteriores de “solo referencia interna” describen una recomendación de visibilidad inicial, no una afirmación de incapacidad operativa.
+
+### Objetivo de optimización
+
+Maximizar ventas con poca fricción sin diluir ZAP Agencia Creativa. La selección debe optimizar en conjunto:
+- demanda probable y frecuencia del problema;
+- facilidad para que el cliente se reconozca en la necesidad;
+- claridad del resultado y del alcance;
+- facilidad para elegir, consultar y cotizar sin reuniones innecesarias;
+- precio de entrada defendible y rentabilidad neta;
+- posibilidad de vender una primera solución acotada y ampliar el trabajo después;
+- coherencia con la promesa de ZAP: conectar marca, creatividad, tecnología y funcionamiento comercial para resolver problemas de negocio.
+
+### Arquitectura recomendada: dos capas, no dos negocios
+
+1. **Entrada pública guiada por situaciones:** pocas opciones reconocibles y orientadas al problema del cliente. Por ejemplo: “Quiero vender más”, “Quiero mejorar cómo se presenta mi negocio”, “Necesito ordenar o automatizar un proceso” y “Tengo una idea que necesito desarrollar”. Estas opciones orientan, no limitan el alcance de ZAP.
+2. **Árbol de soluciones completo:** servicios concretos con nombre, alcance, precio desde y condiciones. Se muestra progresivamente según rubro, situación o intención; las prestaciones especializadas siguen siendo encontrables, pero no compiten todas en la primera pantalla.
+
+### Regla para decidir qué recibe protagonismo
+
+- **Nivel A — puerta de entrada:** problemas frecuentes, fáciles de entender y de cotizar; alcance base claro, precio desde defendible y bajo esfuerzo inicial para decidir.
+- **Nivel B — solución concreta:** servicio específico que responde a una necesidad reconocible, con alcance y precio desde explicables; accesible desde la navegación guiada o búsqueda, sin ocupar necesariamente la portada.
+- **Nivel C — solución especializada:** servicios de mayor complejidad técnica o de compra menos frecuente. Deben ser encontrables por categoría, búsqueda o ruta consultiva; no es necesario esconderlos ni convertirlos en protagonista.
+- **Nivel D — cotización a medida:** proyectos cuyo precio depende de diagnóstico, volumen, integración, riesgo o condiciones particulares. Se muestra el resultado y el alcance de referencia, con “Consultar” cuando no exista un precio base honesto.
+
+Estos niveles determinan protagonismo y recorrido, no la capacidad de ZAP ni la calidad del servicio.
+
+### Criterio para precio desde
+
+Publicar “desde” cuando pueda definirse un caso base real, comprensible y ejecutable. Cada ficha debe especificar:
+- resultado o entregable;
+- qué incluye exactamente el precio inicial;
+- límites cuantificables (cantidad, duración, páginas, variantes, canales, integraciones o rondas, según corresponda);
+- qué no incluye y qué variables incrementan el costo;
+- precio neto interno, IVA aplicable y total público correctamente presentado;
+- modalidad (único, mensual, por unidad, pack, hora o proyecto);
+- siguiente paso simple: comprar, configurar, consultar o solicitar diagnóstico.
+
+No esconder una tarifa concreta detrás de “Consultar” si el alcance base puede definirse. Tampoco publicar un precio artificial solo para mostrar una cifra.
+
+### Correcciones a aplicar al árbol anterior
+
+- Los servicios cloud, software, datos, IA, 3D, audiovisual y especializados **no quedan excluidos por defecto**. Hay que decidir su visibilidad individual por intención de búsqueda, claridad de alcance, valor de entrada y fricción de compra.
+- La especialización técnica puede reforzar la percepción de ZAP cuando está organizada y explicada; la dilución aparece cuando se presenta como una lista plana de tecnologías sin jerarquía ni relación con problemas de negocio.
+- “Por consulta” no significa “oculto”: puede existir una ficha pública clara, con alcance orientativo y CTA de consulta, aunque no tenga un precio fijo.
+- Las referencias externas siguen siendo referencias y no se transforman automáticamente en precios ZAP. Para convertirlas en “desde” propios, calcular costo real de ejecución y terceros, horas, margen, riesgos, soporte y condiciones.
+- La gestión integral mensual de redes sociales continúa **INACTIVA** por decisión expresa, aunque su referencia permanezca disponible para análisis interno.
+
+### Siguiente entregable de auditoría
+
+Crear una matriz maestra de todos los servicios actuales y relevados, con una fila por servicio y estas columnas: familia, problema del cliente, nombre público propuesto, alcance base, modalidad, precio de referencia, precio ZAP desde (si está aprobado), estado del precio, potencial de demanda, claridad, fricción, recurrencia, oportunidad de ampliación, nivel A/B/C/D y decisión editorial. La matriz permitirá seleccionar la portada y navegación sin eliminar capacidades válidas.
