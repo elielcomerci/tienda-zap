@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Building2, Mail, Phone, Plus, Save, UserRound, X } from 'lucide-react'
+import { Building2, Mail, MessageSquareText, Phone, Plus, Save, UserRound, X } from 'lucide-react'
 import { saveBusinessAccount, saveBusinessContact } from './actions'
 
 type BusinessAccountStatus = 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'LOST'
@@ -89,14 +89,23 @@ export default function ClientesCrmClient({
             Cuentas comerciales y contactos para campañas, cupones y seguimiento vendedor.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setAccountDraft({} as Account)}
-          className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-gray-800"
-        >
-          <Plus size={17} />
-          Nueva cuenta
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/admin/clientes/conversaciones"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-800 transition hover:bg-gray-50"
+          >
+            <MessageSquareText size={17} />
+            Importar WhatsApp
+          </a>
+          <button
+            type="button"
+            onClick={() => setAccountDraft({} as Account)}
+            className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-gray-800"
+          >
+            <Plus size={17} />
+            Nueva cuenta
+          </button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
