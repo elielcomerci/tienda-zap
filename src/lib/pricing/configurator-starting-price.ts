@@ -1,5 +1,4 @@
 import { quoteConfiguratorSelection } from '@/lib/pricing/configurator-adapter'
-import { calculateCommercialPrice } from '@/lib/pricing/commercial-pricing-policy'
 
 type ConfiguratorLike = {
   id?: string
@@ -9,41 +8,40 @@ type ConfiguratorLike = {
   pricing?: any
 }
 
-function policyFor(pricing: any, selection: Record<string, any>) {
-  let process = selection.productionProcess ? String(selection.productionProcess) : 'digital'
-  if (!selection.productionProcess && pricing?.providerFinishedCostMatrix?.resolver?.type === 'FLYERS_DIGITAL' &&
-      selection.foldingType === 'plano' && selection.printing === '4_4') {
-    const cost = pricing.providerFinishedCostMatrix.matrix?.[selection.material || '']?.[selection.format || '']?.[String(selection.quantity)]
-    if (cost !== undefined) process = 'offset'
-  }
-  return pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrintingAndQuantity?.[process]?.[selection.material || '']?.[selection.printing || '']?.[String(selection.quantity)] ||
-    pricing?.commercialPricingPoliciesByProcessAndMaterialAndPrinting?.[process]?.[selection.material || '']?.[selection.printing || ''] ||
-    pricing?.commercialPricingPoliciesByProcessAndMaterialAndQuantity?.[process]?.[selection.material || '']?.[String(selection.quantity)] ||
-    pricing?.commercialPricingPoliciesByProcessAndMaterial?.[process]?.[selection.material || ''] ||
-    pricing?.commercialPricingPoliciesByProcess?.[process] ||
-    pricing?.commercialPricingPoliciesByMaterial?.[selection.material || ''] ||
-    pricing?.commercialPricingPoliciesByShape?.[selection.shape || ''] ||
-    pricing?.commercialPricingPolicy
-}
-
 /**
- * Finds the lowest valid, tax-inclusive price from the active commercial
- * configurator. Invalid combinations and matrix cells without real costs are
- * ignored; no legacy Product.price or guessed cost is used.
+ * Finds the lowest valid commercial price from the active configurator.
+ * The quote adapter is the source of truth for each engine: provider-cost
+ * engines return a calculated commercial price, while table engines return
+ * their versioned list price. Never reinterpret totalCost as a sale price.
  */
 export function getSemanticStartingPrice(configurator: ConfiguratorLike, quoterConfig?: any): number | null {
   if (!configurator?.schema?.fields || !configurator.pricing?.engine) return null
+
   const fields = configurator.schema.fields
   let selections: Record<string, any>[] = [{}]
+
   for (const [key, field] of Object.entries(fields) as Array<[string, any]>) {
     let values: any[]
-    if (field.type === 'multiselect') values = [Array.isArray(field.default) ? field.default : []]
-    else if (Array.isArray(field.options) && field.options.length) {
-      values = field.options.map((option: any) => option.id ?? option.value).filter((value: any) => value !== undefined)
+
+    if (field.type === 'multiselect') {
+      values = [Array.isArray(field.default) ? field.default : []]
+    } else if (Array.isArray(field.options) && field.options.length) {
+      if (field.type === 'quantity_selector') {
+        values = field.options.map((option: any) => option.value).filter((value: any) => value !== undefined)
+      } else if (field.type === 'select') {
+        values = field.options.map((option: any) => option.id).filter((value: any) => value !== undefined)
+      } else {
+        values = field.options.map((option: any) => option.id ?? option.value).filter((value: any) => value !== undefined)
+      }
       if (field.default !== undefined && !values.includes(field.default)) values.unshift(field.default)
-    } else values = field.default !== undefined ? [field.default] : field.required ? [] : [undefined]
+    } else {
+      values = field.default !== undefined ? [field.default] : field.required ? [] : [undefined]
+    }
+
     if (!values.length) return null
-    selections = selections.flatMap((selection) => values.map((value) => ({ ...selection, ...(value === undefined ? {} : { [key]: value }) })))
+    selections = selections.flatMap((selection) =>
+      values.map((value) => ({ ...selection, ...(value === undefined ? {} : { [key]: value }) }))
+    )
     if (selections.length > 2500) return null
   }
 
@@ -51,14 +49,12 @@ export function getSemanticStartingPrice(configurator: ConfiguratorLike, quoterC
   for (const selection of selections) {
     try {
       const quote = quoteConfiguratorSelection(configurator as any, selection, quoterConfig)
-      const policy = policyFor(configurator.pricing, selection)
-      if (!policy || !Number.isFinite(Number(quote.totalCost)) || Number(quote.totalCost) < 0) continue
-      const quantity = Number(selection.quantity || 1)
-      if (!Number.isFinite(quantity) || quantity <= 0) continue
-      prices.push(calculateCommercialPrice(Number(quote.totalCost), policy).finalPrice)
+      const price = Number(quote.totalPrice)
+      if (Number.isFinite(price) && price > 0) prices.push(price)
     } catch {
       // Combinations without a real cost or with incompatible options aren't sellable online.
     }
   }
+
   return prices.length ? Math.min(...prices) : null
 }
