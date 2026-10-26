@@ -15,6 +15,7 @@ import ProductRelevanceItem from '@/components/public/ProductRelevanceItem'
 import LiveContextSummary from '@/components/public/LiveContextSummary'
 import ProductImagePlaceholder from '@/components/public/ProductImagePlaceholder'
 import { getProductDisplayPrice } from '@/lib/product-pricing'
+import { getSemanticStartingPrice } from '@/lib/pricing/configurator-starting-price'
 import { isDevelopment, isConsultationOnly } from '@/lib/catalog-domain'
 import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/lib/exploration-context'
 
@@ -134,7 +135,7 @@ export default async function ProductsPage({
   }
 
   const businessSituations = getBusinessSituations(rubro, situations)
-  const [products, categories] = await Promise.all([
+  const [catalogProducts, categories] = await Promise.all([
     getProducts(
       isSituationMode ? undefined : cat,
       q,
@@ -156,6 +157,14 @@ export default async function ProductsPage({
     ), 
     getPublicCategories()
   ])
+
+  const products = catalogProducts.map((product) => {
+    const activeConfigurator = product.configuratorVersions?.[0]
+    const semanticStartingPrice = activeConfigurator
+      ? getSemanticStartingPrice(activeConfigurator, product.quoterConfig)
+      : null
+    return { ...product, semanticStartingPrice }
+  })
 
   // Guided discovery now follows a single path:
   // Situación → Necesidad → OfertaMatrix → next step.
@@ -412,9 +421,11 @@ export default async function ProductsPage({
                     hasVariants ||
                     Boolean(product.quoterConfig)
                   const displayPrice =
-                    hasActiveSemanticConfigurator || !hasExplicitPriceSource
-                      ? null
-                      : getProductDisplayPrice(product)
+                    hasActiveSemanticConfigurator
+                      ? (product.semanticStartingPrice ?? null)
+                      : !hasExplicitPriceSource
+                        ? null
+                        : getProductDisplayPrice(product)
                   const isPurchasable = displayPrice !== null && product.modality === 'DIRECTO'
                   const requiresConversation = isDevelopment(product) || isConsultationOnly(product)
                   const isConsultationOnlyFlow = requiresConversation || (!requiresConfiguration && !isPurchasable)
