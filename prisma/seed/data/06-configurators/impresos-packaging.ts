@@ -99,8 +99,13 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
           { value: 300, label: '300 u.' },
           { value: 500, label: '500 u.' },
           { value: 1000, label: '1.000 u.' },
-          { value: 3000, label: '3.000 u. · Offset' },
-          { value: 5000, label: '5.000 u. · Offset' },
+          { value: 3000, label: '3.000 u. · Consultar' },
+          { value: 5000, label: '5.000 u. · Consultar' },
+        ],
+      },
+    },
+  },
+  compatibility: {
         ],
       },
     },
@@ -127,6 +132,10 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
+    // Los tramos offset de 3.000/5.000 figuran en la lista, pero varias celdas
+    // quedan por debajo del costo de 1.000. Se muestran como opción de consulta,
+    // sin publicar automáticamente esos importes hasta reconciliar la fuente.
+    consultRequiredQuantities: [3000, 5000],
     // Habilitar toda combinación digital con costo explícito en la matriz.
     // La revisión comercial posterior puede ajustar margen/precio; no bloquear
     // celdas con costo conocido mediante una allowlist de selecciones.
