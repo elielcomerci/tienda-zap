@@ -236,7 +236,7 @@ export const productsData: ProductSeedData[] = [
     purpose: 'Presencia online, captación de clientes y canal comercial propio.',
     includes: ['Diseño responsive, optimización SEO y puesta en marcha'],
     configurable: ['Tipo de sitio', 'Alcance y páginas', 'Funcionalidades (WhatsApp, reservas, pagos)', 'Mantenimiento'],
-    priceFrom: null,
+    priceFrom: 350000,
     active: true,
   },
   {
@@ -250,7 +250,7 @@ export const productsData: ProductSeedData[] = [
     purpose: 'Atención 24/7, calificación de leads y derivación comercial inmediata.',
     includes: ['Flujo de conversación, configuración de canales y testing'],
     configurable: ['Canal principal', 'Objetivo y flujo', 'Nivel de integración'],
-    priceFrom: null,
+    priceFrom: 350000,
     active: true,
   },
   {
@@ -264,7 +264,7 @@ export const productsData: ProductSeedData[] = [
     purpose: 'Generar consultas, pedidos y tráfico comercial calificado de forma predecible.',
     includes: ['Estrategia, diseño de creativos y configuración de pauta'],
     configurable: ['Objetivo comercial', 'Canal (Meta, Google)', 'Cantidad de piezas gráficas', 'Duración de la gestión'],
-    priceFrom: null,
+    priceFrom: 160000,
     active: true,
   },
   {
@@ -290,7 +290,7 @@ export const productsData: ProductSeedData[] = [
     whatIs: 'Diseño integral de marca: logotipo, manual de normas, tipografías, colores y aplicaciones.',
     purpose: 'Construir una marca sólida, reconocible y coherente desde sus cimientos.',
     consultationNote: 'El desarrollo de identidad parte de un diagnóstico estratégico del negocio y su competencia.',
-    priceFrom: null,
+    priceFrom: 1200000,
     active: true,
   },
   {
@@ -331,49 +331,49 @@ export const productsData: ProductSeedData[] = [
     order: 1,
     slug: 'diseno-flyer-volante',
     catalogType: 'COSA', name: 'Diseño de Flyer / Volante', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una pieza gráfica promocional lista para imprimir o publicar.', purpose: 'Resolver una comunicación puntual sin convertirla en un proyecto mayor.', includes: ['Una pieza gráfica original', 'Una propuesta de diseño', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción o publicación'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 80000, active: true,
   },
   {
     order: 5,
     slug: 'diseno-cartel-afiche',
     catalogType: 'COSA', name: 'Diseño de Cartel / Afiche', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una pieza gráfica para comunicar una promoción, evento o mensaje.', purpose: 'Hacer visible una comunicación en un formato de cartel o afiche.', includes: ['Una pieza gráfica', 'Una propuesta de diseño', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 140000, active: true,
   },
   {
     order: 2,
     slug: 'diseno-pack-graficos-redes',
     catalogType: 'COSA', name: 'Diseño Pack de piezas para redes (10)', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Pack de diez piezas gráficas coordinadas para comunicación en redes sociales.', purpose: 'Tener una serie de piezas con un mismo criterio visual para comunicar durante un período.', includes: ['10 piezas gráficas coordinadas', 'Criterio visual unificado a partir de una identidad existente', 'Hasta dos rondas de ajustes agrupados', 'Archivos finales listos para publicar'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 230000, active: true,
   },
   {
     order: 6,
     slug: 'diseno-carteleria-rotulos',
     catalogType: 'COSA', name: 'Diseño de Cartelería / Rótulos', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de piezas gráficas para cartelería y rótulos comerciales.', purpose: 'Definir qué se comunica y cómo se ve antes de producir la cartelería.', includes: ['Diseño de la pieza', 'Adaptación al formato definido', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de piezas gráficas para cartelería y rótulos comerciales.', purpose: 'Definir qué se comunica y cómo se ve antes de producir la cartelería.', includes: ['Diseño de la pieza', 'Adaptación al formato definido', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 220000, active: true,
   },
   {
     order: 3,
     slug: 'diseno-menu-gastronomico',
     catalogType: 'COSA', name: 'Diseño de Menú Gastronómico', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una carta o menú gastronómico a partir de la oferta y contenidos del negocio.', purpose: 'Ordenar la información y hacer más clara la elección del cliente.', includes: ['Diseño de una carta de alcance acotado', 'Jerarquía y organización de contenidos provistos', 'Hasta dos rondas de ajustes', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 240000, active: true,
   },
   {
     order: 7,
     slug: 'diseno-vidriera',
     catalogType: 'COSA', name: 'Diseño de Vidriera', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una propuesta gráfica para una vidriera o escaparate comercial.', purpose: 'Definir qué debería ver primero quien pasa frente al local.', includes: ['Concepto visual', 'Diseño de la propuesta', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una propuesta gráfica para una vidriera o escaparate comercial.', purpose: 'Definir qué debería ver primero quien pasa frente al local.', includes: ['Concepto visual', 'Diseño de la propuesta', 'Archivo final listo para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 300000, active: true,
   },
   {
     order: 4,
     slug: 'diseno-etiquetas',
     catalogType: 'COSA', name: 'Diseño de Etiquetas', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño de una etiqueta para producto, envase o packaging.', purpose: 'Resolver la pieza visual que identifica y presenta un producto.', includes: ['Diseño de etiqueta', 'Preparación para producción', 'Archivo final listo para impresión'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 180000, active: true,
   },
   {
     order: 8,
     slug: 'diseno-papeleria-corporativa',
     catalogType: 'COSA', name: 'Diseño de Papelería Corporativa', modality: 'CONSULTAR', engine: null,
-    whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Aplicación de identidad existente a tres piezas acordadas', 'Criterio visual consistente', 'Hasta dos rondas de ajustes', 'Archivos finales listos para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: null, active: true,
+    whatIs: 'Diseño coordinado de piezas básicas de papelería institucional.', purpose: 'Mantener una misma identidad visual en los documentos y piezas de uso habitual.', includes: ['Aplicación de identidad existente a tres piezas acordadas', 'Criterio visual consistente', 'Hasta dos rondas de ajustes', 'Archivos finales listos para producción'], configurable: [], price: 0, briefType: 'DESIGN', priceFrom: 400000, active: true,
   },
   {
     order: 11,
@@ -417,7 +417,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Diseño responsive', 'Estructura de contenidos', 'Llamada a la acción', 'Integración de formulario o WhatsApp cuando corresponda'],
     configurable: ['Objetivo', 'Contenidos y secciones', 'Integraciones', 'Dominio y publicación'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 350000,
     active: true,
   },
   {
@@ -432,7 +432,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Diseño adaptable a dispositivos', 'Estructura de páginas acordada', 'Configuración básica de SEO', 'Publicación del sitio'],
     configurable: ['Cantidad de secciones', 'Idiomas', 'Formularios e integraciones', 'Contenido y mantenimiento'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 650000,
     active: true,
   },
   {
@@ -447,7 +447,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Diseño responsive', 'Estructura de catálogo', 'Configuración de flujo comercial acordado'],
     configurable: ['Cantidad y tipo de productos', 'Medios de pago y entrega', 'Integraciones', 'Administración y mantenimiento'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 700000,
     active: true,
   },
   {
@@ -462,7 +462,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Diseño y organización del catálogo', 'Presentación adaptable a dispositivos', 'Canal de consulta o contacto'],
     configurable: ['Cantidad de productos', 'Filtros y categorías', 'Idiomas', 'Actualización de contenidos'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 350000,
     active: true,
   },
   {
@@ -477,7 +477,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Información del evento', 'Llamada a la acción', 'Formulario o integración acordada'],
     configurable: ['Tipo de evento', 'Registro y confirmaciones', 'Reservas o pagos', 'Integraciones'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 450000,
     active: true,
   },
   {
@@ -492,7 +492,7 @@ export const productsData: ProductSeedData[] = [
     includes: ['Revisión del sitio existente', 'Propuesta de mejoras', 'Implementación según alcance acordado'],
     configurable: ['Plataforma actual', 'Alcance de cambios', 'Objetivos', 'Integraciones'],
     price: 0,
-    priceFrom: null,
+    priceFrom: 350000,
     active: true,
   },
   {
