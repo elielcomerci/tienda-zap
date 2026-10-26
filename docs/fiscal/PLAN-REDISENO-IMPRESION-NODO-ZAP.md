@@ -1,6 +1,6 @@
 # NODO ZAP — Plan de rediseño de comprobantes e impresión
 
-**Estado:** propuesta técnica y de producto para revisión; no autoriza implementación ni cambios en emisión fiscal.  
+**Estado:** decisiones de producto confirmadas; auditoría técnica en curso. No autoriza cambios en emisión fiscal ni en `zap-fiscal-core`.  
 **Repositorio:** `elielcomerci/tienda-zap`  
 **Referencia visual/técnica:** impresión de órdenes de trabajo de REVEX (`RPM.ar`).
 
@@ -20,6 +20,18 @@ No damos por definitivos los nombres ni la cantidad de plantillas sugeridas ante
 - El usuario selecciona una presentación; no mueve elementos libremente ni escribe CSS.
 - No ocultar información obligatoria para lograr una composición más atractiva.
 
+## 1.1 Decisiones confirmadas por producto (2026-10-25)
+
+Estas decisiones reemplazan cualquier alternativa abierta que figure más abajo:
+
+- **Salida:** impresión nativa del navegador; la persona puede imprimir o elegir Guardar como PDF. No se incorpora un generador PDF de servidor como camino principal.
+- **Paginación:** estructura de página controlada, con espacios reservados para identidad, cabecera y cierre fiscal; el detalle puede crecer y continuar en páginas adicionales. No recortar filas ni forzar que una factura larga quepa en una página.
+- **Lotes:** poder recuperar y reimprimir un lote completo como grupo persistente, manteniendo el orden original. El identificador, orden, pertenencia y recuperación del lote forman parte del diseño inicial.
+- **Propuestas visuales:** explorar tres alternativas comparables; los nombres y la cantidad definitiva quedan sujetos a evaluación.
+- **Emisión:** mantener la descarga automática después de una autorización exitosa y ofrecer una acción explícita para volver a descargar. Imprimir/reimprimir nunca vuelve a emitir.
+- **Personalización:** logo, color de acento validado y datos comerciales permitidos. Los campos fiscales obligatorios siguen bajo control de los datos autorizados y del snapshot.
+- **Históricos:** la reimpresión debe respetar los datos y la plantilla guardados para ese comprobante/lote; editar la configuración no debe alterar documentos históricos.
+
 ## 2. Auditoría inicial del código existente
 
 La revisión del repositorio encontró estas piezas relevantes:
@@ -38,9 +50,22 @@ La impresión de REVEX usa una vista de documento específica y reglas CSS de im
 
 La referencia de REVEX es el modelo técnico deseado para la experiencia: documento formado con componentes React/Next.js discretos y reutilizables, más CSS de pantalla e impresión. La dirección propuesta es **dejar de usar jsPDF para construir visualmente los comprobantes** y formar el documento de manera nativa en Next.js. La auditoría debe determinar cómo retirar o sustituir el renderer actual de forma segura, conservar la información fiscal y mantener la funcionalidad existente. No es una migración a ciegas: primero se inspeccionan todos los consumidores, dependencias y contratos.
 
+## 2.1 Hallazgos confirmados en la auditoría técnica inicial
+
+- El renderer actual vive en `src/lib/fiscal-invoice-pdf.ts`, es cliente-side y usa `jsPDF` + `qrcode`. Expone construcción de Blob, descarga individual, vista previa y exportación de lote. No alcanza con reemplazar la descarga: hay que localizar y migrar todos los consumidores.
+- `FiscalWorkspaceClient.tsx` importa esas funciones para vista previa, descarga individual y lote; tras emisión sincrónica intenta descargar el comprobante automáticamente. La emisión y el PDF están separados en funciones, pero hoy la descarga está encadenada al resultado de emisión.
+- El registro `FiscalInvoiceRecord` persiste cada comprobante y un `payload` JSON, incluye `requestReference`, `jobId`, `workerVoucherId` y `invoicePdfUrl`, y tiene unicidad por ambiente/CUIT/punto de venta/tipo/número. El snapshot visual se guarda dentro del payload y también se expone como `pdfTemplateSnapshot` al renderer.
+- En el modelo Prisma revisado no aparece una entidad de lote fiscal persistente ni una relación de pertenencia/posición de comprobantes a un lote. La exportación actual del historial recibe una selección de facturas; eso no equivale a recuperar el lote original importado desde Excel.
+- `FiscalBatchImport.tsx` mantiene filas y estados de lote en estado de React (incluye `pending`, `valid`, `invalid`, `submitted`, `uncertain`, `failed`) y llama al flujo de emisión; esta evidencia obliga a rastrear las rutas de API y la persistencia de cada fila antes de diseñar la recuperación. No se debe inferir que el estado visual actual sobreviva a una recarga.
+- El editor `FiscalInvoiceTemplateEditor.tsx` obtiene la vista previa a través del renderer jsPDF actual. Al pasar a HTML/CSS, tanto vista previa como impresión deberán compartir el mismo componente de documento y los mismos datos de muestra.
+- La plantilla ya incluye datos comerciales, `logoUrl`, `primaryColor` y `designVariant` (`classic | modern | editorial`). Por tanto, las tres propuestas existentes son variantes del renderer actual, no evidencia de que haya tres composiciones visualmente distintas adecuadas para impresión nativa.
+- La auditoría no considera validado el cumplimiento fiscal por el mero hecho de que el renderer actual tenga validaciones. Falta contrastar los campos y leyendas con tipos de comprobante realmente soportados y normativa vigente antes de cerrar el diseño.
+
+**Brecha de arquitectura prioritaria:** el requisito nuevo de recuperar un lote completo requiere un modelo persistente de lote y sus elementos ordenados, o una alternativa relacional equivalente. Debe diseñarse sin alterar la idempotencia ni permitir que la impresión reintente una emisión. La migración debe ser compatible con facturas ya guardadas que no pertenezcan a ningún lote.
+
 ## 3. Requisito: contenido variable, varias páginas y lotes
 
-La composición nativa debe soportar desde el inicio dos escalas diferentes:
+La composición nativa debe soportar desde el inicio dos escalas diferentes. La estructura visual tendrá espacios reservados y bloques de cierre controlados; el detalle conserva crecimiento natural y paginación multipágina, sin alturas fijas que recorten contenido:
 
 ### Una factura, una o varias páginas
 
@@ -81,7 +106,7 @@ Comparar dos caminos con un mismo comprobante de prueba:
 
 **Dirección elegida:** construir el comprobante como una vista HTML/React nativa de Next.js, con componentes discretos, CSS específico para pantalla e impresión y comportamiento A4 inspirado en REVEX. No usar jsPDF como motor que dibuja el diseño final.
 
-La auditoría aún debe resolver la estrategia de salida: imprimir desde el navegador (incluido Guardar como PDF), o usar un mecanismo de generación de PDF a partir de HTML si los requisitos del producto lo exigen. No asumir que ambos resultados son idénticos: definir y probar la salida que NODO soportará oficialmente.
+**Decisión tomada:** imprimir desde el navegador y permitir Guardar como PDF. El prototipo debe validar el comportamiento real en navegadores soportados, incluidos márgenes, saltos, cabeceras repetidas, logo/QR y colores. No se debe prometer identidad pixel-perfect entre navegadores.
 
 El documento debe componerse con una única estructura de presentación para vista previa e impresión. CSS `@media print` y `@page` controlarán tamaño, márgenes, colores, controles ocultos y saltos; los componentes se encargarán de cabecera, emisor/receptor, detalle, totales y bloque fiscal. El motor de emisión fiscal sigue separado y es la fuente de los datos autorizados.
 
@@ -117,7 +142,7 @@ La personalización es exclusivamente de presentación. No puede cambiar, invent
 - [ ] Identificar persistencia, snapshot, permisos y alcance actual de la configuración.
 - [ ] Revisar editor, vista previa, carga de logo, errores y fallback.
 - [ ] Mapear límites del renderer actual: descripciones largas, varias páginas, totales, CAE/QR, caracteres, imágenes y moneda.
-- [ ] Auditar el flujo de importación y emisión por lote de Excel, sus estados, descarga actual y límites de volumen.
+- [x] Inspección inicial del componente de importación: estado de filas en cliente y estados conceptuales detectados; pendiente rastrear rutas API, persistencia, reanudación y límites reales.\n- [ ] Auditar el flujo completo de importación y emisión por lote de Excel, sus estados, descarga actual y límites de volumen.\n- [ ] Diseñar modelo persistente de lote y elementos ordenados, con aislamiento tenant/CUIT/ambiente, estados recuperables, auditoría y compatibilidad con facturas históricas individuales.
 - [ ] Confirmar contratos reales de los datos del Worker y tipos de comprobantes soportados.
 
 ### Fase 2 — Prototipos visuales y decisión de motor
