@@ -69,7 +69,14 @@ export default async function ProductDetailPage({
   }
 
   const relatedProducts = product.outgoingRelations
-    .filter((relation) => relation.relatedProduct.active && relation.relatedProduct.publicVisible)
+    .filter((relation) => {
+      const related = relation.relatedProduct
+      if (!related.active || !related.publicVisible) return false
+
+      // PROYECTOS is a secondary entrance, not a recommendation source for the general catalog.
+      if (related.publicGroup === 'PROYECTOS' && product.publicGroup !== 'PROYECTOS') return false
+      return true
+    })
     .map((relation) => ({ ...relation.relatedProduct, relationType: relation.type }))
   const displayPrice = getProductDisplayPrice(product)
   const fixedDisplayedPrice =
