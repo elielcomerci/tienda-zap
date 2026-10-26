@@ -161,7 +161,7 @@ export default async function ProductsPage({
   const products = catalogProducts.map((product) => {
     const activeConfigurator = product.configuratorVersions?.[0]
     const semanticStartingPrice = activeConfigurator
-      ? getSemanticStartingPrice(activeConfigurator, product.quoterConfig)
+      ? getSemanticStartingPrice(activeConfigurator as any, product.quoterConfig)
       : null
     return { ...product, semanticStartingPrice }
   })
