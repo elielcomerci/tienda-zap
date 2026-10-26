@@ -116,6 +116,7 @@ model BusinessAccount {
   operationalSeller User?             @relation("BusinessAccountOperationalSeller", fields: [operationalSellerId], references: [id])
   user              User?             @relation("BusinessAccountUser", fields: [userId], references: [id])
   contacts          BusinessContact[]
+  activities        BusinessAccountActivity[]
   coupons           PromotionCoupon[]
 
   @@index([name])
@@ -1877,4 +1878,21 @@ model ClientWorkFileApproval {
 
   @@index([fileId, requestedAt])
   @@index([status, requestedAt])
+}
+
+
+model BusinessAccountActivity {
+  id          String   @id @default(cuid())
+  accountId   String
+  type        String
+  title       String
+  detail      String?  @db.Text
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  createdById String?
+
+  account BusinessAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, occurredAt])
+  @@index([type, occurredAt])
 }
