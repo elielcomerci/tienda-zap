@@ -22,7 +22,7 @@ export function assertQuotedPriceCurrent(productName: string, quotedPrice: numbe
   if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
     throw new Error(`No pudimos validar el precio actual de ${productName}. Volvé a cotizar el producto antes de continuar.`)
   }
-  if (quotedPrice !== undefined && (!Number.isFinite(quotedPrice) || Math.abs(quotedPrice - currentPrice) > 0.01)) {
-    throw new Error(`El precio de ${productName} cambió desde la última cotización. Volvé al producto, revisá el importe actualizado y agregalo nuevamente.`)
+  if (quotedPrice === undefined || !Number.isFinite(quotedPrice) || Math.abs(quotedPrice - currentPrice) > 0.01) {
+    throw new Error(`El precio de ${productName} cambió desde la última cotización o no pudimos verificar el importe que revisaste. Volvé al producto, revisá el importe actualizado y agregalo nuevamente.`)
   }
 }
