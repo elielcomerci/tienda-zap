@@ -19,8 +19,6 @@ WITH candidates AS (
   FROM "SellerLead" sl
   JOIN "BusinessAccount" ba ON ba."userId" = sl."convertedUserId"
   WHERE sl."convertedUserId" IS NOT NULL
-    AND (ba."assignedSellerId" IS NULL OR ba."assignedSellerId" = sl."sellerId")
-    AND (ba."operationalSellerId" IS NULL OR ba."operationalSellerId" = sl."sellerId")
 
   UNION
 
@@ -29,10 +27,7 @@ WITH candidates AS (
   JOIN "BusinessContact" bc
     ON sl."email" IS NOT NULL
    AND lower(trim(bc."email")) = lower(trim(sl."email"))
-  JOIN "BusinessAccount" ba ON ba."id" = bc."accountId"
   WHERE trim(sl."email") <> ''
-    AND (ba."assignedSellerId" IS NULL OR ba."assignedSellerId" = sl."sellerId")
-    AND (ba."operationalSellerId" IS NULL OR ba."operationalSellerId" = sl."sellerId")
 
   UNION
 
@@ -42,10 +37,7 @@ WITH candidates AS (
     ON sl."phone" IS NOT NULL
    AND regexp_replace(bc."phone", '[^0-9]', '', 'g') =
        regexp_replace(sl."phone", '[^0-9]', '', 'g')
-  JOIN "BusinessAccount" ba ON ba."id" = bc."accountId"
   WHERE regexp_replace(trim(sl."phone"), '[^0-9]', '', 'g') <> ''
-    AND (ba."assignedSellerId" IS NULL OR ba."assignedSellerId" = sl."sellerId")
-    AND (ba."operationalSellerId" IS NULL OR ba."operationalSellerId" = sl."sellerId")
 ),
 unique_candidates AS (
   SELECT "leadId", MIN("accountId") AS "accountId"
@@ -56,8 +48,11 @@ unique_candidates AS (
 UPDATE "SellerLead" sl
 SET "businessAccountId" = uc."accountId"
 FROM unique_candidates uc
+JOIN "BusinessAccount" ba ON ba."id" = uc."accountId"
 WHERE sl."id" = uc."leadId"
-  AND sl."businessAccountId" IS NULL;
+  AND sl."businessAccountId" IS NULL
+  AND (ba."assignedSellerId" IS NULL OR ba."assignedSellerId" = sl."sellerId")
+  AND (ba."operationalSellerId" IS NULL OR ba."operationalSellerId" = sl."sellerId");
 
 -- Link historical consultations by exact email only when it identifies one account.
 ALTER TABLE "ConsultRequest"
