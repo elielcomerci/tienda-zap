@@ -38,7 +38,7 @@ function productSoundCloudTracks(formData: FormData, fallbackMediaList: unknown 
   const existing = Array.isArray(parsed) ? parsed : []
   const preserved = existing.filter((item: any) => item && item.type !== 'SOUNDCLOUD')
   const raw = String(formData.get('soundcloudLinks') || '')
-  const tracks = raw.split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean).map((line, index) => {
+  const tracks = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line, index) => {
     const separator = line.indexOf('|')
     const titleInput = separator >= 0 ? line.slice(0, separator).trim() : ''
     const urlInput = separator >= 0 ? line.slice(separator + 1).trim() : line
