@@ -66,7 +66,8 @@ export async function getFiscalFeatureFlags(): Promise<Record<FiscalFeatureFlagK
     for (const row of rows) {
       if (row.key in result) result[row.key as FiscalFeatureFlagKey] = row.enabled
     }
-    return applyFiscalFeatureGates(result, process.env.FISCAL_PROD_EMISSION_ENABLED === 'true')
+    const hasPersistedProductionFlag = rows.some(row => row.key === 'invoiceEmissionProd')
+    return applyFiscalFeatureGates(result, process.env.FISCAL_PROD_EMISSION_ENABLED === 'true', hasPersistedProductionFlag)
   } catch (error) {
     // Fail closed whenever the settings store is unavailable.
     console.error('[fiscal/feature-flags] read failed; all flags disabled', error instanceof Error ? error.name : 'UnknownError')
