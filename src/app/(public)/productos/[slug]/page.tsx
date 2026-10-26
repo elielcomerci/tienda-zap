@@ -12,7 +12,9 @@ import { buildProductUrl, buildProductsUrl, type ExplorationContext } from '@/li
 import ExplorationContextIndicator from '@/components/public/ExplorationContextIndicator'
 import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
-export const revalidate = 300
+// The public layout reads auth/cookies, so product details must render dynamically.
+// ISR here triggers DYNAMIC_SERVER_USAGE and breaks the RSC response for every product.
+export const dynamic = 'force-dynamic'
 
 // Generate product detail pages on demand instead of querying the database at build time.
 // This keeps builds independent from whether the target database has received the latest migration.
