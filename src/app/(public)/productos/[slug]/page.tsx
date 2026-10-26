@@ -49,9 +49,9 @@ export default async function ProductDetailPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ rubro?: string; situacion?: string; necesidad?: string; mode?: string }>
+  searchParams: Promise<{ rubro?: string; situacion?: string; necesidad?: string; mode?: string; grupo?: 'VENTAS' | 'MARCA' | 'EXPERIENCIA' | 'PROYECTOS' }>
 }) {
-  const [{ slug }, { rubro, situacion, necesidad, mode }] = await Promise.all([params, searchParams])
+  const [{ slug }, { rubro, situacion, necesidad, mode, grupo }] = await Promise.all([params, searchParams])
   const product = await getProduct(slug)
   if (!product || !product.active) notFound()
 
@@ -66,6 +66,7 @@ export default async function ProductDetailPage({
     businessTypeSlug: selectedBusinessType?.slug,
     situationSlug: selectedSituation?.slug,
     needSlug: selectedNeed?.slug,
+    publicGroup: grupo,
   }
 
   const relatedProducts = product.outgoingRelations
