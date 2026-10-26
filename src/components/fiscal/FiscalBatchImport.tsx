@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, LoaderCircle, ShieldCheck, UploadCloud } from 'lucide-react'
+import type { FiscalPdfInvoice } from '@/lib/fiscal-invoice-pdf'
+import { parseFiscalPdfInvoice } from '@/lib/fiscal-invoice-print-schema'
 
 type Contributor = {
   id: string
@@ -43,18 +45,23 @@ type EmissionRequest = {
 }
 
 type BatchRow = {
+  id?: string
   line: number
   input: RowInput
   request?: EmissionRequest
-  state: 'pending' | 'valid' | 'invalid' | 'submitted' | 'uncertain' | 'failed'
+  state: 'pending' | 'valid' | 'invalid' | 'submitted' | 'uncertain' | 'failed' | 'rejected'
   message?: string
   jobId?: string
+  printInvoice?: FiscalPdfInvoice
 }
+
+type SavedBatch = { id: string; sourceName: string | null; status: string; rowCount: number; createdAt: string }
 
 type Props = {
   api: (path: string) => string
   contributors: Contributor[]
   onComplete: () => void
+  onPrintBatch: (invoices: FiscalPdfInvoice[]) => void
 }
 
 const HEADERS = [
@@ -142,13 +149,76 @@ function toRequest(row: RowInput): EmissionRequest {
   }
 }
 
-export default function FiscalBatchImport({ api, contributors, onComplete }: Props) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function getAuthorizedPrintInvoice(item: unknown): FiscalPdfInvoice | undefined {
+  if (!isRecord(item)) return undefined
+  const batchItem = item
+  if (batchItem.status !== 'AUTHORIZED') return undefined
+  const invoice = parseFiscalPdfInvoice(batchItem.invoiceRecord)
+  if (!invoice || !['A', 'DONE'].includes(String(invoice.result)) || !invoice.cae || !invoice.voucherNumber) return undefined
+  return invoice
+}
+
+export default function FiscalBatchImport({ api, contributors, onComplete, onPrintBatch }: Props) {
   const [rows, setRows] = useState<BatchRow[]>([])
   const [fileName, setFileName] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [stage, setStage] = useState<'empty' | 'loaded' | 'validated' | 'processing' | 'partial' | 'complete'>('empty')
+  const [batchId, setBatchId] = useState('')
+  const [savedBatches, setSavedBatches] = useState<SavedBatch[]>([])
+
+  async function refreshSavedBatches() {
+    try {
+      const response = await fetch(api('/api/fiscal/batches'), { cache: 'no-store' })
+      const payload = await response.json().catch(() => ({}))
+      if (response.ok && Array.isArray(payload.batches)) setSavedBatches(payload.batches)
+    } catch {
+      setError('No se pudo actualizar el historial de lotes.')
+    }
+  }
+
+  async function openSavedBatch(id: string) {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const response = await fetch(api(`/api/fiscal/batches/${encodeURIComponent(id)}`), { cache: 'no-store' })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok || !payload.batch || !Array.isArray(payload.batch.items)) throw new Error(payload.error || 'No se pudo recuperar el lote.')
+      const pendingJobs = payload.batch.items.filter((item: { status: string; jobId: string | null }) => item.status === 'PROCESSING' && item.jobId)
+      for (const item of pendingJobs) {
+        await fetch(api(`/api/nodo/jobs/${encodeURIComponent(item.jobId)}`), { cache: 'no-store' }).catch(() => null)
+      }
+      const refreshed = pendingJobs.length > 0
+        ? await fetch(api(`/api/fiscal/batches/${encodeURIComponent(id)}`), { cache: 'no-store' }).then(result => result.ok ? result.json() : payload).catch(() => payload)
+        : payload
+      const batch = refreshed.batch || payload.batch
+      const restored = batch.items.map((item: { id: string; rowNumber: number; input: RowInput; requestPayload: EmissionRequest | null; status: string; errorMessage: string | null; jobId: string | null; invoiceRecord?: unknown }) => ({
+        id: item.id,
+        line: item.rowNumber,
+        input: item.input,
+        request: item.requestPayload ?? undefined,
+        jobId: item.jobId ?? undefined,
+        printInvoice: getAuthorizedPrintInvoice(item),
+        message: item.errorMessage ?? undefined,
+        state: item.status === 'READY' ? 'valid' as const : item.status === 'PROCESSING' || item.status === 'AUTHORIZED' ? 'submitted' as const : item.status === 'UNKNOWN' ? 'uncertain' as const : item.status === 'REJECTED' ? 'rejected' as const : item.status === 'INVALID' ? 'invalid' as const : 'pending' as const,
+      }))
+      setRows(restored)
+      setBatchId(id)
+      setFileName(batch.sourceName || '')
+      setStage(restored.some(row => row.state === 'valid' || row.state === 'uncertain') ? 'partial' : restored.some(row => row.state === 'submitted') ? 'complete' : 'loaded')
+      setNotice(`Lote recuperado: ${restored.length} comprobante(s), en el orden original.`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo recuperar el lote.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useEffect(() => { void refreshSavedBatches() }, [api])
 
   function downloadTemplate() {
     const example = [
@@ -170,7 +240,7 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
   async function loadFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    setError(''); setNotice(''); setRows([]); setStage('empty')
+    setError(''); setNotice(''); setRows([]); setStage('empty'); setBatchId('')
     if (file.size > 1024 * 1024) {
       setError('El archivo supera 1 MB. Dividí el lote en archivos más pequeños.')
       event.target.value = ''
@@ -250,26 +320,53 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
     })
     setRows(finalRows)
     const invalid = finalRows.filter(row => row.state === 'invalid').length
+    try {
+      const saved = await fetch(api('/api/fiscal/batches'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceName: fileName, items: finalRows.map(row => ({ rowNumber: row.line, input: row.input, requestPayload: row.request ?? null, errorMessage: row.message })) }),
+      })
+      const savedPayload = await saved.json().catch(() => ({}))
+      if (!saved.ok || typeof savedPayload.batch?.id !== 'string') throw new Error(savedPayload.error || 'No se pudo guardar el lote para recuperarlo después.')
+      setBatchId(savedPayload.batch.id)
+      if (savedPayload.existing === true) {
+        await openSavedBatch(savedPayload.batch.id)
+        setBusy(false)
+        return
+      }
+      const detail = await fetch(api(`/api/fiscal/batches/${encodeURIComponent(savedPayload.batch.id)}`), { cache: 'no-store' })
+      const detailPayload = await detail.json().catch(() => ({}))
+      if (detail.ok && Array.isArray(detailPayload.batch?.items)) {
+        const idsByRow = new Map<number, string>(detailPayload.batch.items.map((item: { rowNumber: number; id: string }) => [item.rowNumber, item.id]))
+        setRows(finalRows.map(row => ({ ...row, id: idsByRow.get(row.line) })))
+      }
+      await refreshSavedBatches()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudo guardar el lote.')
+    }
     setStage(invalid ? 'loaded' : 'validated')
     setNotice(invalid ? `Validación terminada: ${invalid} fila(s) con errores. No se puede emitir el lote hasta corregirlas.` : `Las ${finalRows.length} filas pasaron la validación de payload. No se emitió nada.`)
     setBusy(false)
   }
 
   async function submitBatch() {
-    if (rows.some(row => row.state !== 'valid' && row.state !== 'submitted' && row.state !== 'uncertain')) return
+    if (rows.some(row => row.state !== 'valid' && row.state !== 'submitted' && row.state !== 'uncertain' && row.state !== 'rejected')) return
     setBusy(true); setError(''); setNotice('')
     setStage('processing')
     let submitted = 0
+    let rejected = 0
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index]
       if (row.state === 'submitted') { submitted++; continue }
+      if (row.state === 'rejected') { rejected++; continue }
       if (!row.request) {
         setError(`Fila ${row.line}: falta el payload validado. Volvé a validar el archivo.`)
         setStage('partial'); setBusy(false); return
       }
       try {
-        const response = await fetch(api('/api/nodo/invoices/emit'), {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(row.request),
+        if (!batchId || !row.id) throw new Error('La fila todavía no está guardada en el lote.')
+        const response = await fetch(api(`/api/nodo/invoices/emit?batchItemId=${encodeURIComponent(row.id)}`), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
         })
         const payload = await response.json().catch(() => ({}))
         if (payload.jobId) {
@@ -283,9 +380,9 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
             setStage('partial'); setBusy(false); onComplete(); return
           }
         } else if (!response.ok) {
-          setRows(current => current.map((item, rowIndex) => rowIndex === index ? { ...item, state: 'failed', message: payload.error?.message || payload.error || 'El Worker rechazó la emisión.' } : item))
-          setError(`Fila ${row.line}: ${payload.error?.message || payload.error || 'el Worker rechazó la emisión'}. El lote se detuvo; las filas siguientes no se enviaron.`)
-          setStage('partial'); setBusy(false); onComplete(); return
+          const rejection = payload.error?.message || payload.error || 'El Worker rechazó la emisión.'
+          setRows(current => current.map((item, rowIndex) => rowIndex === index ? { ...item, state: 'rejected', message: rejection } : item))
+          rejected++
         } else {
           setRows(current => current.map((item, rowIndex) => rowIndex === index ? { ...item, state: 'submitted', jobId: String(payload.jobId || ''), message: 'Solicitud recibida.' } : item))
           submitted++
@@ -297,8 +394,9 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
       }
     }
     setStage('complete')
-    setNotice(`Lote enviado: ${submitted} comprobante(s) con trabajo registrado. La autorización final de ARCA debe consultarse en el panel de comprobantes.`)
+    setNotice(`Cola procesada: ${submitted} comprobante(s) con trabajo registrado${rejected ? ` y ${rejected} rechazo(s)` : ''}. La autorización final de ARCA debe consultarse en el panel de comprobantes.`)
     setBusy(false)
+    await refreshSavedBatches()
     onComplete()
   }
 
@@ -317,13 +415,21 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
       <ol aria-label="Pasos de facturación por lote" className="mt-5 grid gap-2 sm:grid-cols-4">{[
         { id: 'template', label: '1. Plantilla' }, { id: 'upload', label: '2. Cargar archivo' }, { id: 'review', label: '3. Revisar' }, { id: 'issue', label: '4. Confirmar emisión' },
       ].map((step, index) => <li key={step.id} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${stage === 'complete' || (index === 0 && stage !== 'empty') || (index === 1 && stage !== 'empty') || (index === 2 && ['validated', 'partial', 'complete'].includes(stage)) || (index === 3 && ['processing', 'partial', 'complete'].includes(stage)) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-gray-200 text-gray-500'}`}>{step.label}</li>)}</ol>
+      {savedBatches.length > 0 && <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Lotes guardados</p>
+        <div className="mt-2 flex flex-wrap gap-2">{savedBatches.map(batch => <button key={batch.id} type="button" onClick={() => void openSavedBatch(batch.id)} disabled={busy} className={`rounded-lg border px-3 py-2 text-left text-xs ${batch.id === batchId ? 'border-gray-900 bg-white text-gray-900' : 'border-gray-200 bg-white text-gray-600'}`}>
+          <span className="block font-semibold">{batch.sourceName || 'Lote sin nombre'} · {batch.rowCount} filas</span>
+          <span className="mt-0.5 block">{batch.status} · {new Date(batch.createdAt).toLocaleDateString('es-AR')}</span>
+        </button>)}</div>
+        {rows.some(row => row.printInvoice) && <button type="button" onClick={() => onPrintBatch(rows.flatMap(row => row.printInvoice ? [row.printInvoice] : []))} className="mt-3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700">Imprimir comprobantes autorizados ({rows.filter(row => row.printInvoice).length})</button>}
+      </div>}
       <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
         <label className="block text-sm font-medium text-gray-700">Cargá el archivo completado (TSV)
           <input type="file" accept=".tsv,.txt,text/tab-separated-values" onChange={event => void loadFile(event)} disabled={busy} className="mt-1 block w-full rounded-xl border border-gray-200 p-2 text-sm font-normal" />
         </label>
         {rows.length > 0 && <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => void validateBatch()} disabled={busy || stage === 'processing'} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 disabled:opacity-50">{busy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />} Validar lote</button>
-          <button type="button" onClick={() => void submitBatch()} disabled={busy || !['validated', 'partial'].includes(stage) || invalidCount > 0 || validCount === 0} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">{busy ? 'Procesando…' : stage === 'partial' ? 'Reanudar lote' : 'Confirmar emisión del lote'}</button>
+          <button type="button" onClick={() => void submitBatch()} disabled={busy || !batchId || !['validated', 'partial'].includes(stage) || invalidCount > 0 || validCount === 0 || rows.some(row => row.state === 'valid' && !row.id)} className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40">{busy ? 'Procesando…' : stage === 'partial' ? 'Reanudar lote' : 'Confirmar emisión del lote'}</button>
         </div>}
       </div>
       {fileName && <p className="mt-2 text-xs text-gray-500">Archivo: {fileName} · {rows.length} comprobantes · máximo 50.</p>}
@@ -334,7 +440,7 @@ export default function FiscalBatchImport({ api, contributors, onComplete }: Pro
         const net = Number(row.input.netAmount || 0)
         const rate = row.input.type === 'C' ? 0 : Number(row.input.vatRate || 0)
         const total = roundMoney(net + roundMoney(net * rate / 100))
-        return <tr key={`${row.line}-${row.input.externalId}`} className="border-b border-gray-100 align-top"><td className="py-3 pr-3">{row.line}</td><td className="py-3 pr-3 font-mono text-xs">{row.input.externalId || '—'}</td><td className="py-3 pr-3"><span className="font-mono text-xs">{row.input.cuit}</span><br />{row.input.environment}</td><td className="py-3 pr-3">{row.input.type}</td><td className="py-3 pr-3">{Number.isFinite(total) ? money(total) : '—'}</td><td className="py-3 pr-3">{row.state === 'valid' ? 'Validada' : row.state === 'submitted' ? 'Trabajo creado' : row.state === 'uncertain' ? 'Respuesta incierta' : row.state === 'failed' ? 'Rechazada' : row.state === 'invalid' ? 'Error' : 'Pendiente'}{row.jobId && <p className="mt-1 break-all font-mono text-[10px] text-gray-500">{row.jobId}</p>}</td><td className="py-3 text-xs leading-5 text-gray-600">{row.message || 'Pendiente de validación'}</td></tr>
+        return <tr key={`${row.line}-${row.input.externalId}`} className="border-b border-gray-100 align-top"><td className="py-3 pr-3">{row.line}</td><td className="py-3 pr-3 font-mono text-xs">{row.input.externalId || '—'}</td><td className="py-3 pr-3"><span className="font-mono text-xs">{row.input.cuit}</span><br />{row.input.environment}</td><td className="py-3 pr-3">{row.input.type}</td><td className="py-3 pr-3">{Number.isFinite(total) ? money(total) : '—'}</td><td className="py-3 pr-3">{row.state === 'valid' ? 'Validada' : row.state === 'submitted' ? 'Trabajo creado' : row.state === 'uncertain' ? 'Respuesta incierta' : row.state === 'rejected' || row.state === 'failed' ? 'Rechazada' : row.state === 'invalid' ? 'Error' : 'Pendiente'}{row.jobId && <p className="mt-1 break-all font-mono text-[10px] text-gray-500">{row.jobId}</p>}</td><td className="py-3 text-xs leading-5 text-gray-600">{row.message || 'Pendiente de validación'}</td></tr>
       })}</tbody></table></div>}
     </section>
   )

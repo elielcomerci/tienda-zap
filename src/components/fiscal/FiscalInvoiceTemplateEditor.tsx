@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import type { FiscalPdfTemplate } from '@/lib/fiscal-invoice-pdf'
-import { buildFiscalInvoicePreviewBlob } from '@/lib/fiscal-invoice-pdf'
+import FiscalInvoiceDocument from '@/components/fiscal/FiscalInvoiceDocument'
+import type { FiscalPdfInvoice, FiscalPdfTemplate } from '@/lib/fiscal-invoice-pdf'
 
 type LinkedContributor = { cuit: string; environment: 'TEST' | 'PROD'; razonSocial: string | null }
 type PadronData = { cuit?: string; razonSocial?: string; estadoRegistral?: string; domicilioFiscal?: string; condicionIva?: string; actividades?: string }
@@ -55,13 +55,36 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
   const [notice, setNotice] = useState('')
   const [padronKey, setPadronKey] = useState('')
   const [padronCuit, setPadronCuit] = useState('')
-  const [previewUrl, setPreviewUrl] = useState('')
-  const [previewLoading, setPreviewLoading] = useState(false)
-  const [previewError, setPreviewError] = useState('')
   const [selectedArea, setSelectedArea] = useState<EditorArea>('identity')
   const autoLookupCuit = useRef('')
   const linkedCuits = useMemo(() => Array.from(new Map(contributors.map(contributor => [contributor.cuit, contributor])).values()), [contributors])
   const hasChanges = Boolean(template && savedTemplate && JSON.stringify(template) !== JSON.stringify(savedTemplate))
+  const previewInvoice = useMemo<FiscalPdfInvoice | null>(() => {
+    if (!template) return null
+    const now = new Date()
+    const date = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+    const cuit = selectedCuit || template.issuerCuit || '00000000000'
+    const sampleItem = { description: 'Producto de ejemplo', quantity: 1, unit: 'unidad', unitPrice: 10000, netAmount: 10000, vatRate: 21, vatAmount: 2100, totalAmount: 12100 }
+    return {
+      id: 'invoice-template-preview', environment: 'PREVIEW', cuit, pointOfSale: 1, voucherType: 6,
+      voucherNumber: 1, result: null, cae: null, caeExpiresAt: null, amount: '12100', currency: 'ARS',
+      createdAt: now.toISOString(),
+      payload: {
+        voucher: { type: '6', concept: 1, date, saleCondition: 'Contado' },
+        amounts: { net: 10000, vat: 2100, total: 12100, vatBreakdown: [{ rate: 21, base: 10000, amount: 2100 }] },
+        items: [sampleItem],
+        customer: { docType: 99, docNumber: '', name: 'Consumidor final', vatCondition: 5 },
+      },
+      documentSnapshot: {
+        emitter: { cuit, razonSocial: template.legalName || 'Mi negocio', domicilioFiscal: template.taxAddress || '', condicionIva: template.ivaCondition || '', inicioActividad: template.startActivity || '' },
+        recipient: { docType: 99, docNumber: '', name: 'Consumidor final', vatCondition: 5 },
+        items: [sampleItem],
+        amounts: { net: 10000, vat: 2100, total: 12100, vatBreakdown: [{ rate: 21, base: 10000, amount: 2100 }] },
+        invoice: { concept: 1, date, saleCondition: 'Contado' },
+      },
+      pdfTemplateSnapshot: template,
+    }
+  }, [selectedCuit, template])
 
   useEffect(() => {
     if (selectedCuit && linkedCuits.some(contributor => contributor.cuit === selectedCuit)) return
@@ -84,25 +107,6 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [api])
-
-  useEffect(() => {
-    if (!template) return
-    let active = true
-    let nextUrl = ''
-    setPreviewLoading(true)
-    const timer = window.setTimeout(() => {
-      void buildFiscalInvoicePreviewBlob(template, selectedCuit || template.issuerCuit || '00000000000')
-        .then(blob => {
-          if (!active) return
-          nextUrl = URL.createObjectURL(blob)
-          setPreviewUrl(current => { if (current) URL.revokeObjectURL(current); return nextUrl })
-          setPreviewError('')
-        })
-        .catch(reason => { if (active) setPreviewError(reason instanceof Error ? reason.message : 'No se pudo actualizar la vista previa.') })
-        .finally(() => { if (active) setPreviewLoading(false) })
-    }, 180)
-    return () => { active = false; window.clearTimeout(timer); if (nextUrl) URL.revokeObjectURL(nextUrl) }
-  }, [selectedCuit, template])
 
   function update<K extends keyof FiscalPdfTemplate>(key: K, value: FiscalPdfTemplate[K]) {
     setTemplate(current => current ? { ...current, [key]: value } : current)
@@ -209,15 +213,8 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
       </label>}
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,.65fr)]">
         <div>
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Sin emitir · factura de ejemplo</p>{previewLoading && <p role="status" className="text-xs text-slate-500">Actualizando vista previa…</p>}</div>
-          <div className="relative mx-auto aspect-[210/297] w-full max-w-[680px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            {previewUrl && <iframe title="Vista previa fiel del PDF de factura, sin emitir" src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`} className="absolute inset-0 h-full w-full border-0" />}
-            <button type="button" aria-label="Editar encabezado, identidad y estilo de factura" onClick={() => selectArea('identity')} className={`absolute left-[5%] top-[3%] h-[15%] w-[90%] rounded-md border-2 transition ${selectedArea === 'identity' ? 'border-[#C2103F]/70 bg-[#C2103F]/5' : 'border-transparent hover:border-slate-500/60 hover:bg-white/10'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C2103F]`} />
-            <button type="button" aria-label="Editar y revisar datos fiscales del emisor" onClick={() => selectArea('fiscal')} className={`absolute left-[5%] top-[18%] h-[20%] w-[90%] rounded-md border-2 transition ${selectedArea === 'fiscal' ? 'border-[#C2103F]/70 bg-[#C2103F]/5' : 'border-transparent hover:border-slate-500/60 hover:bg-white/10'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C2103F]`} />
-            <button type="button" aria-label="Editar diseño y color de marca" onClick={() => selectArea('design')} className={`absolute left-[5%] top-[40%] h-[42%] w-[90%] rounded-md border-2 transition ${selectedArea === 'design' ? 'border-[#C2103F]/70 bg-[#C2103F]/5' : 'border-transparent hover:border-slate-500/60 hover:bg-white/10'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C2103F]`} />
-            <button type="button" aria-label="Editar pie de factura y datos de contacto" onClick={() => selectArea('footer')} className={`absolute bottom-[1%] left-[5%] h-[15%] w-[90%] rounded-md border-2 transition ${selectedArea === 'footer' ? 'border-[#C2103F]/70 bg-[#C2103F]/5' : 'border-transparent hover:border-slate-500/60 hover:bg-white/10'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C2103F]`} />
-          </div>
-          {previewError && <p role="alert" className="mt-2 text-xs text-amber-800">La vista previa no se actualizó: {previewError}</p>}
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Sin emitir · factura de ejemplo</p></div>
+          <div className="mx-auto max-h-[78vh] max-w-[760px] overflow-auto rounded-xl border border-slate-200 bg-slate-100 p-3 shadow-sm"><FiscalInvoiceDocument invoices={previewInvoice ? [previewInvoice] : []} template={template} previewMode interactive selectedArea={selectedArea} onSelectArea={selectArea} /></div>
           <p className="mt-2 text-center text-xs leading-5 text-slate-500">Representación del PDF real con datos de ejemplo. No es un comprobante fiscal ni se comunica con ARCA.</p>
         </div>
         <aside id="invoice-edit-selection" className="rounded-xl border border-slate-200 bg-[#FBFBFA] p-4" aria-live="polite">
@@ -261,7 +258,7 @@ export default function FiscalInvoiceTemplateEditor({ api, contributors }: Props
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
         <p className="text-xs text-slate-500">Guardar diseño no emite comprobantes. Se aplica a los próximos PDF.</p>
-        <button type="submit" disabled={busy || !hasChanges} className="rounded-xl bg-[#0F172A] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">{busy ? 'Guardando…' : hasChanges ? 'Guardar cambios' : 'Diseño guardado'}</button>
+        <button type="submit" disabled={busy || !hasChanges} className="rounded-xl bg-[#0F172A] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">{busy ? 'Guardando…' : hasChanges ? 'Guardar diseño' : 'Diseño guardado'}</button>
       </div>
     </form>}
   </section>
