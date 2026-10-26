@@ -31,6 +31,78 @@ async function logLeadEvent(leadId: string, type: string, note?: string | null) 
   })
 }
 
+async function ensureLeadBusinessAccount(args: {
+  leadId: string
+  sellerId: string
+  name: string
+  email?: string | null
+  phone?: string | null
+  businessName?: string | null
+  businessTypeId?: string | null
+  notes?: string | null
+  nextContactAt?: Date | null
+  status: 'NEW' | 'CONTACTED' | 'QUOTED' | 'WON' | 'LOST'
+  convertedUserId?: string | null
+}) {
+  const lead = await prisma.sellerLead.findUnique({
+    where: { id: args.leadId },
+    select: { businessAccountId: true },
+  })
+  if (!lead || lead.businessAccountId) return
+
+  const matchingConditions: any[] = []
+  if (args.convertedUserId) matchingConditions.push({ userId: args.convertedUserId })
+  if (args.email) matchingConditions.push({ contacts: { some: { email: { equals: args.email, mode: 'insensitive' } } } })
+  if (args.phone) {
+    matchingConditions.push({ contacts: { some: { phone: args.phone } } })
+    matchingConditions.push({ contacts: { some: { whatsapp: args.phone } } })
+  }
+
+  const candidates = matchingConditions.length
+    ? await prisma.businessAccount.findMany({
+        where: { OR: matchingConditions },
+        select: { id: true, assignedSellerId: true, operationalSellerId: true },
+        take: 10,
+      })
+    : []
+
+  // Never merge records when the available identifiers point to multiple accounts.
+  if (candidates.length > 1) return
+  if (candidates[0]?.assignedSellerId && candidates[0].assignedSellerId !== args.sellerId) return
+  if (candidates[0]?.operationalSellerId && candidates[0].operationalSellerId !== args.sellerId) return
+
+  let businessAccountId = candidates[0]?.id
+  if (!businessAccountId) {
+    const account = await prisma.businessAccount.create({
+      data: {
+        name: args.businessName || args.name,
+        businessTypeId: args.businessTypeId || null,
+        status: args.status === 'WON' ? 'ACTIVE' : 'PROSPECT',
+        source: 'SELLER_LEAD',
+        notes: args.notes || null,
+        nextActionAt: args.nextContactAt || null,
+        assignedSellerId: args.sellerId,
+        userId: args.convertedUserId || null,
+        contacts: {
+          create: {
+            firstName: args.name,
+            email: args.email || null,
+            phone: args.phone || null,
+            isPrimary: true,
+          },
+        },
+      },
+      select: { id: true },
+    })
+    businessAccountId = account.id
+  }
+
+  await prisma.sellerLead.update({
+    where: { id: args.leadId },
+    data: { businessAccountId },
+  })
+}
+
 async function requireSeller() {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
@@ -82,7 +154,7 @@ export async function createSellerLead(formData: FormData) {
         { phone: data.phone },
       ],
     },
-    select: { id: true },
+    select: { id: true, businessAccountId: true },
   })
 
   const leadData = {
@@ -117,6 +189,22 @@ export async function createSellerLead(formData: FormData) {
       existingLead ? 'UPDATED' : 'CREATED',
       existingUser ? 'Prospecto vinculado a usuario existente.' : 'Prospecto cargado en cartera.'
     )
+  }
+
+  if (leadId) {
+    await ensureLeadBusinessAccount({
+      leadId,
+      sellerId: seller.id,
+      name: data.name,
+      email: data.email || null,
+      phone: data.phone,
+      businessName: data.businessName || null,
+      businessTypeId: data.businessTypeId || null,
+      notes: data.notes || null,
+      nextContactAt: parseLeadDate(data.nextContactAt),
+      status: existingUser ? 'WON' : data.status,
+      convertedUserId: existingUser?.id || null,
+    })
   }
 
   if (existingUser && !existingUser.sellerId) {
@@ -200,6 +288,18 @@ export async function updateSellerLead(leadId: string, formData: FormData) {
     },
   })
   await logLeadEvent(lead.id, 'UPDATED', 'Datos del prospecto actualizados.')
+  await ensureLeadBusinessAccount({
+    leadId: lead.id,
+    sellerId: seller.id,
+    name: data.name,
+    email: data.email || null,
+    phone: data.phone,
+    businessName: data.businessName || null,
+    businessTypeId: data.businessTypeId || null,
+    notes: data.notes || null,
+    nextContactAt: parseLeadDate(data.nextContactAt),
+    status: data.status,
+  })
 
   revalidatePath('/seller/clientes')
   revalidatePath('/seller/dashboard')

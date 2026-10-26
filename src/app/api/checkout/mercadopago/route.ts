@@ -2,6 +2,7 @@ import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { NextRequest } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import { orderCheckoutSchema } from '@/lib/validations'
 import {
   buildOrderAccessQuery,
@@ -41,9 +42,12 @@ export async function POST(req: NextRequest) {
     })
     const client = new MercadoPagoConfig({ accessToken })
 
+    const businessAccountId = await findUniqueBusinessAccountId({ userId: session?.user?.id, email: data.email })
+
     const order = await prisma.$transaction(async (tx) => {
       const createdOrder = await tx.order.create({
         data: {
+          businessAccountId,
           userId: session?.user?.id,
           sellerId,
           publicAccessTokenHash: hashOrderPublicAccessToken(publicAccessToken),

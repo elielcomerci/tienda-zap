@@ -1,0 +1,107 @@
+'use server'
+
+import { createHash } from 'node:crypto'
+import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+
+async function requireCustomerDataAccess() {
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { sellerProfile: true },
+  })
+
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SELLER')) {
+    throw new Error('No tenés permiso para importar conversaciones.')
+  }
+  if (user.role === 'SELLER' && !user.sellerProfile?.active) {
+    throw new Error('Tu cuenta de asesor todavía no está activa.')
+  }
+  return user
+}
+
+export async function importCustomerConversation(formData: FormData) {
+  const user = await requireCustomerDataAccess()
+  const requestedReturnPath = String(formData.get('returnPath') || '').trim()
+  const returnPath = requestedReturnPath === '/seller/clientes/conversaciones'
+    ? '/seller/clientes/conversaciones'
+    : '/admin/clientes/conversaciones'
+  const businessAccountId = String(formData.get('businessAccountId') || '').trim()
+  const title = String(formData.get('title') || '').trim().slice(0, 180)
+  // Keep the pasted source intact; use trim only to validate that it is not blank.
+  const rawTranscript = String(formData.get('rawTranscript') || '')
+  const dateValue = String(formData.get('conversationAt') || '').trim()
+
+  if (!businessAccountId || rawTranscript.trim().length < 10) {
+    redirect(returnPath + '?error=missing')
+  }
+  if (rawTranscript.length > 100000) {
+    redirect(returnPath + '?error=length')
+  }
+
+  const account = await prisma.businessAccount.findFirst({
+    where: {
+      id: businessAccountId,
+      ...(user.role === 'ADMIN'
+        ? {}
+        : {
+            OR: [
+              { assignedSellerId: user.id },
+              { operationalSellerId: user.id },
+              { sellerLeads: { some: { sellerId: user.id } } },
+            ],
+          }),
+    },
+    select: { id: true },
+  })
+  if (!account) throw new Error('La cuenta no existe o no pertenece a tu cartera.')
+
+  const contentHash = createHash('sha256').update(rawTranscript).digest('hex')
+  const conversationAt = dateValue ? new Date(dateValue + 'T12:00:00') : null
+  if (conversationAt && Number.isNaN(conversationAt.getTime())) {
+    redirect(returnPath + '?error=date')
+  }
+
+  try {
+    // The source record and its timeline event must succeed or fail together.
+    await prisma.$transaction(async (tx) => {
+      const conversation = await tx.customerConversation.create({
+        data: {
+          businessAccountId: account.id,
+          importedById: user.id,
+          title: title || null,
+          source: 'WHATSAPP_PASTE',
+          rawTranscript,
+          contentHash,
+          conversationAt,
+        },
+      })
+
+      await tx.customerTimelineEvent.create({
+        data: {
+          businessAccountId: account.id,
+          actorUserId: user.id,
+          eventType: 'CONVERSATION_IMPORTED',
+          sourceType: 'CUSTOMER_CONVERSATION',
+          sourceId: conversation.id,
+          occurredAt: conversationAt || conversation.importedAt,
+          payload: { source: 'WHATSAPP_PASTE', title: title || null },
+        },
+      })
+    })
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      redirect(returnPath + '?error=duplicate')
+    }
+    throw error
+  }
+
+  revalidatePath('/admin/clientes')
+  revalidatePath('/admin/clientes/conversaciones')
+  revalidatePath('/seller/clientes/conversaciones')
+  redirect(returnPath + '?saved=1')
+}

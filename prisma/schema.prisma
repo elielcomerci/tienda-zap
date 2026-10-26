@@ -41,6 +41,8 @@ model User {
   sellerLeads                       SellerLead[]                  @relation("SellerLeadOwner")
   convertedLeads                    SellerLead[]                  @relation("SellerLeadConvertedUser")
   businessAccounts                  BusinessAccount[]             @relation("BusinessAccountUser")
+  createdCustomerConversations      CustomerConversation[]         @relation("CustomerConversationImporter")
+  customerTimelineEvents            CustomerTimelineEvent[]       @relation("CustomerTimelineActor")
   assignedBusinessAccounts          BusinessAccount[]             @relation("BusinessAccountSeller")
   operationalBusinessAccounts       BusinessAccount[]             @relation("BusinessAccountOperationalSeller")
   sellerProfile                     SellerProfile?
@@ -117,6 +119,11 @@ model BusinessAccount {
   user              User?             @relation("BusinessAccountUser", fields: [userId], references: [id])
   contacts          BusinessContact[]
   coupons           PromotionCoupon[]
+  consultRequests   ConsultRequest[]
+  orders            Order[]
+  sellerLeads        SellerLead[]
+  conversations     CustomerConversation[]
+  timelineEvents    CustomerTimelineEvent[]
 
   @@index([name])
   @@index([status, nextActionAt])
@@ -159,18 +166,61 @@ model SellerLead {
   notes           String?          @db.Text
   nextContactAt   DateTime?
   convertedUserId String?
+  businessAccountId String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
   seller        User              @relation("SellerLeadOwner", fields: [sellerId], references: [id], onDelete: Cascade)
   businessType  BusinessType?     @relation(fields: [businessTypeId], references: [id])
   convertedUser User?             @relation("SellerLeadConvertedUser", fields: [convertedUserId], references: [id])
+  businessAccount BusinessAccount? @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
   events        SellerLeadEvent[]
 
   @@index([sellerId, status])
   @@index([sellerId, nextContactAt])
   @@index([email])
   @@index([phone])
+  @@index([businessAccountId])
+}
+
+
+model CustomerConversation {
+  id               String   @id @default(cuid())
+  businessAccountId String
+  importedById     String
+  title            String?
+  source           String   @default("WHATSAPP_PASTE")
+  rawTranscript    String   @db.Text
+  contentHash      String
+  conversationAt  DateTime?
+  importedAt       DateTime @default(now())
+  metadata         Json?
+
+  businessAccount BusinessAccount @relation(fields: [businessAccountId], references: [id], onDelete: Cascade)
+  importedBy      User            @relation("CustomerConversationImporter", fields: [importedById], references: [id])
+
+  @@unique([businessAccountId, contentHash])
+  @@index([businessAccountId, conversationAt])
+  @@index([importedById, importedAt])
+}
+
+model CustomerTimelineEvent {
+  id                String   @id @default(cuid())
+  businessAccountId String
+  actorUserId       String?
+  eventType         String
+  sourceType        String
+  sourceId          String?
+  occurredAt        DateTime @default(now())
+  payload           Json?
+  createdAt         DateTime @default(now())
+
+  businessAccount BusinessAccount @relation(fields: [businessAccountId], references: [id], onDelete: Cascade)
+  actor           User?           @relation("CustomerTimelineActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([businessAccountId, occurredAt])
+  @@index([sourceType, sourceId])
+  @@index([eventType, occurredAt])
 }
 
 model SellerLeadEvent {
@@ -558,9 +608,10 @@ model PackItem {
 }
 
 model ConsultRequest {
-  id             String               @id @default(cuid())
-  productId      String?
-  businessTypeId String?
+  id                String               @id @default(cuid())
+  productId         String?
+  businessTypeId    String?
+  businessAccountId String?
   snapshot       Json?
   customerName   String
   customerEmail  String
@@ -571,16 +622,19 @@ model ConsultRequest {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
-  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
-  businessType BusinessType? @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+  product         Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  businessType    BusinessType?    @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+  businessAccount BusinessAccount? @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([productId])
   @@index([businessTypeId])
+  @@index([businessAccountId, createdAt])
 }
 
 model Order {
   id                    String                   @id @default(cuid())
+  businessAccountId     String?
   userId                String?
   sellerId              String?
   guestEmail            String?
@@ -621,6 +675,7 @@ model Order {
   shippingPostalCode    String?
   shippingProvince      String?
   partnerAccount        PartnerAccount?          @relation(fields: [partnerAccountId], references: [id])
+  businessAccount       BusinessAccount?         @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
   user                  User?                    @relation("CustomerOrders", fields: [userId], references: [id])
   seller                User?                    @relation("OrderSeller", fields: [sellerId], references: [id])
   items                 OrderItem[]
@@ -633,6 +688,8 @@ model Order {
   cryptoPayments        CryptoPayment[]
   transferPaymentReconciliation TransferPaymentReconciliation?
   sellerIncentiveContributions SellerIncentiveOrderContribution[]
+
+  @@index([businessAccountId, createdAt])
 }
 
 model TransferPaymentReconciliation {

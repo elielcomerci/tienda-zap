@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import { NextRequest } from 'next/server'
 
 function clean(value: unknown) {
@@ -48,6 +49,9 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Este producto no requiere una consulta previa.' }, { status: 400 })
     }
 
+    // Link only when the email identifies one account; ambiguous identities stay unlinked.
+    const businessAccountId = await findUniqueBusinessAccountId({ email: customerEmail })
+
     const snapshot = {
       source: 'product-context-form',
       product: { id: product.id, name: product.name, slug: product.slug },
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
       data: {
         productId: product.id,
         businessTypeId,
+        businessAccountId,
         snapshot,
         customerName,
         customerEmail: customerEmail || '',
