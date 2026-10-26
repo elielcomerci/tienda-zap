@@ -1,0 +1,159 @@
+# NODO ZAP — Plan de rediseño de comprobantes e impresión
+
+**Estado:** propuesta técnica y de producto para revisión; no autoriza implementación ni cambios en emisión fiscal.  
+**Repositorio:** `elielcomerci/tienda-zap`  
+**Referencia visual/técnica:** impresión de órdenes de trabajo de REVEX (`RPM.ar`).
+
+## 1. Decisión de producto
+
+NODO debe generar comprobantes profesionales sin convertir al usuario en diseñador. La personalización tiene que ser acotada, intuitiva y consistente con ZAP Style: claridad, jerarquía, precisión, sobriedad y ausencia de controles que no aporten.
+
+No damos por definitivos los nombres ni la cantidad de plantillas sugeridas anteriormente. Primero definimos las necesidades que deben cubrir y luego validamos visualmente las alternativas con comprobantes reales anonimizados.
+
+### Principios de ZAP Style aplicados al documento
+
+- La información fiscal y el total se encuentran rápido.
+- El logo suma identidad sin competir con los datos legales ni con el comprobante.
+- Tipografía, espacios, alineación y jerarquía hacen el trabajo; no se agregan adornos por decorar.
+- Debe verse profesional tanto en pantalla como en PDF y en impresión monocromática.
+- El diseño se adapta a contenido real: nombres largos, varios ítems, importes, leyendas y más de una página.
+- El usuario selecciona una presentación; no mueve elementos libremente ni escribe CSS.
+- No ocultar información obligatoria para lograr una composición más atractiva.
+
+## 2. Auditoría inicial del código existente
+
+La revisión del repositorio encontró estas piezas relevantes:
+
+- `src/lib/fiscal-invoice-pdf.ts`: genera el PDF en el navegador con `jsPDF`, formato A4. Contiene el armado de la página, datos del emisor/receptor, tabla de ítems, importes, CAE y QR fiscal.
+- `src/components/fiscal/FiscalInvoiceTemplateEditor.tsx`: editor de identidad/configuración visual. Genera una vista previa como Blob PDF con datos de muestra y permite guardar una plantilla.
+- `docs/fiscal/diseno-visual-comprobantes.md`: alcance funcional del diseñador.
+- `docs/fiscal/CHECKLIST-DISENO-COMPROBANTES.md`: checklist normativo, funcional y de pruebas.
+- `docs/zap-style-interface-guidelines.md`: principios de interfaz ZAP Style.
+
+El tipo `FiscalPdfTemplate` actualmente contempla `designVariant: 'classic' | 'modern' | 'editorial'`. La función de PDF asigna tratamientos distintos a esas variantes, y el editor muestra una representación del PDF real, marcada como vista previa. Esto indica que ya existe una base que conviene auditar y evolucionar antes de reconstruirla.
+
+### Hallazgo clave sobre REVEX
+
+La impresión de REVEX usa una vista de documento específica y reglas CSS de impresión (A4, márgenes, ocultamiento de controles y prevención de cortes). NODO, en cambio, hoy dibuja el PDF con jsPDF. Por lo tanto, **no se debe asumir que copiar el CSS de REVEX mejorará el PDF actual**: son mecanismos diferentes.
+
+La referencia de REVEX sirve como patrón de composición y control del documento. La decisión entre perfeccionar jsPDF o migrar a HTML/CSS de impresión debe tomarse luego de inspeccionar el flujo completo y comparar prototipos equivalentes.
+
+## 3. Qué vamos a decidir
+
+### A. Sistema visual
+
+Crear y comparar propuestas que respondan a necesidades distintas, no a etiquetas arbitrarias. Como hipótesis inicial, evaluar:
+
+1. **Esencial:** máxima claridad, economía visual y lectura rápida.
+2. **Editorial:** identidad de marca más presente mediante tipografía, grilla y acento medido.
+3. **Firma:** composición más distintiva para negocios que valoran especialmente su presentación.
+
+Son nombres de trabajo, no una decisión final. Pueden cambiar, combinarse o reducirse si no aportan diferencias claras. Todas deben cumplir el mismo estándar fiscal, de legibilidad y calidad.
+
+### B. Arquitectura de renderizado
+
+Comparar dos caminos con un mismo comprobante de prueba:
+
+- **Camino 1 — Mantener jsPDF:** ordenar el código de renderizado por componentes/secciones y variantes, resolver saltos de página, altura dinámica, textos largos, consistencia de estilos y ubicación de totales/CAE/QR.
+- **Camino 2 — Vista HTML/CSS dedicada:** construir un documento independiente de la interfaz, con estilos de pantalla e impresión, reglas A4 y paginación; definir cómo se genera el archivo descargable y cómo se evita que la impresión dependa de las preferencias del navegador.
+
+Evaluar calidad visual, fidelidad entre vista previa y archivo final, control de paginación, accesibilidad, mantenimiento, dependencias y compatibilidad con los flujos existentes. Elegir un camino principal; evitar mantener dos motores de salida sin una razón comprobada.
+
+## 4. Experiencia propuesta
+
+- Entrar a **Diseño de comprobantes** desde la configuración correspondiente.
+- Identificar claramente el emisor/CUIT al que se aplica la configuración.
+- Elegir entre las propuestas mediante previsualizaciones comparables, con datos ficticios y marca visible de “Vista previa”.
+- Configurar únicamente lo que aporta valor: logo validado, color de acento dentro de una paleta segura y datos comerciales opcionales.
+- Guardar, volver al diseño predeterminado y comprobar el resultado antes de usarlo.
+- Aplicar nuevas preferencias a documentos futuros. No alterar ni regenerar documentos históricos de forma silenciosa.
+- Mantener separado el diseño de comprobantes de la plantilla Excel para facturación por lotes.
+
+No construir un editor de lienzo libre. La vista previa debe ser el resultado del mismo motor que genera el archivo final, o debe demostrarse que la diferencia es insignificante.
+
+## 5. Límites fiscales y de seguridad
+
+La personalización es exclusivamente de presentación. No puede cambiar, inventar, ocultar ni reemplazar los datos fiscales autorizados.
+
+- Mantener la emisión y la autoridad fiscal en el Worker existente; esta iniciativa no debe modificar `zap-fiscal-core` ni su despliegue.
+- Conservar integridad de tipo/letra, punto de venta, numeración, fechas, receptor, conceptos, cantidades, importes, impuestos, moneda, CAE/vencimiento y QR fiscal según corresponda.
+- Auditar la normativa oficial vigente por cada tipo de comprobante efectivamente soportado antes de dar por cerrados los layouts. La lista de campos existente es una guía de auditoría, no una certificación de cumplimiento.
+- Un QR comercial opcional nunca sustituye al QR fiscal.
+- No permitir HTML/CSS arbitrario ni URLs externas libres para recursos visuales.
+- Reutilizar el flujo seguro y CDN de medios existente si la auditoría confirma que cumple los requisitos; no crear almacenamiento paralelo.
+- Aislar la configuración por el ámbito correcto (tenant/CUIT/emisor) y respetar permisos.
+- Conservar snapshots/versiones necesarias para que el documento histórico no cambie cuando se edite el diseño.
+
+## 6. Plan de trabajo
+
+### Fase 1 — Auditoría técnica
+- [ ] Leer completa la ruta de exportación del PDF y todos sus consumidores.
+- [ ] Identificar persistencia, snapshot, permisos y alcance actual de la configuración.
+- [ ] Revisar editor, vista previa, carga de logo, errores y fallback.
+- [ ] Mapear límites del renderer actual: descripciones largas, varias páginas, totales, CAE/QR, caracteres, imágenes y moneda.
+- [ ] Confirmar contratos reales de los datos del Worker y tipos de comprobantes soportados.
+
+### Fase 2 — Prototipos visuales y decisión de motor
+- [ ] Elegir un comprobante representativo y crear datos de prueba anonimizados.
+- [ ] Producir propuestas visuales con la misma información y restricciones fiscales.
+- [ ] Comparar al menos un PDF con pocos ítems y otro que fuerce varias páginas.
+- [ ] Si aporta valor, construir un prototipo HTML/CSS paralelo para comparar con jsPDF; no migrar por intuición.
+- [ ] Registrar la decisión técnica, sus razones y riesgos antes de tocar el flujo de producción.
+
+### Fase 3 — Especificación final
+- [ ] Elegir las plantillas definitivas según diferencias útiles y ZAP Style.
+- [ ] Definir tokens compartidos: tipografía compatible, escala, espacios, líneas, color y tamaños.
+- [ ] Especificar comportamiento para una y varias páginas.
+- [ ] Definir qué preferencias son configurables y cuáles permanecen fijas por integridad fiscal.
+- [ ] Actualizar el checklist existente con criterios de aceptación comprobables.
+
+### Fase 4 — Implementación controlada
+- [ ] Trabajar en una rama específica, sin desplegar ni alterar el Worker.
+- [ ] Mantener la lógica fiscal separada de la capa visual.
+- [ ] Implementar el motor/plantillas seleccionados y conectar el editor.
+- [ ] Preservar la configuración existente y definir fallback seguro.
+- [ ] No cambiar la apariencia de documentos históricos ya emitidos.
+
+### Fase 5 — Validación
+- [ ] Comparar vista previa y PDF descargado.
+- [ ] Probar una página, múltiples páginas, descripciones extensas, muchos ítems, importes altos, campos opcionales y logo ausente/inválido.
+- [ ] Verificar que las filas no se recorten y que los totales no queden aislados o superpuestos.
+- [ ] Verificar CAE, vencimiento y lectura real del QR fiscal.
+- [ ] Probar color y blanco y negro, A4 y distintos navegadores/dispositivos relevantes.
+- [ ] Verificar permisos y aislamiento entre emisores.
+- [ ] Ejecutar typecheck, tests y build; documentar resultados y pendientes.
+- [ ] No fusionar ni habilitar producción hasta revisar evidencia y resolver fallos.
+
+## 7. Criterios de aceptación
+
+La iniciativa estará lista cuando:
+
+1. La plantilla predeterminada sea clara y profesional sin configuración manual.
+2. Cada variante tenga una razón de uso reconocible; si dos son casi iguales, se simplifica la oferta.
+3. La previsualización represente fielmente el archivo final.
+4. El contenido fiscal aplicable se conserve y la auditoría normativa esté documentada.
+5. No haya recortes, solapamientos ni pérdida de información en casos reales de una o varias páginas.
+6. Los QR y datos de autorización sean legibles y verificables.
+7. Los cambios visuales no alteren la emisión, los importes, la numeración ni los snapshots históricos.
+8. La experiencia sea entendible sin explicación extensa y respete los criterios de interfaz ZAP Style.
+9. Las pruebas y el build pertinentes pasen, con evidencia registrada.
+
+## 8. Fuera de alcance
+
+- Rediseñar o cambiar la lógica de emisión fiscal.
+- Cambiar Worker, certificados, autorizaciones o integración ARCA.
+- Rehacer la facturación por lotes de Excel.
+- Editar el contenido fiscal de comprobantes ya emitidos.
+- Ofrecer un diseñador libre de posiciones, HTML o CSS.
+- Dar por cumplida la normativa solo por una revisión visual.
+
+## 9. Referencias del repositorio
+
+- `src/lib/fiscal-invoice-pdf.ts`
+- `src/components/fiscal/FiscalInvoiceTemplateEditor.tsx`
+- `docs/fiscal/diseno-visual-comprobantes.md`
+- `docs/fiscal/CHECKLIST-DISENO-COMPROBANTES.md`
+- `docs/zap-style-interface-guidelines.md`
+- Referencia REVEX: `RPM.ar/components/print/OrderPrintView.tsx` y estilos `@media print`.
+
+**Próximo paso:** completar la Fase 1 y producir una comparación técnica/visual antes de decidir si mantenemos jsPDF o adoptamos una vista HTML/CSS dedicada.
