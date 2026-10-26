@@ -398,10 +398,10 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     if (!expectedPricingSlugs.has(slug)) errors.push(`[PRICING CONFIG EXTRA] ProductQuoterConfig inesperado para '${slug}'.`);
   }
 
-  const auditTiers = (tiers: Array<{ minQty: number; maxQty: number | null; unitPrice: number }>, label: string) => {
+  const auditTiers = (tiers: Array<{ minQty: number; maxQty: number | null; unitPrice: number }>, label: string, requireStartAtOne = true) => {
     if (tiers.length === 0) { errors.push(`[PRICING TIERS MISSING] ${label}: no tiene tiers.`); return; }
     const ordered = [...tiers].sort((a, b) => a.minQty - b.minQty);
-    if (ordered[0].minQty !== 1) errors.push(`[PRICING TIERS START] ${label}: debe comenzar en 1.`);
+    if (requireStartAtOne && ordered[0].minQty !== 1) errors.push(`[PRICING TIERS START] ${label}: debe comenzar en 1.`);
     for (let i = 0; i < ordered.length; i += 1) {
       const tier = ordered[i];
       if (tier.unitPrice <= 0) errors.push(`[PRICING TIER PRICE] ${label}: costo inválido (${tier.unitPrice}).`);
@@ -461,7 +461,7 @@ export async function runSeedAudit(prisma: PrismaClient): Promise<void> {
     const quantities = cfg.quantityPresets.map((q) => q.quantity);
     for (const link of cfg.finishings) {
       if (!link.finishing.active) errors.push(`[PRICING FINISHING INACTIVE] '${cfg.product.slug}' usa '${link.finishing.id}' inactiva.`);
-      auditTiers(link.finishing.tiers, `terminación '${link.finishing.id}'`);
+      auditTiers(link.finishing.tiers, `terminación '${link.finishing.id}'`, link.finishing.costType !== 'FIXED_SETUP');
       if (link.finishing.costType === 'PER_UNIT') {
         for (const quantity of quantities) {
           const covered = link.finishing.tiers.some((t) => t.minQty <= quantity && (t.maxQty === null || t.maxQty >= quantity));
