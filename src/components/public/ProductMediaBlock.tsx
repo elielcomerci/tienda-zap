@@ -528,7 +528,7 @@ export default function ProductMediaBlock({
                         {track.title}
                       </p>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mt-0.5">
-                        {track.type === 'YOUTUBE' ? 'YouTube' : track.type}
+                        {track.type === 'SOUNDCLOUD' ? 'SoundCloud' : track.type === 'YOUTUBE' ? 'YouTube' : track.type}
                       </span>
                     </div>
                   </div>
