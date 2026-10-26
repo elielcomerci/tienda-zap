@@ -2,7 +2,7 @@ import { ConfiguratorVersionSeedData } from '../../types';
 
 export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   productSlug: 'tarjetas-vouchers',
-  schemaVersion: '2.2',
+  schemaVersion: '2.3',
   status: 'ACTIVE',
   schema: {
     engine: 'IMPRESOS_PACKAGING',
@@ -127,10 +127,15 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
   },
   pricing: {
     engine: 'PROVIDER_FINISHED_COST',
-    // Los tramos offset de 3.000/5.000 figuran en la lista, pero varias celdas
-    // quedan por debajo del costo de 1.000. Se muestran como opción de consulta,
-    // sin publicar automáticamente esos importes hasta reconciliar la fuente.
-    consultRequiredQuantities: [3000, 5000],
+    // Se activan solo las celdas premium 9×5, 350g, 4/4, OPP mate de 3.000/5.000.
+    // Las celdas clásicas sin laminar y deluxe sectorizadas conservan consulta manual:
+    // sus costos por volumen requieren reconciliación comercial antes de publicarse.
+    consultRequiredSelections: [
+      { productionProcess: 'offset', format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 3000 },
+      { productionProcess: 'offset', format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'sin_laminar', quantity: 5000 },
+      { productionProcess: 'offset', format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada', quantity: 3000 },
+      { productionProcess: 'offset', format: '9x5', material: 'ilustracion_350g', printing: '4_4', lamination: 'mate_uv_sectorizada', quantity: 5000 },
+    ],
     // Habilitar toda combinación digital con costo explícito en la matriz.
     // La revisión comercial posterior puede ajustar margen/precio; no bloquear
     // celdas con costo conocido mediante una allowlist de selecciones.
@@ -146,6 +151,14 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
       offset: { version: 1, mode: 'MARKUP', percentage: 14, vatRatePercent: 21 },
     },
     commercialPricingPoliciesByProcessAndMaterialAndPrintingAndQuantity: {
+      offset: {
+        ilustracion_350g: {
+          '4_4': {
+            '3000': { version: 1, mode: 'MARKUP', percentage: 125, vatRatePercent: 21 },
+            '5000': { version: 1, mode: 'MARKUP', percentage: 250, vatRatePercent: 21 },
+          },
+        },
+      },
       digital: {
         ilustracion_350g: {
           '4_0': { '100': { version: 1, mode: 'MARKUP', percentage: 145, vatRatePercent: 21 } },
