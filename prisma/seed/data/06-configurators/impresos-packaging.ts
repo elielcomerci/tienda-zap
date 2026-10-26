@@ -106,11 +106,6 @@ export const tarjetasVouchersConfigurator: ConfiguratorVersionSeedData = {
     },
   },
   compatibility: {
-        ],
-      },
-    },
-  },
-  compatibility: {
     uiRules: [
       {
         field: 'laminationSides',
