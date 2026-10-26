@@ -222,12 +222,35 @@ test('flyers expone 2.500 y 5.000 unidades y cotiza las celdas offset documentad
   }
 });
 
-test('tarjetas muestra 3.000 y 5.000 unidades como consulta hasta validar los costos offset', () => {
+test('tarjetas habilita 3.000 y 5.000 unidades premium con precios alineados al mercado', () => {
   const config = tarjetasVouchersConfigurator;
   const quantityOptions = ((config.schema.fields as any).quantity.options || []).map((option: any) => option.value);
   assert.ok(quantityOptions.includes(3000));
   assert.ok(quantityOptions.includes(5000));
-  assert.deepEqual((config.pricing as any).consultRequiredQuantities, [3000, 5000]);
+
+  const expected = [
+    { quantity: 3000, total: 103455 },
+    { quantity: 5000, total: 156695 },
+  ];
+  for (const { quantity, total } of expected) {
+    const quote = quoteConfiguratorSelection(
+      config as any,
+      {
+        ...defaultSelection(config),
+        productionProcess: 'offset',
+        format: '9x5',
+        material: 'ilustracion_350g',
+        printing: '4_4',
+        lamination: 'mate',
+        laminationSides: 'ambas',
+        quantity,
+      },
+      makeQuoterConfig(config),
+    );
+    assertQuoteFinancials(quote);
+    assert.equal(quote.taxTreatment, 'INCLUDED');
+    assert.ok(Math.abs(quote.totalPrice - total) < 1, `Precio inesperado para ${quantity}: ${quote.totalPrice}`);
+  }
 
   assert.throws(
     () => quoteConfiguratorSelection(
@@ -241,7 +264,7 @@ test('tarjetas muestra 3.000 y 5.000 unidades como consulta hasta validar los co
         lamination: 'sin_laminar',
         quantity: 3000,
       },
-      { profitMargin: 0 } as any,
+      makeQuoterConfig(config),
     ),
     /validación comercial/,
   );
