@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { notFound } from 'next/navigation'
-import { getActiveProductSlugs, getProduct } from '@/lib/products'
+import { getProduct } from '@/lib/products'
 import { buildProductInquiryMessage, buildWhatsappUrl } from '@/lib/whatsapp'
 import ProductDetailExperience from '@/components/public/ProductDetailExperience'
 import RelatedProductsSection from '@/components/public/RelatedProductsSection'
@@ -14,11 +14,10 @@ import { getProductFamilyLabel, isDevelopment } from '@/lib/catalog-domain'
 
 export const revalidate = 300
 
+// Generate product detail pages on demand instead of querying the database at build time.
+// This keeps builds independent from whether the target database has received the latest migration.
 export async function generateStaticParams() {
-  const products = await getActiveProductSlugs()
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
+  return []
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -49,9 +48,9 @@ export default async function ProductDetailPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ rubro?: string; situacion?: string; necesidad?: string; mode?: string }>
+  searchParams: Promise<{ rubro?: string; situacion?: string; necesidad?: string; mode?: string; grupo?: 'VENTAS' | 'MARCA' | 'EXPERIENCIA' | 'PROYECTOS' }>
 }) {
-  const [{ slug }, { rubro, situacion, necesidad, mode }] = await Promise.all([params, searchParams])
+  const [{ slug }, { rubro, situacion, necesidad, mode, grupo }] = await Promise.all([params, searchParams])
   const product = await getProduct(slug)
   if (!product || !product.active) notFound()
 
@@ -66,10 +65,11 @@ export default async function ProductDetailPage({
     businessTypeSlug: selectedBusinessType?.slug,
     situationSlug: selectedSituation?.slug,
     needSlug: selectedNeed?.slug,
+    publicGroup: grupo,
   }
 
   const relatedProducts = product.outgoingRelations
-    .filter((relation) => relation.relatedProduct.active)
+    .filter((relation) => relation.relatedProduct.active && relation.relatedProduct.publicVisible)
     .map((relation) => ({ ...relation.relatedProduct, relationType: relation.type }))
   const displayPrice = getProductDisplayPrice(product)
   const fixedDisplayedPrice =
