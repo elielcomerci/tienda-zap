@@ -15,6 +15,7 @@ const COUPON_CODE_PATTERN = /^[A-Z0-9]+(?:-[A-Z0-9]+)*$/
 type CouponPreviewItem = {
   productId: string
   quantity: number
+  unitPrice?: number
   notes?: string
   briefType?: 'NONE' | 'DESIGN' | 'MUSIC' | 'VIDEO'
   briefResponses?: Record<string, string>
