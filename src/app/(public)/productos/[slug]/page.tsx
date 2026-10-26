@@ -69,7 +69,7 @@ export default async function ProductDetailPage({
   }
 
   const relatedProducts = product.outgoingRelations
-    .filter((relation) => relation.relatedProduct.active)
+    .filter((relation) => relation.relatedProduct.active && relation.relatedProduct.publicVisible)
     .map((relation) => ({ ...relation.relatedProduct, relationType: relation.type }))
   const displayPrice = getProductDisplayPrice(product)
   const fixedDisplayedPrice =
