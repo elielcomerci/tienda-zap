@@ -119,6 +119,7 @@ model BusinessAccount {
   user              User?             @relation("BusinessAccountUser", fields: [userId], references: [id])
   contacts          BusinessContact[]
   coupons           PromotionCoupon[]
+  consultRequests   ConsultRequest[]
   sellerLeads        SellerLead[]
   conversations     CustomerConversation[]
   timelineEvents    CustomerTimelineEvent[]
@@ -606,9 +607,10 @@ model PackItem {
 }
 
 model ConsultRequest {
-  id             String               @id @default(cuid())
-  productId      String?
-  businessTypeId String?
+  id                String               @id @default(cuid())
+  productId         String?
+  businessTypeId    String?
+  businessAccountId String?
   snapshot       Json?
   customerName   String
   customerEmail  String
@@ -619,12 +621,14 @@ model ConsultRequest {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
-  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
-  businessType BusinessType? @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+  product         Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  businessType    BusinessType?    @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+  businessAccount BusinessAccount? @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([productId])
   @@index([businessTypeId])
+  @@index([businessAccountId, createdAt])
 }
 
 model Order {
