@@ -766,8 +766,10 @@ test('checkout semantic rechaza cotizaciones vencidas o precios no verificables'
 test('checkout semantic vuelve a cotizar con la configuración activa del servidor', () => {
   const config = tarjetasVouchersConfigurator as any;
   const selection = defaultSelection(config);
-  const expected = quoteConfiguratorSelection(config, selection);
-  const actual = resolveSemanticCheckoutQuote(config, selection);
+  const engine = (config.pricing as any).engine;
+  const quoter = ['PRODUCT_QUOTER', 'PROVIDER_FINISHED_COST'].includes(engine) ? makeQuoterConfig(config) : undefined;
+  const expected = quoteConfiguratorSelection(config, selection, quoter as any);
+  const actual = resolveSemanticCheckoutQuote(config, selection, quoter as any);
   assert.equal(actual.totalPrice, expected.totalPrice);
   assert.deepEqual(actual.selectedOptions, expected.selectedOptions);
   assert.throws(() => resolveSemanticCheckoutQuote(config, {}), /configuración está incompleta/i);
