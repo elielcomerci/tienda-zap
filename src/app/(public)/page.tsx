@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { buildWhatsappUrl } from '@/lib/whatsapp'
-import { getPublicCatalogTypes } from '@/lib/products'
 import { getPublicSituations } from '@/lib/discovery'
 import { getPublicBusinessTypes } from '@/lib/business-types'
 import HomeLandingSections from '@/components/public/HomeLandingSections'
@@ -26,8 +25,7 @@ export const metadata = {
 }
 
 export default async function HomePage() {
-  const [catalogTypes, situations, businessTypes] = await Promise.all([
-    getPublicCatalogTypes(),
+  const [situations, businessTypes] = await Promise.all([
     getPublicSituations(),
     getPublicBusinessTypes(),
   ])
@@ -42,7 +40,6 @@ export default async function HomePage() {
       <HomeLandingSections
         businessTypes={businessTypes}
         situations={situations}
-        products={catalogTypes}
       />
 
       {/* ── 5. CIERRE ─────────────────────────────────────────────── */}
