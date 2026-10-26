@@ -242,7 +242,7 @@ test('tarjetas habilita 3.000 y 5.000 unidades premium con precios alineados al 
         material: 'ilustracion_350g',
         printing: '4_4',
         lamination: 'mate',
-        laminationSides: 'ambas',
+        laminationSides: 'frente',
         quantity,
       },
       makeQuoterConfig(config),
