@@ -605,6 +605,7 @@ export default function ProductConfigurator({
           name: product.name,
           catalogType: product.catalogType,
           modality: product.modality,
+          priceFrom: product.priceFrom,
         }}
         businessTypeId={businessTypeId}
         explorationContext={explorationContext}
