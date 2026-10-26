@@ -218,8 +218,8 @@ export default async function ProductsPage({
 
         {!isSituationMode && mode !== 'rubro' && (
           <form action="/productos" method="GET" role="search" className="mb-6 flex max-w-2xl items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm focus-within:border-[#ED164F]/50">
-            {tipo && <input type="hidden" name="tipo" value={tipo} />
-            {grupo && <input type="hidden" name="grupo" value={grupo} />}
+            {tipo && <input type="hidden" name="tipo" value={tipo} />}
+            {grupo && <input type="hidden" name="grupo" value={grupo} />
             {cat && <input type="hidden" name="cat" value={cat} />}
             {rubro && <input type="hidden" name="rubro" value={rubro} />}
             <Search size={19} className="ml-2 shrink-0 text-gray-400" aria-hidden="true" />
