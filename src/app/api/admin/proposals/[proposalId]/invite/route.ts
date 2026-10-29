@@ -9,8 +9,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const session = await auth()
   if (session?.user?.role !== 'ADMIN' || !session.user.id) return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
   const { proposalId } = await params
-  const proposal = await prisma.commercialProposal.findUnique({ where: { id: proposalId }, select: { id: true, status: true } })
+  const proposal = await prisma.commercialProposal.findUnique({ where: { id: proposalId }, select: { id: true, customerId: true, targetEmail: true } })
   if (!proposal) return NextResponse.json({ error: 'No encontramos la propuesta.' }, { status: 404 })
+  if (!proposal.customerId && !proposal.targetEmail) return NextResponse.json({ error: 'Asociá un cliente o ingresá su email antes de generar la invitación.' }, { status: 400 })
   const token = randomBytes(32).toString('base64url')
   const tokenHash = createHash('sha256').update(token).digest('hex')
   const invite = await prisma.$transaction(async tx => {
