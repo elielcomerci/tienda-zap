@@ -87,3 +87,10 @@ CREATE TABLE "CommercialProposalStageComment" (
 );
 CREATE INDEX "CommercialProposalStageComment_stageId_createdAt_idx" ON "CommercialProposalStageComment"("stageId","createdAt");
 CREATE INDEX "CommercialProposalStageComment_authorId_createdAt_idx" ON "CommercialProposalStageComment"("authorId","createdAt");
+
+
+-- Autoría de materiales privados de propuestas.
+ALTER TABLE "CommercialProposalMaterial"
+  ADD COLUMN IF NOT EXISTS "uploadedById" TEXT,
+  ADD COLUMN IF NOT EXISTS "uploadedByName" TEXT,
+  ADD COLUMN IF NOT EXISTS "uploadedByRole" TEXT;
