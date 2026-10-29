@@ -106,7 +106,9 @@ export async function registerUser(formData: FormData): Promise<void> {
     }
   }
 
-  redirect('/login?registered=1')
+  const requestedCallback = formData.get('callbackUrl')
+  const safeCallback = typeof requestedCallback === 'string' && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') ? requestedCallback : ''
+  redirect('/login?registered=1' + (safeCallback ? '&callbackUrl=' + encodeURIComponent(safeCallback) : ''))
 }
 
 export async function registerSeller(formData: FormData): Promise<void> {

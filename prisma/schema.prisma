@@ -1880,6 +1880,7 @@ model ClientWork {
   createdBy User            @relation("ClientWorkCreator", fields: [createdById], references: [id])
   files     ClientWorkFile[]
   messages  ClientWorkMessage[]
+  proposalStage CommercialProposalStage?
 
   @@index([userId, updatedAt])
   @@index([createdById, createdAt])
@@ -1987,6 +1988,7 @@ model CommercialProposal {
   createdBy      User                  @relation("CommercialProposalCreator", fields: [createdById], references: [id], onDelete: Restrict)
   materials      CommercialProposalMaterial[]
   invitations    CommercialProposalInvite[]
+  stages         CommercialProposalStage[]
 
   @@index([customerId, updatedAt])
   @@index([businessAccountId, updatedAt])
@@ -2025,4 +2027,42 @@ model CommercialProposalInvite {
   proposal CommercialProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
   @@index([proposalId, createdAt])
+}
+
+model CommercialProposalStage {
+ id String @id @default(cuid())
+ proposalId String
+ position Int @default(0)
+ title String
+ description String? @db.Text
+ scope String? @db.Text
+ deliverables String? @db.Text
+ timeline String? @db.Text
+ conditions String? @db.Text
+ amount Decimal? @db.Decimal(14,2)
+ currency String @default("ARS")
+ paymentTerms String? @db.Text
+ status String @default("PENDING")
+ clientWorkId String? @unique
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ proposal CommercialProposal @relation(fields:[proposalId],references:[id],onDelete:Cascade)
+ clientWork ClientWork? @relation(fields:[clientWorkId],references:[id],onDelete:SetNull)
+ comments CommercialProposalStageComment[]
+ @@index([proposalId,position])
+ @@index([status,updatedAt])
+}
+model CommercialProposalStageComment {
+ id String @id @default(cuid())
+ stageId String
+ authorId String?
+ authorName String?
+ authorEmail String?
+ authorRole String
+ action String?
+ message String? @db.Text
+ createdAt DateTime @default(now())
+ stage CommercialProposalStage @relation(fields:[stageId],references:[id],onDelete:Cascade)
+ @@index([stageId,createdAt])
+ @@index([authorId,createdAt])
 }

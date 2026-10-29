@@ -16,6 +16,8 @@ export default function LoginForm() {
   const registered = searchParams.get('registered')
   const passwordReset = searchParams.get('passwordReset')
   const queryError = searchParams.get('error')
+  const requestedCallback = searchParams.get('callbackUrl')
+  const callbackUrl = requestedCallback && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') ? requestedCallback : '/perfil'
   const [error, setError] = useState(queryError ? decodeURIComponent(queryError) : '')
   const [loading, setLoading] = useState(false)
 
@@ -37,7 +39,7 @@ export default function LoginForm() {
       setError('Credenciales incorrectas')
       setLoading(false)
     } else {
-      router.push('/perfil')
+      router.push(callbackUrl)
       router.refresh()
     }
   }

@@ -1,50 +1,7 @@
-import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
-import { NextRequest, NextResponse } from 'next/server'
-
-export const dynamic = 'force-dynamic'
-
-export async function GET() {
-  const session = await auth()
-  if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
-  const proposals = await prisma.commercialProposal.findMany({
-    orderBy: { updatedAt: 'desc' },
-    include: { customer: { select: { name: true, email: true } }, businessAccount: { select: { name: true } }, _count: { select: { invitations: true, materials: true } } },
-    take: 100,
-  })
-  return NextResponse.json({ proposals }, { headers: { 'Cache-Control': 'private, no-store' } })
-}
-
-export async function POST(request: NextRequest) {
-  const session = await auth()
-  if (session?.user?.role !== 'ADMIN' || !session.user.id) return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
-  try {
-    const body = await request.json()
-    const title = typeof body.title === 'string' ? body.title.trim() : ''
-    if (!title || title.length > 180) return NextResponse.json({ error: 'Ingresá un título de hasta 180 caracteres.' }, { status: 400 })
-    const amount = body.amount === '' || body.amount == null ? null : Number(body.amount)
-    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) return NextResponse.json({ error: 'El importe no es válido.' }, { status: 400 })
-    const youtubeUrl = typeof body.youtubeUrl === 'string' ? body.youtubeUrl.trim() : ''
-    if (youtubeUrl) {
-      let parsed: URL
-      try { parsed = new URL(youtubeUrl) } catch { return NextResponse.json({ error: 'El enlace de YouTube no es válido.' }, { status: 400 }) }
-      if (!['youtube.com','www.youtube.com','youtu.be','m.youtube.com'].includes(parsed.hostname)) return NextResponse.json({ error: 'Solo se admiten enlaces de YouTube.' }, { status: 400 })
-    }
-    const proposal = await prisma.commercialProposal.create({
-      data: {
-        title, summary: body.summary || null, diagnosis: body.diagnosis || null, solution: body.solution || null,
-        scope: body.scope || null, deliverables: body.deliverables || null, timeline: body.timeline || null,
-        conditions: body.conditions || null, paymentTerms: body.paymentTerms || null,
-        amount, currency: 'ARS', targetEmail: body.targetEmail || null,
-        customerId: body.customerId || null, businessAccountId: body.businessAccountId || null,
-        createdById: session.user.id,
-        materials: youtubeUrl ? { create: [{ kind: 'YOUTUBE', label: 'Video de referencia', url: youtubeUrl, sortOrder: 0 }] } : undefined,
-      },
-      select: { id: true, title: true, status: true, amount: true, createdAt: true },
-    })
-    return NextResponse.json({ proposal }, { status: 201, headers: { 'Cache-Control': 'private, no-store' } })
-  } catch (error) {
-    console.error('No se pudo crear la propuesta:', error)
-    return NextResponse.json({ error: 'No pudimos guardar la propuesta.' }, { status: 500 })
-  }
-}
+import {auth} from '@/auth'
+import {prisma} from '@/lib/prisma'
+import {NextRequest,NextResponse} from 'next/server'
+export const dynamic='force-dynamic'
+const clean=(v:unknown,max=12000)=>typeof v==='string'?v.trim().slice(0,max)||null:null
+export async function GET(){const s=await auth();if(s?.user?.role!=='ADMIN')return NextResponse.json({error:'No autorizado.'},{status:403});const proposals=await prisma.commercialProposal.findMany({orderBy:{updatedAt:'desc'},include:{customer:{select:{name:true,email:true}},businessAccount:{select:{name:true}},stages:{orderBy:{position:'asc'},include:{comments:{orderBy:{createdAt:'asc'}}}},_count:{select:{invitations:true,materials:true}}},take:100});return NextResponse.json({proposals},{headers:{'Cache-Control':'private, no-store'}})}
+export async function POST(req:NextRequest){const s=await auth();if(s?.user?.role!=='ADMIN'||!s.user.id)return NextResponse.json({error:'No autorizado.'},{status:403});try{const b=await req.json();const targetEmail=clean(b.targetEmail,254)?.toLowerCase()||null;const customerId=clean(b.customerId,100);if(!targetEmail&&!customerId)return NextResponse.json({error:'Asociá un cliente o indicá su email para controlar el acceso.'},{status:400});const stages=Array.isArray(b.stages)?b.stages.slice(0,12):[];for(const x of stages){if(!clean(x?.title,180))return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400});if(x.amount!==''&&x.amount!=null&&(!Number.isFinite(Number(x.amount))||Number(x.amount)<0))return NextResponse.json({error:'Importe inválido.'},{status:400})}const amount=b.amount===''||b.amount==null?null:Number(b.amount);if(amount!==null&&(!Number.isFinite(amount)||amount<0))return NextResponse.json({error:'Importe inválido.'},{status:400});const yt=clean(b.youtubeUrl,1000);if(yt){let u:URL;try{u=new URL(yt)}catch{return NextResponse.json({error:'URL de YouTube inválida.'},{status:400})}if(!['youtube.com','www.youtube.com','youtu.be','m.youtube.com'].includes(u.hostname))return NextResponse.json({error:'Solo YouTube.'},{status:400})}const proposal=await prisma.commercialProposal.create({data:{title:clean(b.title,180)||'Propuesta ZAP',summary:clean(b.summary),diagnosis:clean(b.diagnosis),solution:clean(b.solution),scope:clean(b.scope),deliverables:clean(b.deliverables),timeline:clean(b.timeline),conditions:clean(b.conditions),paymentTerms:clean(b.paymentTerms),amount,currency:'ARS',targetEmail,customerId,businessAccountId:clean(b.businessAccountId,100),createdById:s.user.id,stages:{create:stages.map((x:any,position:number)=>({position,title:clean(x.title,180)!,description:clean(x.description),scope:clean(x.scope),deliverables:clean(x.deliverables),timeline:clean(x.timeline),conditions:clean(x.conditions),paymentTerms:clean(x.paymentTerms),amount:x.amount===''||x.amount==null?null:Number(x.amount),currency:'ARS'}))},materials:yt?{create:[{kind:'YOUTUBE',label:'Video de referencia',url:yt,sortOrder:0}]}:undefined},select:{id:true,title:true,status:true,createdAt:true}});return NextResponse.json({proposal},{status:201})}catch(e){console.error(e);return NextResponse.json({error:'No pudimos guardar la propuesta.'},{status:500})}}
