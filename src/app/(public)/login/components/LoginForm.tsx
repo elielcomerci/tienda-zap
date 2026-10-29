@@ -87,7 +87,7 @@ export default function LoginForm() {
 
       <p className="text-center text-sm text-gray-500">
         ¿No tenés cuenta?{' '}
-        <Link href="/registro" className="text-[#ED164F] font-semibold hover:underline">
+        <Link href={callbackUrl !== '/perfil' ? `/registro?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/registro"} className="text-[#ED164F] font-semibold hover:underline">
           Registrate
         </Link>
       </p>
