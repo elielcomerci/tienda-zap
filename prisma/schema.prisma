@@ -2006,6 +2006,9 @@ model CommercialProposalMaterial {
   contentType String?
   sizeBytes   Int?
   note        String?  @db.Text
+  uploadedById String?
+  uploadedByName String?
+  uploadedByRole String?
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
 
