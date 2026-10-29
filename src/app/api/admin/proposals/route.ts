@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
         amount, currency: 'ARS', targetEmail: body.targetEmail || null,
         customerId: body.customerId || null, businessAccountId: body.businessAccountId || null,
         createdById: session.user.id,
+        materials: youtubeUrl ? { create: [{ kind: 'YOUTUBE', label: 'Video de referencia', url: youtubeUrl, sortOrder: 0 }] } : undefined,
       },
       select: { id: true, title: true, status: true, amount: true, createdAt: true },
     })
