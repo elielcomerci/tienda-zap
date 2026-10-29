@@ -64,6 +64,8 @@ model User {
   respondedClientWorkApprovals      ClientWorkFileApproval[]         @relation("ClientWorkApprovalResponder")
   fiscalClientAccount               FiscalClientAccount?
   createdFiscalInvoiceBatches       FiscalInvoiceBatch[]       @relation("FiscalInvoiceBatchCreator")
+  receivedProposals                 CommercialProposal[]       @relation("CommercialProposalCustomer")
+  createdProposals                  CommercialProposal[]       @relation("CommercialProposalCreator")
 }
 
 model SellerProfile {
@@ -125,6 +127,7 @@ model BusinessAccount {
   conversations     CustomerConversation[]
   timelineEvents    CustomerTimelineEvent[]
   activities        BusinessAccountActivity[]
+  proposals         CommercialProposal[]
 
   @@index([name])
   @@index([status, nextActionAt])
@@ -1951,4 +1954,75 @@ model ClientWorkFileApproval {
 
   @@index([fileId, requestedAt])
   @@index([status, requestedAt])
+}
+
+
+model CommercialProposal {
+  id                String   @id @default(cuid())
+  title             String
+  summary           String?  @db.Text
+  diagnosis         String?  @db.Text
+  solution          String?  @db.Text
+  scope             String?  @db.Text
+  deliverables      String?  @db.Text
+  timeline          String?  @db.Text
+  conditions        String?  @db.Text
+  amount            Decimal? @db.Decimal(14, 2)
+  currency          String   @default("ARS")
+  paymentTerms      String?  @db.Text
+  status            String   @default("DRAFT")
+  version           Int      @default(1)
+  targetEmail       String?
+  customerId        String?
+  businessAccountId String?
+  createdById       String
+  customerResponse  String?  @db.Text
+  respondedAt       DateTime?
+  acceptedAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  customer       User?                 @relation("CommercialProposalCustomer", fields: [customerId], references: [id], onDelete: SetNull)
+  businessAccount BusinessAccount?     @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
+  createdBy      User                  @relation("CommercialProposalCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  materials      CommercialProposalMaterial[]
+  invitations    CommercialProposalInvite[]
+
+  @@index([customerId, updatedAt])
+  @@index([businessAccountId, updatedAt])
+  @@index([status, updatedAt])
+}
+
+model CommercialProposalMaterial {
+  id          String   @id @default(cuid())
+  proposalId  String
+  kind        String
+  label       String?
+  url         String?
+  objectKey   String?
+  fileName    String?
+  contentType String?
+  sizeBytes   Int?
+  note        String?  @db.Text
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  proposal CommercialProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId, sortOrder])
+}
+
+model CommercialProposalInvite {
+  id         String    @id @default(cuid())
+  proposalId String
+  tokenHash  String    @unique
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdById String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  proposal CommercialProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId, createdAt])
 }
