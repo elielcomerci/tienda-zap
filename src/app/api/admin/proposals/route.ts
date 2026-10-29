@@ -24,6 +24,12 @@ export async function POST(request: NextRequest) {
     if (!title || title.length > 180) return NextResponse.json({ error: 'Ingresá un título de hasta 180 caracteres.' }, { status: 400 })
     const amount = body.amount === '' || body.amount == null ? null : Number(body.amount)
     if (amount !== null && (!Number.isFinite(amount) || amount < 0)) return NextResponse.json({ error: 'El importe no es válido.' }, { status: 400 })
+    const youtubeUrl = typeof body.youtubeUrl === 'string' ? body.youtubeUrl.trim() : ''
+    if (youtubeUrl) {
+      let parsed: URL
+      try { parsed = new URL(youtubeUrl) } catch { return NextResponse.json({ error: 'El enlace de YouTube no es válido.' }, { status: 400 }) }
+      if (!['youtube.com','www.youtube.com','youtu.be','m.youtube.com'].includes(parsed.hostname)) return NextResponse.json({ error: 'Solo se admiten enlaces de YouTube.' }, { status: 400 })
+    }
     const proposal = await prisma.commercialProposal.create({
       data: {
         title, summary: body.summary || null, diagnosis: body.diagnosis || null, solution: body.solution || null,
