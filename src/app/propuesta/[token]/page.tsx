@@ -18,6 +18,7 @@ export default async function PrivateProposalEntry({ params }: { params: Promise
   const matchesUser = invite.proposal.customerId === user?.id
   const matchesEmail = !!invite.proposal.targetEmail && invite.proposal.targetEmail.toLowerCase() === user?.email?.toLowerCase()
   if (!matchesUser && !matchesEmail) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Esta propuesta está asociada a otro acceso</h1><p className="mt-3 text-sm leading-6 text-gray-600">Ingresá con la cuenta que recibió la invitación o contactá a ZAP para corregir el destinatario.</p></main>
+  if (!invite.proposal.customerId && user?.id) await prisma.commercialProposal.updateMany({ where: { id: invite.proposalId, customerId: null }, data: { customerId: user.id } })
   await prisma.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } })
   redirect('/perfil/propuestas/'+invite.proposalId)
 }
