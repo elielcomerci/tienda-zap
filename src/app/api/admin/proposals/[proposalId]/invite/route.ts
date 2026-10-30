@@ -51,3 +51,18 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
   const origin=process.env.NEXT_PUBLIC_SITE_URL||new URL(request.url).origin
   return NextResponse.json({url:origin+'/propuesta/'+token,expiresAt:invite.expiresAt},{headers:{'Cache-Control':'private, no-store'}})
 }
+
+
+export async function DELETE(_request:NextRequest,{params}:{params:Promise<{proposalId:string}>}) {
+  const session=await auth()
+  if(session?.user?.role!=='ADMIN') return NextResponse.json({error:'No autorizado.'},{status:403})
+  const {proposalId}=await params
+  const proposal=await prisma.commercialProposal.findUnique({where:{id:proposalId},select:{id:true}})
+  if(!proposal) return NextResponse.json({error:'No encontramos la propuesta.'},{status:404})
+  const result=await prisma.$transaction(async tx=>{
+    const revoked=await tx.commercialProposalInvite.updateMany({where:{proposalId,revokedAt:null},data:{revokedAt:new Date()}})
+    await tx.commercialProposal.update({where:{id:proposalId},data:{status:'DRAFT'}})
+    return revoked.count
+  })
+  return NextResponse.json({ok:true,revoked:result},{headers:{'Cache-Control':'private, no-store'}})
+}
