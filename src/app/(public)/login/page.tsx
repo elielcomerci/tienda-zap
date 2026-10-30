@@ -10,7 +10,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const session = await auth()
   
   const { callbackUrl } = await searchParams
-  const safeCallback = callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') ? callbackUrl : '/perfil'
+  const safeCallback = callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\\\') && !/%5c/i.test(callbackUrl) && !/[\\u0000-\\u001f\\u007f]/.test(callbackUrl) ? callbackUrl : '/perfil'
   if (session?.user?.id) {
     redirect(safeCallback)
   }
