@@ -11,7 +11,8 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
   const {proposalId}=await params
   try {
     const body=await request.json()
-    const stages=Array.isArray(body.stages)?body.stages.slice(0,12):[]
+    if(Array.isArray(body.stages)&&body.stages.length>12) return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
+    const stages=Array.isArray(body.stages)?body.stages:[]
     const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
     if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
     if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
@@ -19,8 +20,10 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
       if(stage.amount!==''&&stage.amount!=null&&(!Number.isFinite(Number(stage.amount))||Number(stage.amount)<0)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
     }
     const updated=await prisma.$transaction(async tx=>{
+      await tx.$queryRaw`SELECT id FROM "CommercialProposal" WHERE id = ${proposalId} FOR UPDATE`
       const current=await tx.commercialProposal.findUnique({where:{id:proposalId},include:{stages:true}})
       if(!current) throw new Error('NOT_FOUND')
+      if(Number(body.expectedVersion)!==current.version) throw new Error('VERSION_CONFLICT')
       const existingById=new Map(current.stages.map(stage=>[stage.id,stage]))
       let nextPosition=current.stages.reduce((max,item)=>Math.max(max,item.position),-1)+1
       for(const input of stages) {
@@ -38,7 +41,8 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
             if(!same) throw new Error('ACCEPTED_STAGE_LOCKED')
             continue
           }
-          await tx.commercialProposalStage.update({where:{id:existing.id},data})
+          const written=await tx.commercialProposalStage.updateMany({where:{id:existing.id,clientWorkId:null},data})
+          if(!written.count) throw new Error('ACCEPTED_STAGE_LOCKED')
         } else {
           const created=await tx.commercialProposalStage.create({data:{proposalId,position:nextPosition++,...data}})
           existingById.set(created.id,created)
@@ -79,6 +83,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
     return NextResponse.json({ok:true,proposal:{id:updated.id,version:updated.version}},{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     if(error instanceof Error&&error.message==='NOT_FOUND') return NextResponse.json({error:'No encontramos la propuesta.'},{status:404})
+    if(error instanceof Error&&error.message==='VERSION_CONFLICT') return NextResponse.json({error:'La propuesta cambió desde que la abriste. Recargá antes de guardar.'},{status:409})
     if(error instanceof Error&&error.message==='INVALID_STAGE') return NextResponse.json({error:'Una etapa no pertenece a esta propuesta.'},{status:400})
     if(error instanceof Error&&error.message==='ACCEPTED_STAGE_LOCKED') return NextResponse.json({error:'Una etapa ya aprobada y convertida en trabajo no se puede modificar.'},{status:409})
     console.error('proposal update',error)
