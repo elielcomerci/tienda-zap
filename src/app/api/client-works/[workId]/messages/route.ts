@@ -7,7 +7,9 @@ export const dynamic = 'force-dynamic'
 async function resolveAccess(request: NextRequest, workId: string) {
   const session = await auth()
   const userId = session?.user?.id
-  if (!userId) return { response: NextResponse.json({ error: 'Inicia sesion para continuar.' }, { status: 401 }) }
+  if (!userId) return { response: NextResponse.json({ error: 'Inicia sesion para continuar.' }, { status: 401 })
+  const account = await prisma.user.findUnique({ where: { id: userId }, select: { isBanned: true } })
+  if (!account || account.isBanned) return { response: NextResponse.json({ error: 'La cuenta no puede realizar esta operación.' }, { status: 403 }) }
 
   const adminScope = session.user.role === 'ADMIN' && new URL(request.url).searchParams.get('scope') === 'admin'
   const work = await prisma.clientWork.findFirst({
