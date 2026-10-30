@@ -5,8 +5,9 @@ import ProposalOnboardingForm from './ProposalOnboardingForm'
 
 export const dynamic='force-dynamic'
 
-export default async function ProposalWelcomePage({searchParams}:{searchParams:Promise<{callbackUrl?:string}>}) {
-  const {callbackUrl:requested}=await searchParams
+export default async function ProposalWelcomePage({searchParams}:{searchParams:Promise<{callbackUrl?:string|string[]}>}) {
+  const {callbackUrl:rawRequested}=await searchParams
+  const requested=Array.isArray(rawRequested)?rawRequested[0]:rawRequested
   const callbackUrl=requested&&requested.startsWith('/')&&!requested.startsWith('//')&&!requested.includes('\\')&&!/%5c/i.test(requested)&&!/[\u0000-\u001f\u007f]/.test(requested)?requested:'/perfil'
   const session=await auth()
   if(!session?.user?.id) redirect('/login?callbackUrl='+encodeURIComponent('/perfil/bienvenida?callbackUrl='+callbackUrl))
