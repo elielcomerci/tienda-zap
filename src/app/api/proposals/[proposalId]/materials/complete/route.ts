@@ -19,7 +19,8 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
   let stagingKey:string|null=null
   let finalKey:string|null=null
   try {
-    const body=await request.json()
+    const body=await request.json().catch(()=>null)
+    if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'El body debe ser JSON válido.'},{status:400})
     const validation=validateClientFile({fileName:String(body.fileName||''),contentType:String(body.contentType||'application/octet-stream'),sizeBytes:Number(body.sizeBytes)})
     if(!validation.ok) return NextResponse.json({error:validation.error},{status:400})
     const expectedPrefix=`proposal-file-uploads/${proposalId}/`
