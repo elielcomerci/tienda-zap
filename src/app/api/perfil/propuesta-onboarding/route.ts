@@ -12,15 +12,13 @@ export async function POST(request:NextRequest) {
   try {
     const body=await request.json()
     const name=typeof body.name==='string'?body.name.trim().slice(0,120):''
-    const phone=typeof body.phone==='string'?body.phone.trim().slice(0,40):''
-    const documentId=typeof body.documentId==='string'?body.documentId.trim().slice(0,40):''
     const taxSituation=typeof body.taxSituation==='string'?body.taxSituation:''
     const objectives:string[]=Array.isArray(body.objectives)?[...new Set<string>(body.objectives.filter((value:unknown):value is string=>typeof value==='string'&&objectiveOptions.has(value)))].slice(0,7):[]
     if(name.length<2) return NextResponse.json({error:'Indicá tu nombre y apellido.'},{status:400})
     if(!taxOptions.has(taxSituation)) return NextResponse.json({error:'Seleccioná tu situación fiscal.'},{status:400})
     if(objectives.length===0) return NextResponse.json({error:'Elegí al menos un objetivo.'},{status:400})
     await prisma.$transaction([
-      prisma.user.update({where:{id:session.user.id},data:{name,phone:phone||null,documentId:documentId||null}}),
+      prisma.user.update({where:{id:session.user.id},data:{name}}),
       prisma.proposalClientOnboarding.upsert({
         where:{userId:session.user.id},
         create:{userId:session.user.id,taxSituation,objectives,completedAt:new Date()},
