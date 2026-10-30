@@ -16,21 +16,17 @@ export default async function PrivateProposalEntry({ params }: { params: Promise
     select: { id: true, proposalId: true, proposal: { select: { customerId: true, targetEmail: true } } }
   })
   if (!invite) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Este enlace ya no está disponible</h1><p className="mt-3 text-sm leading-6 text-gray-600">Puede haber vencido o haber sido reemplazado. Contactá a ZAP para recibir una nueva invitación.</p></main>
-  const session = await auth()
-  if (!session?.user?.id) redirect('/login?callbackUrl='+encodeURIComponent('/propuesta/'+token))
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, email: true } })
-  if (!user) redirect('/login?callbackUrl='+encodeURIComponent('/propuesta/'+token))
 
+  const session = await auth()
   if (invite.proposal.customerId) {
-    if (invite.proposal.customerId !== user.id) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Esta propuesta está asociada a otro acceso</h1><p className="mt-3 text-sm leading-6 text-gray-600">Ingresá con la cuenta vinculada a esta propuesta o contactá a ZAP.</p></main>
-  } else {
-    const targetEmail = invite.proposal.targetEmail?.trim().toLowerCase()
-    if (!targetEmail || targetEmail !== user.email?.trim().toLowerCase()) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Esta propuesta está dirigida a otra dirección</h1><p className="mt-3 text-sm leading-6 text-gray-600">Ingresá con la cuenta asociada al email que recibió la invitación.</p></main>
-    return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Confirmemos tu dirección de email</h1><p className="mt-3 text-sm leading-6 text-gray-600">Antes de abrir la propuesta, necesitamos comprobar que tenés acceso a la casilla a la que fue enviada.</p><div className="mt-6"><RequestProposalEmailVerification inviteId={invite.id} /></div></main>
+    if (!session?.user?.id) redirect('/login?callbackUrl='+encodeURIComponent('/propuesta/'+token))
+    if (invite.proposal.customerId !== session.user.id) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Esta propuesta está asociada a otro acceso</h1><p className="mt-3 text-sm leading-6 text-gray-600">Ingresá con la cuenta vinculada a esta propuesta o contactá a ZAP.</p></main>
+    await prisma.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } })
+    const onboarding=await prisma.proposalClientOnboarding.findUnique({where:{userId:session.user.id},select:{completedAt:true}})
+    if(!onboarding?.completedAt) redirect('/perfil/bienvenida?callbackUrl='+encodeURIComponent('/perfil/propuestas/'+invite.proposalId))
+    redirect('/perfil/propuestas/'+invite.proposalId)
   }
 
-  await prisma.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } })
-  const onboarding=await prisma.proposalClientOnboarding.findUnique({where:{userId:user.id},select:{completedAt:true}})
-  if(!onboarding?.completedAt) redirect('/perfil/bienvenida?callbackUrl='+encodeURIComponent('/propuesta/'+token))
-  redirect('/perfil/propuestas/'+invite.proposalId)
+  if (!invite.proposal.targetEmail) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">No pudimos identificar al destinatario</h1><p className="mt-3 text-sm text-gray-600">Contactá a ZAP para revisar la invitación.</p></main>
+  return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Confirmemos que sos vos</h1><p className="mt-3 text-sm leading-6 text-gray-600">Antes de abrir la propuesta, vamos a enviarte un enlace a la dirección de email destinataria. Desde ese enlace vas a poder crear tu acceso o recuperar el existente.</p><div className="mt-6"><RequestProposalEmailVerification inviteId={invite.id} /></div></main>
 }
