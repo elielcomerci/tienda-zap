@@ -1,6 +1,6 @@
 import {auth} from '@/auth'
 import {prisma} from '@/lib/prisma'
-import {createPresignedR2DownloadUrl} from '@/lib/r2'
+import {createPresignedR2DownloadUrl,getR2PrivateBucketName} from '@/lib/r2'
 import {NextRequest,NextResponse} from 'next/server'
 
 export const dynamic='force-dynamic'
@@ -16,7 +16,7 @@ export async function GET(_request:NextRequest,{params}:{params:Promise<{proposa
   if(!material?.objectKey) return NextResponse.json({error:'Archivo no encontrado.'},{status:404})
   if(session.user.role!=='ADMIN'&&material.proposal.customerId!==session.user.id) return NextResponse.json({error:'Archivo no encontrado.'},{status:404})
   try {
-    const url=await createPresignedR2DownloadUrl({objectKey:material.objectKey,fileName:material.fileName})
+    const url=await createPresignedR2DownloadUrl({objectKey:material.objectKey,fileName:material.fileName,bucketName:getR2PrivateBucketName()})
     return NextResponse.redirect(url,{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     console.error('proposal file download',error)
