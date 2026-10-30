@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 
 export const metadata = { title: 'Iniciar sesión — ZAP Tienda' }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string | string[] }> }) {
   const session = await auth()
   
   const { callbackUrl: rawCallbackUrl } = await searchParams
