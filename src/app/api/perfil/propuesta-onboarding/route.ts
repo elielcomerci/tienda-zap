@@ -10,7 +10,8 @@ export async function POST(request:NextRequest) {
   const session=await auth()
   if(!session?.user?.id) return NextResponse.json({error:'Iniciá sesión para continuar.'},{status:401})
   try {
-    const body=await request.json()
+    const body=await request.json().catch(()=>null)
+    if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'Los datos enviados no son válidos.'},{status:400})
     const name=typeof body.name==='string'?body.name.trim().slice(0,120):''
     const taxSituation=typeof body.taxSituation==='string'?body.taxSituation:''
     const objectives:string[]=Array.isArray(body.objectives)?[...new Set<string>(body.objectives.filter((value:unknown):value is string=>typeof value==='string'&&objectiveOptions.has(value)))].slice(0,7):[]
