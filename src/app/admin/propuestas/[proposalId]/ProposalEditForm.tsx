@@ -8,7 +8,7 @@ type Fields={title:string;summary:string;diagnosis:string;solution:string;scope:
 const emptyStage=():Stage=>({title:'',description:'',scope:'',deliverables:'',timeline:'',conditions:'',amount:'',paymentTerms:''})
 const cls='w-full rounded-xl border border-gray-200 px-3 py-3 text-sm'
 const label='mb-1 block text-sm font-medium text-gray-700'
-export default function ProposalEditForm({proposalId,initial,initialStages}:{proposalId:string;initial:Fields;initialStages:Stage[]}) {
+export default function ProposalEditForm({proposalId,version,initial,initialStages}:{proposalId:string;version:number;initial:Fields;initialStages:Stage[]}) {
   const router=useRouter()
   const [fields,setFields]=useState(initial)
   const [stages,setStages]=useState(initialStages)
@@ -21,7 +21,7 @@ export default function ProposalEditForm({proposalId,initial,initialStages}:{pro
   async function save(e:React.FormEvent) {
     e.preventDefault();setBusy(true);setError('')
     try {
-      const response=await fetch('/api/admin/proposals/'+proposalId,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fields,stages:stages.map(({locked,...stage})=>stage)})})
+      const response=await fetch('/api/admin/proposals/'+proposalId,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fields,expectedVersion:version,stages:stages.map(({locked,...stage})=>stage)})})
       const data=await response.json()
       if(!response.ok) throw new Error(data.error||'No pudimos guardar los cambios.')
       router.push('/admin/propuestas/'+proposalId);router.refresh()
