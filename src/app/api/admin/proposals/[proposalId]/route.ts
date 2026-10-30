@@ -4,7 +4,7 @@ import {NextRequest,NextResponse} from 'next/server'
 
 export const dynamic='force-dynamic'
 const clean=(value:unknown,max=12000)=>typeof value==='string'?value.trim().slice(0,max)||null:null
-const validAmount=(value:unknown)=>value===''||value==null||(Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<1_000_000_000_000&&/^\\d+(?:\\.\\d{1,2})?$/.test(String(value)))
+const validAmount=(value:unknown)=>value===''||value==null||(Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<1_000_000_000_000&&/^\d+(?:\.\d{1,2})?$/.test(String(value)))
 
 export async function PATCH(request:NextRequest,{params}:{params:Promise<{proposalId:string}>}) {
   const session=await auth()
