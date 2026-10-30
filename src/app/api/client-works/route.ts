@@ -7,7 +7,6 @@ import { recordClientWorkActivity } from '@/lib/client-work-audit'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'Trabajos y archivos todavía no está habilitado.' }, { status: 503 })
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Iniciá sesión para ver tus trabajos.' }, { status: 401 })
