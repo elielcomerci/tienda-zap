@@ -10,10 +10,11 @@ export async function GET(_request:NextRequest,{params}:{params:Promise<{proposa
   if(!session?.user?.id) return NextResponse.json({error:'Iniciá sesión.'},{status:401})
   const {proposalId,materialId}=await params
   const material=await prisma.commercialProposalMaterial.findFirst({
-    where:{id:materialId,proposalId,objectKey:{not:null},proposal:session.user.role==='ADMIN'?{}:{customerId:session.user.id}},
-    select:{objectKey:true,fileName:true}
+    where:{id:materialId,proposalId,objectKey:{not:null}},
+    select:{objectKey:true,fileName:true,proposal:{select:{customerId:true}}}
   })
   if(!material?.objectKey) return NextResponse.json({error:'Archivo no encontrado.'},{status:404})
+  if(session.user.role!=='ADMIN'&&material.proposal.customerId!==session.user.id) return NextResponse.json({error:'Archivo no encontrado.'},{status:404})
   try {
     const url=await createPresignedR2DownloadUrl({objectKey:material.objectKey,fileName:material.fileName})
     return NextResponse.json({url},{headers:{'Cache-Control':'private, no-store'}})
