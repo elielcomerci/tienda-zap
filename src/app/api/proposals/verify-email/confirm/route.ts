@@ -28,6 +28,8 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 12)
 
     await prisma.$transaction(async tx => {
+      const locked = await tx.commercialProposal.updateMany({ where: { id: proposalId }, data: { version: { increment: 0 } } })
+      if (!locked.count) throw new Error('INVITE_EXPIRED')
       const invite = await tx.commercialProposalInvite.findFirst({
         where: { id: inviteId, proposalId, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
         select: { id: true },
