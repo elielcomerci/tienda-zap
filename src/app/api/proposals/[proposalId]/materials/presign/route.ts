@@ -22,7 +22,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
     const validation=validateClientFile({fileName:String(body.fileName||''),contentType:String(body.contentType||'application/octet-stream'),sizeBytes:Number(body.sizeBytes)})
     if(!validation.ok) return NextResponse.json({error:validation.error},{status:400})
     const objectKey=`proposal-file-uploads/${proposalId}/${crypto.randomUUID()}-${validation.fileName}`
-    const signedUrl=await createPresignedR2UploadUrl({objectKey,contentType:validation.contentType,bucketName:getR2PrivateBucketName()})
+    const signedUrl=await createPresignedR2UploadUrl({objectKey,contentType:validation.contentType,contentLength:Number(body.sizeBytes),bucketName:getR2PrivateBucketName()})
     return NextResponse.json({signedUrl,objectKey,fileName:validation.fileName,contentType:validation.contentType,sizeBytes:Number(body.sizeBytes),maxSizeBytes:MAX_CLIENT_FILE_SIZE_BYTES},{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     console.error('proposal file presign',error)
