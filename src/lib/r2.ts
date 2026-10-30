@@ -51,16 +51,19 @@ export function getR2Client() {
 export async function createPresignedR2UploadUrl(params: {
   objectKey: string
   contentType: string
+  contentLength?: number
   bucketName?: string
 }) {
   const command = new PutObjectCommand({
     Bucket: params.bucketName || getR2BucketName(),
     Key: params.objectKey,
     ContentType: params.contentType,
+    ContentLength: params.contentLength,
   })
 
   return getSignedUrl(getR2Client(), command, {
     expiresIn: R2_UPLOAD_URL_TTL_SECONDS,
+    signableHeaders: params.contentLength ? new Set(['content-length']) : undefined,
   })
 }
 
