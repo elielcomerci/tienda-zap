@@ -27,8 +27,8 @@ export function getR2BucketName() {
   return getRequiredEnv('R2_BUCKET_NAME')
 }
 
-// Los archivos de clientes comparten el bucket R2 existente, pero usan prefijos
-// separados y solo se entregan mediante URLs firmadas tras validar permisos.
+// El bucket privado se configura por separado para aislar propuestas y archivos nuevos.
+// Los ClientWorkFile históricos sin bucketName siguen usando R2_BUCKET_NAME.
 export function getR2PrivateBucketName() {
   return getRequiredEnv('R2_PRIVATE_BUCKET_NAME')
 }
