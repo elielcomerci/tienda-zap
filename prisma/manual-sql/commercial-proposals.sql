@@ -110,3 +110,19 @@ CREATE TABLE IF NOT EXISTS "CommercialProposalVersion" (
 CREATE UNIQUE INDEX IF NOT EXISTS "CommercialProposalVersion_proposalId_version_key" ON "CommercialProposalVersion"("proposalId","version");
 CREATE INDEX IF NOT EXISTS "CommercialProposalVersion_proposalId_createdAt_idx" ON "CommercialProposalVersion"("proposalId","createdAt");
 
+
+
+-- Datos mínimos de onboarding del cliente al recibir una primera propuesta.
+CREATE TABLE IF NOT EXISTS "ProposalClientOnboarding" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "taxSituation" TEXT NOT NULL,
+  "objectives" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  "completedAt" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "ProposalClientOnboarding_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "ProposalClientOnboarding_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "ProposalClientOnboarding_userId_key" ON "ProposalClientOnboarding"("userId");
+
