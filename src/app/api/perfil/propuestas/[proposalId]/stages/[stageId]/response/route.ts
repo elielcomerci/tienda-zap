@@ -10,7 +10,8 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
   if(!session?.user?.id) return NextResponse.json({error:'Iniciá sesión.'},{status:401})
   const {proposalId,stageId}=await params
   try {
-    const body=await req.json()
+    const body=await req.json().catch(()=>null)
+    if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'Decisión no válida.'},{status:400})
     const action=typeof body.action==='string'?body.action:''
     const message=typeof body.message==='string'?body.message.trim().slice(0,4000):''
     const expectedVersion=Number(body.expectedVersion)
