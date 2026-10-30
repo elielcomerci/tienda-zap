@@ -4,6 +4,7 @@ import {NextRequest,NextResponse} from 'next/server'
 
 export const dynamic='force-dynamic'
 const clean=(value:unknown,max=12000)=>typeof value==='string'?value.trim().slice(0,max)||null:null
+const validAmount=(value:unknown)=>value===''||value==null||(Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<1_000_000_000_000&&/^\\d+(?:\\.\\d{1,2})?$/.test(String(value)))
 
 export async function PATCH(request:NextRequest,{params}:{params:Promise<{proposalId:string}>}) {
   const session=await auth()
@@ -15,11 +16,12 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
     const expectedVersion=Number(body.expectedVersion)
     if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá antes de guardar.'},{status:409})
     const stages=Array.isArray(body.stages)?body.stages:[]
+    if(!validAmount(body.amount)) return NextResponse.json({error:'El importe general debe ser un número no negativo con hasta dos decimales y menor a 1.000.000.000.000.'},{status:400})
     const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
     if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
     if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
     for(const stage of stages) {
-      if(stage.amount!==''&&stage.amount!=null&&(!Number.isFinite(Number(stage.amount))||Number(stage.amount)<0)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
+      if(!validAmount(stage.amount)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
     }
     const updated=await prisma.$transaction(async tx=>{
       const versionLock=await tx.commercialProposal.updateMany({where:{id:proposalId,version:expectedVersion},data:{version:{increment:0}}})
@@ -34,13 +36,13 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
           title:clean(input.title,180)!,
           description:clean(input.description),scope:clean(input.scope),deliverables:clean(input.deliverables),
           timeline:clean(input.timeline,2000),conditions:clean(input.conditions),paymentTerms:clean(input.paymentTerms),
-          amount:input.amount===''||input.amount==null?null:Number(input.amount),currency:'ARS'
+          amount:input.amount===''||input.amount==null?null:Number(input.amount),currency:'ARS',status:'PENDING'
         }
         if(input.id) {
           const existing=existingById.get(String(input.id))
           if(!existing) throw new Error('INVALID_STAGE')
           if(existing.clientWorkId) {
-            const same=existing.title===data.title&&existing.description===data.description&&existing.scope===data.scope&&existing.deliverables===data.deliverables&&existing.timeline===data.timeline&&existing.conditions===data.conditions&&existing.paymentTerms===data.paymentTerms&&Number(existing.amount??0)===Number(data.amount??0)
+            const same=existing.title===data.title&&existing.description===data.description&&existing.scope===data.scope&&existing.deliverables===data.deliverables&&existing.timeline===data.timeline&&existing.conditions===data.conditions&&existing.paymentTerms===data.paymentTerms&&(existing.amount==null?null:Number(existing.amount))===data.amount
             if(!same) throw new Error('ACCEPTED_STAGE_LOCKED')
             continue
           }
@@ -59,7 +61,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
           scope:clean(body.scope),deliverables:clean(body.deliverables),timeline:clean(body.timeline),
           conditions:clean(body.conditions),paymentTerms:clean(body.paymentTerms),
           amount:rootAmount,
-          status:current.status==='SHARED'?'DRAFT':current.status,
+          status:'DRAFT',customerResponse:null,respondedAt:null,acceptedAt:null,
           version:{increment:1}
         },
         include:{stages:{orderBy:{position:'asc'}},materials:{orderBy:{sortOrder:'asc'}}}
