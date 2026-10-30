@@ -17,7 +17,7 @@ export default function LoginForm() {
   const passwordReset = searchParams.get('passwordReset')
   const queryError = searchParams.get('error')
   const requestedCallback = searchParams.get('callbackUrl')
-  const callbackUrl = requestedCallback && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') ? requestedCallback : '/perfil'
+  const callbackUrl = requestedCallback && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') && !requestedCallback.includes('\\\\') && !/%5c/i.test(requestedCallback) && !/[\\u0000-\\u001f\\u007f]/.test(requestedCallback) ? requestedCallback : '/perfil'
   const [error, setError] = useState(queryError ? decodeURIComponent(queryError) : '')
   const [loading, setLoading] = useState(false)
 
