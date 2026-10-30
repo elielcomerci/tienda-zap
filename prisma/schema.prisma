@@ -1896,6 +1896,7 @@ model ClientWorkFile {
   sizeBytes    Int
   objectKey         String   @unique
   bucketName        String?
+  bucketName        String?
   previousObjectKey String?
   cleanupError      String?  @db.Text
   note              String?  @db.Text
