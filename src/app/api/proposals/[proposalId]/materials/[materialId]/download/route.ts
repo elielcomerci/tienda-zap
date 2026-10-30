@@ -1,0 +1,24 @@
+import {auth} from '@/auth'
+import {prisma} from '@/lib/prisma'
+import {createPresignedR2DownloadUrl} from '@/lib/r2'
+import {NextRequest,NextResponse} from 'next/server'
+
+export const dynamic='force-dynamic'
+
+export async function GET(_request:NextRequest,{params}:{params:Promise<{proposalId:string;materialId:string}>}) {
+  const session=await auth()
+  if(!session?.user?.id) return NextResponse.json({error:'Iniciá sesión.'},{status:401})
+  const {proposalId,materialId}=await params
+  const material=await prisma.commercialProposalMaterial.findFirst({
+    where:{id:materialId,proposalId,objectKey:{not:null},proposal:session.user.role==='ADMIN'?{}:{customerId:session.user.id}},
+    select:{objectKey:true,fileName:true}
+  })
+  if(!material?.objectKey) return NextResponse.json({error:'Archivo no encontrado.'},{status:404})
+  try {
+    const url=await createPresignedR2DownloadUrl({objectKey:material.objectKey,fileName:material.fileName})
+    return NextResponse.json({url},{headers:{'Cache-Control':'private, no-store'}})
+  } catch(error) {
+    console.error('proposal file download',error)
+    return NextResponse.json({error:'No pudimos preparar la descarga.'},{status:500})
+  }
+}
