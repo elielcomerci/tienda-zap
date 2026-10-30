@@ -36,8 +36,9 @@ export async function POST(request: NextRequest) {
       const proposal = await tx.commercialProposal.findUnique({ where: { id: proposalId }, select: { targetEmail: true, customerId: true } })
       if (!proposal || proposal.targetEmail?.trim().toLowerCase() !== email || proposal.customerId) throw new Error('CLAIM_CONFLICT')
 
-      let user = await tx.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } }, select: { id: true, isBanned: true } })
+      let user = await tx.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } }, select: { id: true, isBanned: true, role: true } })
       if (user?.isBanned) throw new Error('ACCOUNT_BLOCKED')
+      if (user && user.role !== 'CUSTOMER') throw new Error('ACCOUNT_TYPE_INVALID')
       if (user) {
         await tx.user.update({ where: { id: user.id }, data: { password: passwordHash } })
       } else {
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, redirectTo: '/login?callbackUrl=' + encodeURIComponent('/perfil/bienvenida?callbackUrl=' + encodeURIComponent('/perfil/propuestas/' + proposalId)) }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     if (error instanceof Error && error.message === 'INVITE_EXPIRED') return NextResponse.json({ error: 'La invitación ya no está disponible.' }, { status: 410 })
+    if (error instanceof Error && error.message === 'ACCOUNT_TYPE_INVALID') return NextResponse.json({ error: 'Esta dirección está asociada a una cuenta administrativa o de vendedor. Contactá a ZAP.' }, { status: 403 })
     if (error instanceof Error && error.message === 'ACCOUNT_BLOCKED') return NextResponse.json({ error: 'La cuenta está bloqueada. Contactá a ZAP.' }, { status: 403 })
     if (error instanceof Error && error.message === 'CLAIM_CONFLICT') return NextResponse.json({ error: 'La propuesta ya está vinculada o cambió de destinatario.' }, { status: 409 })
     console.error('proposal email verification confirmation failed', error)
