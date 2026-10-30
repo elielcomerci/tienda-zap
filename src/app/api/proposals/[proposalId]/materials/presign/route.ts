@@ -7,8 +7,7 @@ import {NextRequest,NextResponse} from 'next/server'
 export const dynamic='force-dynamic'
 
 async function canAccess(proposalId:string,userId:string,role:string) {
-  if(role==='ADMIN') return true
-  const proposal=await prisma.commercialProposal.findFirst({where:{id:proposalId,customerId:userId},select:{id:true}})
+  const proposal=await prisma.commercialProposal.findFirst({where:role==='ADMIN'?{id:proposalId}:{id:proposalId,customerId:userId},select:{id:true}})
   return !!proposal
 }
 
