@@ -9,8 +9,9 @@ export const metadata = { title: 'Iniciar sesión — ZAP Tienda' }
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
   const session = await auth()
   
-  const { callbackUrl } = await searchParams
-  const safeCallback = callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\') && !/%5c/i.test(callbackUrl) && !/[\u0000-\u001f\u007f]/.test(callbackUrl) ? callbackUrl : '/perfil'
+  const { callbackUrl: rawCallbackUrl } = await searchParams
+  const callbackUrl = Array.isArray(rawCallbackUrl) ? rawCallbackUrl[0] : rawCallbackUrl
+  const safeCallback = typeof callbackUrl === 'string' && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\') && !/%5c/i.test(callbackUrl) && !/[\u0000-\u001f\u007f]/.test(callbackUrl) ? callbackUrl : '/perfil'
   if (session?.user?.id) {
     redirect(safeCallback)
   }
