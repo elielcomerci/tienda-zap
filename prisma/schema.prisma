@@ -66,6 +66,7 @@ model User {
   createdFiscalInvoiceBatches       FiscalInvoiceBatch[]       @relation("FiscalInvoiceBatchCreator")
   receivedProposals                 CommercialProposal[]       @relation("CommercialProposalCustomer")
   createdProposals                  CommercialProposal[]       @relation("CommercialProposalCreator")
+  proposalOnboarding                 ProposalClientOnboarding?
 }
 
 model SellerProfile {
@@ -1994,6 +1995,18 @@ model CommercialProposal {
   @@index([customerId, updatedAt])
   @@index([businessAccountId, updatedAt])
   @@index([status, updatedAt])
+}
+
+model ProposalClientOnboarding {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  taxSituation   String
+  objectives     String[] @default([])
+  completedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CommercialProposalVersion {
