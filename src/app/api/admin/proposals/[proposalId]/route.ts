@@ -12,6 +12,8 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
   try {
     const body=await request.json()
     const stages=Array.isArray(body.stages)?body.stages.slice(0,12):[]
+    const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
+    if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
     if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
     for(const stage of stages) {
       if(stage.amount!==''&&stage.amount!=null&&(!Number.isFinite(Number(stage.amount))||Number(stage.amount)<0)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
@@ -20,6 +22,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
       const current=await tx.commercialProposal.findUnique({where:{id:proposalId},include:{stages:true}})
       if(!current) throw new Error('NOT_FOUND')
       const existingById=new Map(current.stages.map(stage=>[stage.id,stage]))
+      let nextPosition=current.stages.reduce((max,item)=>Math.max(max,item.position),-1)+1
       for(const input of stages) {
         const data={
           title:clean(input.title,180)!,
@@ -37,8 +40,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
           }
           await tx.commercialProposalStage.update({where:{id:existing.id},data})
         } else {
-          const position=current.stages.reduce((max,item)=>Math.max(max,item.position),-1)+1
-          const created=await tx.commercialProposalStage.create({data:{proposalId,position,...data}})
+          const created=await tx.commercialProposalStage.create({data:{proposalId,position:nextPosition++,...data}})
           existingById.set(created.id,created)
         }
       }
@@ -49,7 +51,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
           summary:clean(body.summary),diagnosis:clean(body.diagnosis),solution:clean(body.solution),
           scope:clean(body.scope),deliverables:clean(body.deliverables),timeline:clean(body.timeline),
           conditions:clean(body.conditions),paymentTerms:clean(body.paymentTerms),
-          amount:body.amount===''||body.amount==null?null:Number(body.amount),
+          amount:rootAmount,
           version:{increment:1}
         },
         include:{stages:{orderBy:{position:'asc'}},materials:{orderBy:{sortOrder:'asc'}}}
