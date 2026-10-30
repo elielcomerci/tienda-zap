@@ -11,7 +11,8 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
   if(session?.user?.role!=='ADMIN'||!session.user.id) return NextResponse.json({error:'No autorizado.'},{status:403})
   const {proposalId}=await params
   try {
-    const body=await request.json()
+    const body=await request.json().catch(()=>null)
+    if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'Los datos de la propuesta no son válidos.'},{status:400})
     if(Array.isArray(body.stages)&&body.stages.length>12) return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
     const expectedVersion=Number(body.expectedVersion)
     if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá antes de guardar.'},{status:409})
