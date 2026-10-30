@@ -107,7 +107,7 @@ export async function registerUser(formData: FormData): Promise<void> {
   }
 
   const requestedCallback = formData.get('callbackUrl')
-  const safeCallback = typeof requestedCallback === 'string' && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') ? requestedCallback : ''
+  const safeCallback = typeof requestedCallback === 'string' && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') && !requestedCallback.includes('\\\\') && !/%5c/i.test(requestedCallback) && !/[\\u0000-\\u001f\\u007f]/.test(requestedCallback) ? requestedCallback : ''
   redirect('/login?registered=1' + (safeCallback ? '&callbackUrl=' + encodeURIComponent(safeCallback) : ''))
 }
 
