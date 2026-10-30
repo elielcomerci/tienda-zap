@@ -15,7 +15,7 @@ export async function POST(request:NextRequest) {
     const phone=typeof body.phone==='string'?body.phone.trim().slice(0,40):''
     const documentId=typeof body.documentId==='string'?body.documentId.trim().slice(0,40):''
     const taxSituation=typeof body.taxSituation==='string'?body.taxSituation:''
-    const objectives=Array.isArray(body.objectives)?Array.from(new Set(body.objectives.filter((value:unknown):value is string=>typeof value==='string'&&objectiveOptions.has(value))).values()).slice(0,7):[]
+    const objectives:string[]=Array.isArray(body.objectives)?[...new Set<string>(body.objectives.filter((value:unknown):value is string=>typeof value==='string'&&objectiveOptions.has(value)))].slice(0,7):[]
     if(name.length<2) return NextResponse.json({error:'Indicá tu nombre y apellido.'},{status:400})
     if(!taxOptions.has(taxSituation)) return NextResponse.json({error:'Seleccioná tu situación fiscal.'},{status:400})
     if(objectives.length===0) return NextResponse.json({error:'Elegí al menos un objetivo.'},{status:400})
