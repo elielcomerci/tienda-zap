@@ -13,11 +13,11 @@ export default async function RegistroPage({
   searchParams: Promise<{ error?: string; callbackUrl?: string }>
 }) {
   const { error, callbackUrl } = await searchParams
-  const safeCallback = callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') ? callbackUrl : ''
+  const safeCallback = callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\\\') && !/%5c/i.test(callbackUrl) && !/[\\u0000-\\u001f\\u007f]/.test(callbackUrl) ? callbackUrl : ''
   
   const session = await auth()
   if (session?.user) {
-    redirect('/perfil')
+    redirect(safeCallback || '/perfil')
   }
 
   const businessTypes = await getPublicBusinessTypes()
