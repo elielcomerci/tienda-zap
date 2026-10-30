@@ -10,13 +10,16 @@ export default function ProposalSharePanel({proposalId,initialInvites,hasActiveI
   const [copied,setCopied]=useState(false)
   async function generate() {
     setBusy(true);setError('')
+    let serverRejected=false
     try {
       const response=await fetch('/api/admin/proposals/'+proposalId+'/invite',{method:'POST'})
       const data=await response.json()
-      if(!response.ok) throw new Error(data.error||'No se pudo generar el enlace.')
-      setUrl(data.url);router.refresh()
-    } catch(cause) {setError(cause instanceof Error?cause.message:'Error inesperado.')}
-    finally {setBusy(false)}
+      if(!response.ok) {serverRejected=true;throw new Error(data.error||'No se pudo generar el enlace.')}
+      setUrl(data.url);setCopied(false);router.refresh()
+    } catch(cause) {
+      if(!serverRejected) {setUrl('');setError('No pudimos confirmar el nuevo enlace. El anterior podría haber sido revocado. '+(cause instanceof Error?cause.message:'Error inesperado.'))}
+      else setError(cause instanceof Error?cause.message:'Error inesperado.')
+    } finally {setBusy(false)}
   }
   async function revoke() {
     if(!confirm('¿Revocar el enlace activo? El cliente ya no podrá abrirlo.')) return
