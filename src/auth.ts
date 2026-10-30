@@ -4,6 +4,11 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { PUBLIC_LOGOUT_URL, PUBLIC_SITE_URL } from '@/lib/public-site-url'
 
+function isSafeInternalPath(value: string, baseUrl: string) {
+  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\') || /%5c/i.test(value) || /[\u0000-\u001f\u007f]/.test(value)) return false
+  try { return new URL(value, baseUrl).origin === new URL(baseUrl).origin } catch { return false }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
@@ -42,7 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async redirect({ url, baseUrl }) {
       if (url === PUBLIC_LOGOUT_URL || url === PUBLIC_SITE_URL) return PUBLIC_LOGOUT_URL
-      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (isSafeInternalPath(url, baseUrl)) return `${baseUrl}${url}`
       try {
         if (new URL(url).origin === baseUrl) return url
       } catch {
@@ -68,6 +73,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         })
 
         if (!currentUser || currentUser.isBanned) {
+          delete token.id
+          delete token.email
+          delete token.name
           token.role = 'CUSTOMER'
           return token
         }
