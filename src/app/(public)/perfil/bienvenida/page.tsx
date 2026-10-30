@@ -11,9 +11,9 @@ export default async function ProposalWelcomePage({searchParams}:{searchParams:P
   const session=await auth()
   if(!session?.user?.id) redirect('/login?callbackUrl='+encodeURIComponent('/perfil/bienvenida?callbackUrl='+callbackUrl))
   const [user,onboarding]=await Promise.all([
-    prisma.user.findUnique({where:{id:session.user.id},select:{name:true,email:true,phone:true,documentId:true}}),
+    prisma.user.findUnique({where:{id:session.user.id},select:{name:true,email:true}}),
     prisma.proposalClientOnboarding.findUnique({where:{userId:session.user.id},select:{completedAt:true}})
   ])
   if(onboarding?.completedAt) redirect(callbackUrl)
-  return <ProposalOnboardingForm callbackUrl={callbackUrl} initialName={user?.name||''} initialPhone={user?.phone||''} initialDocumentId={user?.documentId||''} email={user?.email||session.user.email||''}/>
+  return <ProposalOnboardingForm callbackUrl={callbackUrl} initialName={user?.name||''} email={user?.email||session.user.email||''}/>
 }
