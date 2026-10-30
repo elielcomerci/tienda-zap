@@ -94,3 +94,19 @@ ALTER TABLE "CommercialProposalMaterial"
   ADD COLUMN IF NOT EXISTS "uploadedById" TEXT,
   ADD COLUMN IF NOT EXISTS "uploadedByName" TEXT,
   ADD COLUMN IF NOT EXISTS "uploadedByRole" TEXT;
+
+
+-- Versiones inmutables de lo que se compartió con cada cliente.
+CREATE TABLE IF NOT EXISTS "CommercialProposalVersion" (
+  "id" TEXT NOT NULL,
+  "proposalId" TEXT NOT NULL,
+  "version" INTEGER NOT NULL,
+  "snapshot" JSONB NOT NULL,
+  "createdById" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "CommercialProposalVersion_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "CommercialProposalVersion_proposalId_fkey" FOREIGN KEY ("proposalId") REFERENCES "CommercialProposal"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "CommercialProposalVersion_proposalId_version_key" ON "CommercialProposalVersion"("proposalId","version");
+CREATE INDEX IF NOT EXISTS "CommercialProposalVersion_proposalId_createdAt_idx" ON "CommercialProposalVersion"("proposalId","createdAt");
+
