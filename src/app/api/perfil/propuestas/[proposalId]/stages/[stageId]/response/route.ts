@@ -13,7 +13,8 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
     const body=await req.json().catch(()=>null)
     if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'Decisión no válida.'},{status:400})
     const action=typeof body.action==='string'?body.action:''
-    const message=typeof body.message==='string'?body.message.trim().slice(0,4000):''
+    const message=typeof body.message==='string'?body.message.trim():''
+    if(message.length>4000) return NextResponse.json({error:'El comentario no puede superar los 4.000 caracteres.'},{status:400})
     const expectedVersion=Number(body.expectedVersion)
     if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá la página antes de responder.'},{status:409})
     if(!allowed.has(action)) return NextResponse.json({error:'Decisión no válida.'},{status:400})
