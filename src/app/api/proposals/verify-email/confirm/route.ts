@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       }
 
       const claimed = await tx.commercialProposal.updateMany({
-        where: { id: proposalId, customerId: null, targetEmail: email },
+        where: { id: proposalId, customerId: null, targetEmail: { equals: email, mode: 'insensitive' } },
         data: { customerId: user.id },
       })
       if (!claimed.count) throw new Error('CLAIM_CONFLICT')
