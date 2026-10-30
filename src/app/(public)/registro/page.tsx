@@ -10,10 +10,11 @@ export const metadata = { title: 'Crear cuenta — ZAP Tienda' }
 export default async function RegistroPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; callbackUrl?: string }>
+  searchParams: Promise<{ error?: string; callbackUrl?: string | string[] }>
 }) {
-  const { error, callbackUrl } = await searchParams
-  const safeCallback = callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\') && !/%5c/i.test(callbackUrl) && !/[\u0000-\u001f\u007f]/.test(callbackUrl) ? callbackUrl : ''
+  const { error, callbackUrl: rawCallbackUrl } = await searchParams
+  const callbackUrl = Array.isArray(rawCallbackUrl) ? rawCallbackUrl[0] : rawCallbackUrl
+  const safeCallback = typeof callbackUrl === 'string' && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\') && !/%5c/i.test(callbackUrl) && !/[\u0000-\u001f\u007f]/.test(callbackUrl) ? callbackUrl : ''
   
   const session = await auth()
   if (session?.user) {
