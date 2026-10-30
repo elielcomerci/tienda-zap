@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { deleteR2Object, getR2PrivateBucketName } from '@/lib/r2'
+import { deleteR2Object, getR2BucketName } from '@/lib/r2'
 import { isClientWorkFilesEnabled } from '@/lib/client-work-files'
 import { NextRequest, NextResponse } from 'next/server'
 import { recordClientWorkActivity } from '@/lib/client-work-audit'
@@ -22,7 +22,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: 'No tenés acceso a este archivo.' }, { status: 403 })
     }
     // Keep the database row if R2 deletion fails, so the failure remains visible and retryable.
-    if (file.previousObjectKey) await deleteR2Object(file.previousObjectKey, getR2PrivateBucketName())
+    if (file.previousObjectKey) await deleteR2Object(file.previousObjectKey, (file.bucketName || getR2BucketName()))
     await deleteR2Object(file.objectKey, getR2PrivateBucketName())
     await prisma.clientWorkFile.delete({ where: { id: file.id } })
     await prisma.clientWork.update({ where: { id: file.work.id }, data: { updatedAt: new Date() } })
