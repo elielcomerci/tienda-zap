@@ -21,7 +21,7 @@ export default async function EditProposalPage({params}:{params:Promise<{proposa
       <h1 className="mt-2 text-3xl font-semibold">Editar propuesta</h1>
       <p className="mt-1 text-sm text-gray-500">Versión actual: {proposal.version}. Los cambios se guardan como una nueva versión.</p>
     </div>
-    <ProposalEditForm proposalId={proposal.id} version={proposal.version} version={proposal.version}
+    <ProposalEditForm proposalId={proposal.id} version={proposal.version}
       initial={{
         title:proposal.title,summary:proposal.summary||'',diagnosis:proposal.diagnosis||'',solution:proposal.solution||'',
         scope:proposal.scope||'',deliverables:proposal.deliverables||'',timeline:proposal.timeline||'',
