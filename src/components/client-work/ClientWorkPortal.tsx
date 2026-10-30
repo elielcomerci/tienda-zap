@@ -311,7 +311,7 @@ export default function ClientWorkPortal({ admin = false, users = [], filesEnabl
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <a title="Descargar" href={'/api/client-works/files/' + file.id + '/download?scope=' + (admin ? 'admin' : 'client')} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"><Download size={17} /></a>
-                    <button title="Reemplazar" type="button" disabled={busy !== null} onClick={() => {
+                    <button title="Reemplazar" type="button" disabled={busy !== null || !filesEnabled} onClick={() => {
                       replaceTarget.current = { workId: work.id, fileId: file.id }
                       replaceInput.current?.click()
                     }} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-40"><RefreshCw size={16} /></button>
