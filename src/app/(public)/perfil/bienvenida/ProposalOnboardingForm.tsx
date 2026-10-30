@@ -20,12 +20,10 @@ const tax=[
   ['OTRA','Otra situación']
 ] as const
 
-export default function ProposalOnboardingForm({callbackUrl,initialName,initialPhone,initialDocumentId,email}:{callbackUrl:string;initialName:string;initialPhone:string;initialDocumentId:string;email:string}) {
+export default function ProposalOnboardingForm({callbackUrl,initialName,email}:{callbackUrl:string;initialName:string;email:string}) {
   const router=useRouter()
   const [step,setStep]=useState(0)
   const [name,setName]=useState(initialName)
-  const [phone,setPhone]=useState(initialPhone)
-  const [documentId,setDocumentId]=useState(initialDocumentId)
   const [taxSituation,setTaxSituation]=useState('')
   const [selected,setSelected]=useState<string[]>([])
   const [busy,setBusy]=useState(false)
@@ -34,7 +32,7 @@ export default function ProposalOnboardingForm({callbackUrl,initialName,initialP
   async function submit() {
     setBusy(true);setError('')
     try {
-      const response=await fetch('/api/perfil/propuesta-onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,documentId,taxSituation,objectives:selected,callbackUrl})})
+      const response=await fetch('/api/perfil/propuesta-onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,taxSituation,objectives:selected,callbackUrl})})
       const data=await response.json()
       if(!response.ok) throw new Error(data.error||'No pudimos guardar tus datos.')
       router.replace(data.callbackUrl||callbackUrl);router.refresh()
@@ -43,7 +41,7 @@ export default function ProposalOnboardingForm({callbackUrl,initialName,initialP
   return <main className="mx-auto w-full max-w-xl px-4 py-10 sm:px-6">
     <div className="mb-8"><p className="text-xs font-semibold uppercase tracking-[.16em] text-gray-500">Tu espacio ZAP · Paso {step+1} de 3</p><div className="mt-3 flex gap-2">{[0,1,2].map(item=><span key={item} className={'h-1.5 flex-1 rounded-full '+(item<=step?'bg-gray-950':'bg-gray-200')}/>)}</div></div>
     <section className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
-      {step===0&&<div><h1 className="text-2xl font-semibold">Empecemos por conocerte.</h1><p className="mt-2 text-sm text-gray-500">Son unos pocos datos para que podamos trabajar mejor.</p><div className="mt-6 space-y-4"><label className="block text-sm font-medium">Nombre y apellido<input value={name} onChange={e=>setName(e.target.value)} maxLength={120} className="mt-1 w-full rounded-xl border px-3 py-3" placeholder="Tu nombre completo"/></label><label className="block text-sm font-medium">Email<input value={email} disabled className="mt-1 w-full rounded-xl border bg-gray-50 px-3 py-3 text-gray-500"/></label><label className="block text-sm font-medium">Teléfono / WhatsApp <span className="font-normal text-gray-400">(opcional)</span><input value={phone} onChange={e=>setPhone(e.target.value)} maxLength={40} className="mt-1 w-full rounded-xl border px-3 py-3" placeholder="Tu teléfono"/></label><label className="block text-sm font-medium">DNI / CUIT <span className="font-normal text-gray-400">(opcional)</span><input value={documentId} onChange={e=>setDocumentId(e.target.value)} maxLength={40} className="mt-1 w-full rounded-xl border px-3 py-3" placeholder="Solo si corresponde"/></label></div></div>}
+      {step===0&&<div><h1 className="text-2xl font-semibold">Empecemos por conocerte.</h1><p className="mt-2 text-sm text-gray-500">Son unos pocos datos para que podamos trabajar mejor.</p><div className="mt-6 space-y-4"><label className="block text-sm font-medium">Nombre y apellido<input value={name} onChange={e=>setName(e.target.value)} maxLength={120} className="mt-1 w-full rounded-xl border px-3 py-3" placeholder="Tu nombre completo"/></label><label className="block text-sm font-medium">Email<input value={email} disabled className="mt-1 w-full rounded-xl border bg-gray-50 px-3 py-3 text-gray-500"/></label></div></div>}
       {step===1&&<div><h1 className="text-2xl font-semibold">¿Cuál es tu situación fiscal?</h1><p className="mt-2 text-sm text-gray-500">Nos ayuda a preparar correctamente una eventual contratación o facturación.</p><div className="mt-6 space-y-2">{tax.map(([value,label])=><label key={value} className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm"><input type="radio" name="taxSituation" checked={taxSituation===value} onChange={()=>setTaxSituation(value)}/>{label}</label>)}</div></div>}
       {step===2&&<div><h1 className="text-2xl font-semibold">¿Qué te gustaría lograr?</h1><p className="mt-2 text-sm text-gray-500">Podés elegir más de uno. Esto nos ayuda a entender qué es importante para vos.</p><div className="mt-6 space-y-2">{objectives.map(([value,label])=><label key={value} className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm"><input type="checkbox" checked={selected.includes(value)} onChange={()=>toggle(value)}/>{label}</label>)}</div></div>}
       {error&&<p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
