@@ -1,13 +1,13 @@
 # Trabajos y archivos de clientes
 
-El módulo guarda metadatos en PostgreSQL y objetos en el bucket R2 existente configurado en `R2_BUCKET_NAME`. No requiere un segundo bucket ni nuevas credenciales.
+El módulo guarda metadatos en PostgreSQL. Los archivos nuevos se guardan en `R2_PRIVATE_BUCKET_NAME`; los registros históricos sin `bucketName` continúan leyendo desde `R2_BUCKET_NAME`.
 
 ## Antes de habilitarlo
 
-1. Reutilizar las credenciales y el bucket R2 ya configurados para `media.zap.com.ar`.
+1. Configurar `R2_PRIVATE_BUCKET_NAME` con el bucket privado (sin dominio público). Mantener `R2_BUCKET_NAME` para medios públicos y archivos históricos.
 2. Configurar CORS del bucket para permitir `PUT` desde `https://tienda.zap.com.ar` (y `http://localhost:3000` solo para desarrollo), con el header `Content-Type`.
 3. Configurar una regla de ciclo de vida para eliminar objetos bajo el prefijo `client-file-uploads/` después de 1 día. Es el área temporal de subidas incompletas; los archivos definitivos usan `client-files/`.
-4. Aplicar una sola vez `prisma/manual-sql/client-work-files.sql` a la base de datos de Tienda ZAP.
+4. Aplicar `prisma/manual-sql/client-work-files.sql` y luego `prisma/manual-sql/client-work-file-bucket.sql` a la base de datos de Tienda ZAP. La segunda intervención agrega el bucket por archivo y conserva los registros históricos en `R2_BUCKET_NAME`.
 5. Regenerar Prisma (`npx prisma generate`) y desplegar el código.
 6. Mantener `CLIENT_WORK_FILES_ENABLED=false` hasta confirmar que el SQL está aplicado y probar con dos cuentas cliente distintas que no puedan enumerar ni abrir archivos ajenos. Verificar también que el dominio público de medios no entregue los objetos bajo `client-files/` ni `client-file-uploads/`. La ausencia de un listado público no bloquea el acceso a una URL de objeto conocida; esos prefijos deben quedar bloqueados en la capa pública de medios (por ejemplo, mediante el Worker que atiende ese dominio) antes de habilitar el módulo.
 7. Probar subida, vista previa, descarga, reemplazo, borrado y reintento de limpieza. Solo después establecer `CLIENT_WORK_FILES_ENABLED=true` en Vercel Production y desplegar.

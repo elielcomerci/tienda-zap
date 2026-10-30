@@ -30,7 +30,7 @@ function previewKind(file: PortalFile) {
   return 'download'
 }
 
-export default function ClientWorkPortal({ admin = false, users = [] }: { admin?: boolean; users?: PortalUser[] }) {
+export default function ClientWorkPortal({ admin = false, users = [], filesEnabled = true }: { admin?: boolean; users?: PortalUser[]; filesEnabled?: boolean }) {
   const [works, setWorks] = useState<PortalWork[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
@@ -212,7 +212,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
       </div>
     </div>
 
-    {admin && <form onSubmit={createWork} className="card space-y-3 p-4">
+    {admin && filesEnabled && <form onSubmit={createWork} className="card space-y-3 p-4">
       <h3 className="font-semibold text-gray-900">Crear trabajo</h3>
       <label className="block text-sm font-medium text-gray-700">Buscar cliente
         <input value={userSearch} onChange={e => { const value = e.target.value; setUserSearch(value); const first = users.find(user => ((user.name || '') + ' ' + user.email).toLowerCase().includes(value.toLowerCase())); setUserId(first?.id || '') }} className="input mt-1 w-full" placeholder="Nombre o email" />
@@ -231,9 +231,9 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
       <button disabled={busy === 'create' || !userId} className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"><FolderOpen size={16} /> {busy === 'create' ? 'Creando…' : 'Crear trabajo'}</button>
     </form>}
 
-    <label className="block text-sm font-medium text-gray-700">Nota para el archivo (opcional)
+    {filesEnabled && <label className="block text-sm font-medium text-gray-700">Nota para el archivo (opcional)
       <input value={note} onChange={e => setNote(e.target.value)} maxLength={1000} className="input mt-1 w-full" placeholder={admin ? 'Ej. Primera propuesta / archivos fuente' : 'Ej. Logo actualizado, medidas, referencias…'} />
-    </label>
+    </label>}
 
     {message && <p role="status" className="rounded-xl bg-green-50 p-3 text-sm text-green-800">{message}</p>}
     {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -241,7 +241,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
       works.length === 0 ? <div className="card p-6 text-center">
         <FolderOpen size={30} className="mx-auto mb-3 text-gray-300" />
         <p className="font-medium text-gray-700">{admin ? 'Todavía no hay trabajos.' : 'Todavía no hay trabajos compartidos con tu cuenta.'}</p>
-        {!admin && <div className="mt-4">
+        {!admin && filesEnabled && <div className="mt-4">
           <p className="mb-3 text-sm text-gray-500">Podés enviarnos material aunque todavía no haya un trabajo creado. Lo guardaremos en un espacio general y lo organizaremos cuando corresponda.</p>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#ED164F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d81245]">
             <Upload size={16} /> {busy === 'inbox' ? 'Preparando…' : 'Subir archivos para ZAP'}
@@ -253,7 +253,8 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
           </label>
           <p className="mt-3 text-xs leading-5 text-gray-400">PDF, PNG/JPG/JPEG/GIF/WEBP/SVG/TIF/TIFF, MP3/WAV/M4A/MP4/MOV/WEBM, DOC/DOCX/XLS/XLSX/PPT/PPTX/TXT/CSV, ZIP, AI/PSD/EPS/CDR. Hasta 150 MB por archivo.</p>
         </div>}
-        {admin && <p className="mt-2 text-sm text-gray-500">Creá un trabajo arriba para compartir archivos con un cliente.</p>}
+        {admin && filesEnabled && <p className="mt-2 text-sm text-gray-500">Creá un trabajo arriba para compartir archivos con un cliente.</p>}
+        {!filesEnabled && <p className="mt-2 text-sm text-gray-500">Cuando ZAP apruebe una etapa de tu propuesta, el trabajo aparecerá acá. La carga de archivos se habilitará después de validar el almacenamiento.</p>}
       </div> :
       <div className="space-y-4">{works.map(work => <article key={work.id} className="card overflow-hidden">
         <div className="border-b border-gray-100 p-4">
@@ -263,7 +264,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
             {work.description && <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{work.description}</p>}
           </div><span className="text-xs text-gray-400">{new Date(work.updatedAt).toLocaleDateString('es-AR')}</span></div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#ED164F] px-3 py-2 text-sm font-semibold text-white hover:bg-[#d81245]">
+            {filesEnabled && <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#ED164F] px-3 py-2 text-sm font-semibold text-white hover:bg-[#d81245]">
               <Upload size={16} /> {busy === work.id ? 'Subiendo…' : 'Subir archivos'}
               <input type="file" multiple className="sr-only" disabled={busy !== null} onChange={async e => {
                 const selected = Array.from(e.target.files || [])
@@ -271,7 +272,8 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
                 for (const file of selected) await uploadFile(work.id, file)
                 setNote('')
               }} />
-            </label>
+            </label>}
+            {!filesEnabled && <span className="text-xs text-gray-400">Adjuntos: habilitación pendiente de validación</span>}
             <span className="text-xs text-gray-400">PDF, PNG/JPG/JPEG/GIF/WEBP/SVG/TIF/TIFF, MP3/WAV/M4A/MP4/MOV/WEBM, DOC/DOCX/XLS/XLSX/PPT/PPTX/TXT/CSV, ZIP, AI/PSD/EPS/CDR · hasta 150 MB</span>
             {!admin && <a href={`https://wa.me/541125832323?text=${encodeURIComponent(`Hola, necesito ayuda con el trabajo ${work.id.slice(-8)}.`)}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#c2103f] hover:underline">Consultar sobre este trabajo</a>}
           </div>
@@ -309,7 +311,7 @@ export default function ClientWorkPortal({ admin = false, users = [] }: { admin?
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <a title="Descargar" href={'/api/client-works/files/' + file.id + '/download?scope=' + (admin ? 'admin' : 'client')} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"><Download size={17} /></a>
-                    <button title="Reemplazar" type="button" disabled={busy !== null} onClick={() => {
+                    <button title="Reemplazar" type="button" disabled={busy !== null || !filesEnabled} onClick={() => {
                       replaceTarget.current = { workId: work.id, fileId: file.id }
                       replaceInput.current?.click()
                     }} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-40"><RefreshCw size={16} /></button>

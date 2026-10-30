@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { createPresignedR2UploadUrl, getR2PrivateBucketName } from '@/lib/r2'
+import { createPresignedR2UploadUrl, getR2BucketName, getR2PrivateBucketName } from '@/lib/r2'
 import { MAX_CLIENT_FILE_SIZE_BYTES, validateClientFile, isClientWorkFilesEnabled } from '@/lib/client-work-files'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -12,7 +12,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   try {
     const { workId } = await params
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 })
     const validation = validateClientFile({
       fileName: String(body.fileName || ''),
       contentType: String(body.contentType || 'application/octet-stream'),
@@ -28,14 +29,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const replaceFileId = typeof body.replaceFileId === 'string' ? body.replaceFileId : null
+    let bucketName = getR2PrivateBucketName()
     if (replaceFileId) {
-      const existing = await prisma.clientWorkFile.findFirst({ where: { id: replaceFileId, workId }, select: { id: true, previousObjectKey: true } })
+      const existing = await prisma.clientWorkFile.findFirst({ where: { id: replaceFileId, workId }, select: { id: true, previousObjectKey: true, bucketName: true } })
       if (!existing) return NextResponse.json({ error: 'El archivo que querés reemplazar no pertenece a este trabajo.' }, { status: 404 })
+      bucketName = existing.bucketName || getR2BucketName()
       if (existing.previousObjectKey) return NextResponse.json({ error: 'Primero hay que resolver la limpieza del archivo anterior.' }, { status: 409 })
     }
 
     const objectKey = `client-file-uploads/${work.userId}/${work.id}/${crypto.randomUUID()}-${validation.fileName}`
-    const signedUrl = await createPresignedR2UploadUrl({ objectKey, contentType: validation.contentType, bucketName: getR2PrivateBucketName() })
+    const signedUrl = await createPresignedR2UploadUrl({ objectKey, contentType: validation.contentType, contentLength: Number(body.sizeBytes), bucketName })
     return NextResponse.json({
       signedUrl, objectKey, fileName: validation.fileName,
       contentType: validation.contentType, sizeBytes: validation.ok ? body.sizeBytes : 0,

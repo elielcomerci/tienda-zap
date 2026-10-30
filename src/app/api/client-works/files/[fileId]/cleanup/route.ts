@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { deleteR2Object, getR2PrivateBucketName } from '@/lib/r2'
+import { deleteR2Object, getR2BucketName } from '@/lib/r2'
 import { isClientWorkFilesEnabled } from '@/lib/client-work-files'
 import { NextRequest, NextResponse } from 'next/server'
 import { recordClientWorkActivity } from '@/lib/client-work-audit'
@@ -12,11 +12,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'Solo administración puede reintentar la limpieza.' }, { status: 403 })
   }
   const { fileId } = await params
-  const file = await prisma.clientWorkFile.findUnique({ where: { id: fileId }, select: { id: true, previousObjectKey: true } })
+  const file = await prisma.clientWorkFile.findUnique({ where: { id: fileId }, select: { id: true, previousObjectKey: true, bucketName: true } })
   if (!file) return NextResponse.json({ error: 'Archivo no encontrado.' }, { status: 404 })
   if (!file.previousObjectKey) return NextResponse.json({ success: true, message: 'No hay archivos anteriores pendientes de limpieza.' })
   try {
-    await deleteR2Object(file.previousObjectKey, getR2PrivateBucketName())
+    await deleteR2Object(file.previousObjectKey, (file.bucketName || getR2BucketName()))
     await prisma.clientWorkFile.update({
       where: { id: file.id },
       data: { previousObjectKey: null, cleanupError: null },

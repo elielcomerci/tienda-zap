@@ -6,11 +6,14 @@ import { redirect } from 'next/navigation'
 
 export const metadata = { title: 'Iniciar sesión — ZAP Tienda' }
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string | string[] }> }) {
   const session = await auth()
   
+  const { callbackUrl: rawCallbackUrl } = await searchParams
+  const callbackUrl = Array.isArray(rawCallbackUrl) ? rawCallbackUrl[0] : rawCallbackUrl
+  const safeCallback = typeof callbackUrl === 'string' && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\') && !/%5c/i.test(callbackUrl) && !/[\u0000-\u001f\u007f]/.test(callbackUrl) ? callbackUrl : '/perfil'
   if (session?.user?.id) {
-    redirect('/perfil')
+    redirect(safeCallback)
   }
 
   return (

@@ -1,0 +1,99 @@
+import {auth} from '@/auth'
+import {prisma} from '@/lib/prisma'
+import {NextRequest,NextResponse} from 'next/server'
+
+export const dynamic='force-dynamic'
+const clean=(value:unknown,max=12000)=>typeof value==='string'?value.trim().slice(0,max)||null:null
+const validAmount=(value:unknown)=>value===''||value==null||(Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<1_000_000_000_000&&/^\d+(?:\.\d{1,2})?$/.test(String(value)))
+
+export async function PATCH(request:NextRequest,{params}:{params:Promise<{proposalId:string}>}) {
+  const session=await auth()
+  if(session?.user?.role!=='ADMIN'||!session.user.id) return NextResponse.json({error:'No autorizado.'},{status:403})
+  const {proposalId}=await params
+  try {
+    const body=await request.json().catch(()=>null)
+    if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'Los datos de la propuesta no son válidos.'},{status:400})
+    if(Array.isArray(body.stages)&&body.stages.length>12) return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
+    const expectedVersion=Number(body.expectedVersion)
+    if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá antes de guardar.'},{status:409})
+    const stages=Array.isArray(body.stages)?body.stages:[]
+    if(!validAmount(body.amount)) return NextResponse.json({error:'El importe general debe ser un número no negativo con hasta dos decimales y menor a 1.000.000.000.000.'},{status:400})
+    const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
+    if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
+    if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
+    for(const stage of stages) {
+      if(!validAmount(stage.amount)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
+    }
+    const updated=await prisma.$transaction(async tx=>{
+      const versionLock=await tx.commercialProposal.updateMany({where:{id:proposalId,version:expectedVersion},data:{version:{increment:0}}})
+      if(!versionLock.count) throw new Error('VERSION_CONFLICT')
+      const current=await tx.commercialProposal.findUnique({where:{id:proposalId},include:{stages:true}})
+      if(!current) throw new Error('NOT_FOUND')
+      if(expectedVersion!==current.version) throw new Error('VERSION_CONFLICT')
+      const existingById=new Map(current.stages.map(stage=>[stage.id,stage]))
+      let nextPosition=current.stages.reduce((max,item)=>Math.max(max,item.position),-1)+1
+      for(const input of stages) {
+        const data={
+          title:clean(input.title,180)!,
+          description:clean(input.description),scope:clean(input.scope),deliverables:clean(input.deliverables),
+          timeline:clean(input.timeline,2000),conditions:clean(input.conditions),paymentTerms:clean(input.paymentTerms),
+          amount:input.amount===''||input.amount==null?null:Number(input.amount),currency:'ARS',status:'PENDING'
+        }
+        if(input.id) {
+          const existing=existingById.get(String(input.id))
+          if(!existing) throw new Error('INVALID_STAGE')
+          if(existing.clientWorkId) {
+            const same=existing.title===data.title&&existing.description===data.description&&existing.scope===data.scope&&existing.deliverables===data.deliverables&&existing.timeline===data.timeline&&existing.conditions===data.conditions&&existing.paymentTerms===data.paymentTerms&&(existing.amount==null?null:Number(existing.amount))===data.amount
+            if(!same) throw new Error('ACCEPTED_STAGE_LOCKED')
+            continue
+          }
+          const written=await tx.commercialProposalStage.updateMany({where:{id:existing.id,clientWorkId:null},data})
+          if(!written.count) throw new Error('ACCEPTED_STAGE_LOCKED')
+        } else {
+          const created=await tx.commercialProposalStage.create({data:{proposalId,position:nextPosition++,...data}})
+          existingById.set(created.id,created)
+        }
+      }
+      const proposal=await tx.commercialProposal.update({
+        where:{id:proposalId},
+        data:{
+          title:clean(body.title,180)||'Propuesta ZAP',
+          summary:clean(body.summary),diagnosis:clean(body.diagnosis),solution:clean(body.solution),
+          scope:clean(body.scope),deliverables:clean(body.deliverables),timeline:clean(body.timeline),
+          conditions:clean(body.conditions),paymentTerms:clean(body.paymentTerms),
+          amount:rootAmount,
+          status:'DRAFT',customerResponse:null,respondedAt:null,acceptedAt:null,
+          version:{increment:1}
+        },
+        include:{stages:{orderBy:{position:'asc'}},materials:{orderBy:{sortOrder:'asc'}}}
+      })
+      const snapshot={
+        version:proposal.version,title:proposal.title,summary:proposal.summary,diagnosis:proposal.diagnosis,
+        solution:proposal.solution,scope:proposal.scope,deliverables:proposal.deliverables,timeline:proposal.timeline,
+        conditions:proposal.conditions,amount:proposal.amount?.toString()??null,currency:proposal.currency,
+        paymentTerms:proposal.paymentTerms,status:proposal.status,
+        stages:proposal.stages.map(stage=>({
+          position:stage.position,title:stage.title,description:stage.description,scope:stage.scope,
+          deliverables:stage.deliverables,timeline:stage.timeline,conditions:stage.conditions,
+          amount:stage.amount?.toString()??null,currency:stage.currency,paymentTerms:stage.paymentTerms
+        })),
+        materials:proposal.materials.map(material=>({
+          id:material.id,kind:material.kind,label:material.label,url:material.url,fileName:material.fileName,
+          contentType:material.contentType,sizeBytes:material.sizeBytes,note:material.note,createdAt:material.createdAt.toISOString()
+        }))
+      }
+      await tx.commercialProposalVersion.create({data:{proposalId,version:proposal.version,createdById:session.user.id!,snapshot}})
+      await tx.commercialProposalInvite.updateMany({where:{proposalId,revokedAt:null},data:{revokedAt:new Date()}})
+      return proposal
+    })
+    return NextResponse.json({ok:true,proposal:{id:updated.id,version:updated.version}},{headers:{'Cache-Control':'private, no-store'}})
+  } catch(error) {
+    if(error instanceof Error&&error.message==='NOT_FOUND') return NextResponse.json({error:'No encontramos la propuesta.'},{status:404})
+    if(error instanceof Error&&error.message==='VERSION_CONFLICT') return NextResponse.json({error:'La propuesta cambió desde que la abriste. Recargá antes de guardar.'},{status:409})
+    if(error instanceof Error&&error.message==='VERSION_CONFLICT') return NextResponse.json({error:'La propuesta cambió desde que la abriste. Recargá antes de guardar.'},{status:409})
+    if(error instanceof Error&&error.message==='INVALID_STAGE') return NextResponse.json({error:'Una etapa no pertenece a esta propuesta.'},{status:400})
+    if(error instanceof Error&&error.message==='ACCEPTED_STAGE_LOCKED') return NextResponse.json({error:'Una etapa ya aprobada y convertida en trabajo no se puede modificar.'},{status:409})
+    console.error('proposal update',error)
+    return NextResponse.json({error:'No pudimos guardar la nueva versión.'},{status:500})
+  }
+}

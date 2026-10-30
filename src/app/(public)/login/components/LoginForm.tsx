@@ -16,6 +16,8 @@ export default function LoginForm() {
   const registered = searchParams.get('registered')
   const passwordReset = searchParams.get('passwordReset')
   const queryError = searchParams.get('error')
+  const requestedCallback = searchParams.get('callbackUrl')
+  const callbackUrl = requestedCallback && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') && !requestedCallback.includes('\\') && !/%5c/i.test(requestedCallback) && !/[\u0000-\u001f\u007f]/.test(requestedCallback) ? requestedCallback : '/perfil'
   const [error, setError] = useState(queryError ? decodeURIComponent(queryError) : '')
   const [loading, setLoading] = useState(false)
 
@@ -37,7 +39,7 @@ export default function LoginForm() {
       setError('Credenciales incorrectas')
       setLoading(false)
     } else {
-      router.push('/perfil')
+      router.push(callbackUrl)
       router.refresh()
     }
   }
@@ -85,7 +87,7 @@ export default function LoginForm() {
 
       <p className="text-center text-sm text-gray-500">
         ¿No tenés cuenta?{' '}
-        <Link href="/registro" className="text-[#ED164F] font-semibold hover:underline">
+        <Link href={callbackUrl !== '/perfil' ? `/registro?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/registro"} className="text-[#ED164F] font-semibold hover:underline">
           Registrate
         </Link>
       </p>

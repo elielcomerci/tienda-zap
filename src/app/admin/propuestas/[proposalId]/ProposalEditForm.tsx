@@ -1,0 +1,38 @@
+'use client'
+
+import {useState} from 'react'
+import {useRouter} from 'next/navigation'
+
+type Stage={id?:string;title:string;description:string;scope:string;deliverables:string;timeline:string;conditions:string;amount:string;paymentTerms:string;locked?:boolean}
+type Fields={title:string;summary:string;diagnosis:string;solution:string;scope:string;deliverables:string;timeline:string;conditions:string;amount:string;paymentTerms:string}
+const emptyStage=():Stage=>({title:'',description:'',scope:'',deliverables:'',timeline:'',conditions:'',amount:'',paymentTerms:''})
+const cls='w-full rounded-xl border border-gray-200 px-3 py-3 text-sm'
+const label='mb-1 block text-sm font-medium text-gray-700'
+export default function ProposalEditForm({proposalId,version,initial,initialStages}:{proposalId:string;version:number;initial:Fields;initialStages:Stage[]}) {
+  const router=useRouter()
+  const [fields,setFields]=useState(initial)
+  const [stages,setStages]=useState(initialStages)
+  const [busy,setBusy]=useState(false)
+  const [error,setError]=useState('')
+  const set=(key:keyof Fields,value:string)=>setFields(current=>({...current,[key]:value}))
+  const setStage=(index:number,key:keyof Stage,value:string)=>setStages(current=>current.map((stage,i)=>i===index?{...stage,[key]:value}:stage))
+  const field=(key:keyof Fields,title:string,multiline=false)=><label><span className={label}>{title}</span>{multiline?<textarea className={cls} rows={4} value={fields[key]} onChange={e=>set(key,e.target.value)}/>:<input className={cls} value={fields[key]} onChange={e=>set(key,e.target.value)}/>}</label>
+  const stageField=(stage:Stage,index:number,key:keyof Stage,title:string,multiline=false)=><label><span className={label}>{title}</span>{multiline?<textarea className={cls} rows={3} disabled={stage.locked} value={String(stage[key]||'')} onChange={e=>setStage(index,key,e.target.value)}/>:<input className={cls} disabled={stage.locked} value={String(stage[key]||'')} onChange={e=>setStage(index,key,e.target.value)} />}</label>
+  async function save(e:React.FormEvent) {
+    e.preventDefault();setBusy(true);setError('')
+    try {
+      const response=await fetch('/api/admin/proposals/'+proposalId,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fields,expectedVersion:version,stages:stages.map(({locked,...stage})=>stage)})})
+      const data=await response.json()
+      if(!response.ok) throw new Error(data.error||'No pudimos guardar los cambios.')
+      router.push('/admin/propuestas/'+proposalId);router.refresh()
+    } catch(cause) {setError(cause instanceof Error?cause.message:'Error al guardar.');setBusy(false)}
+  }
+  return <form onSubmit={save} className="mx-auto max-w-4xl space-y-6">
+    <section className="rounded-2xl border bg-white p-6"><h2 className="font-semibold">Presentación</h2><p className="mt-1 text-sm text-gray-500">Los campos vacíos no se muestran al cliente. Al guardar se conserva una nueva versión de la propuesta.</p><div className="mt-4 grid gap-4 sm:grid-cols-2">{field('title','Título interno')}{field('amount','Inversión general')}{field('summary','Introducción',true)}{field('diagnosis','Lo que entendimos',true)}{field('solution','Nuestra perspectiva',true)}{field('scope','Alcance general',true)}{field('deliverables','Entregables generales',true)}{field('timeline','Plazos generales',true)}{field('conditions','Consideraciones',true)}{field('paymentTerms','Modalidad de pago',true)}</div></section>
+    <section className="rounded-2xl border bg-white p-6"><div className="flex items-center justify-between gap-3"><div><h2 className="font-semibold">Etapas</h2><p className="mt-1 text-sm text-gray-500">Las etapas aprobadas y convertidas en trabajo quedan protegidas.</p></div><button type="button" onClick={()=>setStages(current=>[...current,emptyStage()])} className="rounded-lg border px-3 py-2 text-sm">Agregar etapa</button></div>
+      <div className="mt-5 space-y-5">{stages.map((stage,index)=><div key={stage.id||'new-'+index} className="rounded-xl border p-4"><div className="mb-3 flex items-center justify-between"><h3 className="font-semibold">Etapa {index+1}: {stage.title||'Nueva etapa'}</h3>{stage.locked&&<span className="text-xs text-gray-500">Trabajo iniciado · bloqueada</span>}</div><div className="grid gap-3 sm:grid-cols-2">{stageField(stage,index,'title','Nombre')}{stageField(stage,index,'timeline','Plazo')}{stageField(stage,index,'description','Presentación',true)}{stageField(stage,index,'scope','Alcance',true)}{stageField(stage,index,'deliverables','Entregables',true)}{stageField(stage,index,'amount','Inversión')}{stageField(stage,index,'paymentTerms','Modalidad de pago',true)}{stageField(stage,index,'conditions','Consideraciones',true)}</div></div>)}</div>
+    </section>
+    {error&&<p role="alert" className="text-sm text-red-600">{error}</p>}
+    <div className="flex justify-end gap-3"><button type="button" onClick={()=>router.back()} className="rounded-xl border px-4 py-3">Cancelar</button><button disabled={busy} className="rounded-xl bg-gray-950 px-5 py-3 text-white disabled:opacity-50">{busy?'Guardando…':'Guardar nueva versión'}</button></div>
+  </form>
+}

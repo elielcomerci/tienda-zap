@@ -73,6 +73,7 @@ const navSections = [
     items: [
       { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
       { href: '/admin/clientes', label: 'Clientes CRM', icon: Building2 },
+      { href: '/admin/propuestas', label: 'Propuestas', icon: FileText },
       { href: '/admin/abonos', label: 'Abonos', icon: Repeat },
       { href: '/admin/incentivos', label: 'Incentivos', icon: Gift },
       { href: '/admin/liquidaciones', label: 'Liquidaciones', icon: HandCoins },
