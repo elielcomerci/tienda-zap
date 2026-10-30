@@ -1989,10 +1989,25 @@ model CommercialProposal {
   materials      CommercialProposalMaterial[]
   invitations    CommercialProposalInvite[]
   stages         CommercialProposalStage[]
+  versions       CommercialProposalVersion[]
 
   @@index([customerId, updatedAt])
   @@index([businessAccountId, updatedAt])
   @@index([status, updatedAt])
+}
+
+model CommercialProposalVersion {
+  id          String   @id @default(cuid())
+  proposalId  String
+  version     Int
+  snapshot    Json
+  createdById String
+  createdAt   DateTime @default(now())
+
+  proposal CommercialProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, version])
+  @@index([proposalId, createdAt])
 }
 
 model CommercialProposalMaterial {
