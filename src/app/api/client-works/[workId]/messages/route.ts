@@ -40,7 +40,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ workId: string }> }) {
-  if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'El espacio de trabajos no esta habilitado.' }, { status: 503 })
   const { workId } = await params
   const access = await resolveAccess(request, workId)
   if ('response' in access) return access.response
