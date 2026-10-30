@@ -21,6 +21,8 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
     }
     const updated=await prisma.$transaction(async tx=>{
       await tx.$queryRaw`SELECT id FROM "CommercialProposal" WHERE id = ${proposalId} FOR UPDATE`
+      const versionLock=await tx.commercialProposal.updateMany({where:{id:proposalId,version:Number(body.expectedVersion)},data:{version:{increment:0}}})
+      if(!versionLock.count) throw new Error('VERSION_CONFLICT')
       const current=await tx.commercialProposal.findUnique({where:{id:proposalId},include:{stages:true}})
       if(!current) throw new Error('NOT_FOUND')
       if(Number(body.expectedVersion)!==current.version) throw new Error('VERSION_CONFLICT')
@@ -83,6 +85,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
     return NextResponse.json({ok:true,proposal:{id:updated.id,version:updated.version}},{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     if(error instanceof Error&&error.message==='NOT_FOUND') return NextResponse.json({error:'No encontramos la propuesta.'},{status:404})
+    if(error instanceof Error&&error.message==='VERSION_CONFLICT') return NextResponse.json({error:'La propuesta cambió desde que la abriste. Recargá antes de guardar.'},{status:409})
     if(error instanceof Error&&error.message==='VERSION_CONFLICT') return NextResponse.json({error:'La propuesta cambió desde que la abriste. Recargá antes de guardar.'},{status:409})
     if(error instanceof Error&&error.message==='INVALID_STAGE') return NextResponse.json({error:'Una etapa no pertenece a esta propuesta.'},{status:400})
     if(error instanceof Error&&error.message==='ACCEPTED_STAGE_LOCKED') return NextResponse.json({error:'Una etapa ya aprobada y convertida en trabajo no se puede modificar.'},{status:409})
