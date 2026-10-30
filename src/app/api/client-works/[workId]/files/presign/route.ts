@@ -12,7 +12,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   try {
     const { workId } = await params
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'El body debe ser JSON válido.' }, { status: 400 })
     const validation = validateClientFile({
       fileName: String(body.fileName || ''),
       contentType: String(body.contentType || 'application/octet-stream'),
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const objectKey = `client-file-uploads/${work.userId}/${work.id}/${crypto.randomUUID()}-${validation.fileName}`
-    const signedUrl = await createPresignedR2UploadUrl({ objectKey, contentType: validation.contentType, bucketName })
+    const signedUrl = await createPresignedR2UploadUrl({ objectKey, contentType: validation.contentType, contentLength: Number(body.sizeBytes), bucketName })
     return NextResponse.json({
       signedUrl, objectKey, fileName: validation.fileName,
       contentType: validation.contentType, sizeBytes: validation.ok ? body.sizeBytes : 0,
