@@ -1,7 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { isClientWorkFilesEnabled } from '@/lib/client-work-files'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +19,6 @@ async function resolveAccess(request: NextRequest, workId: string) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ workId: string }> }) {
-  if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'El espacio de trabajos no esta habilitado.' }, { status: 503 })
   const { workId } = await params
   const access = await resolveAccess(request, workId)
   if ('response' in access) return access.response
