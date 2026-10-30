@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { copyR2Object, deleteR2Object, getR2ObjectMetadata } from '@/lib/r2'
+import { copyR2Object, deleteR2Object, getR2ObjectMetadata, getR2PrivateBucketName } from '@/lib/r2'
 import { MAX_CLIENT_FILE_SIZE_BYTES, validateClientFile, isClientWorkFilesEnabled } from '@/lib/client-work-files'
 import { NextRequest, NextResponse } from 'next/server'
 import { recordClientWorkActivity } from '@/lib/client-work-audit'
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   let uploadedKey: string | null = null
   let finalObjectKey: string | null = null
-  const bucketName = process.env.R2_BUCKET_NAME
+  const bucketName = process.env.R2_PRIVATE_BUCKET_NAME
   if (!bucketName) return NextResponse.json({ error: 'Falta configurar el bucket R2.' }, { status: 503 })
 
   try {
