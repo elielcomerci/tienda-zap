@@ -23,7 +23,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
     // Keep the database row if R2 deletion fails, so the failure remains visible and retryable.
     if (file.previousObjectKey) await deleteR2Object(file.previousObjectKey, (file.bucketName || getR2BucketName()))
-    await deleteR2Object(file.objectKey, getR2PrivateBucketName())
+    await deleteR2Object(file.objectKey, (file.bucketName || getR2BucketName()))
     await prisma.clientWorkFile.delete({ where: { id: file.id } })
     await prisma.clientWork.update({ where: { id: file.work.id }, data: { updatedAt: new Date() } })
     await recordClientWorkActivity({ actorId: userId, actorEmail: session.user.email, action: 'clientWorkFile.delete', entityType: 'ClientWorkFile', entityId: file.id, description: 'Archivo eliminado: ' + file.fileName, metadata: { workId: file.work.id, fileName: file.fileName, sizeBytes: file.sizeBytes } })
