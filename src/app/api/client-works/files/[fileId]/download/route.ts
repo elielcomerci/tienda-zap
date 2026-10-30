@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const inline = request.nextUrl.searchParams.get('inline') === '1' && isSafeInlineClientFile(file)
     const url = inline
       ? await createPresignedR2InlineUrl({ objectKey: file.objectKey, contentType: file.contentType, bucketName: file.bucketName || getR2BucketName() })
-      : await createPresignedR2DownloadUrl({ objectKey: file.objectKey, fileName: file.fileName, bucketName: getR2PrivateBucketName() })
+      : await createPresignedR2DownloadUrl({ objectKey: file.objectKey, fileName: file.fileName, bucketName: file.bucketName || getR2BucketName() })
     await recordClientWorkActivity({ actorId: userId, actorEmail: session.user.email, action: inline ? 'clientWorkFile.preview' : 'clientWorkFile.download', entityType: 'ClientWorkFile', entityId: file.id, description: (inline ? 'Vista previa abierta: ' : 'Archivo descargado: ') + file.fileName, metadata: { fileName: file.fileName, contentType: file.contentType, sizeBytes: file.sizeBytes } })
     return NextResponse.redirect(url, { status: 302, headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
