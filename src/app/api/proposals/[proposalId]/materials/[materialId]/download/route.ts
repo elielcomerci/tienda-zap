@@ -17,7 +17,7 @@ export async function GET(_request:NextRequest,{params}:{params:Promise<{proposa
   if(session.user.role!=='ADMIN'&&material.proposal.customerId!==session.user.id) return NextResponse.json({error:'Archivo no encontrado.'},{status:404})
   try {
     const url=await createPresignedR2DownloadUrl({objectKey:material.objectKey,fileName:material.fileName})
-    return NextResponse.json({url},{headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.redirect(url,{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     console.error('proposal file download',error)
     return NextResponse.json({error:'No pudimos preparar la descarga.'},{status:500})
