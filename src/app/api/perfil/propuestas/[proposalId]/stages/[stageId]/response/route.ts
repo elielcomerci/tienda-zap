@@ -13,15 +13,21 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
     const body=await req.json()
     const action=typeof body.action==='string'?body.action:''
     const message=typeof body.message==='string'?body.message.trim().slice(0,4000):''
+    const expectedVersion=Number(body.expectedVersion)
+    if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá la página antes de responder.'},{status:409})
     if(!allowed.has(action)) return NextResponse.json({error:'Decisión no válida.'},{status:400})
     if(action!=='ACCEPTED'&&!message) return NextResponse.json({error:'Dejanos un comentario para registrar esta decisión.'},{status:400})
 
     const result=await prisma.$transaction(async tx=>{
-      const stage=await tx.commercialProposalStage.findFirst({
-        where:{id:stageId,proposalId},
-        include:{proposal:{select:{customerId:true,createdById:true,title:true}}}
-      })
-      if(!stage||stage.proposal.customerId!==session.user.id) throw new Error('NOT_FOUND')
+      const versionLock=await tx.commercialProposal.updateMany({where:{id:proposalId,version:expectedVersion,customerId:session.user.id},data:{version:{increment:0}}})
+      if(!versionLock.count) {
+        const current=await tx.commercialProposal.findUnique({where:{id:proposalId},select:{customerId:true}})
+        if(!current||current.customerId!==session.user.id) throw new Error('NOT_FOUND')
+        throw new Error('VERSION_CONFLICT')
+      }
+      const proposal=await tx.commercialProposal.findUnique({where:{id:proposalId},select:{version:true,customerId:true,createdById:true,title:true}})
+      const stage=await tx.commercialProposalStage.findFirst({where:{id:stageId,proposalId}})
+      if(!proposal||!stage) throw new Error('NOT_FOUND')
       if(stage.clientWorkId) throw new Error('ALREADY_ACCEPTED')
 
       let workId:string|null=null
@@ -29,8 +35,8 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
         const work=await tx.clientWork.create({
           data:{
             userId:session.user.id!,
-            createdById:stage.proposal.createdById,
-            title:stage.title||stage.proposal.title||'Trabajo ZAP',
+            createdById:proposal.createdById,
+            title:stage.title||proposal.title||'Trabajo ZAP',
             description:[stage.description,stage.scope,stage.deliverables].filter(Boolean).join('\n\n')||null
           },
           select:{id:true}
@@ -46,7 +52,8 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
         }
         workId=work.id
       } else {
-        await tx.commercialProposalStage.update({where:{id:stage.id},data:{status:action}})
+        const updated=await tx.commercialProposalStage.updateMany({where:{id:stage.id,clientWorkId:null},data:{status:action}})
+        if(!updated.count) throw new Error('ALREADY_ACCEPTED')
       }
       await tx.commercialProposalStageComment.create({
         data:{
@@ -59,6 +66,7 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
     return NextResponse.json({ok:true,workId:result.workId,alreadyAccepted:result.alreadyAccepted},{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     if(error instanceof Error&&error.message==='NOT_FOUND') return NextResponse.json({error:'No encontramos esta etapa.'},{status:404})
+    if(error instanceof Error&&error.message==='VERSION_CONFLICT') return NextResponse.json({error:'La propuesta cambió desde que la abriste. Recargá para revisar las condiciones vigentes.'},{status:409})
     if(error instanceof Error&&error.message==='ALREADY_ACCEPTED') return NextResponse.json({error:'Esta etapa ya fue aprobada y convertida en trabajo.'},{status:409})
     console.error('proposal stage response',error)
     return NextResponse.json({error:'No pudimos registrar tu decisión.'},{status:500})
