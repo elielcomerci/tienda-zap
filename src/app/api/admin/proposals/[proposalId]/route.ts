@@ -12,6 +12,8 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
   try {
     const body=await request.json()
     if(Array.isArray(body.stages)&&body.stages.length>12) return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
+    const expectedVersion=Number(body.expectedVersion)
+    if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá antes de guardar.'},{status:409})
     const stages=Array.isArray(body.stages)?body.stages:[]
     const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
     if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
@@ -20,12 +22,11 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
       if(stage.amount!==''&&stage.amount!=null&&(!Number.isFinite(Number(stage.amount))||Number(stage.amount)<0)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
     }
     const updated=await prisma.$transaction(async tx=>{
-      await tx.$queryRaw`SELECT id FROM "CommercialProposal" WHERE id = ${proposalId} FOR UPDATE`
-      const versionLock=await tx.commercialProposal.updateMany({where:{id:proposalId,version:Number(body.expectedVersion)},data:{version:{increment:0}}})
+      const versionLock=await tx.commercialProposal.updateMany({where:{id:proposalId,version:expectedVersion},data:{version:{increment:0}}})
       if(!versionLock.count) throw new Error('VERSION_CONFLICT')
       const current=await tx.commercialProposal.findUnique({where:{id:proposalId},include:{stages:true}})
       if(!current) throw new Error('NOT_FOUND')
-      if(Number(body.expectedVersion)!==current.version) throw new Error('VERSION_CONFLICT')
+      if(expectedVersion!==current.version) throw new Error('VERSION_CONFLICT')
       const existingById=new Map(current.stages.map(stage=>[stage.id,stage]))
       let nextPosition=current.stages.reduce((max,item)=>Math.max(max,item.position),-1)+1
       for(const input of stages) {
