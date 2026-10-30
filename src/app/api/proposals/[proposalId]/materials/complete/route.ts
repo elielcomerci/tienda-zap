@@ -58,8 +58,8 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
   } catch(error) {
     if(stagingKey) await deleteR2Object(stagingKey,bucket).catch(()=>undefined)
     if(finalKey) {
-      const exists=await prisma.commercialProposalMaterial.findFirst({where:{objectKey:finalKey},select:{id:true}}).catch(()=>null)
-      if(!exists) await deleteR2Object(finalKey,bucket).catch(()=>undefined)
+      const exists=await prisma.commercialProposalMaterial.findFirst({where:{objectKey:finalKey},select:{id:true}}).catch(()=>undefined)
+      if(exists===null) await deleteR2Object(finalKey,bucket).catch(()=>undefined)
     }
     console.error('proposal file complete',error)
     return NextResponse.json({error:'No pudimos confirmar el archivo.'},{status:500})
