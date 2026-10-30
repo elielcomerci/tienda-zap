@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Iniciá sesión para ver tus trabajos.' }, { status: 401 })
+  const account = await prisma.user.findUnique({ where: { id: userId }, select: { isBanned: true } })
+  if (!account || account.isBanned) return NextResponse.json({ error: 'La cuenta no puede realizar esta operación.' }, { status: 403 })
 
   const requestedScope = new URL(request.url).searchParams.get('scope')
   const isAdminView = session.user?.role === 'ADMIN' && requestedScope === 'admin'
