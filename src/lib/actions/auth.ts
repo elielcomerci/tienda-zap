@@ -10,10 +10,13 @@ import { cookies } from 'next/headers'
 import { resolveActiveSellerId } from '@/lib/sellers'
 
 export async function registerUser(formData: FormData): Promise<void> {
+  const requestedCallback = formData.get('callbackUrl')
+  const safeCallback = typeof requestedCallback === 'string' && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') && !requestedCallback.includes('\\') && !/%5c/i.test(requestedCallback) && !/[\u0000-\u001f\u007f]/.test(requestedCallback) ? requestedCallback : ''
+  const callbackSuffix = safeCallback ? '&callbackUrl=' + encodeURIComponent(safeCallback) : ''
   const parsed = registerSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     const msg = Object.values(parsed.error.flatten().fieldErrors).flat()[0] || 'Datos inválidos'
-    redirect(`/registro?error=${encodeURIComponent(msg)}`)
+    redirect(`/registro?error=${encodeURIComponent(msg)}${callbackSuffix}`)
   }
 
   if (parsed.data.documentId) {
@@ -21,7 +24,7 @@ export async function registerUser(formData: FormData): Promise<void> {
       where: { documentId: parsed.data.documentId, isBanned: true },
     })
     if (isBannedDoc) {
-      redirect('/registro?error=No+puedes+registrarte+con+este+documento')
+      redirect('/registro?error=No+puedes+registrarte+con+este+documento' + callbackSuffix)
     }
   }
 
@@ -31,9 +34,9 @@ export async function registerUser(formData: FormData): Promise<void> {
   })
   if (exists) {
     if (exists.isBanned) {
-      redirect('/registro?error=Cuenta+bloqueada')
+      redirect('/registro?error=Cuenta+bloqueada' + callbackSuffix)
     }
-    redirect(`/registro?error=${encodeURIComponent('Ese email ya tiene una cuenta. Ingresá o recuperá tu contraseña.')}`)
+    redirect(`/registro?error=${encodeURIComponent('Ese email ya tiene una cuenta. Ingresá o recuperá tu contraseña.')}${callbackSuffix}`)
   }
 
   const cookieSellerId = await resolveActiveSellerId((await cookies()).get('zap_seller_ref')?.value)
@@ -106,8 +109,6 @@ export async function registerUser(formData: FormData): Promise<void> {
     }
   }
 
-  const requestedCallback = formData.get('callbackUrl')
-  const safeCallback = typeof requestedCallback === 'string' && requestedCallback.startsWith('/') && !requestedCallback.startsWith('//') && !requestedCallback.includes('\\') && !/%5c/i.test(requestedCallback) && !/[\u0000-\u001f\u007f]/.test(requestedCallback) ? requestedCallback : ''
   redirect('/login?registered=1' + (safeCallback ? '&callbackUrl=' + encodeURIComponent(safeCallback) : ''))
 }
 
