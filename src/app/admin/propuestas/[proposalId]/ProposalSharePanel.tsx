@@ -9,7 +9,7 @@ export default function ProposalSharePanel({proposalId,initialInvites,hasActiveI
   const [error,setError]=useState('')
   const [copied,setCopied]=useState(false)
   async function generate() {
-    setBusy(true);setError('');setUrl('')
+    setBusy(true);setError('')
     try {
       const response=await fetch('/api/admin/proposals/'+proposalId+'/invite',{method:'POST'})
       const data=await response.json()
