@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const [, proposalId, inviteId, email] = parts
     const passwordHash = await bcrypt.hash(password, 12)
 
-    const result = await prisma.$transaction(async tx => {
+    await prisma.$transaction(async tx => {
       const invite = await tx.commercialProposalInvite.findFirst({
         where: { id: inviteId, proposalId, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
         select: { id: true },
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       if (!claimed.count) throw new Error('CLAIM_CONFLICT')
       await tx.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } })
       await tx.verificationToken.delete({ where: { token } })
-      return { userId: user.id }
+      return
     })
 
     return NextResponse.json({ ok: true, redirectTo: '/login?callbackUrl=' + encodeURIComponent('/perfil/bienvenida?callbackUrl=' + encodeURIComponent('/perfil/propuestas/' + proposalId)) }, { headers: { 'Cache-Control': 'private, no-store' } })
