@@ -45,7 +45,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
       data:{proposalId,tokenHash,createdById:session.user.id!,expiresAt:new Date(Date.now()+14*24*60*60*1000)},
       select:{id:true,expiresAt:true}
     })
-    await tx.commercialProposal.update({where:{id:proposalId},data:{status:'SHARED'}})
+    await tx.commercialProposal.updateMany({where:{id:proposalId,status:{notIn:['ACCEPTED','PENDING','QUERY','REJECTED']}},data:{status:'SHARED'}})
     return created
   })
   const origin=process.env.NEXT_PUBLIC_SITE_URL||new URL(request.url).origin
@@ -61,7 +61,7 @@ export async function DELETE(_request:NextRequest,{params}:{params:Promise<{prop
   if(!proposal) return NextResponse.json({error:'No encontramos la propuesta.'},{status:404})
   const result=await prisma.$transaction(async tx=>{
     const revoked=await tx.commercialProposalInvite.updateMany({where:{proposalId,revokedAt:null},data:{revokedAt:new Date()}})
-    await tx.commercialProposal.update({where:{id:proposalId},data:{status:'DRAFT'}})
+    await tx.commercialProposal.updateMany({where:{id:proposalId,status:'SHARED'},data:{status:'DRAFT'}})
     return revoked.count
   })
   return NextResponse.json({ok:true,revoked:result},{headers:{'Cache-Control':'private, no-store'}})
