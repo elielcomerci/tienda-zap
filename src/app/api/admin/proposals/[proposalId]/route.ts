@@ -52,6 +52,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
           scope:clean(body.scope),deliverables:clean(body.deliverables),timeline:clean(body.timeline),
           conditions:clean(body.conditions),paymentTerms:clean(body.paymentTerms),
           amount:rootAmount,
+          status:current.status==='SHARED'?'DRAFT':current.status,
           version:{increment:1}
         },
         include:{stages:{orderBy:{position:'asc'}},materials:{orderBy:{sortOrder:'asc'}}}
@@ -72,6 +73,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
         }))
       }
       await tx.commercialProposalVersion.create({data:{proposalId,version:proposal.version,createdById:session.user.id!,snapshot}})
+      await tx.commercialProposalInvite.updateMany({where:{proposalId,revokedAt:null},data:{revokedAt:new Date()}})
       return proposal
     })
     return NextResponse.json({ok:true,proposal:{id:updated.id,version:updated.version}},{headers:{'Cache-Control':'private, no-store'}})
