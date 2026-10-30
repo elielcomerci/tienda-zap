@@ -25,7 +25,7 @@ export async function POST(request:NextRequest) {
         update:{taxSituation,objectives,completedAt:new Date()}
       })
     ])
-    const callback=typeof body.callbackUrl==='string'&&body.callbackUrl.startsWith('/')&&!body.callbackUrl.startsWith('//')?body.callbackUrl:'/perfil'
+    const callback=typeof body.callbackUrl==='string'&&body.callbackUrl.startsWith('/')&&!body.callbackUrl.startsWith('//')&&!body.callbackUrl.includes('\\')&&!/%5c/i.test(body.callbackUrl)&&!/[\u0000-\u001f\u007f]/.test(body.callbackUrl)?body.callbackUrl:'/perfil'
     return NextResponse.json({ok:true,callbackUrl:callback},{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     console.error('proposal onboarding',error)
