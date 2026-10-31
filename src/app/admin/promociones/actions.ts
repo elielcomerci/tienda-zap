@@ -654,7 +654,7 @@ export async function generatePromotionCoupons(input: {
   })
 
   revalidatePath('/admin/promociones')
-  return { quantity: totalToGenerate, prefix }
+  return { quantity: totalToGenerate, prefix, codes }
 }
 
 export async function updatePromotionCoupon(input: {
