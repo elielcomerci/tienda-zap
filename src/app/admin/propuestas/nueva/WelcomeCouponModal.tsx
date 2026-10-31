@@ -44,7 +44,7 @@ export default function WelcomeCouponModal({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const selectedPromotion = promotions.find((promotion) => promotion.id === promotionId)
-  const emailIsValid = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipientEmail.trim())
+  const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail.trim())
 
   const formatMoney = (value: number) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value)
@@ -64,7 +64,7 @@ export default function WelcomeCouponModal({
         recipientBusiness.trim(),
         recipientEmail.trim().toLowerCase(),
         recipientPhone.trim(),
-      ].join('\\t')
+      ].join('\t')
       const result = await generatePromotionCoupons({
         promotionId: selectedPromotion.id,
         quantity: 1,
