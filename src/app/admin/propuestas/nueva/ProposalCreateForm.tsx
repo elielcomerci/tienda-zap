@@ -71,7 +71,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
       </div>
     </section>
 
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+    <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">La mirada de ZAP</h2>
       <p className="mt-1 text-sm text-gray-500">Mostrá qué entendimos y qué proponemos. Lo que dejes vacío no aparece.</p>
       <div className="mt-5 space-y-4">
@@ -81,7 +81,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
       </div>
     </section>
 
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+    <section className="card p-5 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div><h2 className="text-base font-semibold tracking-tight text-gray-950">Plan de trabajo</h2><p className="mt-1 text-sm text-gray-500">Separá lo urgente de lo que puede construirse después.</p></div>
         <button type="button" onClick={() => setStages(current => [...current, emptyStage()])} className="shrink-0 btn-secondary">Agregar etapa</button>
@@ -113,7 +113,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
       </div>
     </section>
 
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+    <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Material de referencia</h2>
       <div className="mt-4">{field('youtubeUrl', 'Enlace de YouTube (opcional)')}</div>
     </section>
