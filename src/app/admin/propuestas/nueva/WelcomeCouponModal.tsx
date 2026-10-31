@@ -103,6 +103,16 @@ export default function WelcomeCouponModal({
         if (newPromotion.discountKind === 'PERCENTAGE' && discountValue > 100) throw new Error('El porcentaje no puede superar el 100%.')
         if (newPromotion.activeTo && new Date(newPromotion.activeTo).getTime() <= Date.now()) throw new Error('La vigencia debe terminar en una fecha futura.')
 
+        const visibleConditions = [
+          newPromotion.activeTo ? 'Válido hasta ' + new Date(newPromotion.activeTo).toLocaleString('es-AR') : null,
+          newPromotion.minOrderAmount ? 'Compra mínima ' + formatMoney(Number(newPromotion.minOrderAmount)) : null,
+          newPromotion.firstOrderOnly ? 'Solo para la primera compra' : null,
+          newPromotion.perUserLimit ? 'Hasta ' + newPromotion.perUserLimit + ' usos por cliente' : null,
+          newPromotion.maxUses ? 'Disponible hasta agotar ' + newPromotion.maxUses + ' usos' : null,
+          newPromotion.allowedProductIds.length ? 'Aplica solo a productos seleccionados' : null,
+          newPromotion.excludedProductIds.length ? 'No aplica a productos excluidos' : null,
+        ].filter(Boolean).join(' · ') || 'Válido en la tienda mientras la promoción esté activa.'
+
         const created = await createPromotion({
           name: newPromotion.name.trim(),
           status: 'ACTIVE',
@@ -120,6 +130,7 @@ export default function WelcomeCouponModal({
           audienceLabel: 'Clientes de propuestas ZAP',
           welcomeTitle: 'Un beneficio para vos',
           welcomeMessage: 'Tenés un beneficio de bienvenida para usar en la tienda ZAP. El código queda asociado a tu cuenta y se aplicará según las condiciones de esta promoción.',
+          welcomeConditions: visibleConditions,
           landingSurface: 'TIENDA',
         })
 
