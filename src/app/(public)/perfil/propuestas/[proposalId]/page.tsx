@@ -62,7 +62,7 @@ export default async function CustomerProposalPage({ params }: { params: Promise
           </div>
         </section>
         <section className="print-only proposal-print-section mt-10">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-gray-950">Plan de trabajo</h2>
+          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-gray-950">Soluciones propuestas</h2>
           {immediate.length > 0 && <section className="mb-7"><h3 className="border-b border-zap-magenta pb-2 text-lg font-semibold text-zap-magenta">{trackLabels.NOW.title}</h3>{printStages(immediate)}</section>}
           {future.length > 0 && <section><h3 className="border-b border-zap-blue pb-2 text-lg font-semibold text-zap-blue">{trackLabels.LATER.title}</h3>{printStages(future)}</section>}
         </section>
