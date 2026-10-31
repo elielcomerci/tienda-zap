@@ -60,7 +60,7 @@ export default function WelcomeCouponModal({
     setBusy(true)
     try {
       const recipientRow = [
-        recipientName.trim(),
+        recipientName.trim() || recipientBusiness.trim() || 'Cliente',
         recipientBusiness.trim(),
         recipientEmail.trim().toLowerCase(),
         recipientPhone.trim(),
@@ -71,7 +71,7 @@ export default function WelcomeCouponModal({
         prefix: 'ZAP',
         batchName: `Propuesta ZAP · ${proposalTitle.trim() || 'Nueva propuesta'}`,
         recipients: recipientRow,
-        expiresAt: expiresAt || null,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
         usesPerCoupon: uses,
       })
       const code = result.codes?.[0]
