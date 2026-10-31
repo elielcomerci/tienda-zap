@@ -18,6 +18,8 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
   const [error, setError] = useState('')
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false)
   const [welcomeCouponPromotionName, setWelcomeCouponPromotionName] = useState('')
+  const [welcomeCouponRecipientEmail, setWelcomeCouponRecipientEmail] = useState('')
+  const [couponNotice, setCouponNotice] = useState('')
   const [businessAccountId, setBusinessAccountId] = useState('')
   const [creatingClient, setCreatingClient] = useState(false)
   const [newClient, setNewClient] = useState<NewClient>(emptyClient)
@@ -28,6 +30,15 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
   const recipientName = creatingClient ? newClient.contactName : ''
   const recipientPhone = creatingClient ? (newClient.phone || newClient.whatsapp) : ''
   const setField = (key: keyof typeof fields, value: string) => setFields(current => ({ ...current, [key]: value }))
+  const setTargetEmail = (value: string) => {
+    setField('targetEmail', value)
+    if (fields.welcomeCouponCode && welcomeCouponRecipientEmail && value.trim().toLowerCase() !== welcomeCouponRecipientEmail) {
+      setField('welcomeCouponCode', '')
+      setWelcomeCouponPromotionName('')
+      setWelcomeCouponRecipientEmail('')
+      setCouponNotice('Cambió el email del destinatario. Creá un nuevo cupón para asociarlo correctamente.')
+    }
+  }
   const setClientField = (key: keyof NewClient, value: string) => setNewClient(current => ({ ...current, [key]: value }))
   const setStage = (index: number, key: keyof Stage, value: string) => setStages(current => current.map((stage, i) => i === index ? { ...stage, [key]: value } : stage))
   const field = (key: keyof typeof fields, title: string, multiline = false) => <label className="block">
@@ -74,8 +85,8 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
       <p className="mt-1 text-sm text-gray-500">Buscá un cliente del CRM o crealo. El email identifica su acceso a ZAP.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {field('title', 'Título de la propuesta')}
-        <label className="block"><span className={labelClass}>Cliente existente</span><select className={inputClass} value={businessAccountId} disabled={creatingClient} onChange={event => { const id=event.target.value; setBusinessAccountId(id); const account=accounts.find(item=>item.id===id); if(account?.email) setField('targetEmail',account.email) }}><option value="">Elegí una cuenta del CRM</option>{accounts.map(account=><option key={account.id} value={account.id}>{account.name}{account.email?' · '+account.email:''}</option>)}</select></label>
-        <label className="block"><span className={labelClass}>Email de acceso a ZAP *</span><input type="email" required autoComplete="email" className={inputClass} value={fields.targetEmail} onChange={event => setField('targetEmail', event.target.value)} placeholder="nombre@empresa.com"/><span className="mt-1 block text-xs text-gray-500">Le enviaremos la invitación a esta dirección. El acceso a ZAP no depende de aceptar la propuesta.</span></label>
+        <label className="block"><span className={labelClass}>Cliente existente</span><select className={inputClass} value={businessAccountId} disabled={creatingClient} onChange={event => { const id=event.target.value; setBusinessAccountId(id); const account=accounts.find(item=>item.id===id); if(account?.email) setTargetEmail(account.email) }}><option value="">Elegí una cuenta del CRM</option>{accounts.map(account=><option key={account.id} value={account.id}>{account.name}{account.email?' · '+account.email:''}</option>)}</select></label>
+        <label className="block"><span className={labelClass}>Email de acceso a ZAP *</span><input type="email" required autoComplete="email" className={inputClass} value={fields.targetEmail} onChange={event => setTargetEmail(event.target.value)} placeholder="nombre@empresa.com"/><span className="mt-1 block text-xs text-gray-500">Le enviaremos la invitación a esta dirección. El acceso a ZAP no depende de aceptar la propuesta.</span></label>
       </div>
       <div className="mt-5 border-t border-gray-100 pt-4">
         <button type="button" className="btn-secondary" onClick={()=>{setCreatingClient(value=>!value);setBusinessAccountId('')}}>{creatingClient?'Cancelar alta de cliente':'＋ Crear un cliente nuevo'}</button>
@@ -114,10 +125,11 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Acceso y beneficios</h2>
       <p className="mt-1 text-sm text-gray-500">Asociá un cupón existente o creá uno sin salir de la propuesta. Se presenta al terminar de revisar las soluciones.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>{setField('welcomeCouponCode',event.target.value);setWelcomeCouponPromotionName('')}} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se ofrece al ingresar al dashboard y queda asociado a la cuenta. Se respetan la vigencia, los productos y todas las condiciones configuradas.</span></label>
+        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>{setField('welcomeCouponCode',event.target.value);setWelcomeCouponPromotionName('');setWelcomeCouponRecipientEmail('');setCouponNotice('')}} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se ofrece al ingresar al dashboard y queda asociado a la cuenta. Se respetan la vigencia, los productos y todas las condiciones configuradas.</span></label>
         <button type="button" onClick={()=>setIsCouponModalOpen(true)} className="btn-secondary whitespace-nowrap">＋ Crear cupón</button>
       </div>
       {welcomeCouponPromotionName && fields.welcomeCouponCode && <p className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600">Creado desde la promoción <strong className="text-gray-900">{welcomeCouponPromotionName}</strong>.</p>}
+      {couponNotice && <p role="status" className="mt-2 text-xs text-amber-700">{couponNotice}</p>}
     </section>
     {error&&<p role="alert" className="text-sm text-red-600">{error}</p>}
     <div className="flex justify-end gap-3 pb-6"><button type="button" onClick={()=>router.push('/admin/propuestas')} className="btn-secondary">Cancelar</button><button disabled={busy} className="btn-primary disabled:opacity-50">{busy?'Guardando…':'Guardar propuesta'}</button></div>
@@ -130,7 +142,7 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
     recipientPhone={recipientPhone}
     proposalTitle={fields.title}
     onClose={()=>setIsCouponModalOpen(false)}
-    onCreated={(code,promotionName)=>{setField('welcomeCouponCode',code);setWelcomeCouponPromotionName(promotionName);setIsCouponModalOpen(false)}}
+    onCreated={(code,promotionName)=>{setField('welcomeCouponCode',code);setWelcomeCouponPromotionName(promotionName);setWelcomeCouponRecipientEmail(fields.targetEmail.trim().toLowerCase());setCouponNotice('');setIsCouponModalOpen(false)}}
   />}
   </>
 }
