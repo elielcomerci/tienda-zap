@@ -152,3 +152,8 @@
   }
   a { color: inherit !important; text-decoration: none !important; }
 }
+
+.print-only { display: none; }
+@media print {
+  .print-only { display: block !important; }
+}
