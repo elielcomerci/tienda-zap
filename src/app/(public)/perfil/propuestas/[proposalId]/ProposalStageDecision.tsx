@@ -41,7 +41,7 @@ export default function ProposalStageDecision({ stage, proposalVersion }: { stag
   return <article className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
     <header className="flex items-start justify-between gap-4">
       <h4 className="text-lg font-semibold tracking-tight text-gray-950">{stage.title}</h4>
-      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${stage.status === 'ACCEPTED' ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-600'}`}>{statusLabels[stage.status] || stage.status}</span>
+      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${stage.status === 'ACCEPTED' ? 'bg-zap-magenta-subtle text-zap-magenta-dark' : 'bg-gray-100 text-gray-600'}`}>{statusLabels[stage.status] || stage.status}</span>
     </header>
 
     {detail('Descripción', stage.description)}
@@ -61,20 +61,20 @@ export default function ProposalStageDecision({ stage, proposalVersion }: { stag
     </div> : <>
       {stage.comments.length > 0 && <div className="mt-5 border-t border-gray-100 pt-4">
         <h5 className="text-sm font-semibold text-gray-900">Conversación</h5>
-        <div className="mt-3 space-y-3">{stage.comments.map(comment => <div key={comment.id} className="rounded-xl bg-[#FAF9F6] p-3">
+        <div className="mt-3 space-y-3">{stage.comments.map(comment => <div key={comment.id} className="rounded-xl bg-gray-50 p-3">
           <p className="text-xs text-gray-500">{comment.authorName || comment.authorRole} · {comment.action ? actionLabels[comment.action] || comment.action : 'Comentario'} · {new Date(comment.createdAt).toLocaleDateString('es-AR')}</p>
           {comment.message && <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700">{comment.message}</p>}
         </div>)}</div>
       </div>}
       <div className="mt-6 border-t border-gray-100 pt-5">
         <label className="block"><span className="text-sm font-semibold text-gray-900">Tu decisión</span>
-          <select value={action} onChange={event => setAction(event.target.value)} className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm focus:border-gray-500 focus:outline-none">
+          <select value={action} onChange={event => setAction(event.target.value)} className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm focus:border-zap-magenta-light focus:outline-none focus:ring-2 focus:ring-zap-magenta-subtle">
             {Object.entries(actionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
         {action !== 'ACCEPTED' && <label className="mt-3 block"><span className="mb-1 block text-sm text-gray-600">Comentario</span><textarea value={message} onChange={event => setMessage(event.target.value)} rows={3} maxLength={4000} placeholder="Contanos brevemente." className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:border-gray-500 focus:outline-none" /></label>}
         {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
-        <button onClick={submit} disabled={busy || (action !== 'ACCEPTED' && !message.trim())} className="mt-4 w-full rounded-xl bg-gray-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50 sm:w-auto">{busy ? 'Guardando…' : actionLabels[action]}</button>
+        <button onClick={submit} disabled={busy || (action !== 'ACCEPTED' && !message.trim())} className="btn-primary mt-4 w-full justify-center disabled:opacity-50 sm:w-auto">{busy ? 'Guardando…' : actionLabels[action]}</button>
       </div>
     </>}
   </article>
