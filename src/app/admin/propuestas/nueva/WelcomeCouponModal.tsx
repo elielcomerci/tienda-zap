@@ -64,7 +64,7 @@ export default function WelcomeCouponModal({
         recipientBusiness.trim(),
         recipientEmail.trim().toLowerCase(),
         recipientPhone.trim(),
-      ].join('\t')
+      ].map((value) => value.replace(/[;,\t]+/g, ' ').trim()).join('\t')
       const result = await generatePromotionCoupons({
         promotionId: selectedPromotion.id,
         quantity: 1,
