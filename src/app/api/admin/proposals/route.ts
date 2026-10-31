@@ -87,8 +87,6 @@ export async function POST(req:NextRequest){
     const coupon=await tx.promotionCoupon.findUnique({where:{code:welcomeCouponCode},include:{promotion:true,welcomeProposal:{select:{id:true}}}})
     const now=new Date()
     if(!coupon||coupon.status!=='AVAILABLE'||coupon.usesLeft<=0||(coupon.expiresAt&&coupon.expiresAt<now)||!isActivePromotion(coupon.promotion,now))throw new Error('WELCOME_COUPON_UNAVAILABLE')
-    if(coupon.promotion.discountKind!=='PERCENTAGE')throw new Error('WELCOME_COUPON_NOT_PERCENTAGE')
-    if(coupon.promotion.allowedProductIds.length>0||coupon.promotion.excludedProductIds.length>0)throw new Error('WELCOME_COUPON_NOT_GLOBAL')
     if(coupon.recipientEmail&&coupon.recipientEmail.trim().toLowerCase()!==customerEmail)throw new Error('WELCOME_COUPON_EMAIL_MISMATCH')
     if(coupon.assignedUserId&&coupon.assignedUserId!==linkedCustomerId)throw new Error('WELCOME_COUPON_ASSIGNED')
     if(coupon.welcomeProposal)throw new Error('WELCOME_COUPON_ASSIGNED')
@@ -116,8 +114,6 @@ export async function POST(req:NextRequest){
    BUSINESS_ACCOUNT_NOT_FOUND:'No encontramos la cuenta CRM seleccionada.',
    ACCOUNT_LINKED_TO_OTHER_USER:'La cuenta CRM ya está vinculada a otra persona. Revisá el email antes de continuar.',
    WELCOME_COUPON_UNAVAILABLE:'El cupón no está disponible o su promoción no está activa.',
-   WELCOME_COUPON_NOT_PERCENTAGE:'El cupón debe ofrecer un descuento porcentual.',
-   WELCOME_COUPON_NOT_GLOBAL:'El cupón debe aplicar a todos los productos: sin productos incluidos o excluidos específicos.',
    WELCOME_COUPON_EMAIL_MISMATCH:'El cupón está asignado a otro email.',
    WELCOME_COUPON_ASSIGNED:'Ese código ya está asociado a otra persona o propuesta.'
   }
