@@ -22,10 +22,10 @@ export async function POST(request: NextRequest) {
 
     const identifier = `proposal-invite:${invite.proposalId}:${invite.id}:${email}`
     const pending = await prisma.verificationToken.findFirst({ where: { identifier, expires: { gt: new Date() } }, select: { token: true } })
-    if (pending) return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'private, no-store' } })
-
-    const token = randomBytes(32).toString('hex')
-    await prisma.verificationToken.create({ data: { identifier, token, expires: new Date(Date.now() + 60 * 60 * 1000) } })
+    const token = pending?.token || randomBytes(32).toString('hex')
+    if (!pending) {
+      await prisma.verificationToken.create({ data: { identifier, token, expires: new Date(Date.now() + 60 * 60 * 1000) } })
+    }
     const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin
     const verificationUrl = `${baseUrl}/propuesta/confirmar/${encodeURIComponent(token)}`
 
