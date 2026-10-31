@@ -112,7 +112,7 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
     </section>
     <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Acceso y beneficios</h2>
-      <p className="mt-1 text-sm text-gray-500">Asociá un cupón existente. Se aplicará después de revisar la propuesta.</p>
+      <p className="mt-1 text-sm text-gray-500">Asociá un cupón existente o creá uno sin salir de la propuesta. Se presenta al terminar de revisar las soluciones.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
         <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>{setField('welcomeCouponCode',event.target.value);setWelcomeCouponPromotionName('')}} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se ofrece al ingresar al dashboard y queda asociado a la cuenta. Se respetan la vigencia, los productos y todas las condiciones configuradas.</span></label>
         <button type="button" onClick={()=>setIsCouponModalOpen(true)} className="btn-secondary whitespace-nowrap">＋ Crear cupón</button>
