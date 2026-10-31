@@ -45,12 +45,12 @@ export default async function CustomerProposalPage({ params }: { params: Promise
   const future = proposal.stages.filter(stage => stage.track === 'LATER')
   const hasBothTracks = immediate.length > 0 && future.length > 0
 
-  return <main className="min-h-screen bg-[#FAF9F6]">
+  return <main className="min-h-screen bg-white">
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
       <Link href="/perfil/propuestas" className="text-sm font-medium text-gray-500 transition hover:text-gray-950">← Mis propuestas</Link>
 
       <header className="mt-7 border-b border-gray-200 pb-8">
-        <p className="text-xs font-semibold uppercase tracking-[.16em] text-gray-500">ZAP · Propuesta {proposal.version > 1 ? `v${proposal.version}` : ""}</p>
+        <p className="text-xs font-semibold uppercase tracking-[.16em] text-zap-magenta">ZAP · Propuesta {proposal.version > 1 ? `v${proposal.version}` : ""}</p>
         <h1 className="mt-3 max-w-4xl text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">{proposal.title}</h1>
         {proposal.summary && <p className="mt-5 max-w-3xl whitespace-pre-wrap text-base leading-7 text-gray-600">{proposal.summary}</p>}
       </header>
@@ -72,14 +72,14 @@ export default async function CustomerProposalPage({ params }: { params: Promise
         <div className={hasBothTracks ? 'grid items-start gap-6 lg:grid-cols-2' : 'grid items-start gap-6'}>
           {immediate.length > 0 && <section>
             <div className="mb-4 border-b border-gray-300 pb-3">
-              <h3 className="text-lg font-semibold text-gray-950">{trackLabels.NOW.title}</h3>
+              <h3 className="text-lg font-semibold text-zap-magenta">{trackLabels.NOW.title}</h3>
               <p className="mt-1 text-sm text-gray-500">{trackLabels.NOW.description}</p>
             </div>
             <div className="space-y-4">{immediate.map(stage => <ProposalStageDecision key={stage.id} proposalVersion={proposal.version} stage={{ ...stage, amount: stage.amount == null ? null : Number(stage.amount), comments: stage.comments.slice().reverse().map(comment => ({ ...comment, createdAt: comment.createdAt.toISOString() })) }} />)}</div>
           </section>}
           {future.length > 0 && <section>
             <div className="mb-4 border-b border-gray-300 pb-3">
-              <h3 className="text-lg font-semibold text-gray-950">{trackLabels.LATER.title}</h3>
+              <h3 className="text-lg font-semibold text-zap-blue">{trackLabels.LATER.title}</h3>
               <p className="mt-1 text-sm text-gray-500">{trackLabels.LATER.description}</p>
             </div>
             <div className="space-y-4">{future.map(stage => <ProposalStageDecision key={stage.id} proposalVersion={proposal.version} stage={{ ...stage, amount: stage.amount == null ? null : Number(stage.amount), comments: stage.comments.slice().reverse().map(comment => ({ ...comment, createdAt: comment.createdAt.toISOString() })) }} />)}</div>
