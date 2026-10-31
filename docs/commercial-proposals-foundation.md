@@ -16,7 +16,7 @@ Rama: `feat/propuestas-comerciales`
 2. Adjuntos privados reales: presigned uploads R2, validación MIME/extensión/tamaño, escaneo/controles, descarga firmada y bloqueo del acceso público. No habilitar `CLIENT_WORK_FILES_ENABLED` hasta completar las pruebas ya documentadas para archivos privados.
 3. Materiales de YouTube: validación de dominios permitidos, extracción segura del ID y render de reproductor con controles de privacidad.
 4. Versionado inmutable: al compartir, congelar snapshot; las ediciones posteriores crean versión nueva y revocan/invalidan invitaciones previas según política.
-5. Completar onboarding y registro desde invitación, sin mostrar contenido antes de autenticar.
+5. Mantener el onboarding como complemento opcional; la autenticación y la coincidencia del destinatario sí son obligatorias.
 6. Respuesta con adjuntos del cliente y timeline/audit log.
 7. Pruebas de aislamiento entre clientes, expiración/revocación, sesión existente, email coincidente, aceptación duplicada y reintentos.
 8. Typecheck/build y revisión de rutas reales del proyecto.
@@ -25,7 +25,7 @@ Rama: `feat/propuestas-comerciales`
 - El token no se persiste en claro, sólo su hash.
 - El token no da acceso al contenido por sí solo: se requiere sesión y coincidencia con usuario o email invitado.
 - No se devuelven campos de propuesta desde el endpoint de invitación.
-- La aceptación aún no crea automáticamente un trabajo ni una orden.
+- La aprobación de una etapa crea un `ClientWork` vinculado; no crea una orden de compra.
 - El importe es nullable y no se interpreta como cero.
 
 
