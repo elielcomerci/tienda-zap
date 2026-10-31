@@ -12,5 +12,9 @@ export default async function CompleteProposalAccessPage({ params }: { params: P
   if (!verification || !verification.identifier.startsWith('proposal-invite:') || verification.expires <= new Date()) {
     return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold">Este enlace ya no está disponible</h1><p className="mt-3 text-sm text-gray-600">Puede haber vencido o haber sido utilizado. Volvé a la invitación para solicitar uno nuevo.</p></main>
   }
-  return <main className="mx-auto max-w-xl px-6 py-20"><p className="text-xs font-semibold uppercase tracking-[.18em] text-blue-700">ZAP · propuesta privada</p><h1 className="mt-3 text-3xl font-semibold text-gray-950">Tu acceso está casi listo</h1><p className="mt-3 text-sm leading-6 text-gray-600">Confirmaste que tenés acceso al email destinatario. Elegí una contraseña para crear tu cuenta o recuperar el acceso existente.</p><div className="mt-8"><CompleteProposalAccess token={token} /></div></main>
+  const parts = verification.identifier.split(':')
+  const email = parts.length === 4 ? parts[3] : ''
+  const existingUser = email ? await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } }, select: { id: true, role: true, isBanned: true } }) : null
+  const existingCustomer = !!existingUser && existingUser.role === 'CUSTOMER' && !existingUser.isBanned
+  return <main className="mx-auto max-w-xl px-6 py-20"><p className="text-xs font-semibold uppercase tracking-[.18em] text-gray-500">ZAP · propuesta privada</p><h1 className="mt-3 text-3xl font-semibold tracking-tight text-gray-950">{existingCustomer ? 'Confirmá tu acceso' : 'Creá tu acceso'}</h1><p className="mt-3 text-sm leading-6 text-gray-600">{existingCustomer ? 'Este email ya tiene una cuenta. Te vamos a llevar al ingreso sin modificar tu contraseña.' : 'Definí una contraseña para ingresar y consultar tu propuesta.'}</p><div className="mt-8"><CompleteProposalAccess token={token} existingCustomer={existingCustomer} /></div></main>
 }
