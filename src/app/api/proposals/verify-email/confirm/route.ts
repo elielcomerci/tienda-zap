@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       return
     })
 
-    return NextResponse.json({ ok: true, redirectTo: '/login?callbackUrl=' + encodeURIComponent('/perfil/bienvenida?callbackUrl=' + encodeURIComponent('/perfil/propuestas/' + proposalId)) }, { headers: { 'Cache-Control': 'private, no-store' } })
+    return NextResponse.json({ ok: true, redirectTo: '/login?callbackUrl=' + encodeURIComponent('/perfil/propuestas/' + proposalId) }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     if (error instanceof Error && error.message === 'INVITE_EXPIRED') return NextResponse.json({ error: 'La invitación ya no está disponible.' }, { status: 410 })
     if (error instanceof Error && error.message === 'ACCOUNT_TYPE_INVALID') return NextResponse.json({ error: 'Esta dirección está asociada a una cuenta administrativa o de vendedor. Contactá a ZAP.' }, { status: 403 })
