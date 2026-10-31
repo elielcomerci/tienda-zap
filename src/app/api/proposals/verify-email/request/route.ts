@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     try {
       await sendProposalEmailVerification({ to: email, verificationUrl })
     } catch (error) {
-      await prisma.verificationToken.deleteMany({ where: { identifier, token } })
+      if (!pending) await prisma.verificationToken.deleteMany({ where: { identifier, token } })
       console.error('proposal email verification delivery failed', error)
       return NextResponse.json({ error: 'No pudimos enviar el email de confirmación. Intentá más tarde o contactá a ZAP.' }, { status: 503 })
     }
