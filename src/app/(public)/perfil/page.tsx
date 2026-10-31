@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import Link from 'next/link'
-import { ArrowRight, BriefcaseBusiness, FolderOpen, Package, ReceiptText, UserRound } from 'lucide-react'
+import { ArrowRight, BriefcaseBusiness, FolderOpen, Package, ReceiptText, UserRound, FileText } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mi espacio | ZAP Tienda' }
@@ -43,8 +43,16 @@ export default async function PerfilPage() {
     include: { items: { include: { product: { select: { name: true } } } } },
   })
 
+  const proposals = await prisma.commercialProposal.findMany({
+    where: { customerId: session.user.id },
+    orderBy: { updatedAt: 'desc' },
+    take: 3,
+    select: { id: true, title: true, status: true, updatedAt: true },
+  })
+
   const firstName = user.name?.trim().split(/\s+/)[0] || 'Hola'
   const areas = [
+    ...(proposals.length ? [{ title: 'Mis propuestas', description: 'Revisá las propuestas que ZAP preparó para vos y retomá tus decisiones.', href: '/perfil/propuestas', icon: FileText, tint: 'text-[#315C9B]', action: 'Ver propuestas' }] : []),
     { title: 'Mis servicios', description: 'Consultá lo que tenés en marcha y su seguimiento.', href: '/perfil/servicios', icon: BriefcaseBusiness, tint: 'text-[#6D48A8]', action: 'Ver servicios' },
     { title: 'Archivos compartidos', description: 'Intercambiá material y conversá sobre cada trabajo.', href: '/perfil/archivos', icon: FolderOpen, tint: 'text-[#3472A5]', action: process.env.CLIENT_WORK_FILES_ENABLED === 'true' ? 'Ver archivos' : 'Ver información' },
     { title: 'NODO ZAP', description: 'Gestioná CUIT, facturas y datos fiscales.', href: '/perfil/nodo', icon: ReceiptText, tint: 'text-[#C2103F]', action: 'Abrir NODO' },
