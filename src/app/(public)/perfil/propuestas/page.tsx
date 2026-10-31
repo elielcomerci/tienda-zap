@@ -30,13 +30,13 @@ export default async function CustomerProposalsPage() {
     {proposals.length ? <div className="mt-6 divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white">
       {proposals.map(proposal => {
         const accepted = proposal.stages.filter(stage => stage.status === 'ACCEPTED').length
-        return <Link key={proposal.id} href={`/perfil/propuestas/${proposal.id}`} className="group flex items-center gap-4 p-5 hover:bg-gray-50">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-700"><FileText size={20}/></span>
+        return <Link key={proposal.id} href={`/perfil/propuestas/${proposal.id}`} className="group flex items-center gap-4 p-5 hover:bg-zap-magenta-subtle/40">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zap-magenta-subtle text-zap-magenta"><FileText size={20}/></span>
           <span className="min-w-0 flex-1">
             <span className="block font-semibold text-gray-950">{proposal.title}</span>
             <span className="mt-1 block text-sm text-gray-500">{statusLabel[proposal.status] || proposal.status} · {accepted} de {proposal.stages.length} etapas aprobadas · {new Date(proposal.updatedAt).toLocaleDateString('es-AR')}</span>
           </span>
-          <ArrowRight size={18} className="shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-gray-900"/>
+          <ArrowRight size={18} className="shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-zap-magenta"/>
         </Link>
       })}
     </div> : <section className="mt-8 rounded-2xl border border-dashed border-gray-300 p-8 text-center">
