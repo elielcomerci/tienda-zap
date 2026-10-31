@@ -110,3 +110,45 @@
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+
+/* Proposal documents: A4 print and browser PDF export */
+@page {
+  size: A4;
+  margin: 16mm 15mm 17mm;
+}
+@media print {
+  html, body {
+    background: #fff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body { font-size: 10pt; }
+  .no-print, button, input, textarea, select, summary { display: none !important; }
+  .proposal-print-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .proposal-print-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .proposal-print-stage {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .proposal-print-section h1,
+  .proposal-print-section h2,
+  .proposal-print-section h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .proposal-print-section .card {
+    border-color: #dbe1e8 !important;
+    box-shadow: none !important;
+  }
+  a { color: inherit !important; text-decoration: none !important; }
+}
