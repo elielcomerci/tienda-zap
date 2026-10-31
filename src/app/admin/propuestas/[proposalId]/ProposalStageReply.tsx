@@ -34,7 +34,7 @@ export default function ProposalStageReply({proposalId,stageId}:{proposalId:stri
     <textarea id={`reply-${stageId}`} value={message} onChange={event=>setMessage(event.target.value)} rows={3} maxLength={4000} placeholder="Escribí una respuesta o pedí la información que falta…" className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-zap-magenta-light focus:ring-2 focus:ring-zap-magenta-subtle"/>
     {error&&<p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
     <div className="mt-2 flex justify-end">
-      <button type="button" onClick={send} disabled={busy||!message.trim()} className="rounded-lg bg-gray-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{busy?'Enviando…':'Enviar respuesta'}</button>
+      <button type="button" onClick={send} disabled={busy||!message.trim()} className="btn-primary disabled:opacity-50">{busy?'Enviando…':'Enviar respuesta'}</button>
     </div>
   </div>
 }
