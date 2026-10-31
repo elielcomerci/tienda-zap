@@ -10,8 +10,11 @@ export async function GET(
     const { key } = await params
     const objectKey = key.join('/')
 
-    // Client-work files are private and only served through authorized signed URLs.
-    if (objectKey.startsWith('client-files/') || objectKey.startsWith('client-file-uploads/')) {
+    // Client-work and proposal files are private and only served through authorized signed URLs.
+    if (
+      objectKey.startsWith('client-files/') || objectKey.startsWith('client-file-uploads/') ||
+      objectKey.startsWith('proposal-files/') || objectKey.startsWith('proposal-file-uploads/')
+    ) {
       return new NextResponse('Not found', { status: 404 })
     }
 

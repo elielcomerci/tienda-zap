@@ -10,13 +10,15 @@ export const metadata = { title: 'Crear cuenta — ZAP Tienda' }
 export default async function RegistroPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; callbackUrl?: string | string[] }>
 }) {
-  const { error } = await searchParams
+  const { error, callbackUrl: rawCallbackUrl } = await searchParams
+  const callbackUrl = Array.isArray(rawCallbackUrl) ? rawCallbackUrl[0] : rawCallbackUrl
+  const safeCallback = typeof callbackUrl === 'string' && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') && !callbackUrl.includes('\\') && !/%5c/i.test(callbackUrl) && !/[\u0000-\u001f\u007f]/.test(callbackUrl) ? callbackUrl : ''
   
   const session = await auth()
   if (session?.user) {
-    redirect('/perfil')
+    redirect(safeCallback || '/perfil')
   }
 
   const businessTypes = await getPublicBusinessTypes()
@@ -37,6 +39,7 @@ export default async function RegistroPage({
         </div>
 
         <form action={registerUser} className="space-y-4 px-6 py-7 sm:px-8 sm:py-8">
+          <input type="hidden" name="callbackUrl" value={safeCallback} />
           {error && (
             <div className="p-3 bg-red-50 text-red-700 text-sm rounded-xl text-center">
               {decodeURIComponent(error)}
@@ -109,7 +112,7 @@ export default async function RegistroPage({
 
           <p className="text-center text-sm text-gray-500">
             ¿Ya tenés cuenta?{' '}
-            <Link href="/login" className="text-[#ED164F] font-semibold hover:underline">
+            <Link href={safeCallback ? `/login?callbackUrl=${encodeURIComponent(safeCallback)}` : "/login"} className="text-[#ED164F] font-semibold hover:underline">
               Ingresá
             </Link>
           </p>

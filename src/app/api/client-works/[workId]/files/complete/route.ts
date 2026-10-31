@@ -13,8 +13,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   let uploadedKey: string | null = null
   let finalObjectKey: string | null = null
-  const bucketName = process.env.R2_BUCKET_NAME
-  if (!bucketName) return NextResponse.json({ error: 'Falta configurar el bucket R2.' }, { status: 503 })
+  let bucketName: string | null = null
 
   try {
     const { workId } = await params
@@ -45,10 +44,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const existing = replaceFileId
       ? await prisma.clientWorkFile.findFirst({
           where: { id: replaceFileId, workId },
-          select: { id: true, objectKey: true, previousObjectKey: true },
+          select: { id: true, objectKey: true, previousObjectKey: true, bucketName: true },
         })
       : null
     if (replaceFileId && !existing) return NextResponse.json({ error: 'El archivo que querés reemplazar ya no existe.' }, { status: 404 })
+    bucketName = existing ? (existing.bucketName || process.env.R2_BUCKET_NAME || null) : (process.env.R2_PRIVATE_BUCKET_NAME || null)
+    if (!bucketName) return NextResponse.json({ error: 'Falta configurar el bucket R2.' }, { status: 503 })
     if (existing?.previousObjectKey) return NextResponse.json({ error: 'Primero hay que resolver la limpieza del archivo anterior.' }, { status: 409 })
 
     const metadata = await getR2ObjectMetadata(stagingKey, bucketName)
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         where: { id: existing.id },
         data: {
           fileName: validation.fileName, contentType: validation.contentType,
-          sizeBytes: sizeBytes, objectKey: finalObjectKey,
+          sizeBytes: sizeBytes, objectKey: finalObjectKey, bucketName,
           previousObjectKey: existing.objectKey, cleanupError: null, note, uploadedById: actorId,
         },
         select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, updatedAt: true, uploadedById: true },
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       file = await prisma.clientWorkFile.create({
         data: {
           workId, uploadedById: actorId, fileName: validation.fileName,
-          contentType: validation.contentType, sizeBytes: sizeBytes, objectKey: finalObjectKey, note,
+          contentType: validation.contentType, sizeBytes: sizeBytes, objectKey: finalObjectKey, bucketName, note,
         },
         select: { id: true, fileName: true, contentType: true, sizeBytes: true, note: true, createdAt: true, updatedAt: true, uploadedById: true },
       })
@@ -122,11 +123,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await recordClientWorkActivity({ actorId, actorEmail: session.user.email, action: existing ? 'clientWorkFile.replace' : 'clientWorkFile.upload', entityType: 'ClientWorkFile', entityId: file.id, description: (existing ? 'Archivo reemplazado: ' : 'Archivo cargado: ') + validation.fileName, metadata: { workId, fileName: validation.fileName, contentType: validation.contentType, sizeBytes: sizeBytes } })
     return NextResponse.json({ file, cleanupWarning })
   } catch (error) {
-    if (uploadedKey) {
+    if (uploadedKey && bucketName) {
       try { await deleteR2Object(uploadedKey, bucketName) }
       catch (cleanupError) { console.error('No se pudo limpiar una subida incompleta de R2:', uploadedKey, cleanupError) }
     }
-    if (finalObjectKey) {
+    if (finalObjectKey && bucketName) {
       try {
         const alreadyRegistered = await prisma.clientWorkFile.findUnique({ where: { objectKey: finalObjectKey }, select: { id: true } })
         if (!alreadyRegistered) await deleteR2Object(finalObjectKey, bucketName)

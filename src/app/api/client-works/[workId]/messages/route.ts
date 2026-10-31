@@ -1,7 +1,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { isClientWorkFilesEnabled } from '@/lib/client-work-files'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +8,8 @@ async function resolveAccess(request: NextRequest, workId: string) {
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) return { response: NextResponse.json({ error: 'Inicia sesion para continuar.' }, { status: 401 }) }
+  const account = await prisma.user.findUnique({ where: { id: userId }, select: { isBanned: true } })
+  if (!account || account.isBanned) return { response: NextResponse.json({ error: 'La cuenta no puede realizar esta operación.' }, { status: 403 }) }
 
   const adminScope = session.user.role === 'ADMIN' && new URL(request.url).searchParams.get('scope') === 'admin'
   const work = await prisma.clientWork.findFirst({
@@ -20,7 +21,6 @@ async function resolveAccess(request: NextRequest, workId: string) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ workId: string }> }) {
-  if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'El espacio de trabajos no esta habilitado.' }, { status: 503 })
   const { workId } = await params
   const access = await resolveAccess(request, workId)
   if ('response' in access) return access.response
@@ -42,7 +42,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ workId: string }> }) {
-  if (!isClientWorkFilesEnabled()) return NextResponse.json({ error: 'El espacio de trabajos no esta habilitado.' }, { status: 503 })
   const { workId } = await params
   const access = await resolveAccess(request, workId)
   if ('response' in access) return access.response

@@ -27,10 +27,10 @@ export function getR2BucketName() {
   return getRequiredEnv('R2_BUCKET_NAME')
 }
 
-// Los archivos de clientes comparten el bucket R2 existente, pero usan prefijos
-// separados y solo se entregan mediante URLs firmadas tras validar permisos.
+// El bucket privado se configura por separado para aislar propuestas y archivos nuevos.
+// Los ClientWorkFile históricos sin bucketName siguen usando R2_BUCKET_NAME.
 export function getR2PrivateBucketName() {
-  return getR2BucketName()
+  return getRequiredEnv('R2_PRIVATE_BUCKET_NAME')
 }
 
 export function getR2Client() {
@@ -51,16 +51,19 @@ export function getR2Client() {
 export async function createPresignedR2UploadUrl(params: {
   objectKey: string
   contentType: string
+  contentLength?: number
   bucketName?: string
 }) {
   const command = new PutObjectCommand({
     Bucket: params.bucketName || getR2BucketName(),
     Key: params.objectKey,
     ContentType: params.contentType,
+    ContentLength: params.contentLength,
   })
 
   return getSignedUrl(getR2Client(), command, {
     expiresIn: R2_UPLOAD_URL_TTL_SECONDS,
+    signableHeaders: params.contentLength ? new Set(['content-length']) : undefined,
   })
 }
 
