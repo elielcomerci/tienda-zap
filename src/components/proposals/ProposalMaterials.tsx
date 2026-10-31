@@ -34,7 +34,7 @@ export default function ProposalMaterials({proposalId,materials}:{proposalId:str
   const links=materials.filter(item=>item.kind==='YOUTUBE'&&item.url)
   return <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div><h2 className="font-semibold">Materiales compartidos</h2><p className="mt-1 text-sm text-gray-500">Archivos y referencias de esta propuesta. Solo los participantes autorizados pueden acceder.</p></div>
+      <div><h2 className="font-semibold">Materiales</h2><p className="mt-1 text-sm text-gray-500">Referencias y archivos de trabajo.</p></div>
       <div><input ref={input} type="file" className="hidden" onChange={event=>{const file=event.target.files?.[0];if(file) void upload(file)}}/><button type="button" onClick={()=>input.current?.click()} disabled={busy} className="rounded-xl bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy?'Subiendo…':'Adjuntar archivo'}</button></div>
     </div>
     {error&&<p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
@@ -42,6 +42,6 @@ export default function ProposalMaterials({proposalId,materials}:{proposalId:str
       {files.map(item=><li key={item.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate text-sm font-medium">{item.label||item.fileName}</p><p className="mt-1 text-xs text-gray-500">{item.uploadedByName||item.uploadedByRole||'Material'} · {new Date(item.createdAt).toLocaleString('es-AR')}{item.sizeBytes?' · '+(item.sizeBytes/1024/1024).toFixed(1)+' MB':''}</p>{item.note&&<p className="mt-1 text-xs text-gray-500">{item.note}</p>}</div><a href={'/api/proposals/'+proposalId+'/materials/'+item.id+'/download'} className="shrink-0 text-sm font-semibold underline">Descargar</a></li>)}
       {links.map(item=><li key={item.id} className="py-3"><a href={item.url!} target="_blank" rel="noreferrer" className="text-sm font-semibold underline">{item.label||'Abrir referencia'}</a></li>)}
     </ul>}
-    <p className="mt-3 text-xs text-gray-400">Formatos habituales de documentos, imágenes, audio, video y archivos de diseño. Máximo 150 MB por archivo.</p>
+    <p className="mt-3 text-xs text-gray-400">Hasta 150 MB por archivo.</p>
   </section>
 }
