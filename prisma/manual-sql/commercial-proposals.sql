@@ -68,7 +68,7 @@ CREATE INDEX "CommercialProposalMaterial_proposalId_sortOrder_idx" ON "Commercia
 CREATE INDEX "CommercialProposalInvite_proposalId_createdAt_idx" ON "CommercialProposalInvite"("proposalId", "createdAt");
 
 CREATE TABLE "CommercialProposalStage" (
- "id" TEXT NOT NULL,"proposalId" TEXT NOT NULL,"position" INTEGER NOT NULL DEFAULT 0,"title" TEXT NOT NULL,
+ "id" TEXT NOT NULL,"proposalId" TEXT NOT NULL,"position" INTEGER NOT NULL DEFAULT 0,"track" TEXT NOT NULL DEFAULT 'NOW',"title" TEXT NOT NULL,
  "description" TEXT,"scope" TEXT,"deliverables" TEXT,"timeline" TEXT,"conditions" TEXT,"amount" DECIMAL(14,2),
  "currency" TEXT NOT NULL DEFAULT 'ARS',"paymentTerms" TEXT,"status" TEXT NOT NULL DEFAULT 'PENDING',"clientWorkId" TEXT,
  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL,
@@ -126,3 +126,8 @@ CREATE TABLE IF NOT EXISTS "ProposalClientOnboarding" (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "ProposalClientOnboarding_userId_key" ON "ProposalClientOnboarding"("userId");
 
+
+
+-- Clasificación de cada etapa para separar acciones inmediatas de trabajo de largo plazo.
+ALTER TABLE "CommercialProposalStage"
+  ADD COLUMN IF NOT EXISTS "track" TEXT NOT NULL DEFAULT 'NOW';
