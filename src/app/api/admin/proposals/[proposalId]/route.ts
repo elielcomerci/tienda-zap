@@ -21,6 +21,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
     const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
     if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
     if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
+    if(stages.some((stage:any)=>stage.track!=null&&!['NOW','LATER'].includes(stage.track))) return NextResponse.json({error:'El carril de una etapa no es válido.'},{status:400})
     for(const stage of stages) {
       if(!validAmount(stage.amount)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
     }
@@ -35,6 +36,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
       for(const input of stages) {
         const data={
           title:clean(input.title,180)!,
+          track:input.track==='LATER'?'LATER':'NOW',
           description:clean(input.description),scope:clean(input.scope),deliverables:clean(input.deliverables),
           timeline:clean(input.timeline,2000),conditions:clean(input.conditions),paymentTerms:clean(input.paymentTerms),
           amount:input.amount===''||input.amount==null?null:Number(input.amount),currency:'ARS',status:'PENDING'
@@ -43,7 +45,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
           const existing=existingById.get(String(input.id))
           if(!existing) throw new Error('INVALID_STAGE')
           if(existing.clientWorkId) {
-            const same=existing.title===data.title&&existing.description===data.description&&existing.scope===data.scope&&existing.deliverables===data.deliverables&&existing.timeline===data.timeline&&existing.conditions===data.conditions&&existing.paymentTerms===data.paymentTerms&&(existing.amount==null?null:Number(existing.amount))===data.amount
+            const same=existing.title===data.title&&existing.track===data.track&&existing.description===data.description&&existing.scope===data.scope&&existing.deliverables===data.deliverables&&existing.timeline===data.timeline&&existing.conditions===data.conditions&&existing.paymentTerms===data.paymentTerms&&(existing.amount==null?null:Number(existing.amount))===data.amount
             if(!same) throw new Error('ACCEPTED_STAGE_LOCKED')
             continue
           }
@@ -73,7 +75,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
         conditions:proposal.conditions,amount:proposal.amount?.toString()??null,currency:proposal.currency,
         paymentTerms:proposal.paymentTerms,status:proposal.status,
         stages:proposal.stages.map(stage=>({
-          position:stage.position,title:stage.title,description:stage.description,scope:stage.scope,
+          position:stage.position,track:stage.track,title:stage.title,description:stage.description,scope:stage.scope,
           deliverables:stage.deliverables,timeline:stage.timeline,conditions:stage.conditions,
           amount:stage.amount?.toString()??null,currency:stage.currency,paymentTerms:stage.paymentTerms
         })),
