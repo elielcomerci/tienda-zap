@@ -21,7 +21,10 @@ export default async function PrivateProposalEntry({ params }: { params: Promise
   if (invite.proposal.customerId) {
     if (!session?.user?.id) redirect('/login?callbackUrl='+encodeURIComponent('/propuesta/'+token))
     if (invite.proposal.customerId !== session.user.id) return <main className="mx-auto max-w-xl px-6 py-20"><h1 className="text-2xl font-semibold text-gray-950">Esta propuesta está asociada a otro acceso</h1><p className="mt-3 text-sm leading-6 text-gray-600">Ingresá con la cuenta vinculada a esta propuesta o contactá a ZAP.</p></main>
-    await prisma.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } })
+    await prisma.$transaction([
+      prisma.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } }),
+      prisma.commercialProposal.updateMany({ where: { id: invite.proposalId, status: 'SHARED' }, data: { status: 'VIEWED' } }),
+    ])
     redirect('/perfil/propuestas/'+invite.proposalId)
   }
 
