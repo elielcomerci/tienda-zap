@@ -154,6 +154,7 @@ export default function WelcomeCouponModal({
         promotionId: activePromotion.id,
         quantity: 1,
         prefix: 'ZAP',
+        publicPresenterName: 'ZAP Agencia Creativa',
         batchName: 'Propuesta ZAP · ' + (proposalTitle.trim() || 'Nueva propuesta'),
         recipients: recipientRow,
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
