@@ -191,15 +191,22 @@ async function evaluateCouponRecord(input: {
     }
   }
 
+  if (coupon.assignedUserId && coupon.assignedUserId !== userId) {
+    return {
+      ok: false as const,
+      detail: 'Este cupón está asociado a otra cuenta. Iniciá sesión con la cuenta a la que fue asignado.',
+    }
+  }
+
   if (coupon.status !== 'AVAILABLE') {
     return {
       ok: false as const,
       detail:
         coupon.status === 'USED'
-          ? 'Este cupon ya fue usado.'
+          ? 'Este cupón ya agotó sus usos.'
           : coupon.status === 'RESERVED'
-            ? 'Este cupon ya esta reservado en otro pedido.'
-            : 'Este cupon ya no esta disponible.',
+            ? 'Este cupón no tiene usos libres en este momento. Hay otro pedido pendiente.'
+            : 'Este cupón ya no está disponible.',
     }
   }
 
@@ -589,21 +596,31 @@ export async function reserveCouponRedemptionForOrder(input: {
     throw new Error('El valor del cupon cambio mientras confirmabamos el pedido. Revisá el checkout.')
   }
 
+  // Consume one available use when reserving, so concurrent checkouts cannot
+  // oversubscribe a multi-use coupon. A released order restores that use.
   const reservedCoupon = await input.tx.promotionCoupon.updateMany({
     where: {
       code: normalizedCode,
       status: CouponStatus.AVAILABLE,
-      usesLeft: {
-        gt: 0,
-      },
+      usesLeft: { gt: 0 },
     },
-    data: {
-      status: CouponStatus.RESERVED,
-    },
+    data: { usesLeft: { decrement: 1 } },
   })
 
   if (reservedCoupon.count !== 1) {
-    throw new Error('Otro pedido reservo este cupon antes. Prueba con otro código.')
+    throw new Error('Otro pedido reservo este cupon antes. Probá nuevamente.')
+  }
+
+  const remainingCoupon = await input.tx.promotionCoupon.findUnique({
+    where: { code: normalizedCode },
+    select: { usesLeft: true },
+  })
+  if (!remainingCoupon) throw new Error('No encontramos el cupón al confirmar el pedido.')
+  if (remainingCoupon.usesLeft === 0) {
+    await input.tx.promotionCoupon.update({
+      where: { code: normalizedCode },
+      data: { status: CouponStatus.RESERVED },
+    })
   }
 
   await input.tx.couponRedemption.create({
@@ -633,6 +650,14 @@ export async function confirmCouponRedemptionForOrder(orderId: string) {
   await prisma.$transaction(async (tx) => {
     // Claim only a still-reserved redemption. Concurrent retries must not
     // decrement the coupon's remaining uses more than once.
+    // Serialize state transitions on the coupon row before changing the
+    // redemption, preventing concurrent confirmations from leaving a stale status.
+    const lockedCoupon = await tx.promotionCoupon.updateMany({
+      where: { code: redemption.couponCode },
+      data: { updatedAt: new Date() },
+    })
+    if (lockedCoupon.count === 0) return
+
     const claimed = await tx.couponRedemption.updateMany({
       where: { orderId, status: CouponRedemptionStatus.RESERVED },
       data: {
@@ -642,14 +667,21 @@ export async function confirmCouponRedemptionForOrder(orderId: string) {
     })
     if (claimed.count === 0) return
 
+    const [coupon, pendingRedemptions] = await Promise.all([
+      tx.promotionCoupon.findUnique({ where: { code: redemption.couponCode }, select: { usesLeft: true } }),
+      tx.couponRedemption.count({ where: { couponCode: redemption.couponCode, status: CouponRedemptionStatus.RESERVED } }),
+    ])
+    if (!coupon) return
+
+    const status = coupon.usesLeft > 0
+      ? CouponStatus.AVAILABLE
+      : pendingRedemptions > 0
+        ? CouponStatus.RESERVED
+        : CouponStatus.USED
+
     await tx.promotionCoupon.update({
       where: { code: redemption.couponCode },
-      data: {
-        status: CouponStatus.USED,
-        usesLeft: {
-          decrement: 1,
-        },
-      },
+      data: { status },
     })
   })
 }
@@ -664,18 +696,26 @@ export async function releaseCouponRedemptionForOrder(orderId: string) {
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.couponRedemption.update({
-      where: { orderId },
+    const lockedCoupon = await tx.promotionCoupon.updateMany({
+      where: { code: redemption.couponCode },
+      data: { updatedAt: new Date() },
+    })
+    if (lockedCoupon.count === 0) return
+
+    const released = await tx.couponRedemption.updateMany({
+      where: { orderId, status: CouponRedemptionStatus.RESERVED },
       data: {
         status: CouponRedemptionStatus.RELEASED,
         releasedAt: new Date(),
       },
     })
+    if (released.count === 0) return
 
     await tx.promotionCoupon.update({
       where: { code: redemption.couponCode },
       data: {
         status: CouponStatus.AVAILABLE,
+        usesLeft: { increment: 1 },
       },
     })
   })

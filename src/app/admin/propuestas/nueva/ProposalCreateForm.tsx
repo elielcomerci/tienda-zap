@@ -21,7 +21,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
   const [accountQuery, setAccountQuery] = useState('')
   const [creatingClient, setCreatingClient] = useState(false)
   const [newClient, setNewClient] = useState<NewClient>(emptyClient)
-  const [fields, setFields] = useState({ title: '', targetEmail: '', summary: '', diagnosis: '', solution: '', youtubeUrl: '', referenceUrl: '' })
+  const [fields, setFields] = useState({ title: '', targetEmail: '', welcomeCouponCode: '', summary: '', diagnosis: '', solution: '', youtubeUrl: '', referenceUrl: '' })
   const [stages, setStages] = useState<Stage[]>([emptyStage('Resolver ahora', 'NOW'), emptyStage('Lo que sigue', 'LATER')])
   const matchingAccounts = useMemo(() => {
     const q = accountQuery.trim().toLocaleLowerCase()
@@ -70,27 +70,33 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
   return <form onSubmit={submit} className="mx-auto max-w-4xl space-y-5">
     <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Destinatario</h2>
-      <p className="mt-1 text-sm text-gray-500">Vinculá una cuenta del CRM o creá el cliente ahora. No hace falta que tenga usuario en ZAP.</p>
+      <p className="mt-1 text-sm text-gray-500">Vinculá una cuenta CRM y definí el email con el que va a ingresar a ZAP. Si ya tiene cuenta, la usamos; si no, la crea al confirmar la invitación.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {field('title', 'Título de la propuesta')}
         <label className="block"><span className={labelClass}>Cuenta CRM existente</span><input className={inputClass} value={accountQuery} onChange={event => { setAccountQuery(event.target.value); setBusinessAccountId('') }} placeholder="Buscar por nombre o email" disabled={creatingClient} /><select className={inputClass+' mt-2'} value={businessAccountId} disabled={creatingClient} onChange={event => { const id=event.target.value; setBusinessAccountId(id); const account=accounts.find(item=>item.id===id); if(account?.email) setField('targetEmail',account.email) }}><option value="">Sin cuenta seleccionada</option>{matchingAccounts.map(account=><option key={account.id} value={account.id}>{account.name}{account.email?' · '+account.email:''}</option>)}</select></label>
-        <label className="block"><span className={labelClass}>Usuario ZAP (si ya existe)</span><select className={inputClass} value={customerId} onChange={event => { const id=event.target.value; setCustomerId(id); const user=users.find(item=>item.id===id); if(user) setField('targetEmail',user.email) }}><option value="">Sin usuario asociado</option>{users.map(user=><option key={user.id} value={user.id}>{user.name||user.email} · {user.email}</option>)}</select></label>
-        {field('targetEmail', 'Email para compartir el acceso')}
+        <label className="block"><span className={labelClass}>Cuenta ZAP existente (opcional)</span><select className={inputClass} value={customerId} onChange={event => { const id=event.target.value; setCustomerId(id); const user=users.find(item=>item.id===id); if(user) setField('targetEmail',user.email) }}><option value="">Sin usuario asociado</option>{users.map(user=><option key={user.id} value={user.id}>{user.name||user.email} · {user.email}</option>)}</select></label>
+        <label className="block"><span className={labelClass}>Email de acceso a ZAP *</span><input type="email" required autoComplete="email" className={inputClass} value={fields.targetEmail} onChange={event => setField('targetEmail', event.target.value)} placeholder="nombre@empresa.com"/><span className="mt-1 block text-xs text-gray-500">Le enviaremos la invitación a esta dirección. La cuenta queda habilitada aunque la propuesta no se acepte.</span></label>
       </div>
       <div className="mt-5 border-t border-gray-100 pt-4">
         <button type="button" className="btn-secondary" onClick={()=>{setCreatingClient(value=>!value);setBusinessAccountId('');setAccountQuery('');if(!creatingClient)setCustomerId('')}}>{creatingClient?'Cancelar alta de cliente':'＋ Crear un cliente nuevo'}</button>
         {creatingClient&&<div className="mt-4 rounded-2xl border border-gray-200 p-4 sm:p-5">
-          <p className="text-sm text-gray-600">El nombre es el único dato obligatorio. El resto se puede completar ahora o más adelante desde el CRM.</p>
+          <p className="text-sm text-gray-600">El nombre identifica la cuenta comercial. El email de acceso se completa arriba; los demás datos pueden agregarse después desde el CRM.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {clientField('name','Nombre del cliente o negocio',true)}
             {clientField('legalName','Razón social')}
             {clientField('taxId','CUIT / DNI')}
             {clientField('contactName','Persona de contacto')}
-            {clientField('email','Email')}
             {clientField('phone','Teléfono')}
             {clientField('whatsapp','WhatsApp')}
           </div>
         </div>}
+      </div>
+    </section>
+    <section className="card p-5 sm:p-7">
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">Bienvenida a ZAP</h2>
+      <p className="mt-1 text-sm text-gray-500">Opcional. Pegá un código de cupón para asociarlo a la cuenta del cliente.</p>
+      <div className="mt-4 max-w-md">
+        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se aplica en el checkout y se presenta al cliente en su primer ingreso. El código debe ofrecer un porcentaje sobre todos los productos.</span></label>
       </div>
     </section>
     <section className="card p-5 sm:p-7">

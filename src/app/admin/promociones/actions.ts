@@ -578,12 +578,17 @@ export async function generatePromotionCoupons(input: {
   recipients?: string | null
   qrBaseUrl?: string | null
   expiresAt?: string | null
+  usesPerCoupon?: number
 }) {
   const actor = await requireAdmin()
 
   const quantity = Math.floor(input.quantity)
+  const usesPerCoupon = Math.floor(input.usesPerCoupon ?? 1)
   if (!Number.isFinite(quantity) || quantity < 1 || quantity > 500) {
     throw new Error('La cantidad debe estar entre 1 y 500 cupones por lote.')
+  }
+  if (!Number.isFinite(usesPerCoupon) || usesPerCoupon < 1 || usesPerCoupon > 500) {
+    throw new Error('Cada cupón debe tener entre 1 y 500 usos.')
   }
 
   const prefix = buildCouponPrefix(input.prefix)
@@ -626,7 +631,7 @@ export async function generatePromotionCoupons(input: {
       metadata: Object.keys(metadata).length ? metadata : undefined,
       expiresAt,
       status: 'AVAILABLE',
-      usesLeft: 1,
+      usesLeft: usesPerCoupon,
       }
     }),
   })
@@ -643,6 +648,7 @@ export async function generatePromotionCoupons(input: {
       batchName,
       expiresAt,
       hasRecipients: recipients.length > 0,
+      usesPerCoupon,
       qrBaseUrl,
     },
   })
@@ -662,6 +668,7 @@ export async function updatePromotionCoupon(input: {
   landingSurfaceOverride?: 'TIENDA' | 'ZAP_WEB' | null
   expiresAt?: string | null
   status?: 'AVAILABLE' | 'EXPIRED'
+  usesLeft?: number
 }) {
   const actor = await requireAdmin()
 
@@ -675,6 +682,9 @@ export async function updatePromotionCoupon(input: {
   if (!coupon) throw new Error('Cupon no encontrado.')
   if (coupon.status === 'RESERVED' || coupon.status === 'USED') {
     throw new Error('Este cupon ya esta reservado o usado. No se puede editar.')
+  }
+  if (input.usesLeft !== undefined && (!Number.isInteger(input.usesLeft) || input.usesLeft < 1 || input.usesLeft > 500)) {
+    throw new Error('Los usos restantes deben estar entre 1 y 500.')
   }
 
   const currentMetadata =
@@ -711,6 +721,7 @@ export async function updatePromotionCoupon(input: {
     where: { code },
     data: {
       status: input.status || coupon.status,
+      ...(input.usesLeft !== undefined ? { usesLeft: input.usesLeft } : {}),
       recipientName: normalizeOptionalText(input.recipientName),
       recipientBusiness: normalizeOptionalText(input.recipientBusiness),
       recipientEmail: normalizeOptionalText(input.recipientEmail),
