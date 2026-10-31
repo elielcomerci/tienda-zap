@@ -22,7 +22,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
       const existingVersion=await tx.commercialProposalVersion.findUnique({where:{proposalId_version:{proposalId,version:proposal.version}},select:{id:true}})
       if(!existingVersion) {
         const snapshot={
-          version:proposal.version,title:proposal.title,summary:proposal.summary,diagnosis:proposal.diagnosis,
+          version:proposal.version,title:proposal.title,summary:proposal.summary,diagnosis:proposal.diagnosis,welcomeCouponCode:proposal.welcomeCouponCode,
           solution:proposal.solution,scope:proposal.scope,deliverables:proposal.deliverables,timeline:proposal.timeline,
           conditions:proposal.conditions,amount:proposal.amount?.toString()??null,currency:proposal.currency,
           paymentTerms:proposal.paymentTerms,status:proposal.status,

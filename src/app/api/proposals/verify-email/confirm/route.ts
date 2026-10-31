@@ -4,6 +4,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+function isActivePromotion(promotion:{status:string;activeFrom:Date|null;activeTo:Date|null},now:Date) {
+  return promotion.status==='ACTIVE'&&(!promotion.activeFrom||promotion.activeFrom<=now)&&(!promotion.activeTo||promotion.activeTo>=now)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -35,7 +39,10 @@ export async function POST(request: NextRequest) {
         select: { id: true },
       })
       if (!invite) throw new Error('INVITE_EXPIRED')
-      const proposal = await tx.commercialProposal.findUnique({ where: { id: proposalId }, select: { targetEmail: true, customerId: true } })
+      const proposal = await tx.commercialProposal.findUnique({
+        where: { id: proposalId },
+        select: { targetEmail: true, customerId: true, businessAccountId: true, welcomeCouponCode: true },
+      })
       if (!proposal || proposal.targetEmail?.trim().toLowerCase() !== email || proposal.customerId) throw new Error('CLAIM_CONFLICT')
 
       let user = await tx.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } }, select: { id: true, isBanned: true, role: true } })
@@ -43,10 +50,26 @@ export async function POST(request: NextRequest) {
       if (user && user.role !== 'CUSTOMER') throw new Error('ACCOUNT_TYPE_INVALID')
       if (!user) {
         if (!passwordHash) throw new Error('PASSWORD_REQUIRED')
+        const businessAccount = proposal.businessAccountId
+          ? await tx.businessAccount.findUnique({
+              where: { id: proposal.businessAccountId },
+              select: { userId: true, contacts: { where: { isPrimary: true }, take: 1, select: { firstName: true } } },
+            })
+          : null
+        if (businessAccount?.userId) throw new Error('ACCOUNT_LINKED_TO_OTHER_USER')
+        const accountContactName = businessAccount?.contacts[0]?.firstName?.trim()
         user = await tx.user.create({
-          data: { email, name: email.split('@')[0], password: passwordHash, role: 'CUSTOMER' },
+          data: { email, name: accountContactName || email.split('@')[0], password: passwordHash, role: 'CUSTOMER' },
           select: { id: true, isBanned: true, role: true },
         })
+      }
+
+      if (proposal.businessAccountId) {
+        const businessAccount = await tx.businessAccount.findUnique({
+          where: { id: proposal.businessAccountId },
+          select: { userId: true },
+        })
+        if (businessAccount?.userId && businessAccount.userId !== user.id) throw new Error('ACCOUNT_LINKED_TO_OTHER_USER')
       }
 
       const claimed = await tx.commercialProposal.updateMany({
@@ -54,9 +77,41 @@ export async function POST(request: NextRequest) {
         data: { customerId: user.id },
       })
       if (!claimed.count) throw new Error('CLAIM_CONFLICT')
+
+      if (proposal.businessAccountId) {
+        await tx.businessAccount.updateMany({
+          where: { id: proposal.businessAccountId, userId: null },
+          data: { userId: user.id },
+        })
+      }
+
+      if (proposal.welcomeCouponCode) {
+        const coupon = await tx.promotionCoupon.findUnique({
+          where: { code: proposal.welcomeCouponCode },
+          include: { promotion: true },
+        })
+        const now = new Date()
+        const canAssign = coupon
+          && coupon.status === 'AVAILABLE'
+          && coupon.usesLeft > 0
+          && (!coupon.expiresAt || coupon.expiresAt >= now)
+          && isActivePromotion(coupon.promotion, now)
+          && coupon.promotion.discountKind === 'PERCENTAGE'
+          && coupon.promotion.allowedProductIds.length === 0
+          && coupon.promotion.excludedProductIds.length === 0
+          && (!coupon.recipientEmail || coupon.recipientEmail.trim().toLowerCase() === email)
+          && (!coupon.assignedUserId || coupon.assignedUserId === user.id)
+
+        if (canAssign && !coupon.assignedUserId) {
+          await tx.promotionCoupon.updateMany({
+            where: { code: coupon.code, assignedUserId: null, status: 'AVAILABLE', usesLeft: { gt: 0 } },
+            data: { assignedUserId: user.id, recipientEmail: coupon.recipientEmail || email },
+          })
+        }
+      }
+
       await tx.commercialProposalInvite.update({ where: { id: invite.id }, data: { lastUsedAt: new Date() } })
       await tx.verificationToken.delete({ where: { token } })
-      return
     })
 
     return NextResponse.json({ ok: true, redirectTo: '/login?callbackUrl=' + encodeURIComponent('/perfil/propuestas/' + proposalId) }, { headers: { 'Cache-Control': 'private, no-store' } })
@@ -65,6 +120,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.message === 'PASSWORD_REQUIRED') return NextResponse.json({ error: 'Definí una contraseña para crear tu acceso.' }, { status: 400 })
     if (error instanceof Error && error.message === 'ACCOUNT_TYPE_INVALID') return NextResponse.json({ error: 'Esta dirección está asociada a una cuenta administrativa o de vendedor. Contactá a ZAP.' }, { status: 403 })
     if (error instanceof Error && error.message === 'ACCOUNT_BLOCKED') return NextResponse.json({ error: 'La cuenta está bloqueada. Contactá a ZAP.' }, { status: 403 })
+    if (error instanceof Error && error.message === 'ACCOUNT_LINKED_TO_OTHER_USER') return NextResponse.json({ error: 'La cuenta comercial ya está vinculada a otra persona. Contactá a ZAP.' }, { status: 409 })
     if (error instanceof Error && error.message === 'CLAIM_CONFLICT') return NextResponse.json({ error: 'La propuesta ya está vinculada o cambió de destinatario.' }, { status: 409 })
     console.error('proposal email verification confirmation failed', error)
     return NextResponse.json({ error: 'No pudimos confirmar el acceso.' }, { status: 500 })

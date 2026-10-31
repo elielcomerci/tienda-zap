@@ -67,6 +67,7 @@ model User {
   receivedProposals                 CommercialProposal[]       @relation("CommercialProposalCustomer")
   createdProposals                  CommercialProposal[]       @relation("CommercialProposalCreator")
   proposalOnboarding                 ProposalClientOnboarding?
+  assignedWelcomeCoupons             PromotionCoupon[]               @relation("PromotionCouponAssignedUser")
 }
 
 model SellerProfile {
@@ -1089,11 +1090,15 @@ model PromotionCoupon {
   lastScannedAt          DateTime?
   metadata               Json?
   expiresAt              DateTime?
+  assignedUserId         String?
+  welcomeShownAt         DateTime?
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
   promotion              Promotion             @relation(fields: [promotionId], references: [id], onDelete: Cascade)
   businessAccount        BusinessAccount?      @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
   businessContact        BusinessContact?      @relation(fields: [businessContactId], references: [id], onDelete: SetNull)
+  assignedUser           User?                 @relation("PromotionCouponAssignedUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  welcomeProposal        CommercialProposal?
   redemptions            CouponRedemption[]
   scans                  CouponScan[]
 
@@ -1101,6 +1106,7 @@ model PromotionCoupon {
   @@index([batchName])
   @@index([businessAccountId])
   @@index([businessContactId])
+  @@index([assignedUserId, welcomeShownAt])
 }
 
 model CouponScan {
@@ -1976,6 +1982,7 @@ model CommercialProposal {
   status            String   @default("DRAFT")
   version           Int      @default(1)
   targetEmail       String?
+  welcomeCouponCode String?  @unique
   customerId        String?
   businessAccountId String?
   createdById       String
@@ -1986,6 +1993,7 @@ model CommercialProposal {
   updatedAt         DateTime @updatedAt
 
   customer       User?                 @relation("CommercialProposalCustomer", fields: [customerId], references: [id], onDelete: SetNull)
+  welcomeCoupon  PromotionCoupon?      @relation(fields: [welcomeCouponCode], references: [code], onDelete: SetNull)
   businessAccount BusinessAccount?     @relation(fields: [businessAccountId], references: [id], onDelete: SetNull)
   createdBy      User                  @relation("CommercialProposalCreator", fields: [createdById], references: [id], onDelete: Restrict)
   materials      CommercialProposalMaterial[]

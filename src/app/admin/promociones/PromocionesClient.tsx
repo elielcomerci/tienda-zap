@@ -35,6 +35,7 @@ import {
 
 type PromotionCouponListItem = {
   code: string
+  usesLeft: number
   status: 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED'
   recipientName: string | null
   recipientBusiness: string | null
@@ -131,10 +132,12 @@ type GenerateFormState = {
   recipients: string
   qrBaseUrl: string
   expiresAt: string
+  usesPerCoupon: string
 }
 
 type CouponFormState = {
   code: string
+  usesLeft: string
   status: 'AVAILABLE' | 'EXPIRED'
   recipientName: string
   recipientBusiness: string
@@ -194,10 +197,12 @@ const DEFAULT_GENERATE_FORM: GenerateFormState = {
   recipients: '',
   qrBaseUrl: '',
   expiresAt: '',
+  usesPerCoupon: '1',
 }
 
 const DEFAULT_COUPON_FORM: CouponFormState = {
   code: '',
+  usesLeft: '1',
   status: 'AVAILABLE',
   recipientName: '',
   recipientBusiness: '',
@@ -371,6 +376,7 @@ function mapPromotionToForm(promotion: PromotionWithCounts): PromotionFormState 
 function mapCouponToForm(coupon: PromotionWithCounts['coupons'][number]): CouponFormState {
   return {
     code: coupon.code,
+    usesLeft: String(coupon.usesLeft ?? 1),
     status: coupon.status === 'EXPIRED' ? 'EXPIRED' : 'AVAILABLE',
     recipientName: coupon.recipientName ?? '',
     recipientBusiness: coupon.recipientBusiness ?? '',
@@ -731,6 +737,7 @@ export default function PromocionesClient({
       await generatePromotionCoupons({
         promotionId: generateForm.promotionId,
         quantity: Number(generateForm.quantity || '0'),
+        usesPerCoupon: Number(generateForm.usesPerCoupon || '1'),
         prefix: generateForm.prefix,
         batchName: generateForm.batchName || null,
         publicPresenterName: generateForm.publicPresenterName || null,
@@ -754,6 +761,7 @@ export default function PromocionesClient({
     try {
       await updatePromotionCoupon({
         code: couponForm.code,
+        usesLeft: Number(couponForm.usesLeft || '1'),
         status: couponForm.status,
         recipientName: couponForm.recipientName || null,
         recipientBusiness: couponForm.recipientBusiness || null,
@@ -1308,7 +1316,7 @@ export default function PromocionesClient({
                               · creado {formatDisplayDate(coupon.createdAt)}
                             </p>
                             <p className="mt-1 text-xs text-gray-500">
-                              Escaneos: {coupon.scanCount ?? coupon._count?.scans ?? 0}
+                              Escaneos: {coupon.scanCount ?? coupon._count?.scans ?? 0} · Usos disponibles: {coupon.usesLeft}
                             </p>
                           </div>
                           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -1932,7 +1940,19 @@ export default function PromocionesClient({
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="label">Usos disponibles</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={couponForm.usesLeft}
+                    onChange={(event) => setCouponForm((current) => ({ ...current, usesLeft: event.target.value }))}
+                    className="input"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="label">Estado</label>
                   <select
@@ -2032,6 +2052,21 @@ export default function PromocionesClient({
                     className="input"
                     required
                   />
+                </div>
+                <div>
+                  <label className="label">Usos por cupón</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={generateForm.usesPerCoupon}
+                    onChange={(event) =>
+                      setGenerateForm((current) => ({ ...current, usesPerCoupon: event.target.value }))
+                    }
+                    className="input"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Cada compra confirmada consume un uso.</p>
                 </div>
                 <div>
                   <label className="label">Prefijo</label>

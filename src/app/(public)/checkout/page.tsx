@@ -411,7 +411,7 @@ function CheckoutContent() {
     }
   }
 
-  const reviewCoupon = async (rawCouponCode: string) => {
+  const reviewCoupon = async (rawCouponCode: string, showWelcome = false) => {
     const trimmedCouponCode = extractCouponCode(rawCouponCode)
 
     if (!trimmedCouponCode) {
@@ -463,6 +463,11 @@ function CheckoutContent() {
         shouldDirty: true,
         shouldValidate: true,
       })
+      if (showWelcome && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('zap-coupon-applied', {
+          detail: { code: result.normalizedCode || trimmedCouponCode },
+        }))
+      }
     } catch (couponError: any) {
       setCouponPreview(null)
       setCouponFeedback(couponError.message || 'No pudimos revisar el cupon.')
@@ -822,7 +827,7 @@ function CheckoutContent() {
                     <div className="flex gap-3 lg:pt-7">
                       <button
                         type="button"
-                        onClick={() => reviewCoupon(couponDraft)}
+                        onClick={() => reviewCoupon(couponDraft, true)}
                         disabled={couponLoading}
                         className={`inline-flex min-w-[150px] items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
                           couponLoading
@@ -1095,7 +1100,7 @@ function CheckoutContent() {
         onDetected={async (rawValue) => {
           setScannerOpen(false)
           setCouponDraft(rawValue)
-          await reviewCoupon(rawValue)
+          await reviewCoupon(rawValue, true)
         }}
       />
     </div>

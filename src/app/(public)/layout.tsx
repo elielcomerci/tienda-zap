@@ -36,8 +36,8 @@ export default async function PublicLayout({ children }: { children: React.React
       situationsByBusinessType={situationsByBusinessType}
     >
     <div className="min-h-screen flex flex-col bg-white">
-      <CouponSession />
-      <WelcomePromoModal />
+      <CouponSession userId={session?.user?.id || null} />
+      <WelcomePromoModal userId={session?.user?.id || null} />
       <PublicHeader 
         user={session?.user || null} 
         referralSeller={referralSeller}

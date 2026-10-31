@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useCartStore } from '@/lib/cart-store'
 
@@ -9,20 +9,17 @@ const couponQueryKeys = ['coupon', 'couponCode', 'code', 'promo', 'voucher', 'c'
 export function extractCouponCode(value: string | null | undefined) {
   const rawValue = value?.trim()
   if (!rawValue) return null
-
   try {
     const url = new URL(rawValue)
     for (const key of couponQueryKeys) {
       const code = url.searchParams.get(key)
       if (code) return extractCouponCode(code)
     }
-
     const pathMatch = url.pathname.match(/\/(?:cupon|coupon|promo)\/([^/?#]+)/i)
     if (pathMatch?.[1]) return extractCouponCode(pathMatch[1])
   } catch {
     // A plain coupon code is the normal case.
   }
-
   const normalized = rawValue.toUpperCase().replace(/\s+/g, '').replace(/_/g, '-')
   return /^[A-Z0-9]+(?:-[A-Z0-9]+)*$/.test(normalized) && normalized.length >= 4 && normalized.length <= 40
     ? normalized
@@ -30,54 +27,64 @@ export function extractCouponCode(value: string | null | undefined) {
 }
 
 function readCookie(name: string) {
-  const prefix = `${name}=`
-  const part = document.cookie.split('; ').find((entry) => entry.startsWith(prefix))
+  const prefix = name + '='
+  const part = document.cookie.split('; ').find(entry => entry.startsWith(prefix))
   if (!part) return null
-
-  try {
-    return decodeURIComponent(part.slice(prefix.length))
-  } catch {
-    return part.slice(prefix.length)
-  }
+  try { return decodeURIComponent(part.slice(prefix.length)) } catch { return part.slice(prefix.length) }
 }
 
-function CouponSessionContent() {
+function CouponSessionContent({userId}:{userId:string|null}) {
   const searchParams = useSearchParams()
-  const setCouponCode = useCartStore((state) => state.setCouponCode)
-  const hydrated = useRef(false)
+  const setCouponCode = useCartStore(state => state.setCouponCode)
+  const currentCouponCode = useCartStore(state => state.couponCode)
 
   useEffect(() => {
-    const queryCode = couponQueryKeys
-      .map((key) => searchParams.get(key))
-      .map(extractCouponCode)
-      .find(Boolean)
-
-    const couponCode =
-      queryCode ||
-      extractCouponCode(readCookie('zap_welcome_promo')) ||
-      extractCouponCode(localStorage.getItem('saved_coupon'))
-
-    if (!couponCode) {
-      hydrated.current = true
+    const queryCode = couponQueryKeys.map(key => searchParams.get(key)).map(extractCouponCode).find(Boolean)
+    if (queryCode) {
+      setCouponCode(queryCode)
+      localStorage.setItem('saved_coupon', queryCode)
       return
     }
 
-    // A query string deliberately wins over a previously saved campaign code.
-    if (!hydrated.current || queryCode) {
-      setCouponCode(couponCode)
-      localStorage.setItem('saved_coupon', couponCode)
+    let active = true
+    const applyFallback = () => {
+      if (!active) return
+      const fallback = extractCouponCode(readCookie('zap_welcome_promo')) || extractCouponCode(localStorage.getItem('saved_coupon'))
+      if (fallback) setCouponCode(fallback)
     }
-    hydrated.current = true
-  }, [searchParams, setCouponCode])
+
+    if (userId) {
+      fetch('/api/perfil/assigned-coupon', {cache:'no-store'})
+        .then(response => response.ok ? response.json() : null)
+        .then(data => {
+          if (!active) return
+          const assignedCode = extractCouponCode(data?.code)
+          if (assignedCode && data?.available) {
+            setCouponCode(assignedCode)
+            localStorage.setItem('saved_coupon', assignedCode)
+            return
+          }
+          if (assignedCode && !data?.available) {
+            const savedCode = extractCouponCode(localStorage.getItem('saved_coupon'))
+            if (currentCouponCode === assignedCode || savedCode === assignedCode) {
+              setCouponCode(null)
+              if (savedCode === assignedCode) localStorage.removeItem('saved_coupon')
+              return
+            }
+          }
+          applyFallback()
+        })
+        .catch(applyFallback)
+    } else {
+      applyFallback()
+    }
+    return () => { active = false }
+  }, [searchParams, setCouponCode, currentCouponCode, userId])
 
   return null
 }
 
-/** Keeps coupon links, QR scans and the shared .zap.com.ar cookie in one cart session. */
-export default function CouponSession() {
-  return (
-    <Suspense fallback={null}>
-      <CouponSessionContent />
-    </Suspense>
-  )
+/** Resolves explicit campaign links first, then the coupon assigned to the signed-in account. */
+export default function CouponSession({userId=null}:{userId?:string|null}) {
+  return <Suspense fallback={null}><CouponSessionContent userId={userId}/></Suspense>
 }
