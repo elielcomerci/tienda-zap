@@ -96,9 +96,6 @@ export async function POST(request: NextRequest) {
           && coupon.usesLeft > 0
           && (!coupon.expiresAt || coupon.expiresAt >= now)
           && isActivePromotion(coupon.promotion, now)
-          && coupon.promotion.discountKind === 'PERCENTAGE'
-          && coupon.promotion.allowedProductIds.length === 0
-          && coupon.promotion.excludedProductIds.length === 0
           && (!coupon.recipientEmail || coupon.recipientEmail.trim().toLowerCase() === email)
           && (!coupon.assignedUserId || coupon.assignedUserId === user.id)
 
