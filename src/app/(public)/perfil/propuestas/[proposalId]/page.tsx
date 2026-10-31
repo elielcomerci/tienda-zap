@@ -27,6 +27,9 @@ export default async function CustomerProposalPage({ params }: { params: Promise
     },
   })
   if (!proposal) notFound()
+  if (proposal.status === 'SHARED') {
+    await prisma.commercialProposal.updateMany({ where: { id: proposal.id, customerId: session.user.id, status: 'SHARED' }, data: { status: 'VIEWED' } })
+  }
 
   const sections = [
     ['Lo que entendimos', proposal.diagnosis],
