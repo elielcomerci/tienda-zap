@@ -27,8 +27,8 @@ export default function RequestProposalEmailVerification({ inviteId }: { inviteI
   }
 
   return <div>
-    {sent && <p className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">Te enviamos un enlace de confirmación. Revisá tu casilla y también la carpeta de correo no deseado.</p>}
-    <button type="button" onClick={requestVerification} disabled={busy} className="rounded-xl bg-gray-950 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Enviando…' : sent ? 'Reenviar email' : 'Enviar confirmación por email'}</button>
+    {sent && <p className="mb-3 rounded-xl border border-zap-blue/20 bg-zap-blue-subtle p-4 text-sm text-gray-700">Te enviamos un enlace de confirmación. Revisá tu casilla y también la carpeta de correo no deseado.</p>}
+    <button type="button" onClick={requestVerification} disabled={busy} className="btn-primary disabled:opacity-50">{busy ? 'Enviando…' : sent ? 'Reenviar email' : 'Enviar confirmación por email'}</button>
     {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
   </div>
 }
