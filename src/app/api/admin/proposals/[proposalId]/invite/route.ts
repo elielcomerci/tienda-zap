@@ -26,7 +26,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{proposa
           solution:proposal.solution,scope:proposal.scope,deliverables:proposal.deliverables,timeline:proposal.timeline,
           conditions:proposal.conditions,amount:proposal.amount?.toString()??null,currency:proposal.currency,
           paymentTerms:proposal.paymentTerms,status:proposal.status,
-          stages:proposal.stages.map(stage=>({position:stage.position,title:stage.title,description:stage.description,scope:stage.scope,deliverables:stage.deliverables,timeline:stage.timeline,conditions:stage.conditions,amount:stage.amount?.toString()??null,currency:stage.currency,paymentTerms:stage.paymentTerms})),
+          stages:proposal.stages.map(stage=>({position:stage.position,track:stage.track,title:stage.title,description:stage.description,scope:stage.scope,deliverables:stage.deliverables,timeline:stage.timeline,conditions:stage.conditions,amount:stage.amount?.toString()??null,currency:stage.currency,paymentTerms:stage.paymentTerms})),
           materials:proposal.materials.map(material=>({id:material.id,kind:material.kind,label:material.label,url:material.url,fileName:material.fileName,contentType:material.contentType,sizeBytes:material.sizeBytes,note:material.note,createdAt:material.createdAt.toISOString()}))
         }
         await tx.commercialProposalVersion.create({data:{proposalId,version:proposal.version,createdById:session.user.id!,snapshot}})
