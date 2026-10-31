@@ -1,7 +1,127 @@
 'use client'
-import {useState} from 'react'
-import {useRouter} from 'next/navigation'
-type U={id:string;name:string|null;email:string};type A={id:string;name:string;userId:string|null}
-type S={title:string;track:string;description:string;scope:string;deliverables:string;timeline:string;amount:string;paymentTerms:string;conditions:string}
-const blank=(title='',track='NOW'):S=>({title,track,description:'',scope:'',deliverables:'',timeline:'',amount:'',paymentTerms:'',conditions:''}),cls='w-full rounded-xl border border-gray-200 px-3 py-3 text-sm',lab='mb-1 block text-sm font-medium'
-export default function ProposalCreateForm({users,accounts}:{users:U[];accounts:A[]}){const r=useRouter();const[busy,setBusy]=useState(false);const[error,setError]=useState('');const[cid,setCid]=useState('');const[aid,setAid]=useState('');const[f,setF]=useState({title:'',targetEmail:'',summary:'',diagnosis:'',solution:'',youtubeUrl:''});const[stages,setStages]=useState<S[]>([blank('Resolver ahora','NOW'),blank('Lo que sigue','LATER')]);const set=(k:keyof typeof f,v:string)=>setF(x=>({...x,[k]:v}));const sf=(i:number,k:keyof S,v:string)=>setStages(x=>x.map((s,n)=>n===i?{...s,[k]:v}:s));async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{const q=await fetch('/api/admin/proposals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...f,customerId:cid||null,businessAccountId:aid||null,stages})});const d=await q.json();if(!q.ok)throw Error(d.error||'No pudimos guardar.');r.push('/admin/propuestas/'+d.proposal.id);r.refresh()}catch(e){setError(e instanceof Error?e.message:'Error');setBusy(false)}}const field=(k:keyof typeof f,t:string,m=false)=><label><span className={lab}>{t}</span>{m?<textarea className={cls} rows={3} value={f[k]} onChange={e=>set(k,e.target.value)}/>:<input className={cls} value={f[k]} onChange={e=>set(k,e.target.value)}/>}</label>;const sfld=(i:number,k:keyof S,t:string,m=false)=><label><span className={lab}>{t}</span>{m?<textarea className={cls} rows={3} value={stages[i][k]} onChange={e=>sf(i,k,e.target.value)}/>:<input className={cls} value={stages[i][k]} onChange={e=>sf(i,k,e.target.value)}/>}</label>;return <form onSubmit={submit} className="space-y-6"><section className="rounded-2xl border bg-white p-6"><h2 className="font-semibold">Destinatario</h2><p className="mt-1 text-sm text-gray-500">Los campos comerciales son opcionales. Para compartirla necesitamos identificar al destinatario.</p><div className="mt-4 grid gap-4 sm:grid-cols-2">{field('title','Título interno (opcional)')}<label><span className={lab}>Cliente</span><select className={cls} value={cid} onChange={e=>{setCid(e.target.value);const u=users.find(x=>x.id===e.target.value);if(u)set('targetEmail',u.email)}}><option value="">Sin usuario</option>{users.map(u=><option key={u.id} value={u.id}>{u.name||u.email} · {u.email}</option>)}</select></label><label><span className={lab}>Cuenta CRM</span><select className={cls} value={aid} onChange={e=>setAid(e.target.value)}><option value="">Sin cuenta</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>{field('targetEmail','Email de acceso')}</div></section><section className="rounded-2xl border bg-white p-6"><h2 className="font-semibold">La mirada de ZAP</h2><p className="mt-1 text-sm text-gray-500">Los campos vacíos desaparecen por completo de la presentación.</p><div className="mt-4 space-y-4">{field('summary','Introducción',true)}{field('diagnosis','Lo que entendimos',true)}{field('solution','Nuestra perspectiva',true)}</div></section><section className="rounded-2xl border bg-white p-6"><div className="flex justify-between"><div><h2 className="font-semibold">Etapas y decisiones</h2><p className="mt-1 text-sm text-gray-500">Cada etapa se conversa y aprueba por separado.</p></div><button type="button" onClick={()=>setStages(x=>[...x,blank()])} className="rounded-lg border px-3 py-2 text-sm">Agregar etapa</button></div><div className="mt-5 space-y-4">{stages.map((s,i)=><div key={i} className="rounded-xl border p-4"><div className="mb-3 flex items-center justify-between gap-3"><b>Etapa {i+1}</b><button type="button" onClick={()=>setStages(x=>x.filter((_,n)=>n!==i))} className="text-sm">Quitar</button></div><div className="grid gap-3 sm:grid-cols-2"><label><span className={lab}>Carril</span><select className={cls} value={s.track} onChange={e=>sf(i,'track',e.target.value)}><option value="NOW">Resolver ahora</option><option value="LATER">Construir a largo plazo</option></select></label>{sfld(i,'title','Nombre')}{sfld(i,'timeline','Plazo')}<div className="sm:col-span-2">{sfld(i,'description','Presentación',true)}</div>{sfld(i,'scope','Alcance',true)}{sfld(i,'deliverables','Entregables',true)}{sfld(i,'amount','Inversión')}{sfld(i,'paymentTerms','Modalidad de pago',true)}<div className="sm:col-span-2">{sfld(i,'conditions','Consideraciones',true)}</div></div></div>)}</div></section><section className="rounded-2xl border bg-white p-6"><h2 className="font-semibold">Material de referencia</h2>{field('youtubeUrl','Enlace de YouTube (opcional)')}</section>{error&&<p className="text-sm text-red-600">{error}</p>}<div className="flex justify-end gap-3"><button type="button" onClick={()=>r.push('/admin/propuestas')} className="rounded-xl border px-4 py-3">Cancelar</button><button disabled={busy} className="rounded-xl bg-gray-950 px-5 py-3 text-white">{busy?'Guardando…':'Guardar propuesta'}</button></div></form>}
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+type UserOption = { id: string; name: string | null; email: string }
+type AccountOption = { id: string; name: string; userId: string | null }
+type Stage = { title: string; track: string; description: string; scope: string; deliverables: string; timeline: string; amount: string; paymentTerms: string; conditions: string }
+
+const emptyStage = (title = '', track = 'NOW'): Stage => ({ title, track, description: '', scope: '', deliverables: '', timeline: '', amount: '', paymentTerms: '', conditions: '' })
+const inputClass = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-900 outline-none transition focus:border-gray-500'
+const labelClass = 'mb-1.5 block text-sm font-medium text-gray-700'
+
+export default function ProposalCreateForm({ users, accounts }: { users: UserOption[]; accounts: AccountOption[] }) {
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [customerId, setCustomerId] = useState('')
+  const [businessAccountId, setBusinessAccountId] = useState('')
+  const [fields, setFields] = useState({ title: '', targetEmail: '', summary: '', diagnosis: '', solution: '', youtubeUrl: '' })
+  const [stages, setStages] = useState<Stage[]>([emptyStage('Resolver ahora', 'NOW'), emptyStage('Lo que sigue', 'LATER')])
+
+  const setField = (key: keyof typeof fields, value: string) => setFields(current => ({ ...current, [key]: value }))
+  const setStage = (index: number, key: keyof Stage, value: string) => setStages(current => current.map((stage, i) => i === index ? { ...stage, [key]: value } : stage))
+
+  const field = (key: keyof typeof fields, title: string, multiline = false) => <label className="block">
+    <span className={labelClass}>{title}</span>
+    {multiline
+      ? <textarea className={inputClass} rows={3} value={fields[key]} onChange={event => setField(key, event.target.value)} />
+      : <input className={inputClass} value={fields[key]} onChange={event => setField(key, event.target.value)} />}
+  </label>
+
+  const stageField = (index: number, key: keyof Stage, title: string, multiline = false) => <label className="block">
+    <span className={labelClass}>{title}</span>
+    {multiline
+      ? <textarea className={inputClass} rows={3} value={stages[index][key]} onChange={event => setStage(index, key, event.target.value)} />
+      : <input className={inputClass} value={stages[index][key]} onChange={event => setStage(index, key, event.target.value)} />}
+  </label>
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault()
+    setError('')
+    if (!stages.length) return setError('Agregá al menos una etapa.')
+    if (stages.some(stage => !stage.title.trim())) return setError('Cada etapa necesita un nombre.')
+    setBusy(true)
+    try {
+      const response = await fetch('/api/admin/proposals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...fields, customerId: customerId || null, businessAccountId: businessAccountId || null, stages }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No pudimos guardar la propuesta.')
+      router.push('/admin/propuestas/' + data.proposal.id)
+      router.refresh()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No pudimos guardar la propuesta.')
+      setBusy(false)
+    }
+  }
+
+  return <form onSubmit={submit} className="mx-auto max-w-4xl space-y-5">
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">Destinatario</h2>
+      <p className="mt-1 text-sm text-gray-500">Elegí un cliente o indicá dónde enviar el acceso.</p>
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        {field('title', 'Título de la propuesta')}
+        <label className="block"><span className={labelClass}>Cliente</span><select className={inputClass} value={customerId} onChange={event => { const id = event.target.value; setCustomerId(id); const user = users.find(item => item.id === id); if (user) setField('targetEmail', user.email) }}><option value="">Seleccionar cliente</option>{users.map(user => <option key={user.id} value={user.id}>{user.name || user.email} · {user.email}</option>)}</select></label>
+        <label className="block"><span className={labelClass}>Cuenta CRM</span><select className={inputClass} value={businessAccountId} onChange={event => setBusinessAccountId(event.target.value)}><option value="">Sin asociar</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>
+        {field('targetEmail', 'Email de acceso')}
+      </div>
+    </section>
+
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">La mirada de ZAP</h2>
+      <p className="mt-1 text-sm text-gray-500">Mostrá qué entendimos y qué proponemos. Lo que dejes vacío no aparece.</p>
+      <div className="mt-5 space-y-4">
+        {field('summary', 'Introducción', true)}
+        {field('diagnosis', 'El desafío', true)}
+        {field('solution', 'Nuestra propuesta', true)}
+      </div>
+    </section>
+
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+      <div className="flex items-start justify-between gap-4">
+        <div><h2 className="text-base font-semibold tracking-tight text-gray-950">Plan de trabajo</h2><p className="mt-1 text-sm text-gray-500">Separá lo urgente de lo que puede construirse después.</p></div>
+        <button type="button" onClick={() => setStages(current => [...current, emptyStage()])} className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-50">Agregar etapa</button>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {stages.map((stage, index) => <article key={index} className="rounded-xl border border-gray-200 p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[.12em] text-gray-500">Etapa {index + 1}</p>
+            {stages.length > 1 && <button type="button" onClick={() => setStages(current => current.filter((_, i) => i !== index))} className="text-xs font-medium text-gray-500 underline underline-offset-4 hover:text-gray-900">Quitar</button>}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block"><span className={labelClass}>Carril</span><select className={inputClass} value={stage.track} onChange={event => setStage(index, 'track', event.target.value)}><option value="NOW">Resolver ahora</option><option value="LATER">Construir a largo plazo</option></select></label>
+            {stageField(index, 'title', 'Nombre de la etapa')}
+            {stageField(index, 'timeline', 'Plazo')}
+          </div>
+          <details className="group mt-4 border-t border-gray-100 pt-3">
+            <summary className="cursor-pointer list-none text-sm font-medium text-gray-700 marker:hidden"><span className="group-open:hidden">Definir alcance e inversión +</span><span className="hidden group-open:inline">Ocultar detalles −</span></summary>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">{stageField(index, 'description', 'Presentación', true)}</div>
+              {stageField(index, 'scope', 'Alcance', true)}
+              {stageField(index, 'deliverables', 'Entregables', true)}
+              {stageField(index, 'amount', 'Inversión')}
+              {stageField(index, 'paymentTerms', 'Modalidad de pago', true)}
+              <div className="sm:col-span-2">{stageField(index, 'conditions', 'Consideraciones', true)}</div>
+            </div>
+          </details>
+        </article>)}
+      </div>
+    </section>
+
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">Material de referencia</h2>
+      <div className="mt-4">{field('youtubeUrl', 'Enlace de YouTube (opcional)')}</div>
+    </section>
+
+    {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+    <div className="flex justify-end gap-3 pb-6">
+      <button type="button" onClick={() => router.push('/admin/propuestas')} className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700">Cancelar</button>
+      <button disabled={busy} className="rounded-xl bg-gray-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar propuesta'}</button>
+    </div>
+  </form>
+}
