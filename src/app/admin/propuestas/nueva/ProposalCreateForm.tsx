@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import WelcomeCouponModal, { type WelcomePromotionOption } from './WelcomeCouponModal'
+import WelcomeCouponModal, { type WelcomeProductOption, type WelcomePromotionOption } from './WelcomeCouponModal'
 
 type AccountOption = { id: string; name: string; email?: string | null }
 type Stage = { title: string; track: string; description: string; scope: string; deliverables: string; timeline: string; amount: string; paymentTerms: string; conditions: string }
@@ -12,7 +12,7 @@ const emptyStage = (title = '', track = 'NOW'): Stage => ({ title, track, descri
 const inputClass = 'input'
 const labelClass = 'label'
 
-export default function ProposalCreateForm({ accounts, promotions }: { accounts: AccountOption[]; promotions: WelcomePromotionOption[] }) {
+export default function ProposalCreateForm({ accounts, promotions, products }: { accounts: AccountOption[]; promotions: WelcomePromotionOption[]; products: WelcomeProductOption[] }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -136,6 +136,7 @@ export default function ProposalCreateForm({ accounts, promotions }: { accounts:
   </form>
   {isCouponModalOpen && <WelcomeCouponModal
     promotions={promotions}
+    products={products}
     recipientEmail={fields.targetEmail}
     recipientName={recipientName}
     recipientBusiness={recipientBusiness}
