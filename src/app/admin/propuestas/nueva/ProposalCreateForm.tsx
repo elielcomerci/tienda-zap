@@ -3,20 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-type UserOption = { id: string; name: string | null; email: string }
 type AccountOption = { id: string; name: string; email?: string | null }
 type Stage = { title: string; track: string; description: string; scope: string; deliverables: string; timeline: string; amount: string; paymentTerms: string; conditions: string }
-type NewClient = { name: string; legalName: string; taxId: string; contactName: string; email: string; phone: string; whatsapp: string }
-const emptyClient: NewClient = { name: '', legalName: '', taxId: '', contactName: '', email: '', phone: '', whatsapp: '' }
+type NewClient = { name: string; legalName: string; taxId: string; contactName: string; phone: string; whatsapp: string }
+const emptyClient: NewClient = { name: '', legalName: '', taxId: '', contactName: '', phone: '', whatsapp: '' }
 const emptyStage = (title = '', track = 'NOW'): Stage => ({ title, track, description: '', scope: '', deliverables: '', timeline: '', amount: '', paymentTerms: '', conditions: '' })
 const inputClass = 'input'
 const labelClass = 'label'
 
-export default function ProposalCreateForm({ users, accounts }: { users: UserOption[]; accounts: AccountOption[] }) {
+export default function ProposalCreateForm({ accounts }: { accounts: AccountOption[] }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [customerId, setCustomerId] = useState('')
   const [businessAccountId, setBusinessAccountId] = useState('')
   const [creatingClient, setCreatingClient] = useState(false)
   const [newClient, setNewClient] = useState<NewClient>(emptyClient)
@@ -50,7 +48,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
       const response = await fetch('/api/admin/proposals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...fields, customerId: customerId || null, businessAccountId: creatingClient ? null : businessAccountId || null, newBusinessAccount: creatingClient ? newClient : null, stages }),
+        body: JSON.stringify({ ...fields, businessAccountId: creatingClient ? null : businessAccountId || null, newBusinessAccount: creatingClient ? newClient : null, stages }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'No pudimos guardar la propuesta.')
@@ -65,17 +63,16 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
   return <form onSubmit={submit} className="mx-auto max-w-4xl space-y-5">
     <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Destinatario</h2>
-      <p className="mt-1 text-sm text-gray-500">Vinculá una cuenta CRM y definí el email con el que va a ingresar a ZAP. Si ya tiene cuenta, la usamos; si no, la crea al confirmar la invitación.</p>
+      <p className="mt-1 text-sm text-gray-500">Buscá un cliente del CRM o crealo. El email identifica su acceso a ZAP.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {field('title', 'Título de la propuesta')}
         <label className="block"><span className={labelClass}>Cliente existente</span><select className={inputClass} value={businessAccountId} disabled={creatingClient} onChange={event => { const id=event.target.value; setBusinessAccountId(id); const account=accounts.find(item=>item.id===id); if(account?.email) setField('targetEmail',account.email) }}><option value="">Elegí una cuenta del CRM</option>{accounts.map(account=><option key={account.id} value={account.id}>{account.name}{account.email?' · '+account.email:''}</option>)}</select></label>
-        <label className="block"><span className={labelClass}>Cuenta ZAP existente (opcional)</span><select className={inputClass} value={customerId} onChange={event => { const id=event.target.value; setCustomerId(id); const user=users.find(item=>item.id===id); if(user) setField('targetEmail',user.email) }}><option value="">Sin usuario asociado</option>{users.map(user=><option key={user.id} value={user.id}>{user.name||user.email} · {user.email}</option>)}</select></label>
-        <label className="block"><span className={labelClass}>Email de acceso a ZAP *</span><input type="email" required autoComplete="email" className={inputClass} value={fields.targetEmail} onChange={event => setField('targetEmail', event.target.value)} placeholder="nombre@empresa.com"/><span className="mt-1 block text-xs text-gray-500">Le enviaremos la invitación a esta dirección. La cuenta queda habilitada aunque la propuesta no se acepte.</span></label>
+        <label className="block"><span className={labelClass}>Email de acceso a ZAP *</span><input type="email" required autoComplete="email" className={inputClass} value={fields.targetEmail} onChange={event => setField('targetEmail', event.target.value)} placeholder="nombre@empresa.com"/><span className="mt-1 block text-xs text-gray-500">Le enviaremos la invitación a esta dirección. El acceso a ZAP no depende de aceptar la propuesta.</span></label>
       </div>
       <div className="mt-5 border-t border-gray-100 pt-4">
-        <button type="button" className="btn-secondary" onClick={()=>{setCreatingClient(value=>!value);setBusinessAccountId('');setAccountQuery('');if(!creatingClient)setCustomerId('')}}>{creatingClient?'Cancelar alta de cliente':'＋ Crear un cliente nuevo'}</button>
+        <button type="button" className="btn-secondary" onClick={()=>{setCreatingClient(value=>!value);setBusinessAccountId('')}}>{creatingClient?'Cancelar alta de cliente':'＋ Crear un cliente nuevo'}</button>
         {creatingClient&&<div className="mt-4 rounded-2xl border border-gray-200 p-4 sm:p-5">
-          <p className="text-sm text-gray-600">El nombre identifica la cuenta comercial. El email de acceso se completa arriba; los demás datos pueden agregarse después desde el CRM.</p>
+          <p className="text-sm text-gray-600">Solo el nombre es obligatorio. Los demás datos pueden completarse ahora o más adelante.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {clientField('name','Nombre del cliente o negocio',true)}
             {clientField('legalName','Razón social')}
@@ -89,9 +86,9 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
     </section>
     <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Bienvenida a ZAP</h2>
-      <p className="mt-1 text-sm text-gray-500">Opcional. Pegá un código de cupón para asociarlo a la cuenta del cliente.</p>
+      <p className="mt-1 text-sm text-gray-500">Asociá un cupón de bienvenida (opcional).</p>
       <div className="mt-4 max-w-md">
-        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se aplica en el checkout y se presenta al cliente en su primer ingreso. El código debe ofrecer un porcentaje sobre todos los productos.</span></label>
+        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se muestra una vez al entrar a ZAP y queda asociado a la cuenta. Debe ser un porcentaje válido para todos los productos.</span></label>
       </div>
     </section>
     <section className="card p-5 sm:p-7">
