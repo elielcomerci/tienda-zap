@@ -13,15 +13,15 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{propos
   try {
     const body=await request.json().catch(()=>null)
     if(!body||typeof body!=='object'||Array.isArray(body)) return NextResponse.json({error:'Los datos de la propuesta no son válidos.'},{status:400})
-    if(Array.isArray(body.stages)&&body.stages.length>12) return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
+    if(Array.isArray(body.stages)&&body.stages.length>12) return NextResponse.json({error:'Una propuesta admite hasta 12 soluciones.'},{status:400})
     const expectedVersion=Number(body.expectedVersion)
     if(!Number.isInteger(expectedVersion)||expectedVersion<1) return NextResponse.json({error:'La propuesta cambió. Recargá antes de guardar.'},{status:409})
     const stages=Array.isArray(body.stages)?body.stages:[]
     if(!validAmount(body.amount)) return NextResponse.json({error:'El importe general debe ser un número no negativo con hasta dos decimales y menor a 1.000.000.000.000.'},{status:400})
     const rootAmount=body.amount===''||body.amount==null?null:Number(body.amount)
     if(rootAmount!==null&&(!Number.isFinite(rootAmount)||rootAmount<0)) return NextResponse.json({error:'El importe general es inválido.'},{status:400})
-    if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
-    if(stages.some((stage:any)=>stage.track!=null&&!['NOW','LATER'].includes(stage.track))) return NextResponse.json({error:'El carril de una etapa no es válido.'},{status:400})
+    if(stages.some((stage:any)=>!clean(stage.title,180))) return NextResponse.json({error:'Cada solución necesita un nombre.'},{status:400})
+    if(stages.some((stage:any)=>stage.track!=null&&!['NOW','LATER'].includes(stage.track))) return NextResponse.json({error:'El horizonte de una solución no es válido.'},{status:400})
     for(const stage of stages) {
       if(!validAmount(stage.amount)) return NextResponse.json({error:'Hay un importe de etapa inválido.'},{status:400})
     }

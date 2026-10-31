@@ -8,8 +8,8 @@ import ProposalPrintActions from '@/components/proposals/ProposalPrintActions'
 
 export const dynamic = 'force-dynamic'
 const trackLabels: Record<string, { title: string; description: string }> = {
-  NOW: { title: 'Resolver ahora', description: 'Prioridades inmediatas.' },
-  LATER: { title: 'Construir a largo plazo', description: 'Lo que sigue.' },
+  NOW: { title: 'Prioridad inmediata', description: 'Soluciones para empezar ahora.' },
+  LATER: { title: 'Desarrollo a futuro', description: 'Soluciones para construir a largo plazo.' },
 }
 export default async function CustomerProposalPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const session = await auth()
@@ -55,14 +55,14 @@ export default async function CustomerProposalPage({ params }: { params: Promise
       <ProposalMaterials proposalId={proposal.id} materials={proposal.materials.map(material => ({ ...material, createdAt: material.createdAt.toISOString() }))} />
       {proposal.stages.length > 0 && <>
         <section className="no-print mt-10">
-          <div className="mb-6 max-w-3xl"><h2 className="text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Elegí cómo avanzar</h2><p className="mt-2 text-sm leading-6 text-gray-600">Cada etapa se decide por separado.</p></div>
+          <div className="mb-6 max-w-3xl"><h2 className="text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Elegí cómo avanzar</h2><p className="mt-2 text-sm leading-6 text-gray-600">Cada solución se decide por separado.</p></div>
           <div className={hasBothTracks ? 'grid items-start gap-6 lg:grid-cols-2' : 'grid items-start gap-6'}>
             {immediate.length > 0 && <section><div className="mb-4 border-b border-gray-300 pb-3"><h3 className="text-lg font-semibold text-zap-magenta">{trackLabels.NOW.title}</h3><p className="mt-1 text-sm text-gray-500">{trackLabels.NOW.description}</p></div><div className="space-y-4">{immediate.map(stage => <ProposalStageDecision key={stage.id} proposalVersion={proposal.version} stage={{ ...stage, amount: stage.amount == null ? null : Number(stage.amount), comments: stage.comments.slice().reverse().map(comment => ({ ...comment, createdAt: comment.createdAt.toISOString() })) }} />)}</div></section>}
             {future.length > 0 && <section><div className="mb-4 border-b border-gray-300 pb-3"><h3 className="text-lg font-semibold text-zap-blue">{trackLabels.LATER.title}</h3><p className="mt-1 text-sm text-gray-500">{trackLabels.LATER.description}</p></div><div className="space-y-4">{future.map(stage => <ProposalStageDecision key={stage.id} proposalVersion={proposal.version} stage={{ ...stage, amount: stage.amount == null ? null : Number(stage.amount), comments: stage.comments.slice().reverse().map(comment => ({ ...comment, createdAt: comment.createdAt.toISOString() })) }} />)}</div></section>}
           </div>
         </section>
         <section className="print-only proposal-print-section mt-10">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-gray-950">Plan de trabajo</h2>
+          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-gray-950">Soluciones propuestas</h2>
           {immediate.length > 0 && <section className="mb-7"><h3 className="border-b border-zap-magenta pb-2 text-lg font-semibold text-zap-magenta">{trackLabels.NOW.title}</h3>{printStages(immediate)}</section>}
           {future.length > 0 && <section><h3 className="border-b border-zap-blue pb-2 text-lg font-semibold text-zap-blue">{trackLabels.LATER.title}</h3>{printStages(future)}</section>}
         </section>

@@ -49,3 +49,10 @@ Rama: `feat/propuestas-comerciales`
 - `R2_PRIVATE_BUCKET_NAME` está configurado para Production; `CLIENT_WORK_FILES_ENABLED` permanece en `false` en Production hasta completar las pruebas específicas del portal de archivos.
 - El flujo de propuestas usa el bucket privado configurado y no publica los adjuntos en el dominio de medios.
 - La validación final de build y recorrido funcional queda pendiente: Vercel alcanzó el límite diario de deployments del plan Hobby y el workflow de GitHub no expuso logs útiles.
+
+
+## Modelo comercial de soluciones — 31/10/2026
+- La propuesta funciona como contenedor comercial; cada `CommercialProposalStage` se presenta como una solución independiente y conserva su decisión, inversión, alcance, plazo y conversión a `ClientWork`.
+- `track` se mantiene por compatibilidad de datos y se presenta como horizonte: prioridad inmediata (`NOW`) o desarrollo a futuro (`LATER`). No se requiere migración de base de datos.
+- El cupón de bienvenida reutiliza `PromotionCoupon` y `Promotion`; se valida disponibilidad, vigencia, destinatario y asignación, pero no se restringe el tipo de descuento ni el alcance de productos. Checkout y motor de cupones conservan las condiciones originales de la promoción.
+- La bienvenida del dashboard puede mostrar cupones con descuento porcentual o monto fijo y con productos incluidos/excluidos. El modal marca `welcomeShownAt` al cerrarse; la asignación permanece en la cuenta.

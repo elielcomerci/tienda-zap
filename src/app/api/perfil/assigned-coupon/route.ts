@@ -19,9 +19,7 @@ export async function GET() {
     (!coupon.expiresAt||coupon.expiresAt>=now) &&
     coupon.promotion.status==='ACTIVE' &&
     (!coupon.promotion.activeFrom||coupon.promotion.activeFrom<=now) &&
-    (!coupon.promotion.activeTo||coupon.promotion.activeTo>=now) &&
-    coupon.promotion.allowedProductIds.length===0 &&
-    coupon.promotion.excludedProductIds.length===0
+    (!coupon.promotion.activeTo||coupon.promotion.activeTo>=now)
   )
   return NextResponse.json({
     code:available?.code||coupons[0]?.code||null,

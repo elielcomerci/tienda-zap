@@ -56,7 +56,7 @@ export default function ProposalStageDecision({ stage, proposalVersion }: { stag
     </div>}
 
     {stage.clientWorkId ? <div className="mt-5 border-t border-gray-100 pt-4">
-      <p className="text-sm font-medium text-gray-800">Esta etapa ya está en marcha.</p>
+      <p className="text-sm font-medium text-gray-800">Esta solución ya está en marcha.</p>
       <a href="/perfil/archivos" className="mt-2 inline-flex text-sm font-semibold text-zap-magenta underline underline-offset-4 hover:text-zap-magenta-dark">Ver trabajo</a>
     </div> : <>
       {stage.comments.length > 0 && <div className="mt-5 border-t border-gray-100 pt-4">

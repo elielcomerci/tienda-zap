@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { findUniqueBusinessAccountId } from '@/lib/customer-account'
 import Link from 'next/link'
 import { ArrowRight, BriefcaseBusiness, FolderOpen, Package, ReceiptText, UserRound, FileText } from 'lucide-react'
+import WelcomePromoModal from '@/components/WelcomePromoModal'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Mi espacio | ZAP Tienda' }
@@ -60,6 +61,8 @@ export default async function PerfilPage() {
   ]
 
   return (
+    <>
+    <WelcomePromoModal accountMode userId={session.user.id} />
     <div className="min-h-screen bg-[#FAF9F6]">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
         <section className="border-b border-gray-200 pb-7">
@@ -86,5 +89,6 @@ export default async function PerfilPage() {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-5 text-sm text-gray-600"><span>¿Necesitás ayuda con una gestión?</span><a href="https://wa.me/541125832323" target="_blank" rel="noreferrer" className="font-semibold text-[#C2103F] hover:underline">Escribinos a ZAP <ArrowRight className="ml-1 inline" size={14} /></a></div>
       </div>
     </div>
+    </>
   )
 }
