@@ -2065,6 +2065,7 @@ model CommercialProposalStage {
  id String @id @default(cuid())
  proposalId String
  position Int @default(0)
+ track String @default("NOW")
  title String
  description String? @db.Text
  scope String? @db.Text
