@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const token = typeof body.token === 'string' ? body.token : ''
     const password = typeof body.password === 'string' ? body.password : ''
-    if (!/^[a-f0-9]{64}$/.test(token) || password.length < 8 || password.length > 128) {
-      return NextResponse.json({ error: 'El enlace o la contraseña no son válidos. Usá al menos 8 caracteres.' }, { status: 400 })
+    if (!/^[a-f0-9]{64}$/.test(token) || (password && (password.length < 8 || password.length > 128))) {
+      return NextResponse.json({ error: 'El enlace o la contraseña no son válidos.' }, { status: 400 })
     }
 
     const verification = await prisma.verificationToken.findUnique({ where: { token } })
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const parts = verification.identifier.split(':')
     if (parts.length !== 4) return NextResponse.json({ error: 'El enlace no es válido.' }, { status: 400 })
     const [, proposalId, inviteId, email] = parts
-    const passwordHash = await bcrypt.hash(password, 12)
+    const passwordHash = password ? await bcrypt.hash(password, 12) : null
 
     await prisma.$transaction(async tx => {
       const locked = await tx.commercialProposal.updateMany({ where: { id: proposalId }, data: { version: { increment: 0 } } })
@@ -41,9 +41,8 @@ export async function POST(request: NextRequest) {
       let user = await tx.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } }, select: { id: true, isBanned: true, role: true } })
       if (user?.isBanned) throw new Error('ACCOUNT_BLOCKED')
       if (user && user.role !== 'CUSTOMER') throw new Error('ACCOUNT_TYPE_INVALID')
-      if (user) {
-        await tx.user.update({ where: { id: user.id }, data: { password: passwordHash } })
-      } else {
+      if (!user) {
+        if (!passwordHash) throw new Error('PASSWORD_REQUIRED')
         user = await tx.user.create({
           data: { email, name: email.split('@')[0], password: passwordHash, role: 'CUSTOMER' },
           select: { id: true, isBanned: true },
@@ -63,6 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, redirectTo: '/login?callbackUrl=' + encodeURIComponent('/perfil/propuestas/' + proposalId) }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     if (error instanceof Error && error.message === 'INVITE_EXPIRED') return NextResponse.json({ error: 'La invitación ya no está disponible.' }, { status: 410 })
+    if (error instanceof Error && error.message === 'PASSWORD_REQUIRED') return NextResponse.json({ error: 'Definí una contraseña para crear tu acceso.' }, { status: 400 })
     if (error instanceof Error && error.message === 'ACCOUNT_TYPE_INVALID') return NextResponse.json({ error: 'Esta dirección está asociada a una cuenta administrativa o de vendedor. Contactá a ZAP.' }, { status: 403 })
     if (error instanceof Error && error.message === 'ACCOUNT_BLOCKED') return NextResponse.json({ error: 'La cuenta está bloqueada. Contactá a ZAP.' }, { status: 403 })
     if (error instanceof Error && error.message === 'CLAIM_CONFLICT') return NextResponse.json({ error: 'La propuesta ya está vinculada o cambió de destinatario.' }, { status: 409 })
