@@ -39,8 +39,8 @@ export default function ProposalCreateForm({ accounts }: { accounts: AccountOpti
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setError('')
-    if (!stages.length) return setError('Agregá al menos una etapa.')
-    if (stages.some(stage => !stage.title.trim())) return setError('Cada etapa necesita un nombre.')
+    if (!stages.length) return setError('Agregá al menos una solución.')
+    if (stages.some(stage => !stage.title.trim())) return setError('Cada solución necesita un nombre.')
     if (!creatingClient && !businessAccountId) return setError('Seleccioná una cuenta existente o creá el cliente.')
     if (creatingClient && !newClient.name.trim()) return setError('El nombre del cliente es obligatorio.')
     setBusy(true)
