@@ -41,3 +41,11 @@ Rama: `feat/propuestas-comerciales`
 - El espacio del cliente incluye un listado persistente de propuestas recibidas.
 - El estado cambia de `SHARED` a `VIEWED` cuando el destinatario autenticado abre la invitación.
 - No se comparte una propuesta sin al menos una etapa.
+
+
+## Estado de integración — 31/10/2026
+- El esquema base de propuestas ya estaba presente en Neon Production.
+- Se aplicaron en Preview y Production las migraciones aditivas `CommercialProposalStage.track` (default `NOW`) y `ClientWorkFile.bucketName`.
+- `R2_PRIVATE_BUCKET_NAME` está configurado para Production; `CLIENT_WORK_FILES_ENABLED` permanece en `false` en Production hasta completar las pruebas específicas del portal de archivos.
+- El flujo de propuestas usa el bucket privado configurado y no publica los adjuntos en el dominio de medios.
+- La validación final de build y recorrido funcional queda pendiente: Vercel alcanzó el límite diario de deployments del plan Hobby y el workflow de GitHub no expuso logs útiles.
