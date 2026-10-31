@@ -8,8 +8,8 @@ import ProposalMaterials from '@/components/proposals/ProposalMaterials'
 export const dynamic = 'force-dynamic'
 
 const trackLabels: Record<string, { title: string; description: string }> = {
-  NOW: { title: 'Resolver ahora', description: 'Lo que conviene atender primero para destrabar la situación.' },
-  LATER: { title: 'Construir a largo plazo', description: 'Lo que podemos desarrollar después, con una mirada de continuidad.' },
+  NOW: { title: 'Resolver ahora', description: 'Prioridades inmediatas.' },
+  LATER: { title: 'Construir a largo plazo', description: 'Lo que sigue.' },
 }
 
 export default async function CustomerProposalPage({ params }: { params: Promise<{ proposalId: string }> }) {
@@ -50,7 +50,7 @@ export default async function CustomerProposalPage({ params }: { params: Promise
       <Link href="/perfil/propuestas" className="text-sm font-medium text-gray-500 transition hover:text-gray-950">← Mis propuestas</Link>
 
       <header className="mt-7 border-b border-gray-200 pb-8">
-        <p className="text-xs font-semibold uppercase tracking-[.16em] text-gray-500">Propuesta de ZAP · Versión {proposal.version}</p>
+        <p className="text-xs font-semibold uppercase tracking-[.16em] text-gray-500">ZAP · Propuesta {proposal.version > 1 ? `v${proposal.version}` : ""}</p>
         <h1 className="mt-3 max-w-4xl text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">{proposal.title}</h1>
         {proposal.summary && <p className="mt-5 max-w-3xl whitespace-pre-wrap text-base leading-7 text-gray-600">{proposal.summary}</p>}
       </header>
@@ -66,9 +66,8 @@ export default async function CustomerProposalPage({ params }: { params: Promise
 
       {proposal.stages.length > 0 && <section className="mt-10">
         <div className="mb-6 max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[.16em] text-gray-500">Decisión</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Cómo podemos avanzar</h2>
-          <p className="mt-2 text-sm leading-6 text-gray-600">Cada etapa tiene su propia decisión. Podés aprobar una, ambas o conversar cambios sin comprometer la otra.</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Elegí cómo avanzar</h2>
+          <p className="mt-2 text-sm leading-6 text-gray-600">Cada etapa se decide por separado.</p>
         </div>
         <div className={hasBothTracks ? 'grid items-start gap-6 lg:grid-cols-2' : 'grid items-start gap-6'}>
           {immediate.length > 0 && <section>
@@ -87,7 +86,7 @@ export default async function CustomerProposalPage({ params }: { params: Promise
           </section>}
         </div>
       </section>}
-      <footer className="mt-12 border-t border-gray-200 pt-5 text-sm text-gray-500">Si necesitás aclarar algo antes de decidir, podés dejar un comentario en la etapa correspondiente.</footer>
+      <footer className="mt-12 border-t border-gray-200 pt-5 text-sm text-gray-500">ZAP Agencia Creativa</footer>
     </div>
   </main>
 }
