@@ -56,3 +56,10 @@ Rama: `feat/propuestas-comerciales`
 - `track` se mantiene por compatibilidad de datos y se presenta como horizonte: prioridad inmediata (`NOW`) o desarrollo a futuro (`LATER`). No se requiere migración de base de datos.
 - El cupón de bienvenida reutiliza `PromotionCoupon` y `Promotion`; se valida disponibilidad, vigencia, destinatario y asignación, pero no se restringe el tipo de descuento ni el alcance de productos. Checkout y motor de cupones conservan las condiciones originales de la promoción.
 - La bienvenida del dashboard puede mostrar cupones con descuento porcentual o monto fijo y con productos incluidos/excluidos. El modal marca `welcomeShownAt` al cerrarse; la asignación permanece en la cuenta.
+
+
+## Creación de cupones desde propuestas — 31/10/2026
+- El alta de propuestas permite seleccionar una promoción de cupón activa o crear una nueva sin abandonar el formulario.
+- Una promoción nueva puede definir descuento porcentual o monto fijo, vigencia, mínimo de compra, límites de uso y selección/exclusión de productos.
+- El flujo genera un código individual asociado al email destinatario y lo vincula a la propuesta al guardar; el dashboard muestra el beneficio al ingresar a la cuenta.
+- Se reutilizan `createPromotion` y `generatePromotionCoupons`; no se agrega un segundo motor de descuentos ni requiere migración.
