@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         if (!passwordHash) throw new Error('PASSWORD_REQUIRED')
         user = await tx.user.create({
           data: { email, name: email.split('@')[0], password: passwordHash, role: 'CUSTOMER' },
-          select: { id: true, isBanned: true },
+          select: { id: true, isBanned: true, role: true },
         })
       }
 
