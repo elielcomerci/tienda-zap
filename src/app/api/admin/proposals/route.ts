@@ -36,6 +36,7 @@ export async function POST(req:NextRequest){
   if(newAccount&&!clean(newAccount.name,180))return NextResponse.json({error:'El nombre del cliente es obligatorio.'},{status:400})
   if(newAccount&&clean(b.businessAccountId,100))return NextResponse.json({error:'Elegí una cuenta existente o creá una nueva, no ambas.'},{status:400})
   const businessAccountIdInput=clean(b.businessAccountId,100)
+  if(!newAccount&&!businessAccountIdInput)return NextResponse.json({error:'Seleccioná una cuenta del CRM o creá el cliente.'},{status:400})
   if(Array.isArray(b.stages)&&b.stages.length>12)return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
   const stages=Array.isArray(b.stages)?b.stages:[]
   for(const x of stages){

@@ -168,6 +168,7 @@ async function loadCouponRecord(db: CouponDbClient, normalizedCode: string) {
     where: { code: normalizedCode },
     include: {
       promotion: true,
+      welcomeProposal: { select: { id: true } },
     },
   })
 }
@@ -188,6 +189,13 @@ async function evaluateCouponRecord(input: {
     return {
       ok: false as const,
       detail: 'Este cupon no esta activo en este momento.',
+    }
+  }
+
+  if (coupon.welcomeProposal && !coupon.assignedUserId) {
+    return {
+      ok: false as const,
+      detail: 'Este cupón está reservado para una invitación ZAP. Confirmá el acceso con el email que recibió la propuesta.',
     }
   }
 
@@ -741,10 +749,10 @@ export async function getWelcomePromoDetails(couponCode: string): Promise<Welcom
 
   const coupon = await prisma.promotionCoupon.findUnique({
     where: { code: normalizedCode },
-    include: { promotion: true },
+    include: { promotion: true, welcomeProposal: { select: { id: true } } },
   })
 
-  if (!coupon || coupon.promotion.status !== 'ACTIVE') {
+  if (!coupon || coupon.promotion.status !== 'ACTIVE' || (coupon.welcomeProposal && !coupon.assignedUserId)) {
     return null
   }
 

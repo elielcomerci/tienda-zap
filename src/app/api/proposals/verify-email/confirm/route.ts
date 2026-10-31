@@ -50,10 +50,26 @@ export async function POST(request: NextRequest) {
       if (user && user.role !== 'CUSTOMER') throw new Error('ACCOUNT_TYPE_INVALID')
       if (!user) {
         if (!passwordHash) throw new Error('PASSWORD_REQUIRED')
+        const businessAccount = proposal.businessAccountId
+          ? await tx.businessAccount.findUnique({
+              where: { id: proposal.businessAccountId },
+              select: { userId: true, contacts: { where: { isPrimary: true }, take: 1, select: { firstName: true } } },
+            })
+          : null
+        if (businessAccount?.userId) throw new Error('ACCOUNT_LINKED_TO_OTHER_USER')
+        const accountContactName = businessAccount?.contacts[0]?.firstName?.trim()
         user = await tx.user.create({
-          data: { email, name: email.split('@')[0], password: passwordHash, role: 'CUSTOMER' },
+          data: { email, name: accountContactName || email.split('@')[0], password: passwordHash, role: 'CUSTOMER' },
           select: { id: true, isBanned: true, role: true },
         })
+      }
+
+      if (proposal.businessAccountId) {
+        const businessAccount = await tx.businessAccount.findUnique({
+          where: { id: proposal.businessAccountId },
+          select: { userId: true },
+        })
+        if (businessAccount?.userId && businessAccount.userId !== user.id) throw new Error('ACCOUNT_LINKED_TO_OTHER_USER')
       }
 
       const claimed = await tx.commercialProposal.updateMany({
@@ -104,6 +120,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.message === 'PASSWORD_REQUIRED') return NextResponse.json({ error: 'Definí una contraseña para crear tu acceso.' }, { status: 400 })
     if (error instanceof Error && error.message === 'ACCOUNT_TYPE_INVALID') return NextResponse.json({ error: 'Esta dirección está asociada a una cuenta administrativa o de vendedor. Contactá a ZAP.' }, { status: 403 })
     if (error instanceof Error && error.message === 'ACCOUNT_BLOCKED') return NextResponse.json({ error: 'La cuenta está bloqueada. Contactá a ZAP.' }, { status: 403 })
+    if (error instanceof Error && error.message === 'ACCOUNT_LINKED_TO_OTHER_USER') return NextResponse.json({ error: 'La cuenta comercial ya está vinculada a otra persona. Contactá a ZAP.' }, { status: 409 })
     if (error instanceof Error && error.message === 'CLAIM_CONFLICT') return NextResponse.json({ error: 'La propuesta ya está vinculada o cambió de destinatario.' }, { status: 409 })
     console.error('proposal email verification confirmation failed', error)
     return NextResponse.json({ error: 'No pudimos confirmar el acceso.' }, { status: 500 })

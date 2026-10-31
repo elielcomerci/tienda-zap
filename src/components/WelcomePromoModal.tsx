@@ -66,7 +66,7 @@ export default function WelcomePromoModal({
       fetch('/api/perfil/welcome-promo', { cache: 'no-store' })
         .then((response) => response.ok ? response.json() : null)
         .then((data: Promo | null) => {
-          if (!active || !data?.code || localStorage.getItem(`has_seen_promo_${data.code}`)) return
+          if (!active || !data?.code) return
           openingCode.current = data.code
           setPromo(data)
           setCouponCode(data.code)

@@ -11,7 +11,7 @@ export default async function NewProposalPage({searchParams}:{searchParams:Promi
   const {q:rawQuery,page:rawPage}=await searchParams
   const q=(rawQuery||'').trim().slice(0,100)
   const page=Math.max(1,Number.parseInt(rawPage||'1',10)||1)
-  const where=q?{OR:[{name:{contains:q,mode:'insensitive' as const}},{legalName:{contains:q,mode:'insensitive' as const}},{taxId:{contains:q,mode:'insensitive' as const}}]}:undefined
+  const where=q?{OR:[{name:{contains:q,mode:'insensitive' as const}},{legalName:{contains:q,mode:'insensitive' as const}},{taxId:{contains:q,mode:'insensitive' as const}},{contacts:{some:{email:{contains:q,mode:'insensitive' as const}}}}]}:undefined
   const [users,accounts,total] = await Promise.all([
     prisma.user.findMany({where:{role:'CUSTOMER',isBanned:false},select:{id:true,name:true,email:true},orderBy:{name:'asc'},take:500}),
     prisma.businessAccount.findMany({where,select:{id:true,name:true,userId:true,contacts:{where:{isPrimary:true},take:1,select:{email:true}}},orderBy:{updatedAt:'desc'},skip:(page-1)*500,take:500}),

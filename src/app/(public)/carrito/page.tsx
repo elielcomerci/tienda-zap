@@ -60,7 +60,7 @@ export default function CartPage() {
   const discountAmount = couponPreview?.status === 'recognized' ? couponPreview.discountAmount : 0
   const finalTotal = couponPreview?.status === 'recognized' ? couponPreview.finalTotal : totalAmount
 
-  const reviewCoupon = useCallback(async (rawCouponCode: string, saveToSession = true) => {
+  const reviewCoupon = useCallback(async (rawCouponCode: string, saveToSession = true, showWelcome = false) => {
     const parsedCouponCode = extractCouponCode(rawCouponCode)
     if (!parsedCouponCode) {
       setCouponPreview(null)
@@ -100,6 +100,9 @@ export default function CartPage() {
       if (saveToSession) {
         setCouponCode(normalizedCode)
         localStorage.setItem('saved_coupon', normalizedCode)
+      }
+      if (showWelcome && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('zap-coupon-applied', { detail: { code: normalizedCode } }))
       }
     } catch (error: any) {
       setCouponPreview(null)
@@ -368,7 +371,7 @@ export default function CartPage() {
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') {
                         event.preventDefault()
-                        void reviewCoupon(couponDraft)
+                        void reviewCoupon(couponDraft, true, true)
                       }
                     }}
                     placeholder="Código de cupón"
@@ -376,7 +379,7 @@ export default function CartPage() {
                   />
                   <button
                     type="button"
-                    onClick={() => void reviewCoupon(couponDraft)}
+                    onClick={() => void reviewCoupon(couponDraft, true, true)}
                     disabled={couponLoading}
                     className="rounded-xl bg-[#ED164F] px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#F7638B] disabled:cursor-wait disabled:opacity-60"
                   >
