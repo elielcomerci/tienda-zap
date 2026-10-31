@@ -27,3 +27,17 @@ Rama: `feat/propuestas-comerciales`
 - No se devuelven campos de propuesta desde el endpoint de invitación.
 - La aceptación aún no crea automáticamente un trabajo ni una orden.
 - El importe es nullable y no se interpreta como cero.
+
+
+## Carriles de decisión
+- Cada etapa pertenece a `NOW` (Resolver ahora) o `LATER` (Construir a largo plazo).
+- El cliente ve los carriles por separado y puede aprobar o rechazar cada etapa de manera independiente.
+- La aprobación conserva el carril y las condiciones comerciales en el trabajo creado.
+- La columna `CommercialProposalStage.track` usa `NOW` por defecto para mantener compatibilidad con etapas anteriores.
+
+## Ajustes posteriores a la primera auditoría
+- El email de acceso puede reenviarse reutilizando el token vigente.
+- El onboarding comercial dejó de bloquear la lectura de una propuesta.
+- El espacio del cliente incluye un listado persistente de propuestas recibidas.
+- El estado cambia de `SHARED` a `VIEWED` cuando el destinatario autenticado abre la invitación.
+- No se comparte una propuesta sin al menos una etapa.
