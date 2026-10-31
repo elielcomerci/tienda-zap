@@ -37,11 +37,11 @@ export async function POST(req:NextRequest){
   if(newAccount&&clean(b.businessAccountId,100))return NextResponse.json({error:'Elegí una cuenta existente o creá una nueva, no ambas.'},{status:400})
   const businessAccountIdInput=clean(b.businessAccountId,100)
   if(!newAccount&&!businessAccountIdInput)return NextResponse.json({error:'Seleccioná una cuenta del CRM o creá el cliente.'},{status:400})
-  if(Array.isArray(b.stages)&&b.stages.length>12)return NextResponse.json({error:'Una propuesta admite hasta 12 etapas.'},{status:400})
+  if(Array.isArray(b.stages)&&b.stages.length>12)return NextResponse.json({error:'Una propuesta admite hasta 12 soluciones.'},{status:400})
   const stages=Array.isArray(b.stages)?b.stages:[]
   for(const x of stages){
-   if(!clean(x?.title,180))return NextResponse.json({error:'Cada etapa necesita un nombre.'},{status:400})
-   if(x.track!=null&&!['NOW','LATER'].includes(x.track))return NextResponse.json({error:'El carril de una etapa no es válido.'},{status:400})
+   if(!clean(x?.title,180))return NextResponse.json({error:'Cada solución necesita un nombre.'},{status:400})
+   if(x.track!=null&&!['NOW','LATER'].includes(x.track))return NextResponse.json({error:'El horizonte de una solución no es válido.'},{status:400})
    if(!validAmount(x.amount))return NextResponse.json({error:'Importe inválido.'},{status:400})
   }
   const amount=b.amount===''||b.amount==null?null:Number(b.amount)
