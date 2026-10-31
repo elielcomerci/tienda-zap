@@ -6,7 +6,7 @@
   --color-zap-magenta: var(--zap-magenta);
   --color-zap-magenta-light: var(--zap-magenta-light);
   --color-zap-magenta-dark: var(--zap-magenta-dark);
-  --color-zap-magenta-subtle: var(--zap-magenta-subtle);
+  --color-zap-magenta-subtle: var(--zap-magenta-subtle);\n  --color-zap-blue: var(--zap-blue);\n  --color-zap-blue-light: var(--zap-blue-light);\n  --color-zap-blue-dark: var(--zap-blue-dark);\n  --color-zap-blue-subtle: var(--zap-blue-subtle);\n  --color-zap-purple: var(--zap-purple);\n  --color-zap-orange: var(--zap-orange);
 }
 
 :root {
