@@ -19,7 +19,7 @@ export default function ProposalCreateForm({ accounts }: { accounts: AccountOpti
   const [creatingClient, setCreatingClient] = useState(false)
   const [newClient, setNewClient] = useState<NewClient>(emptyClient)
   const [fields, setFields] = useState({ title: '', targetEmail: '', welcomeCouponCode: '', summary: '', diagnosis: '', solution: '', youtubeUrl: '', referenceUrl: '' })
-  const [stages, setStages] = useState<Stage[]>([emptyStage('Resolver ahora', 'NOW'), emptyStage('Lo que sigue', 'LATER')])
+  const [stages, setStages] = useState<Stage[]>([emptyStage()])
   const setField = (key: keyof typeof fields, value: string) => setFields(current => ({ ...current, [key]: value }))
   const setClientField = (key: keyof NewClient, value: string) => setNewClient(current => ({ ...current, [key]: value }))
   const setStage = (index: number, key: keyof Stage, value: string) => setStages(current => current.map((stage, i) => i === index ? { ...stage, [key]: value } : stage))
@@ -86,21 +86,21 @@ export default function ProposalCreateForm({ accounts }: { accounts: AccountOpti
     </section>
     <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Bienvenida a ZAP</h2>
-      <p className="mt-1 text-sm text-gray-500">Asociá un cupón de bienvenida (opcional).</p>
+      <p className="mt-1 text-sm text-gray-500">Elegí un cupón existente para asociarlo a esta cuenta (opcional).</p>
       <div className="mt-4 max-w-md">
-        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se muestra una vez al entrar a ZAP y queda asociado a la cuenta. Debe ser un porcentaje válido para todos los productos.</span></label>
+        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se ofrece al ingresar al dashboard y queda asociado a la cuenta. Se respetan la vigencia, los productos y todas las condiciones configuradas en el cupón.</span></label>
       </div>
     </section>
     <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">La mirada de ZAP</h2>
-      <p className="mt-1 text-sm text-gray-500">Mostrá qué entendimos y qué proponemos. Lo que dejes vacío no aparece.</p>
-      <div className="mt-5 space-y-4">{field('summary','Introducción',true)}{field('diagnosis','El desafío',true)}{field('solution','Nuestra propuesta',true)}</div>
+      <p className="mt-1 text-sm text-gray-500">El contexto que entendimos, el desafío y nuestra recomendación. Los campos vacíos no aparecen.</p>
+      <div className="mt-5 space-y-4">{field('summary','Contexto',true)}{field('diagnosis','El desafío',true)}{field('solution','Nuestra mirada',true)}</div>
     </section>
     <section className="card p-5 sm:p-7">
-      <div className="flex items-start justify-between gap-4"><div><h2 className="text-base font-semibold tracking-tight text-gray-950">Plan de trabajo</h2><p className="mt-1 text-sm text-gray-500">Separá lo urgente de lo que puede construirse después.</p></div><button type="button" onClick={()=>setStages(current=>[...current,emptyStage()])} className="shrink-0 btn-secondary">Agregar etapa</button></div>
+      <div className="flex items-start justify-between gap-4"><div><h2 className="text-base font-semibold tracking-tight text-gray-950">Soluciones propuestas</h2><p className="mt-1 text-sm text-gray-500">Cada solución se presenta y se decide por separado. Podés combinar servicios, medios y horizontes de trabajo.</p></div><button type="button" onClick={()=>setStages(current=>[...current,emptyStage()])} className="shrink-0 btn-secondary">Agregar solución</button></div>
       <div className="mt-5 space-y-3">{stages.map((stage,index)=><article key={index} className="rounded-xl border border-gray-200 p-4 sm:p-5">
-        <div className="mb-4 flex items-center justify-between gap-3"><p className="text-xs font-semibold uppercase tracking-[.12em] text-gray-500">Etapa {index+1}</p>{stages.length>1&&<button type="button" onClick={()=>setStages(current=>current.filter((_,i)=>i!==index))} className="text-xs font-medium text-gray-500 underline underline-offset-4">Quitar</button>}</div>
-        <div className="grid gap-3 sm:grid-cols-2"><label className="block"><span className={labelClass}>Carril</span><select className={inputClass} value={stage.track} onChange={event=>setStage(index,'track',event.target.value)}><option value="NOW">Resolver ahora</option><option value="LATER">Construir a largo plazo</option></select></label>{stageField(index,'title','Nombre de la etapa')}{stageField(index,'timeline','Plazo')}</div>
+        <div className="mb-4 flex items-center justify-between gap-3"><p className="text-xs font-semibold uppercase tracking-[.12em] text-gray-500">Solución {index+1}</p>{stages.length>1&&<button type="button" onClick={()=>setStages(current=>current.filter((_,i)=>i!==index))} className="text-xs font-medium text-gray-500 underline underline-offset-4">Quitar</button>}</div>
+        <div className="grid gap-3 sm:grid-cols-2"><label className="block"><span className={labelClass}>Horizonte</span><select className={inputClass} value={stage.track} onChange={event=>setStage(index,'track',event.target.value)}><option value="NOW">Prioridad inmediata</option><option value="LATER">Desarrollo a futuro</option></select></label>{stageField(index,'title','Nombre de la solución')}{stageField(index,'timeline','Plazo')}</div>
         <details className="group mt-4 border-t border-gray-100 pt-3"><summary className="cursor-pointer list-none text-sm font-medium text-gray-700"><span className="group-open:hidden">Definir alcance e inversión +</span><span className="hidden group-open:inline">Ocultar detalles −</span></summary><div className="mt-4 grid gap-4 sm:grid-cols-2"><div className="sm:col-span-2">{stageField(index,'description','Presentación',true)}</div>{stageField(index,'scope','Alcance',true)}{stageField(index,'deliverables','Entregables',true)}{stageField(index,'amount','Inversión')}{stageField(index,'paymentTerms','Modalidad de pago',true)}<div className="sm:col-span-2">{stageField(index,'conditions','Consideraciones',true)}</div></div></details>
       </article>)}</div>
     </section>
