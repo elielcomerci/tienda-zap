@@ -24,12 +24,7 @@ export async function GET() {
     orderBy:{createdAt:'asc'},
     take:20,
   })
-  const coupon=coupons.find(item=>
-    activePromotion(item.promotion,now) &&
-    item.promotion.discountKind==='PERCENTAGE' &&
-    item.promotion.allowedProductIds.length===0 &&
-    item.promotion.excludedProductIds.length===0
-  )
+  const coupon=coupons.find(item=>activePromotion(item.promotion,now))
   if(!coupon)return NextResponse.json(null,{headers:{'Cache-Control':'private, no-store'}})
   const promo=coupon.promotion
   const presenterName=getCouponPresenterName(coupon)
@@ -38,7 +33,7 @@ export async function GET() {
   return NextResponse.json({
     code:coupon.code,
     title:promo.welcomeTitle||'Un beneficio para vos',
-    message:promo.welcomeMessage||`Tenés un ${promo.discountValue}% de descuento en los productos publicados de ZAP. El código ${coupon.code} queda asociado a tu cuenta y se aplicará en el checkout mientras tenga usos disponibles.`,
+    message:promo.welcomeMessage||`Tenés un beneficio de bienvenida para usar en la tienda ZAP. El código ${coupon.code} queda asociado a tu cuenta y se aplicará en el checkout a los productos incluidos en la promoción, según sus condiciones.`,
     conditions:promo.welcomeConditions,
     logoUrl:promo.welcomeLogoUrl,
     presenterName,
