@@ -28,7 +28,7 @@ export default async function EditProposalPage({params}:{params:Promise<{proposa
         conditions:proposal.conditions||'',amount:proposal.amount?.toString()||'',paymentTerms:proposal.paymentTerms||''
       }}
       initialStages={proposal.stages.map(stage=>({
-        id:stage.id,title:stage.title,description:stage.description||'',scope:stage.scope||'',
+        id:stage.id,title:stage.title,track:stage.track,description:stage.description||'',scope:stage.scope||'',
         deliverables:stage.deliverables||'',timeline:stage.timeline||'',conditions:stage.conditions||'',
         amount:stage.amount?.toString()||'',paymentTerms:stage.paymentTerms||'',locked:!!stage.clientWorkId
       }))}
