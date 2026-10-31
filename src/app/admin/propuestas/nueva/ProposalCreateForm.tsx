@@ -62,7 +62,7 @@ export default function ProposalCreateForm({ accounts }: { accounts: AccountOpti
 
   return <form onSubmit={submit} className="mx-auto max-w-4xl space-y-5">
     <section className="card p-5 sm:p-7">
-      <h2 className="text-base font-semibold tracking-tight text-gray-950">Destinatario</h2>
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">Cliente</h2>
       <p className="mt-1 text-sm text-gray-500">Buscá un cliente del CRM o crealo. El email identifica su acceso a ZAP.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {field('title', 'Título de la propuesta')}
@@ -85,13 +85,6 @@ export default function ProposalCreateForm({ accounts }: { accounts: AccountOpti
       </div>
     </section>
     <section className="card p-5 sm:p-7">
-      <h2 className="text-base font-semibold tracking-tight text-gray-950">Bienvenida a ZAP</h2>
-      <p className="mt-1 text-sm text-gray-500">Elegí un cupón existente para asociarlo a esta cuenta (opcional).</p>
-      <div className="mt-4 max-w-md">
-        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se ofrece al ingresar al dashboard y queda asociado a la cuenta. Se respetan la vigencia, los productos y todas las condiciones configuradas en el cupón.</span></label>
-      </div>
-    </section>
-    <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">La mirada de ZAP</h2>
       <p className="mt-1 text-sm text-gray-500">El contexto que entendimos, el desafío y nuestra recomendación. Los campos vacíos no aparecen.</p>
       <div className="mt-5 space-y-4">{field('summary','Contexto',true)}{field('diagnosis','El desafío',true)}{field('solution','Nuestra mirada',true)}</div>
@@ -105,9 +98,16 @@ export default function ProposalCreateForm({ accounts }: { accounts: AccountOpti
       </article>)}</div>
     </section>
     <section className="card p-5 sm:p-7">
-      <h2 className="text-base font-semibold tracking-tight text-gray-950">Material de referencia</h2>
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">Referencias</h2>
       <p className="mt-1 text-sm text-gray-500">Podés sumar archivos y más enlaces desde el detalle una vez creada la propuesta.</p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">{field('youtubeUrl','Enlace de YouTube (opcional)')}{field('referenceUrl','Otro enlace (opcional)')}</div>
+    </section>
+    <section className="card p-5 sm:p-7">
+      <h2 className="text-base font-semibold tracking-tight text-gray-950">Acceso y beneficios</h2>
+      <p className="mt-1 text-sm text-gray-500">Asociá un cupón existente. Se aplicará después de revisar la propuesta.</p>
+      <div className="mt-4 max-w-md">
+        <label className="block"><span className={labelClass}>Código de cupón</span><input className={inputClass} value={fields.welcomeCouponCode} onChange={event=>setField('welcomeCouponCode',event.target.value)} placeholder="ZAP-XXXXXXXX-X" autoCapitalize="characters" autoCorrect="off"/><span className="mt-1 block text-xs text-gray-500">Se ofrece al ingresar al dashboard y queda asociado a la cuenta. Se respetan la vigencia, los productos y todas las condiciones configuradas en el cupón.</span></label>
+      </div>
     </section>
     {error&&<p role="alert" className="text-sm text-red-600">{error}</p>}
     <div className="flex justify-end gap-3 pb-6"><button type="button" onClick={()=>router.push('/admin/propuestas')} className="btn-secondary">Cancelar</button><button disabled={busy} className="btn-primary disabled:opacity-50">{busy?'Guardando…':'Guardar propuesta'}</button></div>
