@@ -8,8 +8,8 @@ import ProposalPrintActions from '@/components/proposals/ProposalPrintActions'
 
 export const dynamic = 'force-dynamic'
 const trackLabels: Record<string, { title: string; description: string }> = {
-  NOW: { title: 'Resolver ahora', description: 'Prioridades inmediatas.' },
-  LATER: { title: 'Construir a largo plazo', description: 'Lo que sigue.' },
+  NOW: { title: 'Prioridad inmediata', description: 'Soluciones para empezar ahora.' },
+  LATER: { title: 'Desarrollo a futuro', description: 'Soluciones para construir a largo plazo.' },
 }
 export default async function CustomerProposalPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const session = await auth()
