@@ -57,7 +57,7 @@ export default function ProposalStageDecision({ stage, proposalVersion }: { stag
 
     {stage.clientWorkId ? <div className="mt-5 border-t border-gray-100 pt-4">
       <p className="text-sm font-medium text-gray-800">Esta etapa ya está en marcha.</p>
-      <a href="/perfil/archivos" className="mt-2 inline-flex text-sm font-semibold text-gray-950 underline underline-offset-4">Ver trabajo</a>
+      <a href="/perfil/archivos" className="mt-2 inline-flex text-sm font-semibold text-zap-magenta underline underline-offset-4 hover:text-zap-magenta-dark">Ver trabajo</a>
     </div> : <>
       {stage.comments.length > 0 && <div className="mt-5 border-t border-gray-100 pt-4">
         <h5 className="text-sm font-semibold text-gray-900">Conversación</h5>
@@ -72,7 +72,7 @@ export default function ProposalStageDecision({ stage, proposalVersion }: { stag
             {Object.entries(actionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
-        {action !== 'ACCEPTED' && <label className="mt-3 block"><span className="mb-1 block text-sm text-gray-600">Comentario</span><textarea value={message} onChange={event => setMessage(event.target.value)} rows={3} maxLength={4000} placeholder="Contanos brevemente." className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:border-gray-500 focus:outline-none" /></label>}
+        {action !== 'ACCEPTED' && <label className="mt-3 block"><span className="mb-1 block text-sm text-gray-600">Comentario</span><textarea value={message} onChange={event => setMessage(event.target.value)} rows={3} maxLength={4000} placeholder="Contanos brevemente." className="input" /></label>}
         {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
         <button onClick={submit} disabled={busy || (action !== 'ACCEPTED' && !message.trim())} className="btn-primary mt-4 w-full justify-center disabled:opacity-50 sm:w-auto">{busy ? 'Guardando…' : actionLabels[action]}</button>
       </div>
