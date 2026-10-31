@@ -8,8 +8,8 @@ type AccountOption = { id: string; name: string; userId: string | null }
 type Stage = { title: string; track: string; description: string; scope: string; deliverables: string; timeline: string; amount: string; paymentTerms: string; conditions: string }
 
 const emptyStage = (title = '', track = 'NOW'): Stage => ({ title, track, description: '', scope: '', deliverables: '', timeline: '', amount: '', paymentTerms: '', conditions: '' })
-const inputClass = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-900 outline-none transition focus:border-gray-500'
-const labelClass = 'mb-1.5 block text-sm font-medium text-gray-700'
+const inputClass = 'input'
+const labelClass = 'label'
 
 export default function ProposalCreateForm({ users, accounts }: { users: UserOption[]; accounts: AccountOption[] }) {
   const router = useRouter()
@@ -60,7 +60,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
   }
 
   return <form onSubmit={submit} className="mx-auto max-w-4xl space-y-5">
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
+    <section className="card p-5 sm:p-7">
       <h2 className="text-base font-semibold tracking-tight text-gray-950">Destinatario</h2>
       <p className="mt-1 text-sm text-gray-500">Elegí un cliente o indicá dónde enviar el acceso.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -84,7 +84,7 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
     <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div><h2 className="text-base font-semibold tracking-tight text-gray-950">Plan de trabajo</h2><p className="mt-1 text-sm text-gray-500">Separá lo urgente de lo que puede construirse después.</p></div>
-        <button type="button" onClick={() => setStages(current => [...current, emptyStage()])} className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-50">Agregar etapa</button>
+        <button type="button" onClick={() => setStages(current => [...current, emptyStage()])} className="shrink-0 btn-secondary">Agregar etapa</button>
       </div>
 
       <div className="mt-5 space-y-3">
@@ -120,8 +120,8 @@ export default function ProposalCreateForm({ users, accounts }: { users: UserOpt
 
     {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
     <div className="flex justify-end gap-3 pb-6">
-      <button type="button" onClick={() => router.push('/admin/propuestas')} className="rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700">Cancelar</button>
-      <button disabled={busy} className="rounded-xl bg-gray-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar propuesta'}</button>
+      <button type="button" onClick={() => router.push('/admin/propuestas')} className="btn-secondary">Cancelar</button>
+      <button disabled={busy} className="btn-primary disabled:opacity-50">{busy ? 'Guardando…' : 'Guardar propuesta'}</button>
     </div>
   </form>
 }
