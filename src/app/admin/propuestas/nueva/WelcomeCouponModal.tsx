@@ -81,7 +81,7 @@ export default function WelcomeCouponModal({
   const formatMoney = (value: number) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value)
 
-  const setNewPromotionField = <K extends keyof NewPromotionForm>(key: K, value: NewPromotionForm[K]) => {
+  const setNewPromotionField = <K extends keyof NewPromotionForm,>(key: K, value: NewPromotionForm[K]) => {
     setNewPromotion((current) => ({ ...current, [key]: value }))
   }
 
