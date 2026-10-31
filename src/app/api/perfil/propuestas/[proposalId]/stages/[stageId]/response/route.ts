@@ -40,6 +40,7 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{proposalId:
             createdById:proposal.createdById,
             title:stage.title||proposal.title||'Trabajo ZAP',
             description:[
+              stage.track === 'LATER' ? 'Carril\nConstruir a largo plazo' : 'Carril\nResolver ahora',
               stage.description ? `Descripción\n${stage.description}` : null,
               stage.scope ? `Alcance\n${stage.scope}` : null,
               stage.deliverables ? `Entregables\n${stage.deliverables}` : null,
