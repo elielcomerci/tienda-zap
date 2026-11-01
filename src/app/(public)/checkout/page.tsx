@@ -375,7 +375,7 @@ function CheckoutContent() {
   if (items.length === 0) return null
 
   const lookupFiscalCuit = async (rawValue?: string) => {
-    const cuit = String(rawValue ?? formValues.documentId ?? '').replace(/\\D/g, '')
+    const cuit = String(rawValue ?? formValues.documentId ?? '').replace(/\D/g, '')
     if (!isValidFiscalCuit(cuit)) {
       setFiscalLookupFeedback('Ingresá una CUIT válida de 11 dígitos.')
       setFiscalLookupData(null)
@@ -394,8 +394,8 @@ function CheckoutContent() {
         body: JSON.stringify({ cuit }),
       })
       const result = await response.json()
+      if (response.status === 202 && result.pending) throw new Error('ARCA está procesando la consulta. Probá nuevamente en unos segundos.')
       if (!response.ok) throw new Error(result.error || 'No pudimos consultar ARCA.')
-      if (result.pending) throw new Error('ARCA está procesando la consulta. Probá nuevamente en unos segundos.')
       const data = result.data as NonNullable<typeof fiscalLookupData>
       setFiscalLookupData(data)
       if (data.razonSocial) setValue('billingName', data.razonSocial, { shouldDirty: true, shouldValidate: true })
@@ -414,10 +414,7 @@ function CheckoutContent() {
       {field.name === 'documentId' ? (
         <div className="flex gap-2">
           <input
-            {...register(field.name)}
-            onBlur={(event) => {
-              void lookupFiscalCuit(event.currentTarget.value)
-            }}
+            {...register(field.name, { onBlur: (event) => { void lookupFiscalCuit(event.currentTarget.value) } })}
             className="input min-w-0 flex-1"
             placeholder={field.placeholder}
             inputMode="numeric"
