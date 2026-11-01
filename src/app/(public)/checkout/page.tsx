@@ -418,7 +418,7 @@ function CheckoutContent() {
           <input
             {...register(field.name, {
               onChange: (event) => {
-                const currentCuit = String(event.currentTarget.value).replace(/\\D/g, '')
+                const currentCuit = String(event.currentTarget.value).replace(/\D/g, '')
                 if (currentCuit !== lastFiscalLookupCuitRef.current) {
                   lastFiscalLookupCuitRef.current = ''
                   setFiscalLookupData(null)
