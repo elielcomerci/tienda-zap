@@ -349,6 +349,7 @@ export const orderCheckoutSchema = z.object({
   couponCode: optionalTextField(4, 'Codigo de cupon inválido'),
 
   documentId: optionalTextField(7, 'Documento (DNI/CUIL/CUIT) inválido'),
+  billingName: optionalTextField(2, 'Razón social inválida'),
   billingAddress: optionalTextField(3, 'Dirección de facturación invalida'),
   billingCity: optionalTextField(2, 'Ciudad de facturación invalida'),
   billingProvince: optionalTextField(2, 'Provincia de facturación invalida'),
