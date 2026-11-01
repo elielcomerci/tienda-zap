@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 const zapearPhrases = [
@@ -22,6 +22,31 @@ export default function Footer() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [lastTypoIndex, setLastTypoIndex] = useState(-1)
   const [typo, setTypo] = useState<{ index: number; character: string; phase: "wrong" | "erase" } | null>(null)
+  const phraseRef = useRef<HTMLParagraphElement>(null)
+  const [phraseFontSize, setPhraseFontSize] = useState(16)
+
+  useEffect(() => {
+    const element = phraseRef.current
+    if (!element) return
+
+    const fitPhrase = () => {
+      const width = element.clientWidth
+      if (!width) return
+      const canvas = document.createElement("canvas")
+      const context = canvas.getContext("2d")
+      if (!context) return
+      const styles = window.getComputedStyle(element)
+      const baseSize = 100
+      context.font = `600 ${baseSize}px ${styles.fontFamily}`
+      const measuredWidth = context.measureText(`${zapearPhrases[phraseIndex]}|`).width
+      if (measuredWidth > 0) setPhraseFontSize(Math.max(10, (width / measuredWidth) * baseSize))
+    }
+
+    fitPhrase()
+    const observer = new ResizeObserver(fitPhrase)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [phraseIndex])
 
   useEffect(() => {
     const phrase = zapearPhrases[phraseIndex]
@@ -96,9 +121,9 @@ export default function Footer() {
       <footer className="border-t border-white/10 bg-black text-gray-400">
         <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
         <div className="container mx-auto px-5 py-9 md:px-8 md:py-11">
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center">
+          <div className="flex w-full flex-col items-center gap-4 text-center">
             <p className="text-sm font-medium text-gray-200">Hecho con ❤️ en Parque Leloir</p>
-            <p key={phraseIndex} className="min-h-6 max-w-2xl text-center text-sm font-medium leading-6 text-gray-200 md:text-base" aria-label={phrase} aria-live="off">
+            <p key={phraseIndex} ref={phraseRef} className="min-h-[1.1em] w-full whitespace-nowrap text-center font-semibold leading-none tracking-[-0.045em] text-gray-100" style={{ fontSize: `${phraseFontSize}px` }} aria-label={phrase} aria-live="off">
               {visiblePhrase}{cursor}
             </p>
           </div>
@@ -115,9 +140,9 @@ export default function Footer() {
     <footer className="relative border-t border-gray-100 bg-white text-gray-500">
       <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
       <div className="container mx-auto px-5 py-9 md:px-8 md:py-11">
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center">
+        <div className="flex w-full flex-col items-center gap-4 text-center">
           <p className="text-sm font-medium text-gray-800">Hecho con ❤️ en Parque Leloir</p>
-          <p key={phraseIndex} className="min-h-6 max-w-2xl text-center text-sm font-medium leading-6 text-gray-700 md:text-base" aria-label={phrase} aria-live="off">
+          <p key={phraseIndex} ref={phraseRef} className="min-h-[1.1em] w-full whitespace-nowrap text-center font-semibold leading-none tracking-[-0.045em] text-gray-900" style={{ fontSize: `${phraseFontSize}px` }} aria-label={phrase} aria-live="off">
             {visiblePhrase}{cursor}
           </p>
         </div>
