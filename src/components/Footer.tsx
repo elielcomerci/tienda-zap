@@ -27,7 +27,7 @@ export default function Footer() {
 
     if (isDeleting) {
       const previousCharacter = phrase[typedLength - 1] ?? ""
-      delay = 42 + ((typedLength * 13 + previousCharacter.charCodeAt(0)) % 28)
+      delay = 42 + ((typedLength * 13 + (previousCharacter.charCodeAt(0) || 0)) % 28)
       if (previousCharacter === " ") delay += 55
     } else if (typedLength === phrase.length) {
       delay = 4800
