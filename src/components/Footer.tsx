@@ -73,7 +73,7 @@ export default function Footer() {
 
         // Un error ocasional con una tecla vecina, seguido de corrección.
         if (neighbors.length > 0 && typedLength !== lastTypoIndex && Math.random() < 0.018) {
-          const wrongCharacter = neighbors[Math.floor(Math.random() * neighbors.length)];
+          const wrongCharacter = neighbors[Math.floor(Math.random() * neighbors.length)] ?? nextCharacter;
           setLastTypoIndex(typedLength);
           setTypo({
             index: typedLength,
