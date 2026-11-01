@@ -5,7 +5,6 @@ import { isValidFiscalCuit } from '@/lib/fiscal-cuit'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const LOOKUP_ENVIRONMENT = 'PROD'
 const LOOKUP_SOURCE = 'a13'
 
 export async function POST(request: NextRequest) {
@@ -21,6 +20,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ingresá una CUIT válida de 11 dígitos.' }, { status: 422 })
   }
 
+  if (process.env.CHECKOUT_ARCA_LOOKUP_ENABLED !== 'true') {
+    return NextResponse.json({ error: 'La consulta de datos fiscales todavía no está habilitada.' }, { status: 404 })
+  }
+
+  const lookupEnvironment = process.env.VERCEL_ENV === 'production' ? 'PROD' : 'TEST'
   const secret = process.env.PUBLIC_PADRON_BACKEND_SECRET?.trim()
   const baseUrl = getFiscalWorkerBaseUrl()
   if (!secret || !baseUrl) {
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
         'X-Nodo-Client-IP': clientIp,
         'Idempotency-Key': crypto.randomUUID(),
       },
-      body: JSON.stringify({ cuit, environment: LOOKUP_ENVIRONMENT, source: LOOKUP_SOURCE }),
+      body: JSON.stringify({ cuit, environment: lookupEnvironment, source: LOOKUP_SOURCE }),
       cache: 'no-store',
       signal: AbortSignal.timeout(25_000),
     })
