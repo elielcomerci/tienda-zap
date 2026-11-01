@@ -60,7 +60,7 @@ export default function Footer() {
   if (isHome) {
     return (
       <footer className="bg-black py-7 border-t border-white/10 text-gray-500 text-xs text-center">
-        <style jsx global>{`@keyframes zapCursorBreathe { from { opacity: 0.38; } to { opacity: 1; } } .zap-typewriter-cursor { opacity: 1; transition: opacity 220ms ease; animation: zapCursorBreathe 1.35s ease-in-out infinite alternate; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; }`}</style>
+        <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
         <div className="container mx-auto px-4">
           <p className="mb-2 text-xs font-medium text-gray-300">Hecho con ❤️ en Parque Leloir</p>
           <p key={phraseIndex} className="mb-4 min-h-6 text-sm font-medium leading-6 text-gray-200 transition-opacity duration-700 md:text-base" aria-label={zapearPhrases[phraseIndex]} aria-live="off">
@@ -77,7 +77,7 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-white py-8 border-t border-gray-100">
-      <style jsx global>{`@keyframes zapCursorBreathe { from { opacity: 0.38; } to { opacity: 1; } } .zap-typewriter-cursor { opacity: 1; transition: opacity 220ms ease; animation: zapCursorBreathe 1.35s ease-in-out infinite alternate; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; }`}</style>
+      <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
       <div className="container mx-auto px-4 text-center">
         <p className="text-sm font-medium text-gray-800 md:text-base">Hecho con ❤️ en Parque Leloir</p>
         <p key={phraseIndex} className="mt-3 mb-4 min-h-6 text-sm font-medium leading-6 text-gray-700 transition-opacity duration-700 md:text-base" aria-live="polite">
