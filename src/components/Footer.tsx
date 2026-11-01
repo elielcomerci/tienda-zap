@@ -28,9 +28,7 @@ export default function Footer() {
     let delay: number;
 
     if (typo) {
-      delay = typo.phase === "wrong"
-        ? 260 + Math.random() * 260
-        : 85 + Math.random() * 75;
+      delay = typo.phase === "wrong" ? 360 : 38;
 
       const typoTimeout = window.setTimeout(() => {
         if (typo.phase === "wrong") {
@@ -47,8 +45,8 @@ export default function Footer() {
     const previousCharacter = phrase[typedLength - 1] ?? "";
 
     if (isDeleting) {
-      delay = 38 + Math.random() * 48;
-      if (previousCharacter === " ") delay += 75 + Math.random() * 95;
+      // Backspace sostenido: repetición regular, sin pausas entre caracteres.
+      delay = 38;
     } else if (typedLength === phrase.length) {
       delay = 4800;
     } else if (typedLength === 0) {
