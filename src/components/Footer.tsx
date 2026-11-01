@@ -38,7 +38,7 @@ export default function Footer() {
       const styles = window.getComputedStyle(element)
       const baseSize = 100
       context.font = `600 ${baseSize}px ${styles.fontFamily}`
-      const measuredWidth = context.measureText(`${zapearPhrases[phraseIndex]}|`).width
+      const measuredWidth = context.measureText(`${zapearPhrases[phraseIndex]}|`).width - (zapearPhrases[phraseIndex].length + 1) * 4.5
       if (measuredWidth > 0) setPhraseFontSize(Math.max(10, (width / measuredWidth) * baseSize))
     }
 
