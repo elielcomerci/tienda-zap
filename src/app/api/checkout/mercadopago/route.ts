@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
           guestPhone: data.phone,
 
           documentId: data.documentId,
+          billingName: data.billingName,
           billingAddress: data.billingAddress,
           billingCity: data.billingCity,
           billingProvince: data.billingProvince,
