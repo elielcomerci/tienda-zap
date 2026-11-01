@@ -61,8 +61,6 @@ export async function POST(request: NextRequest) {
         cuit?: unknown
         razonSocial?: unknown
         estadoRegistral?: unknown
-        domicilioFiscal?: unknown
-        condicionIva?: unknown
         actividades?: unknown
       }
       status?: unknown
@@ -79,9 +77,6 @@ export async function POST(request: NextRequest) {
           cuit,
           ...(typeof data.razonSocial === 'string' ? { razonSocial: data.razonSocial } : {}),
           ...(typeof data.estadoRegistral === 'string' ? { estadoRegistral: data.estadoRegistral } : {}),
-          ...(typeof data.domicilioFiscal === 'string' ? { domicilioFiscal: data.domicilioFiscal } : {}),
-          ...(typeof data.condicionIva === 'string' ? { condicionIva: data.condicionIva } : {}),
-          ...(typeof data.actividades === 'string' ? { actividades: data.actividades } : {}),
         },
         consultedAt: typeof result.consultedAt === 'string' ? result.consultedAt : new Date().toISOString(),
       }, { headers: { 'Cache-Control': 'no-store' } })
