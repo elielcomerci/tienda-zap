@@ -32,6 +32,7 @@ import {
 import { useCreditEligibility } from '@/lib/use-credit-eligibility'
 import { orderCheckoutSchema, type OrderCheckoutData } from '@/lib/validations'
 import { isZapCreditEnabled } from '@/lib/zap-credit'
+import { isValidFiscalCuit } from '@/lib/fiscal-cuit'
 
 const paymentOptions = [
   {
@@ -82,6 +83,7 @@ type CustomerFieldConfig = {
     | 'phone'
     | 'email'
     | 'documentId'
+    | 'billingName'
     | 'billingAddress'
     | 'billingCity'
     | 'billingProvince'
@@ -119,6 +121,7 @@ const customerSections: readonly { title: string; fields: readonly CustomerField
   {
     title: 'Datos de facturación',
     fields: [
+      { name: 'billingName', label: 'Razón social / nombre fiscal', placeholder: 'Nombre registrado en ARCA', fullWidth: true },
       {
         name: 'billingAddress',
         label: 'Dirección de facturación',
@@ -200,6 +203,15 @@ function CheckoutContent() {
   const [couponFeedback, setCouponFeedback] = useState('')
   const [couponLoading, setCouponLoading] = useState(false)
   const [scannerOpen, setScannerOpen] = useState(false)
+  const [fiscalLookupLoading, setFiscalLookupLoading] = useState(false)
+  const [fiscalLookupFeedback, setFiscalLookupFeedback] = useState('')
+  const [fiscalLookupData, setFiscalLookupData] = useState<{
+    razonSocial?: string
+    estadoRegistral?: string
+    domicilioFiscal?: string
+    condicionIva?: string
+    actividades?: string
+  } | null>(null)
   const [zapCreditSelection, setZapCreditSelection] = useState<{
     installments: number
     paymentFrequency: PaymentFrequency
@@ -361,15 +373,79 @@ function CheckoutContent() {
 
   if (items.length === 0) return null
 
+  const lookupFiscalCuit = async () => {
+    const cuit = String(formValues.documentId ?? '').replace(/\\D/g, '')
+    if (!isValidFiscalCuit(cuit)) {
+      setFiscalLookupFeedback('Ingresá una CUIT válida de 11 dígitos.')
+      setFiscalLookupData(null)
+      return
+    }
+
+    setFiscalLookupLoading(true)
+    setFiscalLookupFeedback('')
+    setFiscalLookupData(null)
+    try {
+      const response = await fetch('/api/checkout/fiscal-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cuit }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'No pudimos consultar ARCA.')
+      if (result.pending) throw new Error('ARCA está procesando la consulta. Probá nuevamente en unos segundos.')
+      const data = result.data as NonNullable<typeof fiscalLookupData>
+      setFiscalLookupData(data)
+      if (data.razonSocial) setValue('billingName', data.razonSocial, { shouldDirty: true, shouldValidate: true })
+      setFiscalLookupFeedback('Datos recuperados de ARCA. Revisalos antes de continuar.')
+    } catch (lookupError) {
+      setFiscalLookupFeedback(lookupError instanceof Error ? lookupError.message : 'No pudimos consultar ARCA.')
+    } finally {
+      setFiscalLookupLoading(false)
+    }
+  }
+
   const renderCustomerField = (field: CustomerFieldConfig) => (
     <div key={field.name} className={field.fullWidth ? 'sm:col-span-2' : undefined}>
       <label className="label">{field.label}</label>
-      <input
-        {...register(field.name)}
-        type={field.type}
-        className="input"
-        placeholder={field.placeholder}
-      />
+      {field.name === 'documentId' ? (
+        <div className="flex gap-2">
+          <input
+            {...register(field.name)}
+            className="input min-w-0 flex-1"
+            placeholder={field.placeholder}
+            inputMode="numeric"
+            autoComplete="off"
+          />
+          <button
+            type="button"
+            onClick={() => void lookupFiscalCuit()}
+            disabled={fiscalLookupLoading}
+            className="shrink-0 rounded-xl border border-gray-200 px-3 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-50"
+          >
+            {fiscalLookupLoading ? 'Consultando…' : 'Consultar ARCA'}
+          </button>
+        </div>
+      ) : (
+        <input
+          {...register(field.name)}
+          type={field.type}
+          className="input"
+          placeholder={field.placeholder}
+        />
+      )}
+      {field.name === 'documentId' && fiscalLookupFeedback && (
+        <p role="status" className={`mt-2 text-xs ${fiscalLookupData ? 'text-emerald-700' : 'text-amber-700'}`}>
+          {fiscalLookupFeedback}
+        </p>
+      )}
+      {field.name === 'documentId' && fiscalLookupData && (
+        <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+          {fiscalLookupData.razonSocial && <p><strong>{fiscalLookupData.razonSocial}</strong></p>}
+          {fiscalLookupData.condicionIva && <p className="mt-1">{fiscalLookupData.condicionIva}</p>}
+          {fiscalLookupData.estadoRegistral && <p className="mt-1 text-xs text-gray-500">Estado registral: {fiscalLookupData.estadoRegistral}</p>}
+          {fiscalLookupData.domicilioFiscal && <p className="mt-2 text-xs text-gray-600">{fiscalLookupData.domicilioFiscal}</p>}
+        </div>
+      )}
       {errors[field.name] && (
         <p className="mt-1 text-xs text-red-500">{errors[field.name]?.message as string}</p>
       )}
