@@ -194,6 +194,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams()
   const loadedQueryCouponRef = useRef('')
   const lastFiscalLookupCuitRef = useRef('')
+  const lastFiscalLookupNameRef = useRef('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderCreated, setOrderCreated] = useState(false)
@@ -396,7 +397,10 @@ function CheckoutContent() {
       if (!response.ok) throw new Error(result.error || 'No pudimos consultar ARCA.')
       const data = result.data as NonNullable<typeof fiscalLookupData>
       setFiscalLookupData(data)
-      if (data.razonSocial) setValue('billingName', data.razonSocial, { shouldDirty: true, shouldValidate: true })
+      if (data.razonSocial) {
+        lastFiscalLookupNameRef.current = data.razonSocial
+        setValue('billingName', data.razonSocial, { shouldDirty: true, shouldValidate: true })
+      }
       setFiscalLookupFeedback('Datos recuperados de ARCA. Revisalos antes de continuar.')
     } catch (lookupError) {
       lastFiscalLookupCuitRef.current = ''
@@ -412,7 +416,21 @@ function CheckoutContent() {
       {field.name === 'documentId' ? (
         <div className="flex gap-2">
           <input
-            {...register(field.name, { onBlur: (event) => { if (checkoutArcaLookupEnabled) void lookupFiscalCuit(event.currentTarget.value) } })}
+            {...register(field.name, {
+              onChange: (event) => {
+                const currentCuit = String(event.currentTarget.value).replace(/\\D/g, '')
+                if (currentCuit !== lastFiscalLookupCuitRef.current) {
+                  lastFiscalLookupCuitRef.current = ''
+                  setFiscalLookupData(null)
+                  setFiscalLookupFeedback('')
+                  if (lastFiscalLookupNameRef.current && formValues.billingName === lastFiscalLookupNameRef.current) {
+                    setValue('billingName', '', { shouldDirty: true, shouldValidate: true })
+                  }
+                  lastFiscalLookupNameRef.current = ''
+                }
+              },
+              onBlur: (event) => { if (checkoutArcaLookupEnabled) void lookupFiscalCuit(event.currentTarget.value) },
+            })}
             className="input min-w-0 flex-1"
             placeholder={field.placeholder}
             inputMode="numeric"
