@@ -789,103 +789,78 @@ function CheckoutContent() {
                   </div>
                 )}
 
-                <details open={Boolean(couponPreview || loadedCouponCode || couponDraft || couponFeedback)} className="rounded-2xl border border-gray-200 bg-white">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-sm font-semibold text-gray-900 marker:hidden">
+                <details
+                  open={Boolean(couponPreview || loadedCouponCode || couponDraft || couponFeedback)}
+                  className="rounded-xl border border-gray-200 bg-white"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-3 text-sm font-medium text-gray-800 marker:hidden">
                     <span>¿Tenés un cupón?</span>
-                    <span className="text-xs font-medium text-gray-500">Opcional</span>
+                    {couponPreview?.status === 'recognized' ? (
+                      <span className="text-xs font-medium text-emerald-700">Aplicado</span>
+                    ) : (
+                      <span className="text-xs text-gray-500">Opcional</span>
+                    )}
                   </summary>
-                  <div className="border-t border-gray-100 px-3 pb-3 pt-1 sm:px-4">
-                <div className="pt-2">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-col gap-3 lg:flex-row">
-                    <div className="flex-1">
-                      <label className="label">Código del cupón</label>
-                      <div className="flex overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-[#FEF1F5]">
+                  <div className="border-t border-gray-100 p-3">
+                    {couponPreview?.status === 'recognized' ? (
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {couponPreview.normalizedCode || couponDraft}
+                          </p>
+                          <p className="mt-0.5 text-xs text-emerald-700">
+                            Descuento de ${previewDiscountAmount.toLocaleString('es-AR')} aplicado
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={clearCouponState}
+                          className="shrink-0 text-xs font-medium text-gray-500 underline underline-offset-4 hover:text-gray-900"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <label htmlFor="checkout-coupon-code" className="sr-only">Código de descuento</label>
                         <input
+                          id="checkout-coupon-code"
                           value={couponDraft}
                           onChange={(event) => setCouponDraft(event.target.value)}
-                          className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-sm outline-none"
-                          placeholder="Ej: ZAP-7F3K9Q-X2"
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault()
+                              void reviewCoupon(couponDraft, true)
+                            }
+                          }}
+                          className="input min-w-0 flex-1"
+                          placeholder="Código de descuento"
+                          autoComplete="off"
                         />
                         <button
                           type="button"
                           onClick={() => setScannerOpen(true)}
-                          className="flex h-12 w-12 shrink-0 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors hover:bg-[#FEF1F5] hover:text-[#ED164F]"
-                          aria-label="Escanear cupon con la camara"
-                          title="Escanear cupon"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-950"
+                          aria-label="Escanear cupón QR"
+                          title="Escanear QR"
                         >
                           <ScanLine size={18} />
                         </button>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 lg:pt-7">
-                      <button
-                        type="button"
-                        onClick={() => reviewCoupon(couponDraft, true)}
-                        disabled={couponLoading}
-                        className={`inline-flex min-w-[150px] items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
-                          couponLoading
-                            ? 'cursor-wait bg-gray-100 text-gray-500'
-                            : 'bg-gray-950 text-white hover:bg-gray-800'
-                        }`}
-                      >
-                        {couponLoading ? 'Revisando...' : 'Cargar cupon'}
-                      </button>
-
-                      {(couponPreview || loadedCouponCode || couponDraft) && (
                         <button
                           type="button"
-                          onClick={clearCouponState}
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-red-200 hover:text-red-600"
+                          onClick={() => void reviewCoupon(couponDraft, true)}
+                          disabled={couponLoading || !couponDraft.trim()}
+                          className="shrink-0 rounded-xl bg-gray-950 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500"
                         >
-                          <X size={16} />
-                          Limpiar
+                          {couponLoading ? '...' : 'Aplicar'}
                         </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {couponPreview?.status === 'recognized' && (
-                    <div className="mt-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-600" />
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-semibold text-emerald-950">
-                              {couponPreview.title}
-                            </p>
-                            {couponPreview.normalizedCode && (
-                              <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                                {couponPreview.normalizedCode}
-                              </span>
-                            )}
-                          </div>
-                            <p className="mt-1 text-sm leading-7 text-emerald-900">
-                              {couponPreview.detail}
-                            </p>
-                            {couponPreview.presenterName && (
-                              <p className="mt-2 rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-800">
-                                Beneficio acercado por {couponPreview.presenterName}.
-                              </p>
-                            )}
-                          </div>
-                        </div>
                       </div>
-                  )}
-
-                  {couponFeedback && (
-                    <div className="mt-4 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                      {couponFeedback}
-                    </div>
-                  )}
-                </div>
-
+                    )}
+                    {couponFeedback && (
+                      <p role="alert" className="mt-2 text-xs text-amber-700">
+                        {couponFeedback}
+                      </p>
+                    )}
                   </div>
                 </details>
 
