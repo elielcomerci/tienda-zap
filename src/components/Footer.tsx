@@ -96,13 +96,13 @@ export default function Footer() {
       <footer className="border-t border-white/10 bg-black text-gray-400">
         <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
         <div className="container mx-auto px-5 py-9 md:px-8 md:py-11">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center">
             <p className="text-sm font-medium text-gray-200">Hecho con ❤️ en Parque Leloir</p>
-            <p key={phraseIndex} className="min-h-6 text-sm font-medium leading-6 text-gray-200 md:max-w-[55%] md:text-right md:text-base" aria-label={phrase} aria-live="off">
+            <p key={phraseIndex} className="min-h-6 max-w-2xl text-center text-sm font-medium leading-6 text-gray-200 md:text-base" aria-label={phrase} aria-live="off">
               {visiblePhrase}{cursor}
             </p>
           </div>
-          <div className="mt-7 flex flex-col gap-4 border-t border-white/10 pt-5 text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-7 flex flex-col items-center gap-3 border-t border-white/10 pt-5 text-center text-gray-400">
             <p className="text-xs">© {new Date().getFullYear()} ZAP Tienda. Todos los derechos reservados.</p>
             {legalLinks}
           </div>
@@ -115,13 +115,13 @@ export default function Footer() {
     <footer className="relative border-t border-gray-100 bg-white text-gray-500">
       <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
       <div className="container mx-auto px-5 py-9 md:px-8 md:py-11">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center">
           <p className="text-sm font-medium text-gray-800">Hecho con ❤️ en Parque Leloir</p>
-          <p key={phraseIndex} className="min-h-6 text-sm font-medium leading-6 text-gray-700 md:max-w-[55%] md:text-right md:text-base" aria-label={phrase} aria-live="off">
+          <p key={phraseIndex} className="min-h-6 max-w-2xl text-center text-sm font-medium leading-6 text-gray-700 md:text-base" aria-label={phrase} aria-live="off">
             {visiblePhrase}{cursor}
           </p>
         </div>
-        <div className="mt-7 flex flex-col gap-4 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-7 flex flex-col items-center gap-3 border-t border-gray-100 pt-5 text-center">
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} ZAP Tienda. Todos los derechos reservados.</p>
           <div className="text-gray-500">{legalLinks}</div>
         </div>
