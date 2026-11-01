@@ -28,7 +28,7 @@ export default function Footer() {
     let delay: number;
 
     if (typo) {
-      delay = typo.phase === "wrong" ? 360 : 38;
+      delay = typo.phase === "wrong" ? 680 + Math.random() * 220 : 85 + Math.random() * 35;
 
       const typoTimeout = window.setTimeout(() => {
         if (typo.phase === "wrong") {
@@ -46,7 +46,7 @@ export default function Footer() {
 
     if (isDeleting) {
       // Backspace sostenido: repetición regular, sin pausas entre caracteres.
-      delay = 38;
+      delay = 75 + Math.random() * 35;
     } else if (typedLength === phrase.length) {
       delay = 4800;
     } else if (typedLength === 0) {
@@ -104,7 +104,7 @@ export default function Footer() {
         <div className="container mx-auto px-4">
           <p className="mb-2 text-xs font-medium text-gray-300">Hecho con ❤️ en Parque Leloir</p>
           <p key={phraseIndex} className="mb-4 min-h-6 text-sm font-medium leading-6 text-gray-200 transition-opacity duration-700 md:text-base" aria-label={zapearPhrases[phraseIndex]} aria-live="off">
-            {typo ? `${zapearPhrases[phraseIndex].slice(0, typo.index)}${typo.character}` : zapearPhrases[phraseIndex].slice(0, typedLength)}<span className={`zap-typewriter-cursor ml-0.5 inline-block ${typedLength < zapearPhrases[phraseIndex].length || isDeleting ? "is-typing" : ""}`} aria-hidden="true">|</span>
+            {typo ? `${zapearPhrases[phraseIndex].slice(0, typo.index)}${typo.phase === "wrong" ? typo.character : ""}` : zapearPhrases[phraseIndex].slice(0, typedLength)}<span className={`zap-typewriter-cursor ml-0.5 inline-block ${typedLength < zapearPhrases[phraseIndex].length || isDeleting ? "is-typing" : ""}`} aria-hidden="true">|</span>
           </p>
           <p>© {new Date().getFullYear()} ZAP Tienda · Todos los derechos reservados.</p>
           <p className="mt-3">
@@ -121,7 +121,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 text-center">
         <p className="text-sm font-medium text-gray-800 md:text-base">Hecho con ❤️ en Parque Leloir</p>
         <p key={phraseIndex} className="mt-3 mb-4 min-h-6 text-sm font-medium leading-6 text-gray-700 transition-opacity duration-700 md:text-base" aria-live="polite">
-          {typo ? `${zapearPhrases[phraseIndex].slice(0, typo.index)}${typo.character}` : zapearPhrases[phraseIndex].slice(0, typedLength)}<span className={`zap-typewriter-cursor ml-0.5 inline-block ${typedLength < zapearPhrases[phraseIndex].length || isDeleting ? "is-typing" : ""}`} aria-hidden="true">|</span>
+          {typo ? `${zapearPhrases[phraseIndex].slice(0, typo.index)}${typo.phase === "wrong" ? typo.character : ""}` : zapearPhrases[phraseIndex].slice(0, typedLength)}<span className={`zap-typewriter-cursor ml-0.5 inline-block ${typedLength < zapearPhrases[phraseIndex].length || isDeleting ? "is-typing" : ""}`} aria-hidden="true">|</span>
         </p>
         <p className="mt-2 text-xs md:text-sm text-gray-400">
           © {new Date().getFullYear()} - ZAP Agencia Creativa. Todos los derechos reservados.
