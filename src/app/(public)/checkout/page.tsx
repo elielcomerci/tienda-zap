@@ -209,9 +209,6 @@ function CheckoutContent() {
   const [fiscalLookupData, setFiscalLookupData] = useState<{
     razonSocial?: string
     estadoRegistral?: string
-    domicilioFiscal?: string
-    condicionIva?: string
-    actividades?: string
   } | null>(null)
   const [zapCreditSelection, setZapCreditSelection] = useState<{
     installments: number
@@ -445,9 +442,7 @@ function CheckoutContent() {
       {field.name === 'documentId' && fiscalLookupData && (
         <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
           {fiscalLookupData.razonSocial && <p><strong>{fiscalLookupData.razonSocial}</strong></p>}
-          {fiscalLookupData.condicionIva && <p className="mt-1">{fiscalLookupData.condicionIva}</p>}
           {fiscalLookupData.estadoRegistral && <p className="mt-1 text-xs text-gray-500">Estado registral: {fiscalLookupData.estadoRegistral}</p>}
-          {fiscalLookupData.domicilioFiscal && <p className="mt-2 text-xs text-gray-600">{fiscalLookupData.domicilioFiscal}</p>}
         </div>
       )}
       {errors[field.name] && (
