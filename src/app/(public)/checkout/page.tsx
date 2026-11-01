@@ -192,6 +192,7 @@ function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const loadedQueryCouponRef = useRef('')
+  const lastFiscalLookupCuitRef = useRef('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderCreated, setOrderCreated] = useState(false)
@@ -373,14 +374,16 @@ function CheckoutContent() {
 
   if (items.length === 0) return null
 
-  const lookupFiscalCuit = async () => {
-    const cuit = String(formValues.documentId ?? '').replace(/\\D/g, '')
+  const lookupFiscalCuit = async (rawValue?: string) => {
+    const cuit = String(rawValue ?? formValues.documentId ?? '').replace(/\\D/g, '')
     if (!isValidFiscalCuit(cuit)) {
       setFiscalLookupFeedback('Ingresá una CUIT válida de 11 dígitos.')
       setFiscalLookupData(null)
       return
     }
 
+    if (lastFiscalLookupCuitRef.current === cuit) return
+    lastFiscalLookupCuitRef.current = cuit
     setFiscalLookupLoading(true)
     setFiscalLookupFeedback('')
     setFiscalLookupData(null)
@@ -398,6 +401,7 @@ function CheckoutContent() {
       if (data.razonSocial) setValue('billingName', data.razonSocial, { shouldDirty: true, shouldValidate: true })
       setFiscalLookupFeedback('Datos recuperados de ARCA. Revisalos antes de continuar.')
     } catch (lookupError) {
+      lastFiscalLookupCuitRef.current = ''
       setFiscalLookupFeedback(lookupError instanceof Error ? lookupError.message : 'No pudimos consultar ARCA.')
     } finally {
       setFiscalLookupLoading(false)
@@ -411,6 +415,9 @@ function CheckoutContent() {
         <div className="flex gap-2">
           <input
             {...register(field.name)}
+            onBlur={(event) => {
+              void lookupFiscalCuit(event.currentTarget.value)
+            }}
             className="input min-w-0 flex-1"
             placeholder={field.placeholder}
             inputMode="numeric"
