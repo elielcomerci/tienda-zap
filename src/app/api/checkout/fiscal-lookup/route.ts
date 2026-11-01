@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
       }
       status?: unknown
       retryAfterSeconds?: unknown
+      consultedAt?: unknown
       error?: { code?: unknown; message?: unknown }
     } | null
 
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
           ...(typeof data.condicionIva === 'string' ? { condicionIva: data.condicionIva } : {}),
           ...(typeof data.actividades === 'string' ? { actividades: data.actividades } : {}),
         },
-        consultedAt: typeof result.data.cuit === 'string' ? new Date().toISOString() : new Date().toISOString(),
+        consultedAt: typeof result.consultedAt === 'string' ? result.consultedAt : new Date().toISOString(),
       }, { headers: { 'Cache-Control': 'no-store' } })
     }
 
