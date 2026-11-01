@@ -76,6 +76,7 @@ const checkoutPaymentOptions = paymentOptions.filter((option) => {
   return true
 })
 const defaultPaymentType = checkoutPaymentOptions.find((option) => option.value !== 'ZAP_CREDIT')?.value ?? checkoutPaymentOptions[0]?.value ?? 'TRANSFER'
+const checkoutArcaLookupEnabled = process.env.NEXT_PUBLIC_CHECKOUT_ARCA_LOOKUP_ENABLED === 'true'
 
 type CustomerFieldConfig = {
   name:
@@ -411,20 +412,22 @@ function CheckoutContent() {
       {field.name === 'documentId' ? (
         <div className="flex gap-2">
           <input
-            {...register(field.name, { onBlur: (event) => { void lookupFiscalCuit(event.currentTarget.value) } })}
+            {...register(field.name, { onBlur: (event) => { if (checkoutArcaLookupEnabled) void lookupFiscalCuit(event.currentTarget.value) } })}
             className="input min-w-0 flex-1"
             placeholder={field.placeholder}
             inputMode="numeric"
             autoComplete="off"
           />
-          <button
-            type="button"
-            onClick={() => void lookupFiscalCuit()}
-            disabled={fiscalLookupLoading}
-            className="shrink-0 rounded-xl border border-gray-200 px-3 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-50"
-          >
-            {fiscalLookupLoading ? 'Consultando…' : 'Consultar ARCA'}
-          </button>
+          {checkoutArcaLookupEnabled && (
+            <button
+              type="button"
+              onClick={() => void lookupFiscalCuit()}
+              disabled={fiscalLookupLoading}
+              className="shrink-0 rounded-xl border border-gray-200 px-3 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-50"
+            >
+              {fiscalLookupLoading ? 'Consultando…' : 'Consultar ARCA'}
+            </button>
+          )}
         </div>
       ) : (
         <input
@@ -443,6 +446,7 @@ function CheckoutContent() {
         <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
           {fiscalLookupData.razonSocial && <p><strong>{fiscalLookupData.razonSocial}</strong></p>}
           {fiscalLookupData.estadoRegistral && <p className="mt-1 text-xs text-gray-500">Estado registral: {fiscalLookupData.estadoRegistral}</p>}
+          <p className="mt-2 text-xs text-gray-500">La consulta A13 no determina la condición IVA para facturar. La confirmás al solicitar la factura.</p>
         </div>
       )}
       {errors[field.name] && (
