@@ -91,7 +91,7 @@ export default function FooterStatement() {
   const visiblePhrase = typo ? `${phrase.slice(0, typo.index)}${typo.phase === "wrong" ? typo.character : ""}` : phrase.slice(0, typedLength);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[clamp(3.5rem,10vw,8rem)] w-full items-end justify-center overflow-hidden px-5 pb-1 md:px-8" aria-label={phrase}>
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[70] flex h-[clamp(6rem,16vw,12rem)] w-full items-end justify-center px-5 pb-2 md:px-8" aria-label={phrase}>
       <style jsx global>{`@keyframes zapCursorBlink { 50% { opacity: 0; } } .zap-typewriter-cursor { opacity: 1; animation: zapCursorBlink 1s step-end 500ms infinite backwards; } .zap-typewriter-cursor.is-typing { opacity: 1; animation: none; } @media (prefers-reduced-motion: reduce) { .zap-typewriter-cursor { animation: none; opacity: 1; } }`}</style>
       <p ref={containerRef} className="w-full whitespace-nowrap text-center font-semibold leading-none tracking-[-0.045em] text-gray-100" style={{ fontSize: `${fontSize}px` }} aria-live="off">
         {visiblePhrase}<span className={`zap-typewriter-cursor ml-0.5 inline-block ${typedLength < phrase.length || isDeleting ? "is-typing" : ""}`} aria-hidden="true">|</span>
