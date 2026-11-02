@@ -16,8 +16,8 @@ export default function Footer() {
   )
 
   return (
-    <footer className={isHome ? "relative isolate border-t border-white/10 bg-black text-gray-400" : "relative isolate border-t border-gray-100 bg-white text-gray-500"}>
-      <div className="container mx-auto px-5 pb-[clamp(4.5rem,10vw,8rem)] pt-9 md:px-8 md:pt-11">
+    <footer className={isHome ? "relative z-[60] isolate border-t border-white/10 bg-black text-gray-400" : "relative z-[60] isolate border-t border-gray-100 bg-white text-gray-500"}>
+      <div className="container mx-auto px-5 pb-[clamp(6rem,16vw,12rem)] pt-9 md:px-8 md:pt-11">
         <div className="flex w-full flex-col items-center gap-4 text-center">
           <p className={isHome ? "text-sm font-medium text-gray-200" : "text-sm font-medium text-gray-800"}>Hecho con ❤️ en Parque Leloir</p>
         </div>
